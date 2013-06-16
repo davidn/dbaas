@@ -1,0 +1,66 @@
+
+/* ================== begin of all imported and override css ================*/
+@import "bootstrap_and_overrides.css.less";
+/* ================== end of all imported css ================*/
+
+/* ================== begin of all custom fonts ================*/
+@font-face {
+    font-family: 'oswaldbook';
+    src: url('../fonts/oswald-webfont.eot');
+    src: url('../fonts/oswald-webfont.eot?#iefix') format('embedded-opentype'),
+    url('../fonts/oswald-webfont.woff') format('woff'),
+    url('../fonts/oswald-webfont.ttf') format('truetype'),
+    url('../fonts/oswald-webfont.svg#oswaldbook') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+/* ================== end of all custom fonts ================*/
+
+/* ================== begin of all variables ================*/
+@darkgrey:#494949;
+@intcolor:#6d6966;
+@navcolor:#660000;
+@kirnlorange:#f75105;
+@image: "../img";
+@white: #fff;
+@gray:#666666;
+@lightgray:#999999;
+@black:#000000;
+@bdrclr:#cccccc;
+/* ================== end of all variables ================*/
+
+*{  border: none; margin:0; padding:0;}
+
+/*=================== begin of Step 1 related css ================*/
+
+body{background:url(background-bg.png) repeat-x left top;}
+.innerWrap{ width:935px; margin:150px auto 100px;}
+.innerWrap h3{ color:#ffffff; font-family:Open Sans; }
+.innerWrap .innerDiv{ border:8px solid #1d3160; min-height: 785px; background:#ffffff;}
+.innerWrap .innerDiv .topNav{display: inline-block;margin: 18px 0;width: 100%;}
+.topNav a{ display: inline-block;float: left;padding-left: 2%;  text-decoration: none; width: 23%; font-size:14px; color:#1d3160;font-family:Open Sans; }
+.topNav .selected{ background:#1d3160 !important;}
+.topNav .numValue{ background:#9398a4; padding:8px; display:inline-block; color:#ffffff; height: 8px; line-height: 7px; border-radius: 50% 50% 50% 50%;margin-right: 8px;  font-family: times roman;
+    font-size: 17px;}
+.detailSection{  display: inline-block; margin-top: 18px;}
+.detailSection span{ font-family:Open Sans; font-size:16px; border-bottom:1px solid #eae7e7; display:inline-block;margin: 0 0.5%;    width: 97%;   padding: 0 0 1.5% 2%;}
+.detailSection strong{font-family:Open Sans; font-size:16px; }
+.detailSection .firstForm{ margin-top:34px; margin-left:2.5%;}
+.firstForm input[type="text"],.secForm input[type="text"],.secForm input[type="password"]{ border: 3px solid #D6D6D6; width:278px;  height: 25px; margin-right: 5px; float:left;}
+.firstForm select,.secForm select{ border: 3px solid #D6D6D6;  height: 38px; width: 295px;}
+.firstForm .checkbox {font-size:16px; color:#242425; font-family:Open Sans;}
+.detailSection .control-group{ font-size:16px;font-family:Open Sans;  height: 40px; margin-bottom: 10px;}
+.detailSection .secForm{ margin-top:8px; margin-left:2.5%;}
+.detailSection .secForm label{font-size:16px; width: 305px;}
+.secForm .checkbox input[type="checkbox"]{margin-left:0;}
+.detailSection .firstForm label{font-size:16px; width: 305px;}
+.firstForm .checkbox.inline { width: 85px !important;}
+.secForm .controls .input-prepend.input-append .add-on:first-child{border: 3px solid #D6D6D6;height: 25px; border-right:none;line-height: 24px;float:left;}
+.secForm .input-prepend.input-append small{color: #c2582a; line-height: 18px; display: block;float: left;font-size: 12px;margin-left: 2px; white-space: normal; width: 425px;word-wrap: break-word;}
+.secForm .controls small{color: #C2582A;display: inline-block; float: left; font-size: 12px; width: 305px;  line-height: 18px;}
+.secForm .input-prepend input[type="text"]{    border-left: medium none;    display: inline-block;    height: 39px;    width: 60px;  border-radius:0 4px 4px 0; float:left;}
+.continueBtn{   background: #19ac59; border-radius:17px;color: #FFFFFF; font-size: 16px; padding:7px 40px 7px 20px; position:relative;  margin-top: 35px;}
+.triangle-right {border-bottom: 8px solid transparent;border-left: 14px solid #1dcb6a; border-top: 8px solid transparent; height: 0; right: 14px; position: absolute; top: 10px; width: 0;}
+
+
+/*=================== end of Step 1 related css ================*/
