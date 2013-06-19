@@ -26,13 +26,13 @@
     <div class="control-group">
       <label class="control-label">No. of CPUs:</label>
       <div class="controls" id="cpu" >
-        <%= select_tag "cpu", options_for_select([1,2,4,8,16]), :id => "instance-cpu", :style => "display: none;" %>
+        <%= f.select :cpu_count, options_for_select([1,2,4,8,16]) %>
       </div>
     </div>
     <div class="control-group">
       <label class="control-label">Amount of RAM:</label>
       <div class="controls" id=ram>
-        <%= select_tag "ram", options_for_select([512,1,2,4,8]), :id => "instance-ram", :style => "display: none;" %>
+        <%= f.select :ram_amount, options_for_select([512,1,2,4,8]) %>
       </div>
     </div>
   </div>
@@ -93,8 +93,8 @@
     <div class="control-group">
       <label class="control-label">Database Name:</label>
       <div class="controls">
-        <input type="text" name="some_name" value="" id="some_name">
-        <%#= f.text_field  :id => "db_name" %>
+        <!--<input type="text" name="some_name" value="" id="some_name">-->
+        <%= f.text_field :db_name %>
         <small>Note: if no database name is specified then no initial MYSQL database will be created on the DB
           Instance.
         </small>
@@ -104,11 +104,7 @@
     <div class="control-group">
       <label class="control-label">Database Port:</label>
       <div class="controls">
-        <select>
-          <option>3306</option>
-          <option></option>
-          <option></option>
-        </select>
+        <%= f.select :db_port, options_for_select([3306])%>
       </div>
     </div>
 
