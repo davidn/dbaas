@@ -11,20 +11,34 @@
 
       <%= form_for(@db_instance, :validate => true) do |f| %>
 
-        <div class="step_one new_db">
-          <%= render :partial => "step_one", :locals => {:f => f} %>
-        </div>
+        <%= render :partial => "#{@db_instance.current_step}_step", :locals => {:f => f} %>
+        <% unless @db_instance.first_step? %>
+          <div class="control-group">
+            <label class="control-label"></label>
 
-        <div class="step_two new_db" style="display: none;">
-          <%= render :partial => "step_two", :locals => {:f => f} %>
-        </div>
+            <div class="controls">
+              <%= f.submit "Back", :name => "back_button" %>
+            </div>
+          </div>
+        <% end %>
 
-        <div class="step_three new_db" style="display: none;">
-          <%= render :partial => "step_three", :locals => {:f => f} %>
+
+        <div class="control-group">
+          <label class="control-label"></label>
+
+          <div class="controls">
+            <%= f.submit "Continue", :class => "continueBtn", :id => "step_two" do %>
+              <div class="triangle-right"></div>
+            <% end %>
+          </div>
         </div>
 
       <% end %>
 
-      </div>
     </div>
   </div>
+</div>
+
+<script>
+
+</script>
