@@ -5,12 +5,11 @@
     <div class="innerDiv row-fluid">
       <div class="topNav">
         <a href=""><span class="numValue selected">1</span>DB Instance Details</a>
-        <a href=""><span class="numValue">2</span>Additional Configuration</a>
-        <a href=""><span class="numValue">3</span>Management Options </a>
-        <a href=""><span class="numValue">4</span>Review</a>
+        <a href=""><span class="numValue">2</span>Management Options</a>
+        <a href=""><span class="numValue">3</span>Review</a>
       </div>
 
-      <%= form_for(@db_instance) do |f| %>
+      <%= form_for(@db_instance, :validate => true) do |f| %>
 
         <div class="step_one new_db">
           <%= render :partial => "step_one", :locals => {:f => f} %>

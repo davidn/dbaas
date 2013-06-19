@@ -1,20 +1,11 @@
 <div class="detailSection row-fluid">
+
   <span>To get started, please fill out the below fields and click <strong>Continue</strong></span>
-
-  <div class=" form-horizontal firstForm">
-
-    <div class="control-group">
-      <label class="control-label">DB Engine:</label>
-
-      <div class="controls">
-        <label>mysql</label>
-      </div>
-    </div>
-
-    <div class="control-group">
+	<div class=" form-horizontal firstForm">
+		
+		<div class="control-group">
       <label class="control-label">DB Instance Class:</label>
-
-      <div class="controls">
+			<div class="controls">
         <select>
           <option></option>
         </select>
@@ -23,8 +14,7 @@
 
     <div class="control-group">
       <label class="control-label">Region Deployment:</label>
-
-      <div class="controls">
+			<div class="controls">
         <% DeploymentRegion.all.each do |region| %>
           <label class="checkbox inline">
             <%= check_box_tag "db_instance[deployment_region_ids][]", region.id %>
@@ -33,17 +23,17 @@
         <% end %>
       </div>
     </div>
+	</div>
 
-  </div>
 </div>
-<div class="detailSection row-fluid">
-  <span><strong>Provide the details for your RDS Database Instance</strong></span>
 
-  <div class="form-horizontal secForm">
+<div class="detailSection row-fluid">
+
+  <span><strong>Provide the details for your RDS Database Instance</strong></span>
+	<div class="form-horizontal secForm">
     <div class="control-group">
       <label class="control-label">Allocated Storage:*</label>
-
-      <div class="controls">
+			<div class="controls">
         <div class="input-prepend input-append">
           <span class="add-on">GB</span>
           <%= f.text_field :allocated_storage, :id => "appendedPrependedInput", :class => "span2" %>
@@ -54,8 +44,7 @@
 
     <div class="control-group">
       <label class="control-label">Use Provisioned IOPS:</label>
-
-      <div class="controls">
+			<div class="controls">
         <label class="checkbox ">
           <%= f.check_box :provision_iops %>
         </label>
@@ -63,36 +52,55 @@
     </div>
 
     <div class="control-group">
+      <label class="control-label">Database Name:</label>
+			<div class="controls">
+        <input type="text" name="some_name" value="" id="some_name">
+				<%#= f.text_field  :id => "db_name" %>
+        <small>Note: if no database name is specified then no initial MYSQL database will be created on the DB
+          Instance.
+        </small>
+      </div>
+    </div>
+		
+    <div class="control-group">
+      <label class="control-label">Database Port:</label>
+			<div class="controls">
+        <select>
+          <option>3306</option>
+          <option></option>
+          <option></option>
+        </select>
+      </div>
+    </div>
+		
+    <div class="control-group">
       <label class="control-label">DB Instance Identifier:*</label>
-
-      <div class="controls">
+			<div class="controls">
         <%= f.text_field :identifier %>
         <small>(e.g. mydbinstance)</small>
       </div>
     </div>
-    <div class="control-group">
+    
+		<div class="control-group">
       <label class="control-label">Master Username:*</label>
-
-      <div class="controls">
-        <%= f.text_field :master_username %>
+			<div class="controls">
+        <%= f.text_field :master_username, :validate => true %>
         <small>(e.g. awsuser)</small>
       </div>
     </div>
-    <div class="control-group">
+    
+		<div class="control-group">
       <label class="control-label">Master Password:*</label>
-
-      <div class="controls">
+			<div class="controls">
         <%= f.password_field :master_password %>
         <small>(e.g. mypassword)</small>
       </div>
     </div>
-
-
+		
     <div class="control-group">
       <label class="control-label"></label>
-
-      <div class="controls">
-        <!--<button class="continueBtn" type="submit" id="step_two">Continue-->
+			<div class="controls">
+        <!--<button class="continueBtn" type="submit" id="step_three">Continue-->
           <!--<div class="triangle-right"></div>-->
         <!--</button>-->
         <%= link_to "javascript:void(0)", :class => "continueBtn", :id => "step_two", :onclick => "next_step($(this).attr('id'))"  do %>
@@ -101,6 +109,6 @@
         <% end %>
       </div>
     </div>
+	</div>
 
-  </div>
 </div>
