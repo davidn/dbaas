@@ -1,107 +1,31 @@
 <div class="container">
   <div class="innerWrap">
     <h3>Launch your GenieDB Instance</h3>
+
     <div class="innerDiv row-fluid">
       <div class="topNav">
         <a href=""><span class="numValue selected">1</span>DB Instance Details</a>
         <a href=""><span class="numValue">2</span>Additional Configuration</a>
         <a href=""><span class="numValue">3</span>Management Options </a>
-        <a href=""><span class="numValue">4</span>Review</a> </div>
-      <div class="detailSection row-fluid">
-        <span>To get started, please fill out the below fields and click <strong>Continue</strong></span>
+        <a href=""><span class="numValue">4</span>Review</a>
+      </div>
+
       <%= form_for(@db_instance) do |f| %>
-        <div class=" form-horizontal firstForm">
-          <div class="control-group">
-            <label class="control-label">Region Deployment:</label>
-            <div class="controls">
-              <% DeploymentRegion.all.each do |region|  %>
-                <label class="checkbox inline">
-                    <%= check_box_tag "db_instance[deployment_region_ids][]", region.id %>
-                    <%= region.name %>
-                  </label>
-              <% end %>
-            </div>
-          </div>
+
+        <div class="step_one new_db">
+          <%= render :partial => "step_one", :locals => {:f => f} %>
         </div>
-      </div>
 
-
-      <div class="detailSection row-fluid">
-        <span><strong>Provide the details for your RDS Database Instance</strong></span>
-        <div class="form-horizontal secForm">
-          <div class="control-group">
-            <label class="control-label">Allocated Storage:*</label>
-            <div class="controls">
-              <div class="input-prepend input-append">
-                <span class="add-on">GB</span>
-                <%= f.text_field :allocated_storage, :id=>"appendedPrependedInput", :class => "span2"%>
-                <small>(Minimum: 5GB, Maximum: 3072 GB) Higher allocated storage may improve IOPS performance</small>
-              </div>
-            </div>
-          </div>
-          <div class="control-group">
-            <label class="control-label">Use Provisioned IOPS:</label>
-            <div class="controls">
-              <label class="checkbox ">
-                <input type="checkbox">
-              </label>
-            </div>
-          </div>
-          <div class="control-group">
-            <label class="control-label">DB Instance Identifier:*</label>
-            <div class="controls">
-              <input type="text">
-              <small>(e.g. mydbinstance)</small>
-            </div>
-          </div>
-          <div class="control-group">
-            <label class="control-label">Master Username:*</label>
-            <div class="controls">
-              <input type="text">
-              <small>(e.g. awsuser)</small>
-            </div>
-          </div>
-          <div class="control-group">
-            <label class="control-label">Master Password:*</label>
-            <div class="controls">
-              <input type="password">
-              <small>(e.g. mypassword)</small>
-            </div>
-          </div>
-
-          <div class="control-group">
-            <label class="control-label">Database Name:</label>
-            <div class="controls">
-              <input type="text">
-              <small>Note: if no database name is specified then no initial MYSQL database will be created on the DB Instance. </small>
-            </div>
-          </div>
-
-          <div class="control-group">
-            <label class="control-label">Database Port:</label>
-            <div class="controls">
-              <select>
-                <option>3306</option>
-                <option></option>
-                <option></option>
-              </select>
-            </div>
-          </div>
-          <div class="control-group">
-            <label class="control-label"></label>
-            <div class="controls">
-              <button class="continueBtn" type="submit">Continue<div class="triangle-right"></div></button>
-            </div>
-          </div>
-
+        <div class="step_two new_db" style="display: none;">
+          <%= render :partial => "step_two", :locals => {:f => f} %>
         </div>
+
+        <div class="step_three new_db" style="display: none;">
+          <%= render :partial => "step_three", :locals => {:f => f} %>
+        </div>
+
+      <% end %>
+
       </div>
-    <% end %>
-
-
-
     </div>
   </div>
-</div>
-<!--</body>-->
-<!--</html>-->

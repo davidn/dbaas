@@ -14,3 +14,9 @@
 //= require jquery_ujs
 //= require twitter/bootstrap
 //= require_tree .
+
+
+function next_step(page){
+	$(".new_db").hide();
+	$("." + page).show();
+}

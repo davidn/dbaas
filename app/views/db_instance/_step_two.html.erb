@@ -1,0 +1,42 @@
+<div class="detailSection row-fluid">
+  <span>Provide the optional additional configuration details below and click <strong>Continue</strong></span>
+
+  <div class=" form-horizontal firstForm">
+    <div class="control-group">
+      <label class="control-label">Database Name:</label>
+
+      <div class="controls">
+        <input type="text">
+        <small>Note: if no database name is specified then no initial MYSQL database will be created on the DB
+          Instance.
+        </small>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label">Database Port:</label>
+
+      <div class="controls">
+        <select>
+          <option>3306</option>
+          <option></option>
+          <option></option>
+        </select>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label"></label>
+
+      <div class="controls">
+        <!--<button class="continueBtn" type="submit" id="step_three">Continue-->
+          <!--<div class="triangle-right"></div>-->
+        <!--</button>-->
+        <%= link_to "javascript:void(0)", :class => "continueBtn", :id => "step_three", :onclick => "next_step($(this).attr('id'))"  do %>
+          Continue
+          <div class="triangle-right"></div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
