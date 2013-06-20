@@ -27,5 +27,7 @@ $(document).ready(function() {
 		//$("div#backup_window_container select#db_instance_daily_backup_start_time_4i, div#backup_window_container select#db_instance_daily_backup_start_time_4i").val("")
 		
 	});
+
+	$("[rel='tooltip']").tooltip();
 	
 });
