@@ -20,7 +20,7 @@
     <div class="control-group">
       <label class="control-label">Backup Retention Period:<a href="" class="question">?</a></label>
 			<div class="controls">
-        <%= f.select :backup_retention_period, options_for_select(BackUpRetentionPeriodOptions) %>days
+        <%= f.select :backup_retention_period, options_for_select(BackUpRetentionPeriodOptions, :class=> "smallSelect")  %>days
         <!--<small>The daily time range during which automated backups are created if automated backups are enabled-->
         <!--</small>-->
       </div>
