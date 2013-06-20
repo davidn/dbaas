@@ -8,6 +8,9 @@ class DbInstance < ActiveRecord::Base
   validates :identifier, :presence => true
   validates :master_username, :presence => true
   validates :master_password, :presence => true
+  
+  ## ASSOCIATIONS ##
+  belongs_to :deployment_region
 
 	attr_writer :current_step
 
