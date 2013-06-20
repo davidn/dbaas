@@ -34,34 +34,34 @@
 
 /*=================== begin of Step 1 related css ================*/
 
-body{background:url(background-bg.png) repeat-x left top #000000;}
+body{background:url(background-bg.png) repeat-x left top #000000;font-family: "open sans";}
 .innerWrap{ width:935px; margin:150px auto 100px;}
-.innerWrap h3{ color:#ffffff; font-family:helvetica; }
+.innerWrap h3{ color:#ffffff;  }
 .innerWrap .innerDiv{ border:8px solid #1d3160; min-height: 785px; background:#ffffff;}
 .innerWrap .innerDiv .topNav{display: inline-block;padding: 18px 0;width: 100%;background:#dfdfdf;}
-.topNav a{ display: inline-block;float: left;padding-left: 2%; line-height: 25px;  text-decoration: none; width: 23%; font-size:14px; color:#9398A4;font-family:helvetica; }
+.topNav a{ display: inline-block;float: left;padding-left: 2%; line-height: 25px;  text-decoration: none; width: 23%; font-size:14px; color:#9398A4; }
 .topNav .selected{ color:#1d3160 !important;}
 .topNav .selected span{ background:#1d3160 !important;}
 .topNav .complete { color:#27ae60;}
 .topNav .complete span{background:url(complete.png) no-repeat center center #27ae60; height:10px; width:10px; display:inline-block;   float: left; text-indent: -9999px;}
-.topNav .numValue{ background:#9398a4; padding:8px; display:inline-block; color:#ffffff; height: 8px; line-height: 7px; width: 10px; border-radius: 50% 50% 50% 50%;margin-right: 8px;  font-family: times roman;font-size: 17px;   float: left;}
+.topNav .numValue{ background:#9398a4; padding:8px; display:inline-block; color:#ffffff; height: 8px; line-height: 7px; width: 10px; border-radius: 50% 50% 50% 50%;margin-right: 8px;  font-size: 17px;   float: left;}
 .detailSection{  display: inline-block; margin-top: 18px;}
 .mrgnTop{ margin-top:58px;}
-.detailSection span{ font-family:helvetica; font-size:16px; border-bottom:1px solid #eae7e7; display:inline-block;margin: 0 0.5%;    width: 97%;   padding: 0 0 1.5% 2%;}
-.detailSection strong{font-family:helvetica; font-size:16px; }
+.detailSection span{  font-size:16px; border-bottom:1px solid #eae7e7; display:inline-block;margin: 0 0.5%;    width: 97%;   padding: 0 0 1.5% 2%;}
+.detailSection strong{ font-size:16px; }
 .detailSection .firstForm{ margin-top:34px; margin-left:2.5%; }
 .firstForm p.forOptional,.secForm p.forOptional{  display: inline-block;margin: 0;position: relative;}
 .firstForm p.forOptional small,.secForm p.forOptional small{ bottom: -14px;font-size: 12px;position: absolute;right: 0;  font-style: italic; color:#999999;}
-.detailSection .question{ background:#9398a4; padding:5px; display:inline-block; color:#ffffff; height: 8px; line-height: 7px; border-radius: 50% 50% 50% 50%;margin-left: 8px;  font-family: times roman;font-size: 15px; font-weight:normal;text-decoration: none;}
+.detailSection .question{ background:#9398a4; padding:4px; display:inline-block; color:#ffffff; height: 8px; line-height: 7px; border-radius: 50% 50% 50% 50%;margin-left: 8px;  font-size: 15px; font-weight:normal;text-decoration: none;}
 .firstForm input[type="text"],.secForm input[type="text"],.secForm input[type="password"]{ border: 3px solid #D6D6D6; width:278px;  height: 25px; margin-right: 5px; float:left;}
 .firstForm select,.secForm select{ border: 3px solid #D6D6D6;  height: 38px; width: 295px; border-radius: 2px 2px 2px 2px;}
 .firstForm select.smallSelect{width:95px; }
-.firstForm .checkbox {font-size:16px; color:#242425; font-family:helvetica;}
-.detailSection .control-group{ font-size:16px;font-family:helvetica;  height: 40px; margin-bottom: 10px;}
+.firstForm .checkbox {font-size:16px; color:#242425; }
+.detailSection .control-group{ font-size:16px;  height: 40px; margin-bottom: 10px;}
 .detailSection .secForm{ margin-top:8px; margin-left:2.5%;}
-.detailSection .secForm label{font-size:16px; width: 305px; text-align:left;}
+.detailSection .secForm label{font-size:16px; width: 270px; text-align:left;}
 .secForm .checkbox input[type="checkbox"]{margin-left:0;}
-.detailSection .firstForm label{font-size:16px; width: 305px; text-align:left;}
+.detailSection .firstForm label{font-size:16px; width: 270px; text-align:left;}
 .firstForm .checkbox.inline { width: 85px !important;}
 .firstForm .radio.inline { width: auto !important;}
 .secForm .controls .input-prepend.input-append .add-on:first-child{border: 3px solid #D6D6D6;height: 25px; border-right:none;line-height: 24px;float:left;}
@@ -117,8 +117,11 @@ body{background:url(background-bg.png) repeat-x left top #000000;}
   .ui-state-default{
     background:#16A085;
     border: medium none;
-    border-radius: 50%;
-    top: -4px;
+    top: -5px;
+  }
+  .ui-slider-handle{
+    width: 0.75em;
+    height: 1.3em;
   }
   .ui-widget-header{
     background:#1ABC9C;
@@ -194,5 +197,6 @@ select#db_instance_daily_backup_duration{
 .confirm {
   .control-label{
     font-weight: bold;
+    text-align: right;
   }
 }
