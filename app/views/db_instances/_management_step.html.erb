@@ -19,9 +19,8 @@
     <div class="control-group">
       <label class="control-label">Backup Retention Period:<a href="javascript:void(0)" rel="tooltip" title="The daily
       time range during which automated backups are created if automated backups are enabled" class="question">?</a></label>
-
       <div class="controls">
-        <%= f.select :backup_retention_period, BackUpRetentionPeriodOptions %>days
+        <%= f.select :backup_retention_period, BackUpRetentionPeriodOptions, {}, {:class => "smallSelect"} %>days
       </div>
     </div>
 
@@ -37,10 +36,10 @@
           <%= f.radio_button :backup_window, "no_preference" %>No Preference
         </label>
 
-        <div id="backup_window_container" class="hide">
-          Start time: <%= f.datetime_select :daily_backup_start_time, :ignore_date => true %>
-          <br>
-          Duration: <%= f.select :daily_backup_duration, BackupDuarationOption %>
+
+        <div id="backup_window_container" class="hide selectWindow">
+          <div class="startTime"><span> Start time:</span> <%= f.datetime_select :daily_backup_start_time, :ignore_date => true %></div>
+          <div class="duration"><span>Duration:</span> <%= f.select :daily_backup_duration, BackupDuarationOption %></div>
         </div>
       </div>
     </div>

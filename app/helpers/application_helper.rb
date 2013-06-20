@@ -4,7 +4,10 @@ module ApplicationHelper
 		class_name unless obj.new_record?
 	end
   
-  def return_active_class(current_step)
+  def return_active_class(link_name, current_step)
+    if link_name == current_step
+      return "selected"
+    end
     
   end
   

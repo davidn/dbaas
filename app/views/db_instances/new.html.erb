@@ -4,9 +4,9 @@
 
     <div class="innerDiv row-fluid">
       <div class="topNav">
-        <a href="javascript:void(0)" class="<%= return_active_class("basic") %> selected"><span class="numValue">1</span>DB Instance Details</a>
-        <a href="javascript:void(0)" class="<%= return_active_class("management") %>"><span class="numValue">2</span>Management Options</a>
-        <a href="javascript:void(0)" class="<%= return_active_class("confirmation") %>"><span class="numValue">3</span>Review</a>
+        <a href="javascript:void(0)" class="<%= return_active_class("basic", @db_instance.current_step) %>"><span class="numValue">1</span>DB Instance Details</a>
+        <a href="javascript:void(0)" class="<%= return_active_class("management", @db_instance.current_step) %>"><span class="numValue">2</span>Management Options</a>
+        <a href="javascript:void(0)" class="<%= return_active_class("confirmation", @db_instance.current_step) %>"><span class="numValue">3</span>Review</a>
       </div>
 
       <%= form_for(@db_instance, :validate => true) do |f| %>
