@@ -4,7 +4,7 @@
 
     <div class="innerDiv row-fluid">
       <div class="topNav">
-        <a href=""><span class="numValue selected">1</span>DB Instance Details</a>
+        <a href="" class="selected"><span class="numValue">1</span>DB Instance Details</a>
         <a href=""><span class="numValue">2</span>Management Options</a>
         <a href=""><span class="numValue">3</span>Review</a>
       </div>
@@ -17,7 +17,7 @@
             <label class="control-label"></label>
 
             <div class="controls">
-              <%= f.submit "Back", :name => "back_button" %>
+             
             </div>
           </div>
         <% end %>
@@ -27,6 +27,7 @@
           <label class="control-label"></label>
 
           <div class="controls">
+             <%= f.submit "Back",:class => "backBtn continueBtn", :name => "back_button" %>
             <%= f.submit "Continue", :class => "continueBtn", :id => "step_two" do %>
               <div class="triangle-right"></div>
             <% end %>

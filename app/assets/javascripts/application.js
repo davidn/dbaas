@@ -17,14 +17,14 @@
 
 $(document).ready(function() {
 	
-	$(":radio:eq(0)").click(function(){
+	$(".backup_window_wrapper input:radio:eq(0)").click(function(){
 		$("div#backup_window_container").show(100);
 	});
 	
-	$(":radio:eq(1)").click(function(){
+	$(".backup_window_wrapper input:radio:eq(1)").click(function(){
 		$("div#backup_window_container").hide(100);
-		$("div#backup_window_container select#date_duration").val("")
-		$("div#backup_window_container select#db_instance_start_time_4i, div#backup_window_container select#db_instance_start_time_5i").val("")
+		//$("div#backup_window_container select#db_instance_daily_backup_duration").val("")
+		//$("div#backup_window_container select#db_instance_daily_backup_start_time_4i, div#backup_window_container select#db_instance_daily_backup_start_time_4i").val("")
 		
 	});
 	

@@ -4,10 +4,10 @@ class DbInstance < ActiveRecord::Base
   attr_accessible :db_name, :db_port, :cpu_count, :ram_amount, :backup_retention_period, :daily_backup_start_time, :daily_backup_duration
 
   ## VALIDATIONS ##
-  # validates :allocated_storage, :presence => true
-  # validates :identifier, :presence => true
-  # validates :master_username, :presence => true
-  # validates :master_password, :presence => true
+  validates :allocated_storage, :presence => true
+  validates :identifier, :presence => true
+  validates :master_username, :presence => true
+  validates :master_password, :presence => true
 
 	attr_writer :current_step
 
