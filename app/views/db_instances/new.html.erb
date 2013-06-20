@@ -19,8 +19,14 @@
             <% unless @db_instance.first_step? %>
               <%= f.submit "Back", :class => "backBtn continueBtn", :name => "back_button" %>
             <% end %>
-            <%= f.submit "Continue", :class => "continueBtn", :id => "step_two" do %>
-              <div class="triangle-right"></div>
+            <% if @db_instance.last_step? %>
+              <%= f.submit "Save", :class => "continueBtn", :id => "step_three" do %>
+                <div class="triangle-right"></div>
+              <% end %>
+            <% else %>
+              <%= f.submit "Continue", :class => "continueBtn", :id => "step_two" do %>
+                <div class="triangle-right"></div>
+              <% end %>
             <% end %>
           </div>
         </div>

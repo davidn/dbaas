@@ -1,53 +1,49 @@
 <div class="detailSection row-fluid">
   <span>Provide the details below to manage your db instance and click <strong>Continue</strong></span>
 
-	<div class=" form-horizontal firstForm">
-		<div class="control-group">
-      <label class="control-label">Enabled Automatic Backups:<a href="" class="question">?</a></label>
-			<div class="controls">
-				<label class="radio inline">
-        	<%= f.radio_button :enable_automatic_backup, "Yes" %>Yes
-				</label>
-				<label class="radio inline">
-        	<%= f.radio_button :enable_automatic_backup, "No" %>No
-				</label>
-        <!--<small>Please note that automated backups are currently Supported for InnoDB Storage engine only. If you are using-->
-          <!--MYISAM, refer to details <a href ="#"> here</a>-->
-        <!--</small>-->
+  <div class=" form-horizontal firstForm">
+    <div class="control-group">
+      <label class="control-label">Enabled Automatic Backups:<a href="javascript:void(0)" rel="tooltip" title="Please note that automated backups
+      are currently Supported for InnoDB Storage engine only. If you are using MYISAM, refer to details here" class="question">?</a></label>
+
+      <div class="controls">
+        <label class="radio inline">
+          <%= f.radio_button :enable_automatic_backup, "Yes" %>Yes
+        </label>
+        <label class="radio inline">
+          <%= f.radio_button :enable_automatic_backup, "No" %>No
+        </label>
       </div>
     </div>
 
     <div class="control-group">
-      <label class="control-label">Backup Retention Period:<a href="" class="question">?</a></label>
-			<div class="controls">
+      <label class="control-label">Backup Retention Period:<a href="javascript:void(0)" rel="tooltip" title="The daily
+      time range during which automated backups are created if automated backups are enabled" class="question">?</a></label>
+
+      <div class="controls">
         <%= f.select :backup_retention_period, options_for_select(BackUpRetentionPeriodOptions) %>days
-        <!--<small>The daily time range during which automated backups are created if automated backups are enabled-->
-        <!--</small>-->
       </div>
     </div>
 
     <div class="control-group backup_window_wrapper">
-      <label class="control-label">Backup Window:<a href="" class="question">?</a></label>
-			<div class="controls">
-              <label class="radio inline">
-              	<%= f.radio_button :backup_window, "select_window" %>Select Window
-							</label>
-              <label class="radio inline">
-              	<%= f.radio_button :backup_window, "no_preference" %>No Preference
-							</label>
-							<div id="backup_window_container" class="hide">
-								Start time: <%= f.time_select :daily_backup_start_time, :ignore_date => true %><br>
-								Duration: <%= f.select :daily_backup_duration, [0,1,2] %>
-							</div>
-            
+      <label class="control-label">Backup Window:<a href="javascript:void(0)" rel="tooltip" title="The daily time range during which automated backups
+      are created if automated backups are enabled" class="question">?</a></label>
 
-        <!--<select>
-          <option></option>
-        </select>
-        <small>The daily time range during which automated backups are created if automated backups are enabled-->
-        <!--</small>-->
+      <div class="controls">
+        <label class="radio inline">
+          <%= f.radio_button :backup_window, "select_window" %>Select Window
+        </label>
+        <label class="radio inline">
+          <%= f.radio_button :backup_window, "no_preference" %>No Preference
+        </label>
+
+        <div id="backup_window_container" class="hide">
+          Start time: <%= f.time_select :daily_backup_start_time, :ignore_date => true %>
+          <br>
+          Duration: <%= f.select :daily_backup_duration, [0, 1, 2] %>
+        </div>
       </div>
     </div>
-	</div>
-	
+  </div>
+
 </div>
