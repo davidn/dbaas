@@ -5,7 +5,8 @@
 		<div class="control-group">
       <label class="control-label">Enabled Automatic Backups:</label>
 			<div class="controls">
-        <input type="text">
+        <%= f.radio_button :enable_automatic_backup "Yes" %>Yes
+        <%= f.radio_button :enable_automatic_backup "No" %>No
         <!--<small>Please note that automated backups are currently Supported for InnoDB Storage engine only. If you are using-->
           <!--MYISAM, refer to details <a href ="#"> here</a>-->
         <!--</small>-->
@@ -15,9 +16,7 @@
     <div class="control-group">
       <label class="control-label">Backup Retention Period:</label>
 			<div class="controls">
-        <select>
-          <option></option>
-        </select>
+        <%= f.select :enable_automatic_backup, [1, 2, 7, 15, 30, 60] %>days
         <!--<small>The daily time range during which automated backups are created if automated backups are enabled-->
         <!--</small>-->
       </div>
@@ -26,20 +25,12 @@
     <div class="control-group">
       <label class="control-label">Backup Window:</label>
 			<div class="controls">
-        <select>
-          <option></option>
-        </select>
-        <!--<small>The daily time range during which automated backups are created if automated backups are enabled-->
-        <!--</small>-->
-      </div>
-    </div>
-
-    <div class="control-group">
-      <label class="control-label">Maintenance Window:</label>
-			<div class="controls">
-        <select>
-          <option></option>
-        </select>
+        <%= f.radio_button :backup_window, "select_window" %>Select Window
+        <%= f.radio_button :backup_window, "no_preference" %>No Preference
+				<div id="backup_window_container" class="hide">
+					Start time: <%= f.time_select :daily_backup_start_time, :ignore_date => true %><br>
+					Duration: <%= f.select :daily_backup_duration, [0,1,2] %>
+				</div>
         <!--<small>The daily time range during which automated backups are created if automated backups are enabled-->
         <!--</small>-->
       </div>
