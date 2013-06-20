@@ -1,11 +1,13 @@
 class DbInstancesController < ApplicationController
 
   def new
+		reset_session
 		session[:db_params] ||= {}
 		@db_instance = DbInstance.new
   end
 
   def create
+		debugger
 		session[:db_params].deep_merge!(params[:db_instance]) if params[:db_instance]
     @db_instance = DbInstance.new(session[:db_params])
 		@db_instance.current_step = session[:db_step]
