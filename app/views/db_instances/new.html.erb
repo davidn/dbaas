@@ -10,24 +10,15 @@
       </div>
 
       <%= form_for(@db_instance, :validate => true) do |f| %>
-
         <%= render :partial => "#{@db_instance.current_step}_step", :locals => {:f => f} %>
-        <% unless @db_instance.first_step? %>
-          <div class="control-group">
-            <label class="control-label"></label>
-
-            <div class="controls">
-             
-            </div>
-          </div>
-        <% end %>
-
 
         <div class="control-group">
           <label class="control-label"></label>
 
           <div class="controls">
-             <%= f.submit "Back",:class => "backBtn continueBtn", :name => "back_button" %>
+            <% unless @db_instance.first_step? %>
+              <%= f.submit "Back", :class => "backBtn continueBtn", :name => "back_button" %>
+            <% end %>
             <%= f.submit "Continue", :class => "continueBtn", :id => "step_two" do %>
               <div class="triangle-right"></div>
             <% end %>
@@ -35,41 +26,40 @@
         </div>
 
       <% end %>
-
     </div>
   </div>
 </div>
 
 <script>
-  $(function() {
-    var select = $( "#db_instance_cpu_count" );
-    var slider = $( "<div id='slider'></div>" ).insertAfter( select ).slider({
+  $(function () {
+    var select = $("#db_instance_cpu_count");
+    var slider = $("<div id='slider'></div>").insertAfter(select).slider({
       min: 1,
       max: 5,
       range: "min",
       value: select[ 0 ].selectedIndex + 1,
-      slide: function( event, ui ) {
+      slide: function (event, ui) {
         select[ 0 ].selectedIndex = ui.value - 1;
       }
     });
-    $( "#db_instance_cpu_count" ).change(function() {
-      slider.slider( "value", this.selectedIndex + 1 );
+    $("#db_instance_cpu_count").change(function () {
+      slider.slider("value", this.selectedIndex + 1);
     });
   });
 
-  $(function() {
-    var select = $( "#db_instance_ram_amount" );
-    var slider = $( "<div id='slider'></div>" ).insertAfter( select ).slider({
+  $(function () {
+    var select = $("#db_instance_ram_amount");
+    var slider = $("<div id='slider'></div>").insertAfter(select).slider({
       min: 1,
       max: 5,
       range: "min",
       value: select[ 0 ].selectedIndex + 1,
-      slide: function( event, ui ) {
+      slide: function (event, ui) {
         select[ 0 ].selectedIndex = ui.value - 1;
       }
     });
-    $( "#db_instance_ram_amount" ).change(function() {
-      slider.slider( "value", this.selectedIndex + 1 );
+    $("#db_instance_ram_amount").change(function () {
+      slider.slider("value", this.selectedIndex + 1);
     });
   });
 </script>
