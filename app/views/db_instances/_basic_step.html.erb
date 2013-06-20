@@ -3,7 +3,9 @@
   <div class=" form-horizontal firstForm">
 
     <div class="control-group">
-      <label class="control-label">DB Instance Class:</label>
+      <label class="control-label">
+        <p class="forOptional">DB Instance Class:<small>Optional</small></p>
+      </label>
       <div class="controls">
         <select>
           <option></option>
@@ -25,13 +27,13 @@
 
     <div class="control-group">
       <label class="control-label">No. of CPUs:</label>
-      <div class="controls" id="cpu" >
+      <div class="controls flatSlider" id="cpu" >
         <%= f.select :cpu_count, options_for_select([1,2,4,8,16]) %>
       </div>
     </div>
     <div class="control-group">
       <label class="control-label">Amount of RAM:</label>
-      <div class="controls" id=ram>
+      <div class="controls flatSlider" id="ram" >
         <%= f.select :ram_amount, options_for_select([512,1,2,4,8]) %>
       </div>
     </div>
@@ -44,7 +46,7 @@
   <div class="form-horizontal secForm">
 
     <div class="control-group">
-      <label class="control-label">Allocated Storage:*</label>
+      <label class="control-label">Allocated Storage:<b class="question">?</b></label>
       <div class="controls">
         <div class="input-prepend input-append">
           <span class="add-on">GB</span>
@@ -65,7 +67,7 @@
 
 
     <div class="control-group">
-      <label class="control-label">DB Instance Identifier:*</label>
+      <label class="control-label">DB Instance Identifier:<b class="question">?</b></label>
       <div class="controls">
         <%= f.text_field :identifier %>
         <!--<small>(e.g. mydbinstance)</small>-->
@@ -74,7 +76,7 @@
 
 
     <div class="control-group">
-      <label class="control-label">Master Username:*</label>
+      <label class="control-label">Master Username:<b class="question">?</b></label>
       <div class="controls">
         <%= f.text_field :master_username %>
         <!--<small>(e.g. awsuser)</small>-->
@@ -83,7 +85,7 @@
 
 
     <div class="control-group">
-      <label class="control-label">Master Password:*</label>
+      <label class="control-label">Master Password:<b class="question">?</b></label>
       <div class="controls">
         <%= f.password_field :master_password %>
         <!--<small>(e.g. mypassword)</small>-->

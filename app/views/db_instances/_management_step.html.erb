@@ -3,19 +3,26 @@
 
 	<div class=" form-horizontal firstForm">
 		<div class="control-group">
-      <label class="control-label">Enabled Automatic Backups:</label>
+      <label class="control-label">Enabled Automatic Backups:<b class="question">?</b></label>
 			<div class="controls">
-        <input type="text">
-        <!--<small>Please note that automated backups are currently Supported for InnoDB Storage engine only. If you are using-->
+              <label class="radio inline">
+              <input type="radio">
+              Yes </label>
+              <label class="radio inline">
+              <input type="radio">
+              No </label>
+            
+       <!-- <input type="text">
+        <small>Please note that automated backups are currently Supported for InnoDB Storage engine only. If you are using-->
           <!--MYISAM, refer to details <a href ="#"> here</a>-->
         <!--</small>-->
       </div>
     </div>
 
     <div class="control-group">
-      <label class="control-label">Backup Retention Period:</label>
+      <label class="control-label">Backup Retention Period:<b class="question">?</b></label>
 			<div class="controls">
-        <select>
+        <select class="smallSelect">
           <option></option>
         </select>
         <!--<small>The daily time range during which automated backups are created if automated backups are enabled-->
@@ -24,23 +31,37 @@
     </div>
 
     <div class="control-group">
-      <label class="control-label">Backup Window:</label>
+      <label class="control-label">Backup Window:<b class="question">?</b></label>
 			<div class="controls">
-        <select>
+              <label class="radio inline">
+              <input type="radio">
+              Select Window </label>
+              <label class="radio inline">
+              <input type="radio">
+              No Preference </label>
+            
+
+        <!--<select>
           <option></option>
         </select>
-        <!--<small>The daily time range during which automated backups are created if automated backups are enabled-->
+        <small>The daily time range during which automated backups are created if automated backups are enabled-->
         <!--</small>-->
       </div>
     </div>
 
     <div class="control-group">
-      <label class="control-label">Maintenance Window:</label>
+      <label class="control-label">Maintenance Window:<b class="question">?</b></label>
 			<div class="controls">
-        <select>
+              <label class="radio inline">
+              <input type="radio">
+              Select Window </label>
+              <label class="radio inline">
+              <input type="radio">
+              No Preference </label>
+        <!--<select>
           <option></option>
         </select>
-        <!--<small>The daily time range during which automated backups are created if automated backups are enabled-->
+        <small>The daily time range during which automated backups are created if automated backups are enabled-->
         <!--</small>-->
       </div>
     </div>
