@@ -14,3 +14,18 @@
 //= require jquery_ujs
 //= require twitter/bootstrap
 //= require_tree .
+
+$(document).ready(function() {
+	
+	$(".backup_window_wrapper input:radio:eq(0)").click(function(){
+		$("div#backup_window_container").show(100);
+	});
+	
+	$(".backup_window_wrapper input:radio:eq(1)").click(function(){
+		$("div#backup_window_container").hide(100);
+		//$("div#backup_window_container select#db_instance_daily_backup_duration").val("")
+		//$("div#backup_window_container select#db_instance_daily_backup_start_time_4i, div#backup_window_container select#db_instance_daily_backup_start_time_4i").val("")
+		
+	});
+	
+});
