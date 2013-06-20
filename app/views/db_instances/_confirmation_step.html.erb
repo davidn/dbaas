@@ -2,30 +2,12 @@
   <span>Review your instance and click <strong>Save</strong></span>
 
   <div class=" form-horizontal firstForm">
-    <div class="control-group">
-      <label class="control-label">
-        <p class="forOptional">DB Instance Class:
-          <small>Optional</small>
-        </p>
-      </label>
-
-      <div class="controls">
-        <select>
-          <option></option>
-        </select>
-      </div>
-    </div>
 
     <div class="control-group">
       <label class="control-label">Region Deployment</label>
 
       <div class="controls">
-        <% DeploymentRegion.all.each do |region| %>
-          <label class="checkbox inline">
-            <%= check_box_tag "db_instance[deployment_region_ids][]", region.id %>
-            <%= region.name %>
-          </label>
-        <% end %>
+       <%= DeploymentRegion.find_by_id(@db_instance.deployment_region_id).name %>
       </div>
     </div>
 
@@ -117,7 +99,7 @@
       <label class="control-label">Backup Retention Period</label>
 
       <div class="controls">
-        <%= @db_instance.enable_automatic_backup %>days
+        <%= @db_instance.backup_retention_period %>days
       </div>
     </div>
 
@@ -125,7 +107,7 @@
       <label class="control-label">Backup Window</label>
 
       <div class="controls">
-        <%= @db_instance.backup_window %>
+        <%= @db_instance.daily_backup_start_time %> Daily for <%= @db_instance.daily_backup_duration %>
       </div>
     </div>
   </div>

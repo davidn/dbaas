@@ -21,7 +21,7 @@
       time range during which automated backups are created if automated backups are enabled" class="question">?</a></label>
 
       <div class="controls">
-        <%= f.select :backup_retention_period, options_for_select(BackUpRetentionPeriodOptions) %>days
+        <%= f.select :backup_retention_period, BackUpRetentionPeriodOptions %>days
       </div>
     </div>
 
@@ -40,7 +40,7 @@
         <div id="backup_window_container" class="hide">
           Start time: <%= f.datetime_select :daily_backup_start_time, :ignore_date => true %>
           <br>
-          Duration: <%= f.select :daily_backup_duration, [0, 1, 2] %>
+          Duration: <%= f.select :daily_backup_duration, BackupDuarationOption %>
         </div>
       </div>
     </div>
