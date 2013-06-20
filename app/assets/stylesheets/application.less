@@ -88,6 +88,9 @@ body{background:url(background-bg.png) repeat-x left top #000000;}
       color: #999999;
     }
 }
+.field_with_errors {
+    float: left;
+}
 .cpuNum .lstchild{ padding-left:91px; position: relative; right: -6px;}   
 .cpuNum > small:first-child {padding-left: 8px;}
 .ramNum{display: inline-block;
@@ -121,6 +124,30 @@ body{background:url(background-bg.png) repeat-x left top #000000;}
     background:#1ABC9C;
       border-radius: 10px 10px 10px 10px;
   }
+}
+.selectWindow{
+    margin-left: 127px;
+    margin-top: 10px;
+    .startTime{ 
+      display:block;
+      margin-bottom: 10px;
+      span{
+        border: medium none;
+        margin: 0;
+        padding: 0;
+        width: 15%;
+      }
+    }
+    .duration{ 
+      display:block;
+      margin-bottom: 10px;
+      span{
+        border: medium none;
+        margin: 0;
+        padding: 0;
+        width: 15%;
+      }
+      }
 }
 
 /*=================== end of Step 1 related css ================*/
@@ -156,7 +183,9 @@ select#db_instance_daily_backup_start_time_1i, select#db_instance_daily_backup_s
 	display:none;
 }
 select#db_instance_daily_backup_start_time_4i, select#db_instance_daily_backup_start_time_5i{
-	width:80px;
+	height: 35px;
+    margin-top: 5px;
+    width: 74px;
 }
 select#db_instance_daily_backup_duration{
 	width:160px;
