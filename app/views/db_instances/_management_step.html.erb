@@ -36,7 +36,7 @@
               	<%= f.radio_button :backup_window, "no_preference" %>No Preference
 							</label>
 							<div id="backup_window_container" class="hide">
-								Start time: <%= f.time_select :daily_backup_start_time, :ignore_date => true %><br>
+								Start time: <%= f.datetime_select :daily_backup_start_time, :ignore_date => true %><br>
 								Duration: <%= f.select :daily_backup_duration, [0,1,2] %>
 							</div>
             
