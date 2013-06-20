@@ -1,5 +1,5 @@
 <div class="detailSection row-fluid">
-  <span>Provide the optional additional configuration details below and click <strong>Continue</strong></span>
+  <span>Provide the details below to manage your db instance and click <strong>Continue</strong></span>
 
 	<div class=" form-horizontal firstForm">
 		<div class="control-group">
@@ -20,7 +20,7 @@
     <div class="control-group">
       <label class="control-label">Backup Retention Period:<a href="" class="question">?</a></label>
 			<div class="controls">
-        <%= f.select :enable_automatic_backup, [1, 2, 7, 15, 30, 60] %>days
+        <%= f.select :backup_retention_period, options_for_select(BackUpRetentionPeriodOptions) %>days
         <!--<small>The daily time range during which automated backups are created if automated backups are enabled-->
         <!--</small>-->
       </div>
@@ -36,8 +36,8 @@
               	<%= f.radio_button :backup_window, "no_preference" %>No Preference
 							</label>
 							<div id="backup_window_container" class="hide">
-								Start time: <%= f.time_select :daily_backup_start_time, :ignore_date => true %><br>
-								Duration: <%= f.select :daily_backup_duration, [0,1,2] %>
+								Start time: <%#= f.time_select :daily_backup_start_time, :ignore_date => true %><br>
+								Duration: <%#= f.select :daily_backup_duration, [0,1,2] %>
 							</div>
             
 

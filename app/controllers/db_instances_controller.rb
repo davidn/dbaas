@@ -1,13 +1,8 @@
 class DbInstancesController < ApplicationController
 
-  def index
-
-  end
-
   def new
 		session[:db_params] ||= {}
-		@db_instance = DbInstance.new(session[:db_params])
-		@db_instance.current_step = session[:db_step]
+		@db_instance = DbInstance.new
   end
 
   def create
@@ -30,18 +25,6 @@ class DbInstancesController < ApplicationController
 			session[:db_params] = session[:db_step] = nil
 			flash[:notice] = "Instance Saved"
 			redirect_to root_path
-		end
-  end
-
-  def edit
-
-  end
-
-  def update
-		if @db_instance.save
-			redirect_to root_path
-		else
-			render 'new'
 		end
   end
 
