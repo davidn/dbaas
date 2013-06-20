@@ -38,7 +38,7 @@
 
 
         <div id="backup_window_container" class="hide selectWindow">
-          <div class="startTime"><span> Start time:</span> <%= f.datetime_select :daily_backup_start_time, :ignore_date => true %></div>
+          <div class="startTime"><span> Start time:</span> <%= f.datetime_select :daily_backup_start_time, :ignore_date => true, :datetime_separator => '' %></div>
           <div class="duration"><span>Duration:</span> <%= f.select :daily_backup_duration, BackupDuarationOption %></div>
         </div>
       </div>
