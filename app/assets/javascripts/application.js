@@ -16,6 +16,9 @@
 //= require_tree .
 
 $(document).ready(function() {
+	if($(".backup_window_wrapper input:radio:eq(0)").attr("checked", true)){
+		$("div#backup_window_container").show(100);
+	}
 	
 	$(".backup_window_wrapper input:radio:eq(0)").click(function(){
 		$("div#backup_window_container").show(100);
