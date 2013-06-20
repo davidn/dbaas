@@ -7,10 +7,10 @@
       <label class="control-label">Region Deployment</label>
 
       <div class="controls">
-       <%= DeploymentRegion.find_by_id(@db_instance.deployment_region_id).name %>
+       <%= DeploymentRegion.find_by_id(@db_instance.deployment_region_id).try(:name) %>
       </div>
     </div>
-
+		<hr>
     <div class="control-group">
       <label class="control-label">No. of CPUs</label>
 
@@ -27,6 +27,7 @@
       </div>
     </div>
 
+		<hr>
     <div class="control-group">
       <label class="control-label">Allocated Storage</label>
 
@@ -45,7 +46,6 @@
       </div>
     </div>
 
-
     <div class="control-group">
       <label class="control-label">DB Instance Identifier</label>
 
@@ -62,8 +62,7 @@
         <%= @db_instance.master_username %>
       </div>
     </div>
-
-
+		
     <div class="control-group">
       <label class="control-label">Database Name</label>
 
@@ -79,6 +78,8 @@
         <%= @db_instance.db_port %>
       </div>
     </div>
+		
+		<hr>
 
   </div>
 
@@ -97,7 +98,7 @@
       <label class="control-label">Backup Retention Period</label>
 
       <div class="controls">
-        <%= @db_instance.backup_retention_period %>days
+        <%= @db_instance.backup_retention_period %> days
       </div>
     </div>
 
@@ -105,7 +106,7 @@
       <label class="control-label">Backup Window</label>
 
       <div class="controls">
-        <%= @db_instance.daily_backup_start_time %> Daily for <%= @db_instance.daily_backup_duration %>
+        Daily at <%= @db_instance.daily_backup_start_time.strftime("%H:%M") %> for <%= @db_instance.daily_backup_duration %> hours
       </div>
     </div>
   </div>
