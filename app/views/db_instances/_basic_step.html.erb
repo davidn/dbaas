@@ -18,6 +18,13 @@
       <label class="control-label">No. of CPUs</label>
       <div class="controls flatSlider" id="cpu" >
         <%= f.select :cpu_count, options_for_select(CpuOptions) %>
+        <div class="cpuNum">
+          <small>1</small>
+          <small>2</small>
+          <small>4</small>
+          <small>8</small>
+          <small class="lstchild">16</small>
+        </div>
       </div>
     </div>
 
@@ -25,6 +32,13 @@
       <label class="control-label">Amount of RAM</label>
       <div class="controls flatSlider" id="ram" >
         <%= f.select :ram_amount, options_for_select(RamOptions) %>
+        <div class="ramNum">
+          <small>512MB</small>
+          <small>1GB</small>
+          <small class="twoGb">2GB</small>
+          <small class="fourGb">4GB</small>
+          <small class="lstchild">8GB</small>
+        </div>
       </div>
     </div>
   </div>
