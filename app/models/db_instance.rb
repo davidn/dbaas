@@ -1,7 +1,7 @@
 class DbInstance < ActiveRecord::Base
   attr_accessible :identifier, :master_username, :master_password, :allocated_storage, :provision_iops,:allocated_storage, :provision_iops
   attr_accessible :enable_automatic_backup, :backup_window, :maintenance_window, :db_instance_class
-  attr_accessible :db_name, :db_port, :cpu_count, :ram_amount, :backup_retention_period, :daily_backup_start_time, :daily_backup_duration
+  attr_accessible :db_name, :db_port, :cpu_count, :ram_amount, :backup_retention_period, :daily_backup_start_time, :daily_backup_duration, :deployment_region_ids
 
   ## VALIDATIONS ##
   validates :allocated_storage, :presence => true
