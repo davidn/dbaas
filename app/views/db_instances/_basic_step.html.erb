@@ -28,13 +28,14 @@
     <div class="control-group">
       <label class="control-label">No. of CPUs:</label>
       <div class="controls flatSlider" id="cpu" >
-        <%= f.select :cpu_count, options_for_select([1,2,4,8,16]) %>
+        <%= f.select :cpu_count, options_for_select(CpuOptions) %>
       </div>
     </div>
+
     <div class="control-group">
       <label class="control-label">Amount of RAM:</label>
       <div class="controls flatSlider" id="ram" >
-        <%= f.select :ram_amount, options_for_select([512,1,2,4,8]) %>
+        <%= f.select :ram_amount, options_for_select(RamOptions) %>
       </div>
     </div>
   </div>
@@ -42,7 +43,7 @@
 
 
 <div class="detailSection row-fluid">
-  <span><strong>Provide the details for your RDS Database Instance</strong></span>
+  <span><strong>Provide the details for your GenieDB Database Instance</strong></span>
   <div class="form-horizontal secForm">
 
     <div class="control-group">
@@ -106,7 +107,7 @@
     <div class="control-group">
       <label class="control-label">Database Port:</label>
       <div class="controls">
-        <%= f.select :db_port, options_for_select([3306])%>
+        <%= f.select :db_port, options_for_select(PortOptions)%>
       </div>
     </div>
 
