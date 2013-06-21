@@ -7,7 +7,7 @@
       <div class="controls">
         <% DeploymentRegion.all.each do |region| %>
           <label class="checkbox inline">
-            <%= check_box_tag "db_instance[deployment_region_ids][]", region.id %>
+            <%= check_box_tag "db_instance[deployment_region_ids][]", region.id, (session[:db_params].present? ? session[:db_params]["deployment_region_ids"].include?(region.id.to_s) : false) %>
             <%= region.name %>
           </label>
         <% end %>
@@ -32,7 +32,7 @@
         <%= f.select :ram_amount, RamOptions %>
         <div class="ramNum">
           <% RamOptions.each_with_index do |option, i|%>
-            <small class='<%= i == RamOptions.count ? "lstchild" : ""%>'><%= option %> GB</small>
+            <small class='<%= "#{i}" == RamOptions.count ? "lstchild" : ""%>'><%= option %> GB</small>
           <% end %>
         </div>
       </div>
