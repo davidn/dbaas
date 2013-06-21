@@ -7,10 +7,10 @@
       <label class="control-label">Region Deployment</label>
 
       <div class="controls">
-       <%= @db_instance.deployment_regions.collect(&:name).join(",") %>
+        <%= @db_instance.deployment_regions.collect(&:name).to_sentence %>
       </div>
     </div>
-		<hr>
+    <hr>
     <div class="control-group">
       <label class="control-label">No. of CPUs</label>
 
@@ -27,12 +27,12 @@
       </div>
     </div>
 
-		<hr>
+    <hr>
     <div class="control-group">
       <label class="control-label">Allocated Storage</label>
 
       <div class="controls">
-          <%= @db_instance.allocated_storage %>GB
+        <%= @db_instance.allocated_storage %>GB
       </div>
     </div>
 
@@ -41,7 +41,7 @@
 
       <div class="controls">
         <label class="checkbox ">
-          <%= @db_instance.provision_iops %>
+          <%= @db_instance.provision_iops ? "Yes" : "No" %>
         </label>
       </div>
     </div>
@@ -62,7 +62,7 @@
         <%= @db_instance.master_username %>
       </div>
     </div>
-		
+
     <div class="control-group">
       <label class="control-label">Database Name</label>
 
@@ -78,8 +78,8 @@
         <%= @db_instance.db_port %>
       </div>
     </div>
-		
-		<hr>
+
+    <hr>
 
   </div>
 
@@ -89,7 +89,7 @@
       <label class="control-label">Enabled Automatic Backups</label>
 
       <div class="controls">
-        <%= @db_instance.enable_automatic_backup %>
+        <%= @db_instance.enable_automatic_backup ? "Yes" : "No" %>
       </div>
     </div>
 
@@ -98,7 +98,7 @@
       <label class="control-label">Backup Retention Period</label>
 
       <div class="controls">
-        <%= @db_instance.backup_retention_period %> days
+        <%= @db_instance.backup_retention_period %> Days
       </div>
     </div>
 
@@ -106,7 +106,9 @@
       <label class="control-label">Backup Window</label>
 
       <div class="controls">
-        Daily at <%= @db_instance.daily_backup_start_time.strftime("%H:%M") %> for <%= @db_instance.daily_backup_duration %> hours
+        <% if @db_instance.daily_backup_start_time.present? and @db_instance.daily_backup_duration.present? %>
+          Daily at <%= @db_instance.daily_backup_start_time.strftime("%H:%M") %> for <%= @db_instance.daily_backup_duration.to_i %> hours
+        <% end %>
       </div>
     </div>
   </div>

@@ -7,7 +7,7 @@ class DbInstance < ActiveRecord::Base
 
   ## Validations ##
   validates :allocated_storage, :presence => true
-  validates :identifier, :presence => true
+  validates :identifier, :presence => true, :uniqueness => true
   validates :master_username, :presence => true
   validates :master_password, :presence => true
 	validates :allocated_storage, :numericality => true
@@ -15,6 +15,10 @@ class DbInstance < ActiveRecord::Base
   ## Associations ##
   has_and_belongs_to_many :deployment_regions
 
+	## Callbacks ##
+	 before_save :remove_backup_params
+
+	## instance methods ##
 	def current_step
 		@current_step || steps.first
 	end
@@ -37,6 +41,15 @@ class DbInstance < ActiveRecord::Base
 
 	def last_step?
 		current_step == steps.last
+	end
+
+	private
+
+	def remove_backup_params
+		 if self.backup_window == "no_preference"
+			 self.daily_backup_duration = nil
+			 self.daily_backup_start_time = nil
+		 end
 	end
                                                                                                         
 end                                                                                                     

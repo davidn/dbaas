@@ -19,7 +19,6 @@ $(document).ready(function() {
 
 	if($('#db_instance_backup_window_no_preference').is(":checked")){
 		$("div#backup_window_container select").removeAttr("disabled")
-		$("div#backup_window_container select").removeAttr("disabled")
 	}
 
 	if($("#db_instance_backup_window_select_window").is(":checked")){
@@ -29,14 +28,14 @@ $(document).ready(function() {
 	$(".backup_window_wrapper input:radio:eq(0)").click(function(){
 		$("div#backup_window_container").show(100);
 		$("div#backup_window_container select").removeAttr("disabled")
-		$("div#backup_window_container select").removeAttr("disabled")
 	});
 	
 	$(".backup_window_wrapper input:radio:eq(1)").click(function(){
 		$("div#backup_window_container").hide(100);
 		$("div#backup_window_container select").attr("disabled", "disabled")
-		$("div#backup_window_container select").attr("disabled", "disabled")
-		
+		$("div#backup_window_container select :selected").each(function(){
+			$(this).removeAttr("selected")
+		})
 	});
 
 	$("[rel='tooltip']").tooltip();
