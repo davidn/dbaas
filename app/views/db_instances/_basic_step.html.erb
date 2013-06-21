@@ -7,8 +7,8 @@
       <div class="controls">
         <% DeploymentRegion.all.each do |region| %>
           <label class="checkbox inline">
-            <%#= check_box_tag "db_instance[deployment_region_ids][]", region.id %>
-            <%= f.radio_button :deployment_region_id, region.id %>
+            <%= check_box_tag "db_instance[deployment_region_ids][]", region.id %>
+            <%#= f.radio_button :deployment_region_id, region.id %>
             <%= region.name %>
           </label>
         <% end %>
@@ -34,11 +34,11 @@
       <div class="controls flatSlider" id="ram" >
         <%= f.select :ram_amount, RamOptions %>
         <div class="ramNum">
-          <small>512MB</small>
           <small>1GB</small>
           <small class="twoGb">2GB</small>
           <small class="fourGb">4GB</small>
-          <small class="lstchild">8GB</small>
+          <small class="fourGb">8GB</small>
+          <small class="lstchild">16GB</small>
         </div>
       </div>
     </div>

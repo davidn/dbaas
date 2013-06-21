@@ -7,7 +7,7 @@
       <label class="control-label">Region Deployment</label>
 
       <div class="controls">
-       <%= DeploymentRegion.find_by_id(@db_instance.deployment_region_id).name %>
+       <%= @db_instance.deployment_regions.collect(&:name).join(",") %>
       </div>
     </div>
 
