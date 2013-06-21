@@ -20,7 +20,7 @@
         <%= f.select :cpu_count, CpuOptions %>
         <div class="cpuNum">
           <% CpuOptions.each_with_index do |option, i|%>
-            <small class='<%= i == CpuOptions.count ? "lstchild" : ""%>'><%= option %></small>
+            <small class='<%= (i+1) == CpuOptions.count ? "lstchild" : ""%>'><%= option %></small>
           <% end %>
         </div>
       </div>
@@ -32,7 +32,7 @@
         <%= f.select :ram_amount, RamOptions %>
         <div class="ramNum">
           <% RamOptions.each_with_index do |option, i|%>
-            <small class='<%= "#{i}" == RamOptions.count ? "lstchild" : ""%>'><%= option %> GB</small>
+            <small class='<%= (i+1) == RamOptions.count ? "lstchild" : "" %>'><%= option %> GB</small>
           <% end %>
         </div>
       </div>
