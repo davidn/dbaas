@@ -3,3 +3,8 @@
 
 en:
   hello: "Hello world"
+  activerecord:
+    errors:
+      messages:
+        blank: "Please provide a value"
+				not_a_number: "Please provide a number"
