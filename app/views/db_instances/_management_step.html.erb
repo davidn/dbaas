@@ -8,10 +8,10 @@
 
       <div class="controls">
         <label class="radio inline">
-          <%= f.radio_button :enable_automatic_backup, "Yes" %>Yes
+          <%= f.radio_button :enable_automatic_backup, "Yes", {:checked => session[:db_params].present? ? session[:db_params]["enable_automatic_backup"] == "Yes" ? true : false : false } %>Yes
         </label>
         <label class="radio inline">
-          <%= f.radio_button :enable_automatic_backup, "No" %>No
+          <%= f.radio_button :enable_automatic_backup, "No", {:checked => session[:db_params].present? ? session[:db_params]["enable_automatic_backup"] == "No" ? true : false : false } %>No
         </label>
       </div>
     </div>
@@ -20,7 +20,7 @@
       <label class="control-label">Backup Retention Period<a href="javascript:void(0)" rel="tooltip" title="The daily
       time range during which automated backups are created if automated backups are enabled" class="question">?</a></label>
       <div class="controls">
-        <%= f.select :backup_retention_period, BackUpRetentionPeriodOptions, {}, {:class => "smallSelect"} %>days
+        <%= f.select :backup_retention_period, options_for_select(BackUpRetentionPeriodOptions, @db_instance.backup_retention_period),{} ,{:class => "smallSelect"} %>days
       </div>
     </div>
 
@@ -39,7 +39,7 @@
 
         <div id="backup_window_container" class="hide selectWindow">
           <div class="startTime"><span> Start time</span> <%= f.datetime_select :daily_backup_start_time, :ignore_date => true, :datetime_separator => '' %></div>
-          <div class="duration"><span>Duration</span> <%= f.select :daily_backup_duration, BackupDuarationOption %></div>
+          <div class="duration"><span>Duration</span> <%= f.select :daily_backup_duration, options_for_select(BackupDuarationOption, @db_instance.daily_backup_duration.to_i ) %></div>
         </div>
       </div>
     </div>
