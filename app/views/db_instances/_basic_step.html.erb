@@ -32,7 +32,7 @@
         <%= f.select :ram_amount, RamOptions %>
         <div class="ramNum">
           <% RamOptions.each_with_index do |option, i|%>
-            <small class='<%= i == RamOptions.count ? "lstchild" : ""%>'><%= option %> GB</small>
+            <small class='<%= "#{i}" == RamOptions.count ? "lstchild" : ""%>'><%= option %> GB</small>
           <% end %>
         </div>
       </div>

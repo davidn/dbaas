@@ -106,7 +106,7 @@
       <label class="control-label">Backup Window</label>
 
       <div class="controls">
-        Daily at <%= @db_instance.daily_backup_start_time.strftime("%H:%M") %> for <%= @db_instance.daily_backup_duration %> hours
+        <%= ("Daily at " + "#{@db_instance.daily_backup_start_time.strftime("%H:%M")}" + " for " + "#{@db_instance.daily_backup_duration}" + " hours")  if @db_instance.daily_backup_start_time.present? %>
       </div>
     </div>
   </div>
