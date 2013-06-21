@@ -27,12 +27,12 @@
     </div>
 
     <div class="control-group">
-      <label class="control-label">Amount of RAM(GB)</label>
+      <label class="control-label">Amount of RAM (GB)</label>
       <div class="controls flatSlider" id="ram" >
         <%= f.select :ram_amount, RamOptions %>
-        <div class="ramNum">
+        <div class="cpuNum">
           <% RamOptions.each_with_index do |option, i|%>
-            <small class='<%= (i+1) == RamOptions.count ? "lstchild" : "" %>'><%= option %></small>
+            <small class="<%= (i+1) == RamOptions.count ? 'lstchild' : ''%>"><%= option %></small>
           <% end %>
         </div>
       </div>

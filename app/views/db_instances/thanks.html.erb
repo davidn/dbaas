@@ -3,8 +3,16 @@
 
     <div class="innerDiv row-fluid">
       <div class="detailSection row-fluid thank_you">
-				<%= image_tag "thankyou.jpg" %>
+				<%= image_tag "thankyou.jpg", :usemap => "#thankyou_map" %>
       </div>
+			<%= link_to new_db_instance_path do %>
+				<div class="new_instance">Click here to create another instance</div>
+			<% end %>
+			
+			<map name="thankyou_map">
+			  <area shape="rect" coords="440,900,800,340" href="mailto:info@geniedb.com">
+			</map>
+			
     </div>
   </div>
 </div>
