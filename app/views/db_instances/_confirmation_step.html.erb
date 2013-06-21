@@ -14,7 +14,7 @@
     <div class="control-group">
       <label class="control-label">No. of CPUs</label>
 
-      <div class="controls flatSlider" id="cpu">
+      <div class="controls thirdStep" id="cpu">
         <%= @db_instance.cpu_count %>
       </div>
     </div>
@@ -22,7 +22,7 @@
     <div class="control-group">
       <label class="control-label">Amount of RAM</label>
 
-      <div class="controls flatSlider" id="ram">
+      <div class="controls thirdStep" id="ram">
         <%= @db_instance.ram_amount %>
       </div>
     </div>
@@ -31,8 +31,8 @@
     <div class="control-group">
       <label class="control-label">Allocated Storage</label>
 
-      <div class="controls">
-        <%= @db_instance.allocated_storage %>GB
+      <div class="controls thirdStep">
+          <%= @db_instance.allocated_storage %>GB
       </div>
     </div>
 
@@ -40,7 +40,7 @@
       <label class="control-label">Use Provisioned IOPS</label>
 
       <div class="controls">
-        <label class="checkbox ">
+        <label class="checkbox thirdStep">
           <%= @db_instance.provision_iops ? "Yes" : "No" %>
         </label>
       </div>
@@ -49,7 +49,7 @@
     <div class="control-group">
       <label class="control-label">DB Instance Identifier</label>
 
-      <div class="controls">
+      <div class="controls thirdStep">
         <%= @db_instance.identifier %>
       </div>
     </div>
@@ -58,12 +58,12 @@
     <div class="control-group">
       <label class="control-label">Master Username</label>
 
-      <div class="controls">
+      <div class="controls thirdStep">
         <%= @db_instance.master_username %>
       </div>
     </div>
 
-    <div class="control-group">
+    <div class="control-group thirdStep">
       <label class="control-label">Database Name</label>
 
       <div class="controls">
@@ -71,7 +71,7 @@
       </div>
     </div>
 
-    <div class="control-group">
+    <div class="control-group thirdStep">
       <label class="control-label">Database Port</label>
 
       <div class="controls">
@@ -88,7 +88,7 @@
     <div class="control-group">
       <label class="control-label">Enabled Automatic Backups</label>
 
-      <div class="controls">
+      <div class="controls thirdStep">
         <%= @db_instance.enable_automatic_backup ? "Yes" : "No" %>
       </div>
     </div>
@@ -97,15 +97,16 @@
     <div class="control-group">
       <label class="control-label">Backup Retention Period</label>
 
-      <div class="controls">
+      <div class="controls thirdStep">
         <%= @db_instance.backup_retention_period %> Days
       </div>
     </div>
 
-    <div class="control-group backup_window_wrapper">
+    <div class="control-group backup_window_wrapper thirdStep">
       <label class="control-label">Backup Window</label>
 
       <div class="controls">
+
         <% if @db_instance.daily_backup_start_time.present? and @db_instance.daily_backup_duration.present? %>
           Daily at <%= @db_instance.daily_backup_start_time.strftime("%H:%M") %> for <%= @db_instance.daily_backup_duration.to_i %> hours
         <% end %>

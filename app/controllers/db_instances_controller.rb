@@ -46,7 +46,7 @@ class DbInstancesController < ApplicationController
 				render "thanks"
 			end
 		else
-			redirect_to :new
+			redirect_to "/new"
 		end
 	end
 
