@@ -8,7 +8,6 @@
         <% DeploymentRegion.all.each do |region| %>
           <label class="checkbox inline">
             <%= check_box_tag "db_instance[deployment_region_ids][]", region.id %>
-            <%#= f.radio_button :deployment_region_id, region.id %>
             <%= region.name %>
           </label>
         <% end %>
@@ -20,11 +19,9 @@
       <div class="controls flatSlider" id="cpu" >
         <%= f.select :cpu_count, CpuOptions %>
         <div class="cpuNum">
-          <small>1</small>
-          <small>2</small>
-          <small>4</small>
-          <small>8</small>
-          <small class="lstchild">16</small>
+          <% CpuOptions.each_with_index do |option, i|%>
+            <small class='<%= i == CpuOptions.count ? "lstchild" : ""%>'><%= option %></small>
+          <% end %>
         </div>
       </div>
     </div>
@@ -34,11 +31,9 @@
       <div class="controls flatSlider" id="ram" >
         <%= f.select :ram_amount, RamOptions %>
         <div class="ramNum">
-          <small>1GB</small>
-          <small class="twoGb">2GB</small>
-          <small class="fourGb">4GB</small>
-          <small class="fourGb">8GB</small>
-          <small class="lstchild">16GB</small>
+          <% RamOptions.each_with_index do |option, i|%>
+            <small class='<%= i == RamOptions.count ? "lstchild" : ""%>'><%= option %> GB</small>
+          <% end %>
         </div>
       </div>
     </div>

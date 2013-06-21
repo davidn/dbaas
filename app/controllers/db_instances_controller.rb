@@ -25,7 +25,7 @@ class DbInstancesController < ApplicationController
 		else
 			session[:db_params] = session[:db_step] = nil
 			flash[:notice] = "Instance Saved"
-			redirect_to root_path
+			render "thanks"
 		end
   end
 

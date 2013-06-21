@@ -3,7 +3,7 @@
 
   <div class=" form-horizontal firstForm">
     <div class="control-group">
-      <label class="control-label">Enabled Automatic Backups:<a href="javascript:void(0)" rel="tooltip" title="Please note that automated backups
+      <label class="control-label">Enabled Automatic Backups<a href="javascript:void(0)" rel="tooltip" title="Please note that automated backups
       are currently Supported for InnoDB Storage engine only. If you are using MYISAM, refer to details here" class="question">?</a></label>
 
       <div class="controls">
@@ -17,7 +17,7 @@
     </div>
 
     <div class="control-group">
-      <label class="control-label">Backup Retention Period:<a href="javascript:void(0)" rel="tooltip" title="The daily
+      <label class="control-label">Backup Retention Period<a href="javascript:void(0)" rel="tooltip" title="The daily
       time range during which automated backups are created if automated backups are enabled" class="question">?</a></label>
       <div class="controls">
         <%= f.select :backup_retention_period, BackUpRetentionPeriodOptions, {}, {:class => "smallSelect"} %>days
@@ -25,7 +25,7 @@
     </div>
 
     <div class="control-group backup_window_wrapper">
-      <label class="control-label">Backup Window:<a href="javascript:void(0)" rel="tooltip" title="The daily time range during which automated backups
+      <label class="control-label">Backup Window<a href="javascript:void(0)" rel="tooltip" title="The daily time range during which automated backups
       are created if automated backups are enabled" class="question">?</a></label>
 
       <div class="controls">
@@ -38,8 +38,8 @@
 
 
         <div id="backup_window_container" class="hide selectWindow">
-          <div class="startTime"><span> Start time:</span> <%= f.datetime_select :daily_backup_start_time, :ignore_date => true, :datetime_separator => '' %></div>
-          <div class="duration"><span>Duration:</span> <%= f.select :daily_backup_duration, BackupDuarationOption %></div>
+          <div class="startTime"><span> Start time</span> <%= f.datetime_select :daily_backup_start_time, :ignore_date => true, :datetime_separator => '' %></div>
+          <div class="duration"><span>Duration</span> <%= f.select :daily_backup_duration, BackupDuarationOption %></div>
         </div>
       </div>
     </div>
