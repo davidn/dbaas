@@ -21,11 +21,9 @@
             <% end %>
             <% if @db_instance.last_step? %>
               <%= f.submit "Save", :class => "continueBtn", :id => "step_three" do %>
-                <div class="triangle-right"></div>
               <% end %>
             <% else %>
               <%= f.submit "Continue", :class => "continueBtn", :id => "step_two" do %>
-                <div class="triangle-right"></div>
               <% end %>
             <% end %>
           </div>
