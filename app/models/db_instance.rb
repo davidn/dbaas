@@ -10,6 +10,7 @@ class DbInstance < ActiveRecord::Base
   validates :identifier, :presence => true
   validates :master_username, :presence => true
   validates :master_password, :presence => true
+	validates :allocated_storage, :numericality => true
   
   ## Associations ##
   has_and_belongs_to_many :deployment_regions

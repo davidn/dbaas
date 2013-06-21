@@ -16,18 +16,26 @@
 //= require_tree .
 
 $(document).ready(function() {
-	if($(".backup_window_wrapper input:radio:eq(0)").attr("checked", true)){
-		$("div#backup_window_container").show(100);
+
+	if($('#db_instance_backup_window_no_preference').is(":checked")){
+		$("div#backup_window_container select").removeAttr("disabled")
+		$("div#backup_window_container select").removeAttr("disabled")
 	}
-	
+
+	if($("#db_instance_backup_window_select_window").is(":checked")){
+		$("div#backup_window_container").show();
+	}
+
 	$(".backup_window_wrapper input:radio:eq(0)").click(function(){
 		$("div#backup_window_container").show(100);
+		$("div#backup_window_container select").removeAttr("disabled")
+		$("div#backup_window_container select").removeAttr("disabled")
 	});
 	
 	$(".backup_window_wrapper input:radio:eq(1)").click(function(){
 		$("div#backup_window_container").hide(100);
-		$("div#backup_window_container select#db_instance_daily_backup_duration").disable()
-		$("div#backup_window_container select#db_instance_daily_backup_start_time_4i, div#backup_window_container select#db_instance_daily_backup_start_time_4i").disable()
+		$("div#backup_window_container select").attr("disabled", "disabled")
+		$("div#backup_window_container select").attr("disabled", "disabled")
 		
 	});
 
