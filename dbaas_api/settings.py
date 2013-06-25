@@ -25,16 +25,19 @@ EC2_REGIONS = {
 	'us-west-2': {
 		'AMI': 'ami-6e69fe5e',
 		'KEY_NAME': 'generic-geniedb-demo',
-        'KEY_FILE': '/home/david/dev/BulletProofBlog/generic-geniedb-demo.pem',
+        'KEY_FILE': '/srv/dbaas-api/generic-geniedb-demo.pem',
 		'SECURITY_GROUPS': ['generic-geniedb-demo']
 	},
 	'us-east-1': {
 		'AMI': 'ami-e2ff9f8b',
         'KEY_NAME': 'generic-geniedb-demo',
-        'KEY_FILE': '/home/david/dev/BulletProofBlog/generic-geniedb-demo.pem',
+        'KEY_FILE': '/srv/dbaas-api/generic-geniedb-demo.pem',
 		'SECURITY_GROUPS': ['generic-geniedb-demo']
 	},
 }
+
+AWS_ACCESS_KEY=""
+AWS_SECRET_KEY=""
 
 HOSTS_DIR='/tmp/hosts'
 

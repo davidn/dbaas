@@ -16,7 +16,7 @@ class EC2Regions(object):
     
     def __getitem__(self,key):
         if not self._regions.has_key(key):
-            self._regions[key] = boto.ec2.get_region(key).connect()
+            self._regions[key] = boto.ec2.get_region(key).connect(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         return self._regions[key]
 
 ec2regions = EC2Regions()
