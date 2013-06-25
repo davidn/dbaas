@@ -44,7 +44,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
 				data.append(new_d)
 		else:
 			data = request.DATA.copy()
-			data["cluster"] = request.user.get_absolute_url()
+			data["user"] = request.user.get_absolute_url()
 		
 		serializer = self.get_serializer(data=data, files=request.FILES)
 
