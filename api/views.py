@@ -28,9 +28,12 @@ class ClusterViewSet(mixins.CreateModelMixin,
 			mixins.RetrieveModelMixin,
 			mixins.DestroyModelMixin,
 			viewsets.GenericViewSet):
-	queryset = Cluster.objects.all()
+	model = Cluster
 	serializer_class = ClusterSerializer
 	permission_classes = (Owner,)
+
+	def get_queryset(self):
+		return Cluster.objects.filter(user=self.request.user)
 
 	def create(self, request, *args, **kwargs):
 		if isinstance(request.DATA,list):
