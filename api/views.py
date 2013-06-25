@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 from rest_framework import viewsets, mixins, status, permissions
 from .models import Cluster, Node
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer
@@ -40,11 +41,11 @@ class ClusterViewSet(mixins.CreateModelMixin,
 			data = []
 			for d in request.DATA:
 				new_d = d.copy()
-				new_d["user"] = request.user.get_absolute_url()
+				new_d["user"] = reverse('user-detail',args=(request.user.pk,))
 				data.append(new_d)
 		else:
 			data = request.DATA.copy()
-			data["user"] = request.user.get_absolute_url()
+			data["user"] = reverse('user-detail',args=(request.user.pk,))
 		
 		serializer = self.get_serializer(data=data, files=request.FILES)
 
