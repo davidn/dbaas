@@ -13,6 +13,9 @@ class Owner(permissions.BasePermission):
 		if isinstance(obj, Node):
 			return obj.cluster.user == request.user
 		return False
+	
+	def has_permission(self, request, view):
+		return not request.user.is_anonymous()
 
 class UserViewSet(mixins.ListModelMixin,
 			mixins.RetrieveModelMixin,
