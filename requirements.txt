@@ -1,0 +1,6 @@
+django
+django-celery
+boto
+south
+djangorestframework
+TincTailor
