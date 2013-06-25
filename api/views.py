@@ -28,7 +28,30 @@ class ClusterViewSet(mixins.CreateModelMixin,
 	queryset = Cluster.objects.all()
 	serializer_class = ClusterSerializer
 	permission_classes = (Owner,)
-	
+
+	def create(self, request, *args, **kwargs):
+		if isinstance(request.DATA,list):
+			data = []
+			for d in request.DATA:
+				new_d = d.copy()
+				new_d["user"] = request.user.get_absolute_url()
+				data.append(new_d)
+		else:
+			data = request.DATA.copy()
+			data["cluster"] = request.user.get_absolute_url()
+		
+		serializer = self.get_serializer(data=data, files=request.FILES)
+
+		if serializer.is_valid():
+			self.pre_save(serializer.object)
+			self.object = serializer.save(force_insert=True)
+			self.post_save(self.object, created=True)
+			headers = self.get_success_headers(serializer.data)
+			return Response(serializer.data, status=status.HTTP_201_CREATED,
+							headers=headers)
+
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 	@action()
 	def add(self, request, *args, **kwargs):
 		self.object = self.get_object()
