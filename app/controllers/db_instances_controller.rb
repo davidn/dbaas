@@ -51,4 +51,8 @@ class DbInstancesController < ApplicationController
 		end
 	end
 
+	def show
+		@db_instance = DbInstance.find(params[:id])
+	end
+
 end

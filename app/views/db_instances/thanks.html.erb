@@ -5,6 +5,9 @@
       <div class="detailSection row-fluid thank_you">
 				<%= image_tag "thankyou.jpg", :usemap => "#thankyou_map" %>
       </div>
+			<%= link_to db_instance_path(@db_instance.id) do %>
+				<div class="new_instance">Click here to proceed to your instance</div>
+			<% end %>
 			<%= link_to new_db_instance_path do %>
 				<div class="new_instance">Click here to create another instance</div>
 			<% end %>

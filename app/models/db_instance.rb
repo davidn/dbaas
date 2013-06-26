@@ -61,6 +61,12 @@ class DbInstance < ActiveRecord::Base
 			:Authorization => 'Token ' + GenieDb::Application.config.DbaasApiToken).body)
 end
 
+	def cluster_info
+		JSON.parse(RestClient.get(self.cluster_url,
+			:accept => :json,
+			:Authorization => 'Token ' + GenieDb::Application.config.DbaasApiToken).body)
+	end
+
 	private
 
 	def remove_backup_params
