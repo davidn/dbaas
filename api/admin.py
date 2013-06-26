@@ -11,7 +11,7 @@ class ClusterAdmin(admin.ModelAdmin):
     list_display = ('__unicode__', 'user', 'cluster_size')
 
     def cluster_size(self, cluster):
-        return cluster.node_set.count()
+        return cluster.nodes.count()
     cluster_size.short_description = 'Number of Nodes'
 
 

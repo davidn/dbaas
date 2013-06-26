@@ -67,7 +67,7 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 		return attrs
 
 class ClusterSerializer(serializers.HyperlinkedModelSerializer):
-	node_set = NodeSerializer(many=True, read_only=True)
+	nodes = NodeSerializer(many=True, read_only=True)
 	class Meta:
 		model = Cluster
-		fields = ('user','node_set')
+		fields = ('user','nodes')

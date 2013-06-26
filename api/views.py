@@ -86,7 +86,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
 	@action()
 	def launch_all(self, request, *args, **kwargs):
 		self.object = self.get_object()
-		for node in self.object.node_set.all():
+		for node in self.object.nodes.all():
 			if node.status == Node.INITIAL:
 				node.do_launch()
 		install_cluster.delay(self.object)

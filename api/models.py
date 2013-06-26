@@ -41,7 +41,7 @@ class Cluster(models.Model):
                 'transport': 'tcp',
                 'hosts_dir': settings.HOSTS_DIR+str(self.pk)}
         hosts = {}
-        for node_id, node in enumerate(self.node_set.all(),1):
+        for node_id, node in enumerate(self.nodes.all(),1):
             hosts['node_{0}'.format(node_id)] = {
                 'use_tinc': 'false',
                 'netname': 'cf',
@@ -77,7 +77,7 @@ class Node(models.Model):
     dns = models.CharField("EC2 Public DNS Address", max_length=200, default="", blank=True)
     ip = models.IPAddressField("EC2 Instance IP Address", default="", blank=True)
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
-    cluster = models.ForeignKey(Cluster)
+    cluster = models.ForeignKey(Cluster, related_name='nodes')
 
     def __repr__(self):
         optional = ""

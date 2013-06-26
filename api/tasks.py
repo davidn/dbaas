@@ -24,7 +24,7 @@ def install(node):
 
 @task()
 def install_cluster(cluster):
-    install_nodes = cluster.node_set.filter(status=Node.PROVISIONING)
+    install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)
     for node in install_nodes:
         while node.pending():
             sleep (15)
