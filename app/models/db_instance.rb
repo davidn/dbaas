@@ -1,3 +1,6 @@
+require 'rest_client'
+require 'json'
+
 class DbInstance < ActiveRecord::Base
   attr_accessible :identifier, :master_username, :master_password, :allocated_storage, :provision_iops,:allocated_storage, :provision_iops
   attr_accessible :enable_automatic_backup, :backup_window, :maintenance_window, :db_instance_class
@@ -42,6 +45,21 @@ class DbInstance < ActiveRecord::Base
 	def last_step?
 		current_step == steps.last
 	end
+
+	def launch
+		self.cluster_url = JSON.parse(RestClient.post(GenieDb::Application.config.DbaasApiEndpoint + 'clusters/',
+			{}.to_json,
+			:content_type => :json, :accept => :json,
+			:Authorization => 'Token ' + GenieDb::Application.config.DbaasApiToken).body)['url']
+		JSON.parse(RestClient.post(self.cluster_url,
+			{'region'=>'us-west-2','size'=>'m1.small'}.to_json,
+			:content_type => :json, :accept => :json,
+			:Authorization => 'Token ' + GenieDb::Application.config.DbaasApiToken).body)
+		JSON.parse(RestClient.post(self.cluster_url+'launch_all/',
+			{}.to_json,
+			:content_type => :json, :accept => :json,
+			:Authorization => 'Token ' + GenieDb::Application.config.DbaasApiToken).body)
+end
 
 	private
 

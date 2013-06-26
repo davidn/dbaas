@@ -32,6 +32,7 @@ class DbInstancesController < ApplicationController
 				if params[:back_button]
 					@db_instance.previous_step
 				elsif @db_instance.last_step?
+					@db_instance.launch
 					@db_instance.save
 				else
 					@db_instance.next_step
