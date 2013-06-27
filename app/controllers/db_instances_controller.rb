@@ -17,6 +17,9 @@ class DbInstancesController < ApplicationController
 		reset_session
 		session[:db_params] ||= {}
 		@db_instance = DbInstance.new
+		DeploymentRegion.find_each do |region|
+			@db_instance.region_instances.new :deployment_region => region, :count => 0
+		end
 	end
 
 	def create

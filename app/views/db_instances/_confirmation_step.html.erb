@@ -7,7 +7,7 @@
       <label class="control-label">Region Deployment</label>
 
       <div class="controls">
-        <%= @db_instance.deployment_regions.collect(&:name).to_sentence %>
+        <%= @db_instance.region_instances.collect{|region_instance| "#{region_instance.count}x #{region_instance.deployment_region.name}" }.to_sentence %>
       </div>
     </div>
     <hr>

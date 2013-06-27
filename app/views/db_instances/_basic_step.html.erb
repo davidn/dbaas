@@ -3,15 +3,15 @@
 
   <span><strong>Region Deployment</strong></span>
   <div class="form-horizontal firstForm">
-    <% DeploymentRegion.all.each do |region| %>
+    <% @db_instance.region_instances.each do |region_instance| %>
       <div class="control-group">
-        <label class="control-label"><%= region.name %></label>
-        <div class="controls">
-          <%= text_field_tag "db_instance[deployment_region_ids][#{region.id}]",
-                           (session[:db_params].present? ? session[:db_params]["deployment_region_ids"][region.id] : 0 rescue 0),
-                           :size => 2,
-                           :class => "input-small" %>
-        </div>
+        <%= f.fields_for :region_instances, region_instance do |r| %>
+          <%= r.label :cost, region_instance.deployment_region.name, :class => "control-label" %>
+          <div class="controls">
+            <%= r.text_field :count, :value => region_instance.count, :size => 2, :class => "input-small" %>
+          </div>
+          <%= r.hidden_field :deployment_region_id, :value => region_instance.deployment_region.id %>
+        <%end%>
       </div>
     <% end %>
   </div>

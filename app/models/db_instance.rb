@@ -4,7 +4,8 @@ require 'json'
 class DbInstance < ActiveRecord::Base
   attr_accessible :identifier, :master_username, :master_password, :allocated_storage, :provision_iops,:allocated_storage, :provision_iops
   attr_accessible :enable_automatic_backup, :backup_window, :maintenance_window, :db_instance_class
-  attr_accessible :db_name, :db_port, :cpu_count, :ram_amount, :backup_retention_period, :daily_backup_start_time, :daily_backup_duration, :deployment_region_ids
+  attr_accessible :db_name, :db_port, :cpu_count, :ram_amount, :backup_retention_period, :daily_backup_start_time, :daily_backup_duration
+  attr_accessible :region_instances_attributes
 	attr_writer :current_step
 	attr_accessor :backup_window
 
@@ -18,6 +19,8 @@ class DbInstance < ActiveRecord::Base
   ## Associations ##
 	has_many :region_instances
   has_many :deployment_regions, :through => :region_instances
+
+	accepts_nested_attributes_for :region_instances, reject_if: lambda {|attributes| attributes['count'] == "0"}
 
 	## Callbacks ##
 	 before_save :remove_backup_params

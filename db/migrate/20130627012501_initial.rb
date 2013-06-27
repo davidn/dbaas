@@ -24,6 +24,8 @@ class Initial < ActiveRecord::Migration
 
     create_table :region_instances do |t|
       t.integer :count
+      t.belongs_to :db_instance
+      t.belongs_to :deployment_region
       t.timestamps
     end
 
