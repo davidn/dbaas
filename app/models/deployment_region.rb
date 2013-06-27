@@ -3,6 +3,7 @@ class DeploymentRegion < ActiveRecord::Base
    attr_accessible :region_name
    
    ## ASSOCIATIONS ##
-	 has_and_belongs_to_many :db_instances
+   has_many :region_instances
+   has_many :db_instances, :through => :region_instances
    
 end

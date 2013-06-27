@@ -22,10 +22,10 @@ class Initial < ActiveRecord::Migration
       t.timestamps
 	  end
 
-	  create_table :db_instances_deployment_regions, :id => false do |t|
-	    t.integer :db_instance_id
-	    t.integer :deployment_region_id
-	  end
+    create_table :region_instances do |t|
+      t.integer :count
+      t.timestamps
+    end
 
 	  create_table :deployment_regions do |t|
 	    t.string   :name

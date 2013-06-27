@@ -16,7 +16,8 @@ class DbInstance < ActiveRecord::Base
 	validates :allocated_storage, :numericality => true
   
   ## Associations ##
-  has_and_belongs_to_many :deployment_regions
+	has_many :region_instances
+  has_many :deployment_regions, :through => :region_instances
 
 	## Callbacks ##
 	 before_save :remove_backup_params
