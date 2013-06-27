@@ -50,13 +50,23 @@ class DbInstance < ActiveRecord::Base
 		current_step == steps.last
 	end
 
+	def to_json
+		json = []
+		self.region_instances.each do |region_instance|
+			region_instance.count.times do
+				json.push({'region'=>region_instance.deployment_region.region_name, 'size'=>'m1.small'})
+			end
+		end
+		return json.to_json
+	end
+
 	def launch
 		self.cluster_url = JSON.parse(RestClient.post(GenieDb::Application.config.DbaasApiEndpoint + 'clusters/',
 			{}.to_json,
 			:content_type => :json, :accept => :json,
 			:Authorization => 'Token ' + GenieDb::Application.config.DbaasApiToken).body)['url']
 		JSON.parse(RestClient.post(self.cluster_url,
-			{'region'=>'us-west-2','size'=>'m1.small'}.to_json,
+			self.to_json,
 			:content_type => :json, :accept => :json,
 			:Authorization => 'Token ' + GenieDb::Application.config.DbaasApiToken).body)
 		JSON.parse(RestClient.post(self.cluster_url+'launch_all/',
