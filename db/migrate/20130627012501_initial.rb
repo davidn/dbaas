@@ -29,6 +29,7 @@ class Initial < ActiveRecord::Migration
 
 	  create_table :deployment_regions do |t|
 	    t.string   :name
+	    t.string   :region_name
       t.timestamps
 	  end
 
