@@ -13,12 +13,11 @@ class Initial < ActiveRecord::Migration
 	    t.string   :db_instance_class
 	    t.string   :db_name
 	    t.string   :db_port
-	    t.integer  :cpu_count
-	    t.integer  :ram_amount
 	    t.integer  :backup_retention_period
 	    t.time     :daily_backup_start_time
 	    t.float    :daily_backup_duration
 	    t.string   :cluster_url
+	    t.belongs_to :node_size
       t.timestamps
 	  end
 
@@ -35,5 +34,12 @@ class Initial < ActiveRecord::Migration
       t.timestamps
 	  end
 
+    create_table :node_sizes do |t|
+      t.string :name
+      t.integer :ram
+      t.integer :cpu
+
+      t.timestamps
+    end
   end
 end

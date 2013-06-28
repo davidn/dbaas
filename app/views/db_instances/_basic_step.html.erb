@@ -17,29 +17,35 @@
   </div>
 
   <span><strong>Provide the per-node resource allocations</strong></span>
-  <div class="form-horizontal firstForm">
-    <div class="control-group flatSlider">
-      <label class="control-label">No. of CPUs</label>
-      <div class="controls" id="cpu" >
-        <%= f.select :cpu_count, CpuOptions %>
-        <div class="cpuNum">
-          <% CpuOptions.each_with_index do |option, i|%>
-            <small class='<%= (i+1) == CpuOptions.count ? "lstchild" : ""%>'><%= option %></small>
-          <% end %>
+  <div class="form-horizontal firstForm row-fluid">
+    <div class="span8">
+      <div class="control-group flatSlider">
+        <label class="control-label">No. of CPUs</label>
+        <div class="controls" id="cpu" >
+          <%= select_tag :cpu_count, options_for_select(CpuOptions.map {|x| [x,x]}) %>
+          <div class="cpuNum">
+            <% CpuOptions.each_with_index do |option, i|%>
+              <small class='<%= (i+1) == CpuOptions.count ? "lstchild" : ""%>'><%= option %></small>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Amount of RAM (GB)</label>
+        <div class="controls flatSlider" id="ram" >
+          <%= select_tag :ram_amount, options_for_select(RamOptions.map {|x| [x,x]}) %>
+          <div class="ramNum">
+            <% RamOptions.each_with_index do |option, i|%>
+              <small class="<%= (i+1) == RamOptions.count ? 'lstchild' : ''%>"><%= option %></small>
+            <% end %>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="control-group">
-      <label class="control-label">Amount of RAM (GB)</label>
-      <div class="controls flatSlider" id="ram" >
-        <%= f.select :ram_amount, RamOptions %>
-        <div class="cpuNum">
-          <% RamOptions.each_with_index do |option, i|%>
-            <small class="<%= (i+1) == RamOptions.count ? 'lstchild' : ''%>"><%= option %></small>
-          <% end %>
-        </div>
-      </div>
+    <div class="span4">
+      <%= f.collection_select :node_size_id, NodeSize.all, :id, :name, {}, :size=>3, :style=>"height: 7em;width:10em" %>
     </div>
   </div>
 

@@ -4,8 +4,8 @@ require 'json'
 class DbInstance < ActiveRecord::Base
   attr_accessible :identifier, :master_username, :master_password, :allocated_storage, :provision_iops,:allocated_storage, :provision_iops
   attr_accessible :enable_automatic_backup, :backup_window, :maintenance_window, :db_instance_class
-  attr_accessible :db_name, :db_port, :cpu_count, :ram_amount, :backup_retention_period, :daily_backup_start_time, :daily_backup_duration
-  attr_accessible :region_instances_attributes
+  attr_accessible :db_name, :db_port, :backup_retention_period, :daily_backup_start_time, :daily_backup_duration
+  attr_accessible :region_instances_attributes, :node_size_id
 	attr_writer :current_step
 	attr_accessor :backup_window
 
@@ -15,8 +15,10 @@ class DbInstance < ActiveRecord::Base
   validates :master_username, :presence => true
   validates :master_password, :presence => true
 	validates :allocated_storage, :numericality => true
+	validates :node_size, :presence => true
   
   ## Associations ##
+	belongs_to :node_size
 	has_many :region_instances
   has_many :deployment_regions, :through => :region_instances
 
@@ -54,7 +56,7 @@ class DbInstance < ActiveRecord::Base
 		json = []
 		self.region_instances.each do |region_instance|
 			region_instance.count.times do
-				json.push({'region'=>region_instance.deployment_region.region_name, 'size'=>'m1.small'})
+				json.push({:region=>region_instance.deployment_region.region_name, :size=>self.node_size.name})
 			end
 		end
 		return json.to_json
@@ -89,5 +91,5 @@ end
 			 self.daily_backup_start_time = nil
 		 end
 	end
-                                                                                                        
-end                                                                                                     
+
+end
