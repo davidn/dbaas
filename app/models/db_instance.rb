@@ -56,7 +56,11 @@ class DbInstance < ActiveRecord::Base
 		json = []
 		self.region_instances.each do |region_instance|
 			region_instance.count.times do
-				json.push({:region=>region_instance.deployment_region.region_name, :size=>self.node_size.name})
+				json.push({
+					:region=>region_instance.deployment_region.region_name,
+					:size=>self.node_size.name,
+					:storage=>self.allocated_storage
+				})
 			end
 		end
 		return json.to_json
