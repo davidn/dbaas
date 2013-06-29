@@ -74,6 +74,7 @@ class Node(models.Model):
     instance_id = models.CharField("EC2 Instance ID", max_length=200, default="", blank=True)
     region = models.CharField("EC2 Region", max_length=20)
     size = models.CharField("Size", max_length=20)
+    storage = models.IntegerField("Allocated Storage")
     dns = models.CharField("EC2 Public DNS Address", max_length=200, default="", blank=True)
     ip = models.IPAddressField("EC2 Instance IP Address", default="", blank=True)
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
@@ -89,10 +90,11 @@ class Node(models.Model):
             optional += ", dns={dns}".format(dns=repr(self.dns))
         if self.ip != "":
             optional += ", ip={ip}".format(ip=repr(self.sip))
-        return "Node(pk={pk}, cluster={cluster}, size={size}, region={region}{optional})".format(
+        return "Node(pk={pk}, cluster={cluster}, size={size}, storage={storage}, region={region}{optional})".format(
             pk=repr(self.pk),
             cluster=repr(self.cluster),
             size=repr(self.size),
+            storage=repr(self.storage),
             region=repr(self.region),
             optional=optional
         )
@@ -125,10 +127,15 @@ class Node(models.Model):
 
     def do_launch(self):
         logger.info("%s: provisioning node", self)
+        dev_sda1 = boto.ec2.blockdevicemapping.BlockDeviceType()
+        dev_sda1.size = self.storage
+        bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
+        bdm['/dev/sda1'] = dev_sda1
         res = ec2regions[self.region].run_instances(
             settings.EC2_REGIONS[self.region]["AMI"],
             key_name=settings.EC2_REGIONS[self.region]['KEY_NAME'],
             instance_type=self.size,
+            block_device_map=bdm,
             security_groups=settings.EC2_REGIONS[self.region]['SECURITY_GROUPS']
         )
         self._instance = res.instances[0]
