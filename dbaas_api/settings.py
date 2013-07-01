@@ -23,7 +23,7 @@ DATABASES = {
 
 EC2_REGIONS = {
 	'us-west-2': {
-		'AMI': 'ami-6e69fe5e',
+		'AMI': 'ami-f7f764c7',
 		'KEY_NAME': 'generic-geniedb-demo',
         'KEY_FILE': '/srv/dbaas-api/generic-geniedb-demo.pem',
 		'SECURITY_GROUPS': ['generic-geniedb-demo']

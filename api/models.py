@@ -77,11 +77,14 @@ class Node(models.Model):
     storage = models.IntegerField("Allocated Storage")
     dns = models.CharField("EC2 Public DNS Address", max_length=200, default="", blank=True)
     ip = models.IPAddressField("EC2 Instance IP Address", default="", blank=True)
+    iops = models.IntegerField("Provisioned IOPS", default=None, blank=True, null=True)
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
     cluster = models.ForeignKey(Cluster, related_name='nodes')
 
     def __repr__(self):
         optional = ""
+        if self.iops != "":
+            optional += ", iops={iops}".format(instance_id=repr(self.iops))
         if self.instance_id != "":
             optional += ", instance_id={instance_id}".format(instance_id=repr(self.instance_id))
         if self.status != "":
@@ -125,9 +128,16 @@ class Node(models.Model):
             self._instance = ec2regions[self.region].get_all_instances(instance_ids=[self.instance_id])[0].instances[0]
         return self._instance
 
+    @property
+    def volume_type(self):
+        if self.iops is None:
+            return None
+        else:
+            return 'io1'
+
     def do_launch(self):
         logger.info("%s: provisioning node", self)
-        dev_sda1 = boto.ec2.blockdevicemapping.BlockDeviceType()
+        dev_sda1 = boto.ec2.blockdevicemapping.BlockDeviceType(iops=self.iops, volume_type=self.volume_type)
         dev_sda1.size = self.storage
         bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
         bdm['/dev/sda1'] = dev_sda1
