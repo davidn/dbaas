@@ -1,8 +1,11 @@
 #!/usr/bin/python
 
+from logging import getLogger
 from celery.task import task
 from time import sleep
 from .models import Node
+
+logger = getLogger(__name__)
 
 @task()
 def launch(node):
@@ -15,12 +18,17 @@ def launch(node):
 
 @task()
 def install(node):
-    try:
-        node.do_install()
-    except:
-        node.status = node.ERROR
-        node.save()
-        raise
+    for i in xrange(10,0,-1):
+        try:
+            return node.do_install()
+        except:
+            if i == 1:
+                node.status = node.ERROR
+                node.save()
+                raise
+            else:
+                logger.info("Retrying cloudfabric install")
+                sleep(15)
 
 @task()
 def install_cluster(cluster):
