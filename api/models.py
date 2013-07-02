@@ -152,7 +152,7 @@ write_files:
             instance_type=self.size,
             block_device_map=bdm,
             security_groups=settings.EC2_REGIONS[self.region]['SECURITY_GROUPS'],
-            user_data ='"#include http://'+Site.objects.get_current().domain+self.get_absolute_url()+'cloud_config',
+            user_data ='#include\nhttp://'+Site.objects.get_current().domain+self.get_absolute_url()+'cloud_config/',
         )
         self._instance = res.instances[0]
         self.instance_id = self.instance.id
