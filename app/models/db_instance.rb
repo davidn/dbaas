@@ -24,7 +24,7 @@ class DbInstance < ActiveRecord::Base
 	has_many :region_instances
   has_many :deployment_regions, :through => :region_instances
 
-	accepts_nested_attributes_for :region_instances, reject_if: lambda {|attributes| attributes['count'] == "0"}
+	accepts_nested_attributes_for :region_instances
 
 	## Callbacks ##
 	 before_save :remove_backup_params

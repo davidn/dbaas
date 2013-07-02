@@ -7,7 +7,10 @@
       <label class="control-label">Region Deployment</label>
 
       <div class="controls">
-        <%= @db_instance.region_instances.collect{|region_instance| "#{region_instance.count}x #{region_instance.deployment_region.name}" }.to_sentence %>
+        <%= @db_instance.region_instances.reject{|x| x.count==0}.collect do |region_instance|
+          "#{region_instance.count}x #{region_instance.deployment_region.name}"
+          end.to_sentence(:words_connector => "\n", :two_words_connector => "\n", :last_word_connector => "\n")
+        %>
       </div>
     </div>
     <hr>
