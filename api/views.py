@@ -113,7 +113,7 @@ class NodeViewSet(mixins.ListModelMixin,
 	def get_queryset(self):
 		return Node.objects.filter(cluster=self.kwargs["cluster"])
 
-	@link()
+	@link(permission_classes=[permissions.AllowAny])
 	def cloud_config(self, request, *args, **kwargs):
 		self.object = self.get_object()
 		for node in self.object.cluster.nodes.filter(status=Node.PROVISIONING):
