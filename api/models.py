@@ -34,25 +34,12 @@ class Cluster(models.Model):
     def get_absolute_url(self):
         return ('cluster-detail', [self.pk])
 
-    def configuration(self):
-        properties={
-                'use_tinc': 'false',
-                'netname': 'cf',
-                'transport': 'tcp',
-                'hosts_dir': settings.HOSTS_DIR+str(self.pk)}
-        hosts = {}
-        for node_id, node in enumerate(self.nodes.all(),1):
-            hosts['node_{0}'.format(node_id)] = {
-                'use_tinc': 'false',
-                'netname': 'cf',
-                'transport': 'tcp',
-                'hosts_dir': settings.HOSTS_DIR+str(self.pk),
-                'connect_to': node.dns,
-                'number': node_id,
-                'key': settings.EC2_REGIONS[node.region]['KEY_FILE']
-            }
-        return (properties, hosts)
+    def next_nid(self):
+        return max([node.nid for node in self.nodes.all()]+[0])+1
 
+    @property
+    def subscriptions(self):
+        return ",".join(":".join([str(node.nid), node.dns, "5502"]) for node in self.nodes.all())
 
 class Node(models.Model):
     INITIAL=0
@@ -72,6 +59,7 @@ class Node(models.Model):
         (ERROR, 'An error occured')
     )
     instance_id = models.CharField("EC2 Instance ID", max_length=200, default="", blank=True)
+    nid = models.IntegerField("Node ID", default=None, blank=True, null=True)
     region = models.CharField("EC2 Region", max_length=20)
     size = models.CharField("Size", max_length=20)
     storage = models.IntegerField("Allocated Storage")
@@ -135,7 +123,23 @@ class Node(models.Model):
         else:
             return 'io1'
 
+    @property
+    def cloud_config(self):
+        return  """#cloud-config
+write_files:
+- content: |
+    [mysqld]
+    auto_increment_offset={nid}
+    auto_increment_increment=255
+    geniedb_my_node_id={nid}
+    geniedb_subscriptions={subscriptions}
+  path: /etc/mysql/conf.d/geniedb.cnf
+  owner: root:root
+  permissions: '0644'
+""".format(nid=self.nid, subscriptions=self.cluster.subscriptions)
+
     def do_launch(self):
+        """Do the initial, fast part of launching this node."""
         logger.info("%s: provisioning node", self)
         dev_sda1 = boto.ec2.blockdevicemapping.BlockDeviceType(iops=self.iops, volume_type=self.volume_type)
         dev_sda1.size = self.storage
@@ -146,7 +150,8 @@ class Node(models.Model):
             key_name=settings.EC2_REGIONS[self.region]['KEY_NAME'],
             instance_type=self.size,
             block_device_map=bdm,
-            security_groups=settings.EC2_REGIONS[self.region]['SECURITY_GROUPS']
+            security_groups=settings.EC2_REGIONS[self.region]['SECURITY_GROUPS'],
+            user_data ='"#include http://'+Site.objects.get_current().domain+self.get_absolute_url()+'cloud_config',
         )
         self._instance = res.instances[0]
         self.instance_id = self.instance.id
@@ -154,30 +159,22 @@ class Node(models.Model):
         self.save()
 
     def do_install(self):
-        from tailor.cloudfabric import Cloudfabric
-        from argparse import ArgumentParser
+        """Do slower parts of launching this node."""
         from time import sleep
         while self.pending():
             sleep(15)
         self.update({
-            'Name':'dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.pk),
+            'Name':'dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),
             'username':self.cluster.user.username,
             'cluster':str(self.cluster.pk),
             'node':str(self.pk),
             'url':'http://'+Site.objects.get_current().domain+self.get_absolute_url(),
         })
-        logger.info("%s: installing cloudfabric", self)
-        self.status = self.INSTALLING_CF
-        self.save()
-        parser = ArgumentParser()
-        subparsers = parser.add_subparsers()
-        Cloudfabric.setup_argparse(subparsers.add_parser('cloudfabric'))
-        params = parser.parse_args(['cloudfabric','refresh'])
-        properties, params.hosts = self.cluster.configuration()
-        Cloudfabric(params, properties).run()
-        logger.info("%s: cloudfabric installation complete", self)
         self.status = self.RUNNING
         self.save()
+        #... wait until node has fetched config and installed and tests run...
+        # self.status = self.RUNNING
+        # self.save()
 
     def on_terminate(self):
         logger.debug("%s: terminating", self)
@@ -189,3 +186,8 @@ def node_pre_delete_callback(sender, instance, using, **kwargs):
     if sender != Node:
         return
     instance.on_terminate()
+
+@receiver(models.signals.post_init, sender=Node)
+def node_post_init_callback(sender, instance, **kwargs):
+    if sender == Node and instance.nid is None:
+        instance.nid = instance.cluster.next_nid()

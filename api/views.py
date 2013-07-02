@@ -1,3 +1,4 @@
+from time import sleep
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from rest_framework import viewsets, mixins, status, permissions
@@ -5,7 +6,8 @@ from .models import Cluster, Node
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer
 from .tasks import install, install_cluster
 from rest_framework.response import Response
-from rest_framework.decorators import action
+from rest_framework.decorators import action, link
+from django.http.response import HttpResponse
 
 class Owner(permissions.BasePermission):
 	def has_object_permission(self, request, view, obj):
@@ -110,6 +112,14 @@ class NodeViewSet(mixins.ListModelMixin,
 
 	def get_queryset(self):
 		return Node.objects.filter(cluster=self.kwargs["cluster"])
+
+	@link()
+	def cloud_config(self, request, *args, **kwargs):
+		self.object = self.get_object()
+		for node in self.object.cluster.nodes.filter(status=Node.PROVISIONING):
+			while node.pending():
+				sleep(15)
+		return HttpResponse(self.object.cloud_config, content_type='text/cloud-config')
 
 	@action()
 	def launch(self, request, *args, **kwargs):
