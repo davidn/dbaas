@@ -145,6 +145,7 @@ write_files:
         dev_sda1.size = self.storage
         bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
         bdm['/dev/sda1'] = dev_sda1
+        self.nid = self.cluster.next_nid()
         res = ec2regions[self.region].run_instances(
             settings.EC2_REGIONS[self.region]["AMI"],
             key_name=settings.EC2_REGIONS[self.region]['KEY_NAME'],
@@ -186,8 +187,3 @@ def node_pre_delete_callback(sender, instance, using, **kwargs):
     if sender != Node:
         return
     instance.on_terminate()
-
-@receiver(models.signals.post_init, sender=Node)
-def node_post_init_callback(sender, instance, **kwargs):
-    if sender == Node and instance.nid is None:
-        instance.nid = instance.cluster.next_nid()
