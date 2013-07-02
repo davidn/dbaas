@@ -17,6 +17,7 @@ class DbInstance < ActiveRecord::Base
   validates :master_password, :presence => true
 	validates :allocated_storage, :numericality => true
 	validates :node_size, :presence => true
+	validates :allocated_storage, :numericality => true
 	validates :iops, :numericality => {:only_integer => true, :greater_than => 0}, if: :using_iops?
   
   ## Associations ##
