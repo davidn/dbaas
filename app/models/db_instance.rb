@@ -12,7 +12,7 @@ class DbInstance < ActiveRecord::Base
 
   ## Validations ##
   validates :allocated_storage, :presence => true
-  validates :identifier, :presence => true, :uniqueness => true
+  validates :identifier, :presence => true
   validates :master_username, :presence => true
   validates :master_password, :presence => true
 	validates :allocated_storage, :numericality => true
