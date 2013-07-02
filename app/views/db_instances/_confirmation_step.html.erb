@@ -13,28 +13,12 @@
         %>
       </div>
     </div>
-    <hr>
-    <div class="control-group">
-      <label class="control-label">No. of CPUs</label>
-
-      <div class="controls thirdStep" id="cpu">
-        <%= @db_instance.node_size.cpu %>
-      </div>
-    </div>
-
-    <div class="control-group">
-      <label class="control-label">Amount of RAM</label>
-
-      <div class="controls thirdStep" id="ram">
-        <%= @db_instance.node_size.ram %>
-      </div>
-    </div>
 
     <div class="control-group">
       <label class="control-label">Type</label>
 
       <div class="controls thirdStep" id="type">
-        <%= @db_instance.node_size.name %>
+        <%= @db_instance.node_size.name  %> (<%= @db_instance.node_size.cpu %> CPUs, <%= @db_instance.node_size.ram %>GB RAM)
       </div>
     </div>
 
