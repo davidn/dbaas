@@ -18,6 +18,7 @@ DeploymentRegion.create :name =>"Asia Pacific (Sydney)", :region_name=>"ap-south
 DeploymentRegion.create :name =>"South America (São Paulo)", :region_name=>"sa-east-1"
 
 NodeSize.create :name => "t1.micro",		:cpu => 1,	:ram => 1
+NodeSize.create :name => "m1.small",		:cpu => 1,	:ram => 2
 NodeSize.create :name => "m1.medium",		:cpu => 1,	:ram => 4
 NodeSize.create :name => "m1.large",		:cpu => 2,	:ram => 8
 NodeSize.create :name => "m1.xlarge",		:cpu => 4,	:ram => 16
