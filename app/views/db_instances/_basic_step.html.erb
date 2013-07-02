@@ -63,10 +63,16 @@
     </div>
 
     <div class="control-group">
-      <label class="control-label">Use Provisioned IOPS </label>
+      <label class="control-label">Use Provisioned IOPS</label>
       <div class="controls">
-        <label class="checkbox ">
-          <%= f.check_box :provision_iops %>
+        <%= f.check_box :provision_iops %>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label">IOPS</label>
+      <div class="controls">
+          <%= f.text_field :iops, :class => "input-mini" %>
         </label>
       </div>
     </div>

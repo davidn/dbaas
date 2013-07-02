@@ -2,10 +2,11 @@ require 'rest_client'
 require 'json'
 
 class DbInstance < ActiveRecord::Base
-  attr_accessible :identifier, :master_username, :master_password, :allocated_storage, :provision_iops,:allocated_storage, :provision_iops
+  attr_accessible :identifier, :master_username, :master_password, :allocated_storage, :provision_iops,:allocated_storage
   attr_accessible :enable_automatic_backup, :backup_window, :maintenance_window, :db_instance_class
   attr_accessible :db_name, :db_port, :backup_retention_period, :daily_backup_start_time, :daily_backup_duration
   attr_accessible :region_instances_attributes, :node_size_id
+  attr_accessible :provision_iops, :iops
 	attr_writer :current_step
 	attr_accessor :backup_window
 
@@ -16,6 +17,7 @@ class DbInstance < ActiveRecord::Base
   validates :master_password, :presence => true
 	validates :allocated_storage, :numericality => true
 	validates :node_size, :presence => true
+	validates :iops, :numericality => {:only_integer => true, :greater_than => 0}, if: :using_iops?
   
   ## Associations ##
 	belongs_to :node_size
@@ -52,15 +54,23 @@ class DbInstance < ActiveRecord::Base
 		current_step == steps.last
 	end
 
+	def using_iops?
+		self.provision_iops == true
+	end
+
 	def to_json
 		json = []
 		self.region_instances.each do |region_instance|
 			region_instance.count.times do
-				json.push({
+				this_instance = {
 					:region=>region_instance.deployment_region.region_name,
 					:size=>self.node_size.name,
 					:storage=>self.allocated_storage
-				})
+				}
+				if self.using_iops?
+					this_instance[:iops] = self.iops
+				end
+				json.push(this_instance)
 			end
 		end
 		return json.to_json
