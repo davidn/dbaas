@@ -136,6 +136,12 @@ write_files:
   path: /etc/mysql/conf.d/geniedb.cnf
   owner: root:root
   permissions: '0644'
+- content: |
+    CREATE USER 'root'@'%' IDENTIFIED BY 'password';
+    GRANT ALL ON *.* to 'root'@'%';
+  path: /etc/mysqld-grants
+  owner: root:root
+  permissions: '0644'
 """.format(nid=self.nid, subscriptions=self.cluster.subscriptions)
 
     def do_launch(self):

@@ -23,7 +23,7 @@ DATABASES = {
 
 EC2_REGIONS = {
 	'us-west-2': {
-		'AMI': 'ami-c5e271f5',
+		'AMI': 'ami-a3e77493',
 		'KEY_NAME': 'dbaas',
 		'SECURITY_GROUPS': ['dbaas']
 	},
