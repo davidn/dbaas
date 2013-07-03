@@ -36,25 +36,6 @@ class Cluster(models.Model):
     def get_absolute_url(self):
         return ('cluster-detail', [self.pk])
 
-def configuration(self):
-    properties={
-            'use_tinc': 'false',
-            'netname': 'cf',
-            'transport': 'tcp',
-            'hosts_dir': settings.HOSTS_DIR+str(self.pk)}
-    hosts = {}
-    for node in self.nodes.all():
-        hosts['node_{0}'.format(node.nid)] = {
-            'use_tinc': 'true',
-            'netname': 'cf',
-            'transport': 'tcp',
-            'hosts_dir': settings.HOSTS_DIR+str(self.pk),
-            'connect_to': node.dns,
-            'number': node.nid,
-            'key': settings.EC2_REGIONS[node.region]['KEY_FILE']
-        }
-    return (properties, hosts)
-
     def next_nid(self):
         return max([node.nid for node in self.nodes.all()]+[0])+1
 
