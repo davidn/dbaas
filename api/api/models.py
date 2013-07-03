@@ -152,6 +152,7 @@ write_files:
     auto_increment_increment=255
     geniedb_my_node_id={nid}
     geniedb_subscriptions={subscriptions}
+    default_storage_engine=GenieDB
   path: /etc/mysql/conf.d/geniedb.cnf
   owner: root:root
   permissions: '0644'
