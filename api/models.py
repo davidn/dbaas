@@ -135,7 +135,7 @@ class Node(models.Model):
 
     @property
     def cloud_config(self):
-        connect_to_list = "\n".join("ConnectTo = node_"+str(node.nid) for node in self.cluster.nodes.all())
+        connect_to_list = "\n    ".join("ConnectTo = node_"+str(node.nid) for node in self.cluster.nodes.all())
         rsa_priv = self.tinc_private_key.replace("\n", "\n    ")
         host_files = "\n".join("""- content: |
     Address={address}
