@@ -86,7 +86,6 @@ log/
 config/database.yml
 db/schema.rb
 .DS_Store
-Gemfile.lock
 *~
 config/*.conf
 
