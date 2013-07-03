@@ -1,0 +1,112 @@
+<div class="detailSection row-fluid confirm">
+  <span>Review your instance and click <strong>Save</strong></span>
+
+  <div class=" form-horizontal firstForm">
+
+    <div class="control-group">
+      <label class="control-label">Region Deployment</label>
+
+      <div class="controls">
+        <%= @db_instance.region_instances.reject{|x| x.count==0}.collect do |region_instance|
+          "#{region_instance.count}x #{region_instance.deployment_region.name}"
+          end.to_sentence(:words_connector => "\n", :two_words_connector => "\n", :last_word_connector => "\n")
+        %>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label">Type</label>
+
+      <div class="controls thirdStep" id="type">
+        <%= @db_instance.node_size.name  %> (<%= @db_instance.node_size.cpu %> CPUs, <%= @db_instance.node_size.ram %>GB RAM)
+      </div>
+    </div>
+
+    <hr>
+    <div class="control-group">
+      <label class="control-label">Allocated Storage</label>
+
+      <div class="controls thirdStep">
+          <%= @db_instance.allocated_storage %> GB
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label">Provisioned IOPS</label>
+
+      <div class="controls">
+        <label class="checkbox thirdStep">
+          <%= @db_instance.provision_iops ? @db_instance.iops : "No" %>
+        </label>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label">DB Instance Identifier</label>
+
+      <div class="controls thirdStep">
+        <%= @db_instance.identifier %>
+      </div>
+    </div>
+
+
+    <div class="control-group">
+      <label class="control-label">Master Username</label>
+
+      <div class="controls thirdStep">
+        <%= @db_instance.master_username %>
+      </div>
+    </div>
+
+    <div class="control-group thirdStep">
+      <label class="control-label">Database Name</label>
+
+      <div class="controls">
+        <%= @db_instance.db_name %>
+      </div>
+    </div>
+
+    <div class="control-group thirdStep">
+      <label class="control-label">Database Port</label>
+
+      <div class="controls">
+        <%= @db_instance.db_port %>
+      </div>
+    </div>
+
+    <hr>
+
+  </div>
+
+  <div class="form-horizontal secForm">
+
+    <div class="control-group">
+      <label class="control-label">Enabled Automatic Backups</label>
+
+      <div class="controls thirdStep">
+        <%= @db_instance.enable_automatic_backup ? "Yes" : "No" %>
+      </div>
+    </div>
+
+
+    <div class="control-group">
+      <label class="control-label">Backup Retention Period</label>
+
+      <div class="controls thirdStep">
+        <%= @db_instance.backup_retention_period %> Days
+      </div>
+    </div>
+
+    <div class="control-group backup_window_wrapper thirdStep">
+      <label class="control-label">Backup Window</label>
+
+      <div class="controls">
+
+        <% if @db_instance.daily_backup_start_time.present? and @db_instance.daily_backup_duration.present? %>
+          Daily at <%= @db_instance.daily_backup_start_time.strftime("%H:%M") %> for <%= @db_instance.daily_backup_duration.to_i %> hours
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+</div>

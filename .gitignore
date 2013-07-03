@@ -78,3 +78,15 @@ Session.vim
 !.gitignore
 *~
 
+# Ignore bundler config
+.bundle
+log/
+/tmp
+.idea/
+config/database.yml
+db/schema.rb
+.DS_Store
+Gemfile.lock
+*~
+config/*.conf
+

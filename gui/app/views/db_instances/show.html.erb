@@ -1,0 +1,22 @@
+<div class="container">
+  <div class="innerWrap">
+    <div class="innerDiv row-fluid">
+      <div class="detailSection row-fluid db_instance_info">
+        <h1>Your Cluster</h2>
+        <% @db_instance.cluster_info["nodes"].each do |node| %>
+          <div class="span12">
+            <h2>Node x</h2>
+            <div class="span6">
+              <p class="span3">IP Address:</p>
+              <p class="span3"><%= node["ip"] %></p>
+            </div>
+            <div class="span6">
+              <p class="span3">Status:</p>
+              <p class="span3"><%= node["status"] %></p>
+            </div>
+          </div>
+        <%end%>
+      </div>
+    </div>
+  </div>
+</div>
