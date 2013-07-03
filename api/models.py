@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from Crypto import Random
+from Crypto.PublicKey import RSA
 from django.db import models
 from django.dispatch.dispatcher import receiver
 from django.conf import settings
@@ -34,12 +36,34 @@ class Cluster(models.Model):
     def get_absolute_url(self):
         return ('cluster-detail', [self.pk])
 
+def configuration(self):
+    properties={
+            'use_tinc': 'false',
+            'netname': 'cf',
+            'transport': 'tcp',
+            'hosts_dir': settings.HOSTS_DIR+str(self.pk)}
+    hosts = {}
+    for node in self.nodes.all():
+        hosts['node_{0}'.format(node.nid)] = {
+            'use_tinc': 'true',
+            'netname': 'cf',
+            'transport': 'tcp',
+            'hosts_dir': settings.HOSTS_DIR+str(self.pk),
+            'connect_to': node.dns,
+            'number': node.nid,
+            'key': settings.EC2_REGIONS[node.region]['KEY_FILE']
+        }
+    return (properties, hosts)
+
     def next_nid(self):
         return max([node.nid for node in self.nodes.all()]+[0])+1
 
     @property
     def subscriptions(self):
-        return ",".join(":".join([str(node.nid), node.dns, "5502"]) for node in self.nodes.all())
+        return ",".join(":".join([str(node.nid), '192.168.33.'+str(node.nid), "5502"]) for node in self.nodes.all())
+
+def gen_private_key():
+    return RSA.generate(2048, Random.new().read).exportKey()
 
 class Node(models.Model):
     INITIAL=0
@@ -67,6 +91,7 @@ class Node(models.Model):
     ip = models.IPAddressField("EC2 Instance IP Address", default="", blank=True)
     iops = models.IntegerField("Provisioned IOPS", default=None, blank=True, null=True)
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
+    tinc_private_key = models.TextField("Tinc Private Key", default=gen_private_key)
     cluster = models.ForeignKey(Cluster, related_name='nodes')
 
     def __repr__(self):
@@ -124,7 +149,20 @@ class Node(models.Model):
             return 'io1'
 
     @property
+    def public_key(self):
+        return RSA.importKey(self.tinc_private_key).publickey().exportKey()
+
+    @property
     def cloud_config(self):
+        connect_to_list = "\n".join("ConnectTo = node_"+str(node.nid) for node in self.cluster.nodes.all())
+        rsa_priv = self.tinc_private_key.replace("\n", "\n    ")
+        host_files = "\n".join("""- content: |
+    Address={address}
+    Subnet=192.168.33.{nid}/32
+    {rsa_pub}
+  path: /etc/tinc/cf/hosts/node_{nid}
+  owner: root:root
+  permissions: '0644'""".format(nid=node.nid,address=node.dns,rsa_pub=node.public_key.replace("\n","\n    ")) for node in self.cluster.nodes.all())
         return  """#cloud-config
 write_files:
 - content: |
@@ -142,7 +180,29 @@ write_files:
   path: /etc/mysqld-grants
   owner: root:root
   permissions: '0644'
-""".format(nid=self.nid, subscriptions=self.cluster.subscriptions)
+- content: |
+    Name = node_{nid}
+    Device = /dev/net/tun
+    {connect_to_list}
+  path: /etc/tinc/cf/tinc.conf
+  owner: root:root
+  permissions: '0644'
+- content: |
+    #!/bin/sh
+    ip addr flush cf
+    ip addr add 192.168.33.{nid}/24 dev cf
+    ip link set cf up
+  path: /etc/tinc/cf/tinc-up
+  owner: root:root
+  permissions: '0755'
+- content: |
+  path: /etc/tinc/cf/rsa_key.priv
+  owner: root:root
+  permissions: '0600'
+  content: |
+    {rsa_priv}
+{host_files}
+""".format(nid=self.nid, subscriptions=self.cluster.subscriptions, connect_to_list=connect_to_list, rsa_priv=rsa_priv, host_files=host_files)
 
     def do_launch(self):
         """Do the initial, fast part of launching this node."""
