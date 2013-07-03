@@ -97,7 +97,7 @@ class Node(models.Model):
     def __repr__(self):
         optional = ""
         if self.iops != "":
-            optional += ", iops={iops}".format(instance_id=repr(self.iops))
+            optional += ", iops={iops}".format(iops=repr(self.iops))
         if self.instance_id != "":
             optional += ", instance_id={instance_id}".format(instance_id=repr(self.instance_id))
         if self.status != "":
