@@ -73,7 +73,30 @@ class Node(models.Model):
     iops = models.IntegerField("Provisioned IOPS", default=None, blank=True, null=True)
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
     tinc_private_key = models.TextField("Tinc Private Key", default=gen_private_key)
+    mysql_setup = models.TextField("MySQL setup",blank=True)
     cluster = models.ForeignKey(Cluster, related_name='nodes')
+
+    def __init__(self, *args, **kwargs):
+        if not 'mysql_setup' in kwargs:
+            databases = kwargs['databases'] if 'databases' in kwargs else []
+            username = kwargs['username'] if 'username' in kwargs else 'geniedb'
+            password = kwargs['password'] if 'password' in kwargs else 'password'
+            kwargs['mysql_setup'] = ''.join("CREATE DATABASE '{0}';".format(db) for db in databases)
+            kwargs['mysql_setup'] += "CREATE USER '{0}'@'%' IDENTIFIED BY '{1}';".format(username, password)
+            kwargs['mysql_setup'] += ''.join("GRANT ALL ON {0}.* to '{1}'@'%';".format(username,db) for db in databases)
+        try:
+            del kwargs['databases']
+        except KeyError:
+            pass
+        try:
+            del kwargs['username']
+        except KeyError:
+            pass
+        try:
+            del kwargs['password']
+        except KeyError:
+            pass
+        super(Node, self).__init__(*args, **kwargs)
 
     def __repr__(self):
         optional = ""
@@ -157,8 +180,7 @@ write_files:
   owner: root:root
   permissions: '0644'
 - content: |
-    CREATE USER 'root'@'%' IDENTIFIED BY 'password';
-    GRANT ALL ON *.* to 'root'@'%';
+   {mysql_setup}
   path: /etc/mysqld-grants
   owner: root:root
   permissions: '0644'
@@ -184,7 +206,12 @@ write_files:
   content: |
     {rsa_priv}
 {host_files}
-""".format(nid=self.nid, subscriptions=self.cluster.subscriptions, connect_to_list=connect_to_list, rsa_priv=rsa_priv, host_files=host_files)
+""".format(nid=self.nid,
+           subscriptions=self.cluster.subscriptions,
+           connect_to_list=connect_to_list,
+           rsa_priv=rsa_priv,
+           host_files=host_files,
+           mysql_setup=self.mysql_setup.replace("\n","\n    "))
 
     def do_launch(self):
         """Do the initial, fast part of launching this node."""

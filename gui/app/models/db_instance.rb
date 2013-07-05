@@ -66,7 +66,10 @@ class DbInstance < ActiveRecord::Base
 				this_instance = {
 					:region=>region_instance.deployment_region.region_name,
 					:size=>self.node_size.name,
-					:storage=>self.allocated_storage
+					:storage=>self.allocated_storage,
+					:username=>self.master_username,
+					:password=>self.master_password,
+					:databases=>[self.db_name],
 				}
 				if self.using_iops?
 					this_instance[:iops] = self.iops

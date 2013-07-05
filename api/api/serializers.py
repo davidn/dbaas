@@ -51,6 +51,9 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
 class NodeSerializer(serializers.HyperlinkedModelSerializer):
 	status = StatusField(choices=Node.STATUSES, read_only=True)
+	username = serializers.CharField(required=False)
+	password = serializers.CharField(required=False)
+	databases = serializers.WritableField(required=False)
 	def __init__(self, *args, **kwargs):
 		serializers.HyperlinkedModelSerializer.__init__(self, *args, **kwargs)
 		url_field = MultiHyperlinkedIdentityField(view_name='node-detail', lookup_field='pk')
@@ -58,7 +61,7 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 		self.fields['url'] = url_field
 	class Meta:
 		model = Node
-		fields = ('instance_id','nid','dns','ip','size', 'storage', 'region', 'status', 'cluster', 'iops')
+		fields = ('instance_id','nid','dns','ip','size', 'storage', 'region', 'status', 'cluster', 'iops', 'mysql_setup','username','password','databases')
 		read_only_fields = ('instance_id','dns','ip','nid')
 
 	def validate_region(self,attrs,source):
