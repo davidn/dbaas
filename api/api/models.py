@@ -76,28 +76,6 @@ class Node(models.Model):
     mysql_setup = models.TextField("MySQL setup",blank=True)
     cluster = models.ForeignKey(Cluster, related_name='nodes')
 
-    def __init__(self, *args, **kwargs):
-        if not 'mysql_setup' in kwargs:
-            databases = kwargs['databases'] if 'databases' in kwargs else []
-            username = kwargs['username'] if 'username' in kwargs else 'geniedb'
-            password = kwargs['password'] if 'password' in kwargs else 'password'
-            kwargs['mysql_setup'] = ''.join("CREATE DATABASE '{0}';".format(db) for db in databases)
-            kwargs['mysql_setup'] += "CREATE USER '{0}'@'%' IDENTIFIED BY '{1}';".format(username, password)
-            kwargs['mysql_setup'] += ''.join("GRANT ALL ON {0}.* to '{1}'@'%';".format(username,db) for db in databases)
-        try:
-            del kwargs['databases']
-        except KeyError:
-            pass
-        try:
-            del kwargs['username']
-        except KeyError:
-            pass
-        try:
-            del kwargs['password']
-        except KeyError:
-            pass
-        super(Node, self).__init__(*args, **kwargs)
-
     def __repr__(self):
         optional = ""
         if self.iops != "":
