@@ -77,7 +77,7 @@ class MysqlSetupField(serializers.WritableField):
 				password = data['password'] if 'password' in data else 'password'
 				native = ''.join('CREATE DATABASE {0};'.format(db) for db in databases) + \
 					"CREATE USER '{0}'@'%' IDENTIFIED BY '{1}';".format(username, password) + \
-					''.join("GRANT ALL ON {0}.* to '{1}'@'%';".format(username,db) for db in databases) 
+					''.join("GRANT ALL ON {0}.* to '{1}'@'%';".format(db,username) for db in databases) 
 
 		value = self.from_native(native)
 		if self.source == '*':
