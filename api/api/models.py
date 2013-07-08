@@ -214,7 +214,7 @@ write_files:
         self.save()
         # EC2 Instance
         try:
-            sgs = [settings.EC2_REGIONS[self.region]['SECURITY_GROUPS'], sg.name]
+            sgs = settings.EC2_REGIONS[self.region]['SECURITY_GROUPS'] + [sg.name]
         except KeyError:
             sgs = [sg.name]
         res = ec2regions[self.region].run_instances(
