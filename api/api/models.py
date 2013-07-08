@@ -265,11 +265,11 @@ runcmd:
         if self.status in (self.PROVISIONING, self.INSTALLING_CF, self.RUNNING, self.ERROR):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
             ec2regions[self.region].terminate_instances([self.instance_id])
-            self.status = self.SHUTTING_DOWN
-            self.save()
-            while self.shutting_down():
-                sleep(15)
             if self.security_group != "":
+                self.status = self.SHUTTING_DOWN
+                self.save()
+                while self.shutting_down():
+                    sleep(15)
                 logger.debug("%s: terminating security group %s", self, self.security_group)
                 ec2regions[self.region].delete_security_group(group_id=self.security_group)
 
