@@ -70,6 +70,7 @@ class DbInstance < ActiveRecord::Base
 					:username=>self.master_username,
 					:password=>self.master_password,
 					:databases=>[self.db_name],
+					:port=>self.db_port,
 				}
 				if self.using_iops?
 					this_instance[:iops] = self.iops

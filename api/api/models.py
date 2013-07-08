@@ -64,12 +64,14 @@ class Node(models.Model):
         (ERROR, 'An error occured')
     )
     instance_id = models.CharField("EC2 Instance ID", max_length=200, default="", blank=True)
+    security_group = models.CharField("EC2 Security Group ID", max_length=200, default="", blank=True)
     nid = models.IntegerField("Node ID", default=None, blank=True, null=True)
     region = models.CharField("EC2 Region", max_length=20)
     size = models.CharField("Size", max_length=20)
     storage = models.IntegerField("Allocated Storage")
     dns = models.CharField("EC2 Public DNS Address", max_length=200, default="", blank=True)
     ip = models.IPAddressField("EC2 Instance IP Address", default="", blank=True)
+    port = models.PositiveIntegerField("MySQL Port", default=3306)
     iops = models.IntegerField("Provisioned IOPS", default=None, blank=True, null=True)
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
     tinc_private_key = models.TextField("Tinc Private Key", default=gen_private_key)
@@ -88,6 +90,8 @@ class Node(models.Model):
             optional += ", dns={dns}".format(dns=repr(self.dns))
         if self.ip != "":
             optional += ", ip={ip}".format(ip=repr(self.sip))
+        if self.port != self.port.defult:
+            optional += ", port={port}".format(port=repr(self.port))
         return "Node(pk={pk}, cluster={cluster}, size={size}, storage={storage}, region={region}{optional})".format(
             pk=repr(self.pk),
             cluster=repr(self.cluster),
@@ -99,9 +103,9 @@ class Node(models.Model):
 
     def __unicode__(self):
         if len(self.dns) == 0:
-            return "Node {id}".format(id=self.instance_id)
+            return "Node {nid} in Cluster {c}".format(nid=self.nid, c=self.cluster.pk)
         else:
-            return "Node {id} at {dns}".format(id=self.instance_id, dns=self.dns)
+            return "Node {nid} in Cluster {c} at {dns}".format(nid=self.nid, c=self.cluster.pk, dns=self.dns)
 
     def pending(self):
         return self.instance.update()=='pending'
@@ -199,12 +203,23 @@ write_files:
         bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
         bdm['/dev/sda1'] = dev_sda1
         self.nid = self.cluster.next_nid()
+        # Security Group
+        sg = ec2regions[self.region].create_security_group('dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),'Security group for '+str(self))
+        self.security_group = sg.id
+        ec2regions[self.region].authorize_security_group(group_id=sg.id, ip_protocol='tcp',from_port=self.port, to_port=self.port)
+        logger.debug("%s: Created Security Group %s (named %s) with port %s open", self, sg.id, sg.name, self.port)
+        self.save()
+        # EC2 Instance
+        try:
+            sgs = [settings.EC2_REGIONS[self.region]['SECURITY_GROUPS'], sg.name]
+        except KeyError:
+            sgs = [sg.name]
         res = ec2regions[self.region].run_instances(
             settings.EC2_REGIONS[self.region]["AMI"],
             key_name=settings.EC2_REGIONS[self.region]['KEY_NAME'],
             instance_type=self.size,
             block_device_map=bdm,
-            security_groups=settings.EC2_REGIONS[self.region]['SECURITY_GROUPS'],
+            security_groups=sgs,
             user_data ='#include\nhttp://'+Site.objects.get_current().domain+self.get_absolute_url()+'cloud_config/',
         )
         self._instance = res.instances[0]
@@ -234,6 +249,9 @@ write_files:
         logger.debug("%s: terminating", self)
         if self.status in (self.PROVISIONING, self.INSTALLING_CF, self.RUNNING, self.ERROR):
             ec2regions[self.region].terminate_instances([self.instance_id])
+            if self.security_group != "":
+                logger.debug("%s: terminating security group %s", self, self.security_group)
+                ec2regions[self.region].delete_security_group(group_id=self.security_group)
 
 @receiver(models.signals.pre_delete, sender=Node)
 def node_pre_delete_callback(sender, instance, using, **kwargs):
