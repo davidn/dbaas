@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from time import sleep
 from Crypto import Random
 from Crypto.PublicKey import RSA
 from django.db import models
@@ -109,6 +110,9 @@ class Node(models.Model):
 
     def pending(self):
         return self.instance.update()=='pending'
+
+    def shutting_down(self):
+        return self.instance.update()=='shutting-down'
 
     def update(self, tags={}):
         self.dns = self.instance.public_dns_name
@@ -242,7 +246,6 @@ runcmd:
 
     def do_install(self):
         """Do slower parts of launching this node."""
-        from time import sleep
         while self.pending():
             sleep(15)
         self.update({
@@ -262,6 +265,10 @@ runcmd:
         if self.status in (self.PROVISIONING, self.INSTALLING_CF, self.RUNNING, self.ERROR):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
             ec2regions[self.region].terminate_instances([self.instance_id])
+            self.status = self.SHUTTING_DOWN
+            self.save()
+            while self.shutting_down():
+                sleep(15)
             if self.security_group != "":
                 logger.debug("%s: terminating security group %s", self, self.security_group)
                 ec2regions[self.region].delete_security_group(group_id=self.security_group)
