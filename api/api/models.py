@@ -189,6 +189,8 @@ write_files:
   content: |
     {rsa_priv}
 {host_files}
+runcmd:
+- [lokkit, -p, "{port}:tcp"]
 """.format(nid=self.nid,
            port=self.port,
            subscriptions=self.cluster.subscriptions,
