@@ -209,7 +209,12 @@ write_files:
         # Security Group
         sg = ec2regions[self.region].create_security_group('dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),'Security group for '+str(self))
         self.security_group = sg.id
-        ec2regions[self.region].authorize_security_group(group_id=sg.id, ip_protocol='tcp',from_port=self.port, to_port=self.port)
+        ec2regions[self.region].authorize_security_group(
+            group_id=sg.id,
+            ip_protocol='tcp',
+            cidr_ip='0.0.0.0/0',
+            from_port=self.port,
+            to_port=self.port)
         logger.debug("%s: Created Security Group %s (named %s) with port %s open", self, sg.id, sg.name, self.port)
         self.save()
         # EC2 Instance
