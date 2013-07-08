@@ -6,7 +6,7 @@
     <% @db_instance.region_instances.each do |region_instance| %>
       <div class="control-group">
         <%= f.fields_for :region_instances, region_instance do |r| %>
-          <%= r.label :cost, region_instance.deployment_region.name, :class => "control-label" %>
+          <%= r.label :count, region_instance.deployment_region.name, :class => "control-label" %>
           <div class="controls">
             <%= r.text_field :count, :value => region_instance.count, :size => 2, :class => "input-small" %>
           </div>
@@ -20,7 +20,7 @@
   <div class="form-horizontal firstForm row-fluid">
     <div class="span8">
       <div class="control-group flatSlider">
-        <label class="control-label">No. of CPUs</label>
+        <%= f.label :cpu_count, :class => "control-label" %>
         <div class="controls" id="cpu" >
           <%= select_tag :cpu_count, options_for_select(CpuOptions.map {|x| [x,x]}) %>
           <div class="cpuNum">
@@ -32,7 +32,7 @@
       </div>
 
       <div class="control-group">
-        <label class="control-label">Amount of RAM (GB)</label>
+        <%= f.label :ram_amount, :class => "control-label" %>
         <div class="controls flatSlider" id="ram" >
           <%= select_tag :ram_amount, options_for_select(RamOptions.map {|x| [x,x]}) %>
           <div class="ramNum">
@@ -53,7 +53,9 @@
   <div class="form-horizontal secForm">
 
     <div class="control-group">
-      <label class="control-label">Allocated Storage <a href="javascript:void(0)" rel="tooltip" title="" data-original-title="(Minimum: 5GB, Maximum: 3072 GB) Higher allocated storage may improve IOPS performance" class="question">?</a></label>
+      <%= f.label :allocated_storage, :class => "control-label" do %>
+        Allocated Storage <a href="javascript:void(0)" tabindex="-1" rel="tooltip" title="" data-original-title="(Minimum: 5GB, Maximum: 3072 GB) Higher allocated storage may improve IOPS performance" class="question">?</a>
+      <% end %>
       <div class="controls">
         <div class="input-prepend input-append">
           <span class="add-on">GB</span>
@@ -63,14 +65,14 @@
     </div>
 
     <div class="control-group">
-      <label class="control-label">Use Provisioned IOPS</label>
+      <%= f.label :provision_iops, :class => "control-label" %>
       <div class="controls">
         <%= f.check_box :provision_iops %>
       </div>
     </div>
 
     <div class="control-group">
-      <label class="control-label">IOPS</label>
+      <%= f.label :iops, :class => "control-label" %>
       <div class="controls">
           <%= f.text_field :iops, :class => "input-mini" %>
         </label>
@@ -79,7 +81,9 @@
 
 
     <div class="control-group">
-      <label class="control-label">DB Instance Identifier <a href="javascript:void(0)"  rel="tooltip" title="e.g. mydbinstance" class="question">?</a></label>
+      <%= f.label :identifier, :class => "control-label" do %>
+        DB Instance Identifier <a href="javascript:void(0)" tabindex="-1" rel="tooltip" title="e.g. mydbinstance" class="question">?</a>
+      <% end %>
       <div class="controls">
         <%= f.text_field :identifier %>
       </div>
@@ -87,7 +91,9 @@
 
 
     <div class="control-group">
-      <label class="control-label">Master Username <a href="javascript:void(0)" rel="tooltip" title="e.g. awsuser" class="question">?</a></label>
+      <%= f.label :master_username, :class => "control-label" do %>
+        Master Username <a href="javascript:void(0)" tabindex="-1" rel="tooltip" title="e.g. awsuser" class="question">?</a>
+      <% end %>
       <div class="controls">
         <%= f.text_field :master_username %>
       </div>
@@ -95,22 +101,25 @@
 
 
     <div class="control-group">
-      <label class="control-label">Master Password <a href="javascript:void(0)" rel="tooltip" title="e.g. mypassword" class="question">?</a></label>
+      <%= f.label :master_password, :class => "control-label" do %>
+        Master Password <a href="javascript:void(0)" tabindex="-1" rel="tooltip" title="e.g. mypassword" class="question">?</a>
+      <% end %>
       <div class="controls">
         <%= f.password_field :master_password %>
       </div>
     </div>
 
     <div class="control-group">
-      <label class="control-label">Database Name <a href="javascript:void(0)" rel="tooltip" title="Note: if no database name is specified then no initial MYSQL database will be created on the DB.
-          Instance." class="question">?</a></label>
+      <%= f.label :db_name, :class => "control-label" do %>
+        Database Name <a href="javascript:void(0)" tabindex="-1" rel="tooltip" title="Note: if no database name is specified then no initial MYSQL database will be created on the DB instance." class="question">?</a>
+      <% end %>
       <div class="controls">
         <%= f.text_field :db_name %>
       </div>
     </div>
 
     <div class="control-group">
-      <label class="control-label">Database Port </label>
+      <%= f.label :db_port, :class => "control-label" %>
       <div class="controls">
         <%= f.text_field :db_port, :value => DefaultPort%>
       </div>

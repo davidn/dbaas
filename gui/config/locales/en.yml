@@ -3,6 +3,20 @@
 
 en:
   hello: "Hello world"
+  helpers:
+    label:
+      db_instance:
+        cpu_count: "No. of CPUs"
+        ram_amount: "Amount of RAM (GB)"
+        allocated_storage: "Allocated Storage"
+        provision_iops: "Use Provisioned IOPS"
+        iops: "IOPS"
+        identifier: "DB Instance Identifier"
+        master_username: "Master Username"
+        master_password: "Master Password"
+        db_name: "Database Name"
+        db_port: "Database Port"
+
   activerecord:
     errors:
       messages:

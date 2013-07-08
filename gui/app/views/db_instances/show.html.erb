@@ -2,7 +2,7 @@
   <div class="innerWrap">
     <div class="innerDiv row-fluid">
       <div class="detailSection row-fluid db_instance_info">
-        <h1>Your Cluster</h2>
+        <h1>Cluster <%=@db_instance.identifier%></h2>
         <% @db_instance.cluster_info["nodes"].each do |node| %>
           <div class="span12">
             <h2>Node <%= node["nid"] %></h2>
