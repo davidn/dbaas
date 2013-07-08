@@ -89,7 +89,7 @@ class Node(models.Model):
         if self.dns != "":
             optional += ", dns={dns}".format(dns=repr(self.dns))
         if self.ip != "":
-            optional += ", ip={ip}".format(ip=repr(self.sip))
+            optional += ", ip={ip}".format(ip=repr(self.ip))
         if self.port != self.port.defult:
             optional += ", port={port}".format(port=repr(self.port))
         return "Node(pk={pk}, cluster={cluster}, size={size}, storage={storage}, region={region}{optional})".format(
