@@ -198,11 +198,14 @@ write_files:
     def do_launch(self):
         """Do the initial, fast part of launching this node."""
         logger.info("%s: provisioning node", self)
+        # Elastic Block Storage
         dev_sda1 = boto.ec2.blockdevicemapping.BlockDeviceType(iops=self.iops, volume_type=self.volume_type)
         dev_sda1.size = self.storage
         bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
         bdm['/dev/sda1'] = dev_sda1
+        # NID
         self.nid = self.cluster.next_nid()
+        logger.debug("%s: Assigned NID %s", self, self.nid)
         # Security Group
         sg = ec2regions[self.region].create_security_group('dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),'Security group for '+str(self))
         self.security_group = sg.id
@@ -224,6 +227,7 @@ write_files:
         )
         self._instance = res.instances[0]
         self.instance_id = self.instance.id
+        logger.debug("%s: Rservation %s launched. Instance id %s", self, res.id, self.instance_id)
         self.status = self.PROVISIONING
         self.save()
 
@@ -246,8 +250,8 @@ write_files:
         # self.save()
 
     def on_terminate(self):
-        logger.debug("%s: terminating", self)
         if self.status in (self.PROVISIONING, self.INSTALLING_CF, self.RUNNING, self.ERROR):
+            logger.debug("%s: terminating instance %s", self, self.instance_id)
             ec2regions[self.region].terminate_instances([self.instance_id])
             if self.security_group != "":
                 logger.debug("%s: terminating security group %s", self, self.security_group)
