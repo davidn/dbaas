@@ -158,6 +158,7 @@ write_files:
     geniedb_my_node_id={nid}
     geniedb_subscriptions={subscriptions}
     default_storage_engine=GenieDB
+    port={port}
   path: /etc/mysql/conf.d/geniedb.cnf
   owner: root:root
   permissions: '0644'
@@ -189,6 +190,7 @@ write_files:
     {rsa_priv}
 {host_files}
 """.format(nid=self.nid,
+           port=self.port,
            subscriptions=self.cluster.subscriptions,
            connect_to_list=connect_to_list,
            rsa_priv=rsa_priv,
