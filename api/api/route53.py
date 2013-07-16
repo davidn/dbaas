@@ -46,7 +46,7 @@ def r53_create_heath_check(self, xml_body):
 connection.Route53Connection.create_health_check = r53_create_heath_check
 
 def r53_delete_heath_check(self, health_check_id):
-    uri = '/%s/healthcheck/%s' % self.Version, health_check_id
+    uri = '/%s/healthcheck/%s' % (self.Version, health_check_id)
     response = self.make_request('DELETE', uri)
     body = response.read()
     boto.log.debug(body)
