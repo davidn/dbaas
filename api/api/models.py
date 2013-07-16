@@ -12,7 +12,7 @@ from logging import getLogger
 import boto.ec2
 import boto.connect_route53
 from .route53 import RecordWithHealthCheck, HealthCheck, record
-from .uuid import UUIDField
+from .uuid_field import UUIDField
 
 logger = getLogger(__name__)
 
