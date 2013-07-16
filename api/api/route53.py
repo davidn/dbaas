@@ -63,8 +63,8 @@ class HealthCheck(ResultSet):
         <CallerReference>%(caller_reference)s</CallerReference>
         <HealthCheckConfig>
             <IPAddress>%(ip_address)s</IPAddress>
-            <Type>%(type)s</Type>
             %(port_body)s
+            <Type>%(type)s</Type>
             %(resource_path_body)s
             %(fqdn_body)s
         </HealthCheckConfig>
