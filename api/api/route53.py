@@ -97,4 +97,4 @@ class HealthCheck(ResultSet):
         """Commit this change"""
         if not self.connection:
             self.connection = boto.connect_route53()
-        return self.connection.create_health_check(self.hosted_zone_id, self.to_xml())
+        return self.connection.create_health_check(self.to_xml())
