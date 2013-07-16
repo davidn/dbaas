@@ -37,6 +37,10 @@ EC2_REGIONS = {
 AWS_ACCESS_KEY=""
 AWS_SECRET_KEY=""
 
+ROUTE53_ZONE=""
+LBR_DNS_TEMPLATE="{cluster}.dbaas.example.com"
+NODE_DNS_TEMPLATE="{cluster}-{node}.dbaas.example.com"
+
 HOSTS_DIR='/tmp/hosts'
 
 REST_FRAMEWORK = {

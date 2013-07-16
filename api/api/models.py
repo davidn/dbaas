@@ -10,6 +10,9 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from logging import getLogger
 import boto.ec2
+import boto.connect_route53
+from .route53 import RecordWithHealthCheck, HealthCheck, record
+from .uuid import UUIDField
 
 logger = getLogger(__name__)
 
@@ -26,12 +29,13 @@ ec2regions = EC2Regions()
 
 class Cluster(models.Model):
     user = models.ForeignKey(User)
+    uuid = UUIDField(primary_key=True)
 
     def __repr__(self):
-        return "Cluster(pk={pk}, user={user})".format(pk=repr(self.pk), user=repr(self.user))
+        return "Cluster(uuid={uuid}, user={user})".format(uuid=repr(self.uuid), user=repr(self.user))
 
     def __unicode__(self):
-        return "Cluster {pk}".format(pk=self.pk)
+        return self.lbr_dns_name
 
     @models.permalink
     def get_absolute_url(self):
@@ -39,6 +43,10 @@ class Cluster(models.Model):
 
     def next_nid(self):
         return max([node.nid for node in self.nodes.all()]+[0])+1
+
+    @property
+    def lbr_dns_name(self):
+        settings.LBR_DNS_TEMPLATE.format(cluster=self.pk)
 
     @property
     def subscriptions(self):
@@ -66,6 +74,7 @@ class Node(models.Model):
     )
     instance_id = models.CharField("EC2 Instance ID", max_length=200, default="", blank=True)
     security_group = models.CharField("EC2 Security Group ID", max_length=200, default="", blank=True)
+    health_check = models.CharField("R53 Health Check ID", max_length=200, default="", blank=True)
     nid = models.IntegerField("Node ID", default=None, blank=True, null=True)
     region = models.CharField("EC2 Region", max_length=20)
     size = models.CharField("Size", max_length=20)
@@ -103,10 +112,7 @@ class Node(models.Model):
         )
 
     def __unicode__(self):
-        if len(self.dns) == 0:
-            return "Node {nid} in Cluster {c}".format(nid=self.nid, c=self.cluster.pk)
-        else:
-            return "Node {nid} in Cluster {c} at {dns}".format(nid=self.nid, c=self.cluster.pk, dns=self.dns)
+        return self.dns_name
 
     def pending(self):
         return self.instance.update()=='pending'
@@ -124,6 +130,10 @@ class Node(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('node-detail', [self.cluster.pk, self.pk])
+
+    @property
+    def dns_name(self):
+        settings.NODE_DNS_TEMPLATE.format(cluster=self.cluster.pk, nid=self.nid)
 
     @property
     def instance(self):
@@ -255,6 +265,16 @@ runcmd:
             'node':str(self.pk),
             'url':'http://'+Site.objects.get_current().domain+self.get_absolute_url(),
         })
+        r53 = boto.connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+        health_check = HealthCheck(connection=r53, caller_reference=self.instance_id,
+            ip_address=self.ip, port=self.port, health_check_type='TCP')
+        self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
+        rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE_ID)
+        rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.cluster.lbr_dns_name,
+            type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, region=self.region))
+        rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
+            resource_records=[self.ip]))
+        rrs.commit()
         self.status = self.RUNNING
         self.save()
         #... wait until node has fetched config and installed and tests run...
@@ -264,6 +284,14 @@ runcmd:
     def on_terminate(self):
         if self.status in (self.PROVISIONING, self.INSTALLING_CF, self.RUNNING, self.ERROR):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
+            r53 = boto.connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE_ID)
+            rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.cluster.lbr_dns_name,
+                type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, region=self.region))
+            rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
+                resource_records=[self.ip]))
+            rrs.commit()
+            r53.delete_health_check(self.health_check)
             ec2regions[self.region].terminate_instances([self.instance_id])
             if self.security_group != "":
                 self.status = self.SHUTTING_DOWN
