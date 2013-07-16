@@ -133,7 +133,7 @@ class Node(models.Model):
 
     @property
     def dns_name(self):
-        return settings.NODE_DNS_TEMPLATE.format(cluster=self.cluster.pk, nid=self.nid)
+        return settings.NODE_DNS_TEMPLATE.format(cluster=self.cluster.pk, node=self.nid)
 
     @property
     def instance(self):
