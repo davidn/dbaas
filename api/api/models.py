@@ -81,7 +81,7 @@ class Node(models.Model):
     storage = models.IntegerField("Allocated Storage")
     dns = models.CharField("EC2 Public DNS Address", max_length=200, default="", blank=True)
     ip = models.IPAddressField("EC2 Instance IP Address", default="", blank=True)
-    port = models.PositiveIntegerField("MySQL Port", default=3306)
+    port = models.PositiveIntegerField("MySQL Port", default=settings.DEFAULT_PORT)
     iops = models.IntegerField("Provisioned IOPS", default=None, blank=True, null=True)
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
     tinc_private_key = models.TextField("Tinc Private Key", default=gen_private_key)
@@ -100,7 +100,7 @@ class Node(models.Model):
             optional += ", dns={dns}".format(dns=repr(self.dns))
         if self.ip != "":
             optional += ", ip={ip}".format(ip=repr(self.ip))
-        if self.port != self.port.defult:
+        if self.port != settings.DEFAULT_PORT:
             optional += ", port={port}".format(port=repr(self.port))
         return "Node(pk={pk}, cluster={cluster}, size={size}, storage={storage}, region={region}{optional})".format(
             pk=repr(self.pk),

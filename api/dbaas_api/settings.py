@@ -41,6 +41,8 @@ ROUTE53_ZONE=""
 LBR_DNS_TEMPLATE="{cluster}.dbaas.example.com"
 NODE_DNS_TEMPLATE="{cluster}-{node}.dbaas.example.com"
 
+DEFAULT_PORT = 3306
+
 HOSTS_DIR='/tmp/hosts'
 
 REST_FRAMEWORK = {
