@@ -4,11 +4,11 @@ from boto.route53 import *
 from boto.resultset import ResultSet
 
 # If need to bump connection version
-#def connect_route53():
-#        route53 = boto.connect_route53()
-#        route53.Version = '2012-12-12'
-#        return route53
-#boto.connect_route53 = connect_route53
+def connect_route53():
+        route53 = boto.connect_route53()
+        route53.Version = '2012-12-12'
+        return route53
+boto.connect_route53 = connect_route53
 
 class RecordWithHealthCheck(record.Record):
     def __init__(self, health_check_id, *args, **kwargs):
@@ -22,10 +22,10 @@ class RecordWithHealthCheck(record.Record):
                       out)
 
 # If you need to change the version number
-#class ResourceRecordSet(record.ResourceRecordSets):
-#    def __init__(self, connection=None, hosted_zone_id=None, comment=None):
-#        record.ResourceRecordSets.__init__(self, connection=connection, hosted_zone_id=hosted_zone_id, comment=comment)
-#        self.ChangeResourceRecordSetsBody = re.sub('https://route53.amazonaws.com/doc/\d\d\d\d-\d\d?-\d\d?/', 'https://route53.amazonaws.com/doc/2012-12-12/', self.ChangeResourceRecordSetsBody)
+record.ResourceRecordSets.ChangeResourceRecordSetsBody = re.sub(
+    'https://route53.amazonaws.com/doc/\d\d\d\d-\d\d?-\d\d?/',
+    'https://route53.amazonaws.com/doc/2012-12-12/',
+    record.ResourceRecordSets.ChangeResourceRecordSetsBody)
 
 
 def r53_create_heath_check(self, xml_body):
