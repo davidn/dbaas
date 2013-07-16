@@ -14,7 +14,7 @@ class MultiHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
 		attributes are not configured to correctly match the URL conf.
 		"""
 		lookup_field = getattr(obj, self.lookup_field)
-		kwargs = {self.lookup_field: lookup_field, 'cluster': obj.cluster.id}
+		kwargs = {self.lookup_field: lookup_field, 'cluster': obj.cluster.pk}
 		try:
 			return reverse(view_name, kwargs=kwargs, request=request, format=format)
 		except NoReverseMatch:
