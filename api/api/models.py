@@ -46,7 +46,7 @@ class Cluster(models.Model):
 
     @property
     def lbr_dns_name(self):
-        settings.LBR_DNS_TEMPLATE.format(cluster=self.pk)
+        return settings.LBR_DNS_TEMPLATE.format(cluster=self.pk)
 
     @property
     def subscriptions(self):
@@ -133,7 +133,7 @@ class Node(models.Model):
 
     @property
     def dns_name(self):
-        settings.NODE_DNS_TEMPLATE.format(cluster=self.cluster.pk, nid=self.nid)
+        return settings.NODE_DNS_TEMPLATE.format(cluster=self.cluster.pk, nid=self.nid)
 
     @property
     def instance(self):
