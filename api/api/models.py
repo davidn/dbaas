@@ -79,7 +79,6 @@ class Node(models.Model):
     region = models.CharField("EC2 Region", max_length=20)
     size = models.CharField("Size", max_length=20)
     storage = models.IntegerField("Allocated Storage")
-    dns = models.CharField("EC2 Public DNS Address", max_length=200, default="", blank=True)
     ip = models.IPAddressField("EC2 Instance IP Address", default="", blank=True)
     port = models.PositiveIntegerField("MySQL Port", default=settings.DEFAULT_PORT)
     iops = models.IntegerField("Provisioned IOPS", default=None, blank=True, null=True)
@@ -96,8 +95,6 @@ class Node(models.Model):
             optional += ", instance_id={instance_id}".format(instance_id=repr(self.instance_id))
         if self.status != "":
             optional += ", status={status}".format(status=repr(self.status))
-        if self.dns != "":
-            optional += ", dns={dns}".format(dns=repr(self.dns))
         if self.ip != "":
             optional += ", ip={ip}".format(ip=repr(self.ip))
         if self.port != settings.DEFAULT_PORT:
@@ -121,7 +118,6 @@ class Node(models.Model):
         return self.instance.update()=='shutting-down'
 
     def update(self, tags={}):
-        self.dns = self.instance.public_dns_name
         self.ip = self.instance.ip_address
         self.save()
         for k,v in tags.items():
@@ -162,7 +158,7 @@ class Node(models.Model):
     {rsa_pub}
   path: /etc/tinc/cf/hosts/node_{nid}
   owner: root:root
-  permissions: '0644'""".format(nid=node.nid,address=node.dns,rsa_pub=node.public_key.replace("\n","\n    ")) for node in self.cluster.nodes.all())
+  permissions: '0644'""".format(nid=node.nid,address=node.dns_name,rsa_pub=node.public_key.replace("\n","\n    ")) for node in self.cluster.nodes.all())
         return  """#cloud-config
 write_files:
 - content: |

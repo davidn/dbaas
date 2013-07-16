@@ -98,8 +98,8 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 		self.fields['url'] = url_field
 	class Meta:
 		model = Node
-		fields = ('instance_id','nid','dns','ip','port','size', 'storage', 'region', 'status', 'cluster', 'iops', 'mysql_setup')
-		read_only_fields = ('instance_id','dns','ip','nid')
+		fields = ('instance_id','nid','dns_name','ip','port','size', 'storage', 'region', 'status', 'cluster', 'iops', 'mysql_setup')
+		read_only_fields = ('instance_id','dns_name','ip','nid')
 
 	def validate_region(self,attrs,source):
 		if attrs[source] not in settings.EC2_REGIONS:
