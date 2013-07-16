@@ -19,7 +19,7 @@ class RecordWithHealthCheck(record.Record):
     def to_xml(self):
         out = super(RecordWithHealthCheck,self).to_xml()
         return re.sub('</ResourceRecordSet>',
-                      '<HealthCheckId>%(health_check_id)s</HealthCheckId></ResourceRecordSet>' % self.health_check_id,
+                      '<HealthCheckId>%(health_check_id)s</HealthCheckId></ResourceRecordSet>' % {'health_check_id':self.health_check_id},
                       out)
 
 # If you need to change the version number
