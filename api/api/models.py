@@ -269,7 +269,7 @@ runcmd:
         health_check = HealthCheck(connection=r53, caller_reference=self.instance_id,
             ip_address=self.ip, port=self.port, health_check_type='TCP')
         self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
-        rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE_ID)
+        rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
         rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.cluster.lbr_dns_name,
             type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, region=self.region))
         rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
@@ -285,7 +285,7 @@ runcmd:
         if self.status in (self.PROVISIONING, self.INSTALLING_CF, self.RUNNING, self.ERROR):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE_ID)
+            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
             rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.cluster.lbr_dns_name,
                 type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, region=self.region))
             rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
