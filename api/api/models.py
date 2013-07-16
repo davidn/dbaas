@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from logging import getLogger
 import boto.ec2
-import boto.connect_route53
+from boto import connect_route53
 from .route53 import RecordWithHealthCheck, HealthCheck, record
 from .uuid_field import UUIDField
 
@@ -265,7 +265,7 @@ runcmd:
             'node':str(self.pk),
             'url':'http://'+Site.objects.get_current().domain+self.get_absolute_url(),
         })
-        r53 = boto.connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+        r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         health_check = HealthCheck(connection=r53, caller_reference=self.instance_id,
             ip_address=self.ip, port=self.port, health_check_type='TCP')
         self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
@@ -284,7 +284,7 @@ runcmd:
     def on_terminate(self):
         if self.status in (self.PROVISIONING, self.INSTALLING_CF, self.RUNNING, self.ERROR):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
-            r53 = boto.connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE_ID)
             rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.cluster.lbr_dns_name,
                 type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, region=self.region))
