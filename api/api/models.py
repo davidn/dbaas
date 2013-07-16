@@ -10,8 +10,8 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from logging import getLogger
 import boto.ec2
-from boto import connect_route53
 from .route53 import RecordWithHealthCheck, HealthCheck, record
+from boto import connect_route53
 from .uuid_field import UUIDField
 
 logger = getLogger(__name__)

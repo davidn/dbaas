@@ -4,8 +4,9 @@ from boto.route53 import *
 from boto.resultset import ResultSet
 
 # If need to bump connection version
-def connect_route53():
-        route53 = boto.connect_route53()
+_connect_route53 = boto.connect_route53
+def connect_route53(*args, **kwargs):
+        route53 = _connect_route53(*args, **kwargs)
         route53.Version = '2012-12-12'
         return route53
 boto.connect_route53 = connect_route53
