@@ -1,0 +1,237 @@
+
+<markup id="login">
+	<div id="login-div">
+		<h3>Log in to GenieDB DBaaS</h3>
+		<form class="form-horizontal box" id="login-form">
+			<div class="control-group">
+				<label class="control-label" for="username">Username</label>
+				<div class="controls">
+					<input type="text" id="username" placeholder="Username">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="password">Password</label>
+				<div class="controls">
+					<input type="password" id="password" placeholder="Password">
+				</div>
+			</div>
+			<div class="control-group">
+				<div class="controls">
+					<button type="submit" class="btn" id="login-submit" data-loading-text="Signing in...">Sign in</button>
+				</div>
+			</div>
+			<div id="login-fail" class="alert alert-bock alert-error fade in" style="display: none">
+				<button type="button" class="close" data-dismiss="alert">&times;</button>
+				Login Failed.
+			</div>
+		</form>
+	</div>
+</markup>
+
+<markup id="home">
+	<div id="home-div" class="box">
+		<div class="btn-toolbar">
+			<div class="btn-group">
+				<button class="btn" data-toggle="modal" href="#launch"><i class="icon-plus"></i> Add Cluster</button>
+				<button class="btn" id="refresh"><i class="icon-repeat"></i> Refresh</button>
+			</div>
+			<div class="btn-group pull-right">
+				<button class="btn" id="logout"><i class="icon-off"></i> Logout</button>
+			</div>
+		</div>
+		<div class="well well-large">
+			{{#each clusters}}
+			<div class="cluster-box">
+				<div class="btn-toolbar">
+					<div class="btn-group">
+						<button class="btn add-node" data-cluster="{{this.url}}"><i class="icon-plus"></i> Add Node</button>
+						<button class="btn launch-cluster" data-cluster="{{this.url}}"><i class="icon-play"></i> Launch</button>
+						<button class="btn delete-cluster" data-cluster="{{this.url}}" data-loading-text="Deleting..."><i class="icon-remove"></i> Delete</button>
+					</div>
+				</div>
+				{{#each this.nodes}}
+					<div class="node-box">
+						<span class="node-id pull-right">{{this.nid}}</span>
+						<span class="node-region">{{this.region}}</span>
+						<span class="node-status node-status-{{this.status}}">
+							&#x25cf; <span class="node-status-text">{{this.status}}</span>
+						</span>
+						<span class="node-dns">{{this.ip}}:{{this.port}}</span>
+						<div class="node-buttons btn-toolbar">
+							<div class="btn-group">
+								<button class="btn delete-node" data-node="{{this.url}}" data-loading-text="Deleting..."><i class="icon-remove"></i> Delete</button>
+							</div>
+				</div>
+					</div>
+				{{else}}
+					no nodes
+				{{/each}}
+			</div>
+		{{else}}
+			You have no clusters. Click "Add Cluster" to get started!
+		{{/each}}
+		</div>
+	</div>
+	<div class="modal hide fade" role="dialog" id="launch">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+			<h3>New Cluster</h3>
+		</div>
+		<div class="modal-body">
+			<span><strong>Region Deployment</strong></span>
+			<div class="form-horizontal">
+				{{#each regions}}
+					<div class="control-group">
+						<label class="control-label" for="{{this.name}}_count">{{this.text}}</label>
+						<div class="controls">
+							<input class="input-small" id="{{this.name}}_count" name={{this.name}}_count" size="2" type="text" value="0" />
+						</div>
+					</div>
+				{{/each}}
+			</div>
+		
+			<span><strong>Provide the per-node resource allocations</strong></span>
+			<div class="form-horizontal row-fluid">
+				<div class="span8">
+					<div class="control-group">
+						<label class="control-label" for="cpu_count">No. of CPUs</label>
+						<div class="controls">
+							<select id="cpu_count" class="hide" name="cpu_count">
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="4">4</option>
+								<option value="8">8</option>
+							</select>
+							<div id="cpu-slider"></div>
+							<div class="slider-numbers">
+								<small>1</small>
+								<small>2</small>
+								<small>4</small>
+								<small>8</small>
+							</div>
+						</div>
+					</div>
+		
+					<div class="control-group">
+						<label class="control-label" for="ram_amount">Amount of RAM (GB)</label>
+						<div class="controls">
+							<select id="ram_amount" class="hide" name="ram_amount">
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="4">4</option>
+								<option value="8">8</option>
+								<option value="16">16</option>
+								<option value="32">32</option>
+								<option value="64">64</option>
+							</select>
+							<div id="ram-slider"></div>
+							<div class="slider-numbers">
+								<small>1</small>
+								<small>2</small>
+								<small>4</small>
+								<small>8</small>
+								<small>16</small>
+								<small>32</small>
+								<small>64</small>
+							</div>
+						</div>
+					</div>
+				</div>
+		
+				<div class="span4">
+					<select id="node_size" name="node_size" size="3" style="height: 7em; width: 10em">
+						{{#each instance_type}}
+							<option value="{{this.name}}">{{this.name}}</option>
+						{{/each}}
+					</select>
+				</div>
+			</div>
+		
+			<span><strong>Provide the details for your GenieDB Database Instance</strong></span>
+			<div class="form-horizontal">
+		
+				<div class="control-group">
+					<label class="control-label" for="allocated_storage">
+						Allocated Storage
+						<a tabindex="-1" rel="tooltip" title="(Minimum: 5GB, Maximum: 3072 GB) Higher allocated storage may improve IOPS performance" class="question">?</a>
+					</label>
+					<div class="controls">
+						<div class="input-prepend">
+							<span class="add-on">GB</span>
+							<input class="span2" id="allocated_storage" name="allocated_storage" size="30" type="text" value="10" />
+						</div>
+					</div>
+				</div>
+		
+				<div class="control-group">
+					<label class="control-label" for="provision_iops">Use Provisioned IOPS</label>
+					<div class="controls">
+						<input id="provision_iops" name="provision_iops" type="checkbox" value="1" />
+					</div>
+				</div>
+		
+				<div class="control-group">
+					<label class="control-label" for="iops">IOPS</label>
+					<div class="controls">
+						<input class="input-mini" id="iops" name="iops" size="30" type="text" />
+					</div>
+				</div>
+		
+		
+				<div class="control-group">
+					<label class="control-label" for="identifier"> DB Instance Identifier <a tabindex="-1" rel="tooltip" title="e.g. mydbinstance" class="question">?</a>
+					</label>
+					<div class="controls">
+						<input id="identifier" name="identifier" size="30" type="text" />
+					</div>
+				</div>
+		
+		
+				<div class="control-group">
+					<label class="control-label" for="master_username"> Master Username <a tabindex="-1" rel="tooltip" title="e.g. awsuser" class="question">?</a>
+					</label>
+					<div class="controls">
+						<input id="master_username" name="master_username" size="30" type="text" />
+					</div>
+				</div>
+		
+		
+				<div class="control-group">
+					<label class="control-label" for="master_password">
+						Master Password <a tabindex="-1"
+						rel="tooltip" title="e.g. mypassword" class="question">?</a>
+					</label>
+					<div class="controls">
+						<input id="master_password"
+							name="master_password" size="30" type="password" />
+					</div>
+				</div>
+		
+				<div class="control-group">
+					<label class="control-label" for="db_name">
+						Database Name <a tabindex="-1"
+						rel="tooltip"
+						title="Note: if no database name is specified then no initial MYSQL database will be created on the DB instance."
+						class="question">?</a>
+					</label>
+					<div class="controls">
+						<input id="db_name" name="db_name"
+							size="30" type="text" />
+					</div>
+				</div>
+		
+				<div class="control-group">
+					<label class="control-label" for="db_port">Database
+						Port</label>
+					<div class="controls">
+						<input id="db_port" name="db_port"
+							size="30" type="text" value="3306" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<input class="btn btn-primary" id="add-cluster" type="submit" value="Continue" data-loading-text="Launching..."/>
+		</div>
+	</div>
+</markup>
