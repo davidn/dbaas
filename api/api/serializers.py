@@ -90,6 +90,7 @@ class MysqlSetupField(serializers.WritableField):
 
 class NodeSerializer(serializers.HyperlinkedModelSerializer):
 	status = StatusField(choices=Node.STATUSES, read_only=True)
+	dns_name = serializers.CharField(read_only=True)
 	mysql_setup = MysqlSetupField()
 	def __init__(self, *args, **kwargs):
 		serializers.HyperlinkedModelSerializer.__init__(self, *args, **kwargs)
@@ -99,7 +100,7 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 	class Meta:
 		model = Node
 		fields = ('instance_id','nid','dns_name','ip','port','size', 'storage', 'region', 'status', 'cluster', 'iops', 'mysql_setup')
-		read_only_fields = ('instance_id','dns_name','ip','nid')
+		read_only_fields = ('instance_id','ip','nid')
 
 	def validate_region(self,attrs,source):
 		if attrs[source] not in settings.EC2_REGIONS:
@@ -108,6 +109,7 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 
 class ClusterSerializer(serializers.HyperlinkedModelSerializer):
 	nodes = NodeSerializer(many=True, read_only=True)
+	dns_name = serializers.CharField(read_only=True)
 	class Meta:
 		model = Cluster
-		fields = ('user','nodes')
+		fields = ('user','dns_name','nodes')
