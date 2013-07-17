@@ -109,7 +109,7 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 
 class ClusterSerializer(serializers.HyperlinkedModelSerializer):
 	nodes = NodeSerializer(many=True, read_only=True)
-	dns_name = serializers.CharField(read_only=True)
+	lbr_dns_name = serializers.CharField(read_only=True)
 	class Meta:
 		model = Cluster
-		fields = ('user','dns_name','nodes')
+		fields = ('user','lbr_dns_name','nodes')
