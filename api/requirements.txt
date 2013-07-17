@@ -3,3 +3,4 @@ django-celery
 boto
 south
 djangorestframework
+django-cors-headers
