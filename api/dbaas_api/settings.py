@@ -28,7 +28,7 @@ EC2_REGIONS = {
 		'SECURITY_GROUPS': ['dbaas']
 	},
 	'us-east-1': {
-		'AMI': 'ami-e2ff9f8b',
+		'AMI': 'ami-2a374e43',
         'KEY_NAME': 'dbaas',
 		'SECURITY_GROUPS': ['dbaas']
 	},
