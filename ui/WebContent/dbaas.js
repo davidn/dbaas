@@ -249,6 +249,7 @@ $(function() {
 		if (token == '') {
 			$("#main").markup("login");
 			$("#login-submit").on("click", login);
+			$("#login-register").on("click", register);
 		} else {
 			refresh_home();
 		}
