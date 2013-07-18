@@ -1,6 +1,6 @@
 
-var endpoint = 'http://dbaas.geniedb.com:4000/api/';
-var auth_endpoint = 'http://dbaas.geniedb.com:4000/api-token-auth/';
+var endpoint = 'https://dbaas.geniedb.com:4000/api/';
+var auth_endpoint = 'https://dbaas.geniedb.com:4000/api-token-auth/';
 var token = '';
 if(typeof(Storage)!=="undefined") {
 	t = localStorage.getItem('token');
@@ -10,7 +10,7 @@ if(typeof(Storage)!=="undefined") {
 }
 
 function api_call(method, path, object, success, error) {
-	$.ajax(path.indexOf('http://')==0?path:endpoint+path, {
+	$.ajax(path.indexOf('https://')==0?path:endpoint+path, {
 		type: method,
 		contentType: 'application/json',
 		success: success,
