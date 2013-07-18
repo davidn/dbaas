@@ -25,6 +25,7 @@ class UserViewSet(mixins.ListModelMixin,
 			mixins.CreateModelMixin,
 			mixins.UpdateModelMixin,
 			viewsets.GenericViewSet):
+	model = User
 	serializer_class = UserSerializer
 	permission_classes = (Owner,permissions.IsAdminUser)
 
