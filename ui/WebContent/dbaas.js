@@ -100,6 +100,7 @@ function display_clusters(data, status, xhr) {
 	setup_dialog();
 	$("#refresh").on("click", refresh_home);
 	$("#logout").on("click", logout);
+	$("#add-cluster").off("click");
 	$("#add-cluster").on("click", add_cluster);
 	$(".add-node").on("click", add_node);
 	$(".launch-cluster").on("click", launch_cluster);
