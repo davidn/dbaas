@@ -245,7 +245,6 @@ function setup_dialog() {
 }
 
 $(function() {
-	$.markup.debug = 4;
 	$.markup.load(function() {
 		if (token == '') {
 			$("#main").markup("login");
