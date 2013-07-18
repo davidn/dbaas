@@ -125,7 +125,7 @@ function register_error(xhr, status, error) {
 
 function register(e) {
 	e.preventDefault();
-	api_call('POST', 'user/', {username: $("#username").val(), password: $("#password").val()}, login, register_error);
+	api_call('POST', 'users/', {username: $("#username").val(), password: $("#password").val()}, login, register_error);
 }
 
 function login_callback(e) {
