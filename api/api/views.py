@@ -22,9 +22,18 @@ class Owner(permissions.BasePermission):
 
 class UserViewSet(mixins.ListModelMixin,
 			mixins.RetrieveModelMixin,
+			mixins.CreateModelMixin,
+			mixins.UpdateModelMixin,
 			viewsets.GenericViewSet):
-	queryset = User.objects.all()
 	serializer_class = UserSerializer
+	permission_classes = (Owner,permissions.IsAdminUser)
+
+	def get_queryset(self):
+		return User.objects.filter(user=self.request.user)
+
+	@link(permission_classes=[permissions.AllowAny])
+	def create(self, *args, **kwargs):
+		super(UserViewSet, self).create(*args, **kwargs)
 
 class ClusterViewSet(mixins.CreateModelMixin,
 			mixins.ListModelMixin,

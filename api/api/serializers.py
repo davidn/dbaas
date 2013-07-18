@@ -4,6 +4,7 @@ from rest_framework import serializers
 from .models import Cluster, Node
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework.reverse import reverse
+from django.contrib.auth.hashers import make_password
 
 class MultiHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
 	def get_url(self, obj, view_name, request, format):
@@ -44,10 +45,23 @@ class StatusField(serializers.ChoiceField):
 	def to_native(self,value):
 		return dict(self.choices)[value]
 
+class PasswordField(serializers.CharField):
+	def to_native(self):
+		return None
+
+	def from_native(self, value):
+		return make_password(value)
+
 class UserSerializer(serializers.HyperlinkedModelSerializer):
+	password = PasswordField()
 	class Meta:
 		model = User
-		fields = ('username',)
+		fields = ('username', 'first_name', 'last_name', 'email', 'password')
+
+	def validate_username(self, attrs, source):
+		if self.object is not None and attrs[source] != self.object.username:
+			serializers.ValidationError("Username changing disabled")
+		return attrs
 
 class MysqlSetupField(serializers.WritableField):
 	def field_from_native(self, data, files, field_name, into):
