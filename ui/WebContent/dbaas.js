@@ -10,6 +10,7 @@ if(typeof(Storage)!=="undefined") {
 }
 
 function api_call(method, path, object, success, error) {
+	var headers = token == '' ? {}: {Authorization: 'Token '+token};
 	$.ajax(path.indexOf('https://')==0?path:endpoint+path, {
 		type: method,
 		contentType: 'application/json',
@@ -17,7 +18,7 @@ function api_call(method, path, object, success, error) {
 		error: error,
 		data: JSON.stringify(object),
 		dataType: 'json',
-		headers: {Authorization: 'Token '+token}
+		headers: headers
 	});
 }
 
