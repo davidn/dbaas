@@ -119,9 +119,21 @@ function login_callback(data, status, xhr) {
 function login_error(xhr, status, error) {
 	$("#login-fail").show();
 }
+function register_error(xhr, status, error) {
+	$("#register-fail").show();
+}
 
-function login(e) {
+function register(e) {
 	e.preventDefault();
+	api_call('POST', 'user/', {username: $("#username").val(), password: $("#password").val()}, login, register_error);
+}
+
+function login_callback(e) {
+	e.preventDefault();
+	login();
+}
+
+function login() {
 	$.ajax(auth_endpoint, {
 		type: 'POST',
 		contentType: 'application/json',
@@ -140,7 +152,8 @@ function logout(e) {
 	token = '';
 	localStorage.removeItem('token');
 	$("#main").markup("login");
-	$("#login-submit").on("click", login);
+	$("#login-submit").on("click", login_callback);
+	$("#login-register").on("click", register);
 	
 }
 
