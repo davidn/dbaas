@@ -29,7 +29,7 @@ class IsOwnerOrAdminUserOrCreateMethod(permissions.IsAdminUser):
 	def has_permission(self, request, view):
 		if getattr(view, request.method.lower()) == view.create:
 			return True
-		return super(IsOwnerOrAdminUserOrCreateMethod, self).has_permission(self, request, view)
+		return super(IsOwnerOrAdminUserOrCreateMethod, self).has_permission(request, view)
 
 class UserViewSet(mixins.ListModelMixin,
 			mixins.RetrieveModelMixin,
