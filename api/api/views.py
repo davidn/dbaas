@@ -88,10 +88,12 @@ class ClusterViewSet(mixins.CreateModelMixin,
 			for d in request.DATA:
 				new_d = d.copy()
 				new_d["cluster"] = self.object.get_absolute_url()
+				new_d["region"] = self.object.get_region_set(d["region"])
 				data.append(new_d)
 		else:
 			data = request.DATA.copy()
 			data["cluster"] = self.object.get_absolute_url()
+			data["region"] = self.object.get_region_set(request.DATA["region"])
 		serializer = NodeSerializer(data=data, files=request.FILES, context={
 			'request': self.request,
 			'format': self.format_kwarg,

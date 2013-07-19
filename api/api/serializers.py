@@ -102,10 +102,18 @@ class MysqlSetupField(serializers.WritableField):
 			self.run_validators(value)
 			into[self.source or field_name] = value
 
+class RegionField(serializers.WritableField):
+	def to_native(self, value):
+		return value.region
+
+	def from_native(self, value):
+		return value
+
 class NodeSerializer(serializers.HyperlinkedModelSerializer):
 	status = StatusField(choices=Node.STATUSES, read_only=True)
 	dns_name = serializers.CharField(read_only=True)
 	mysql_setup = MysqlSetupField()
+	region = RegionField(required=True)
 	def __init__(self, *args, **kwargs):
 		serializers.HyperlinkedModelSerializer.__init__(self, *args, **kwargs)
 		url_field = MultiHyperlinkedIdentityField(view_name='node-detail', lookup_field='pk')
@@ -123,7 +131,7 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 
 class ClusterSerializer(serializers.HyperlinkedModelSerializer):
 	nodes = NodeSerializer(many=True, read_only=True)
-	lbr_dns_name = serializers.CharField(read_only=True)
+	dns_name = serializers.CharField(read_only=True)
 	class Meta:
 		model = Cluster
-		fields = ('user','lbr_dns_name','nodes')
+		fields = ('user','dns_name','nodes')

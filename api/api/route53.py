@@ -11,6 +11,13 @@ def connect_route53(*args, **kwargs):
         return route53
 boto.connect_route53 = connect_route53
 
+class RecordWithTargetHealthCheck(record.Record):
+    def to_xml(self):
+        out = super(RecordWithTargetHealthCheck,self).to_xml()
+        return re.sub('</AliasTarget>',
+                      '<EvaluateTargetHealth>true</EvaluateTargetHealth></AliasTarget>',
+                      out)
+
 class RecordWithHealthCheck(record.Record):
     def __init__(self, health_check_id, *args, **kwargs):
         super(RecordWithHealthCheck,self).__init__( *args, **kwargs)

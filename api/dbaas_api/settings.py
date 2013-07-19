@@ -38,7 +38,8 @@ AWS_ACCESS_KEY=""
 AWS_SECRET_KEY=""
 
 ROUTE53_ZONE=""
-LBR_DNS_TEMPLATE="{cluster}.dbaas.example.com"
+CLUSTER_DNS_TEMPLATE="{cluster}.dbaas.example.com"
+REGION_DNS_TEMPLATE="{cluster}-{region}.dbaas.example.com"
 NODE_DNS_TEMPLATE="{cluster}-{node}.dbaas.example.com"
 
 DEFAULT_PORT = 3306
