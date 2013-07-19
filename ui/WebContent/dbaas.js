@@ -129,7 +129,7 @@ function register(e) {
 	api_call('POST', 'users/', {username: $("#username").val(), password: $("#password").val()}, login, register_error);
 }
 
-function login_callback(e) {
+function login_button(e) {
 	e.preventDefault();
 	login();
 }
@@ -153,7 +153,7 @@ function logout(e) {
 	token = '';
 	localStorage.removeItem('token');
 	$("#main").markup("login");
-	$("#login-submit").on("click", login_callback);
+	$("#login-submit").on("click", login_button);
 	$("#login-register").on("click", register);
 	
 }
