@@ -20,6 +20,17 @@ class Owner(permissions.BasePermission):
 	def has_permission(self, request, view):
 		return not request.user.is_anonymous()
 
+class IsOwnerOrAdminUserOrCreateMethod(permissions.IsAdminUser):
+	def has_object_permission(self, request, view, obj):
+		if obj == request.user:
+			return True
+		return super(IsOwnerOrAdminUserOrCreateMethod, self).has_object_permission(request,view,obj)
+
+	def has_permission(self, request, view):
+		if getattr(view, request.method.lower()) == view.create:
+			return True
+		return super(IsOwnerOrAdminUserOrCreateMethod, self).has_permission(self, request, view)
+
 class UserViewSet(mixins.ListModelMixin,
 			mixins.RetrieveModelMixin,
 			mixins.CreateModelMixin,
@@ -27,14 +38,10 @@ class UserViewSet(mixins.ListModelMixin,
 			viewsets.GenericViewSet):
 	model = User
 	serializer_class = UserSerializer
-	permission_classes = (Owner,permissions.IsAdminUser)
+	permission_classes = (IsOwnerOrAdminUserOrCreateMethod,)
 
 	def get_queryset(self):
 		return User.objects.filter(user=self.request.user)
-
-	@link(permission_classes=[permissions.AllowAny])
-	def create(self, *args, **kwargs):
-		super(UserViewSet, self).create(*args, **kwargs)
 
 class ClusterViewSet(mixins.CreateModelMixin,
 			mixins.ListModelMixin,
