@@ -72,7 +72,7 @@ class RegionNodeSet(models.Model):
     def dns_name(self):
         return settings.REGION_DNS_TEMPLATE.format(cluster=self.cluster.pk, region=self.region)
 
-    def on_save(self):
+    def do_launch(self):
         logger.debug("%s: setting up dns for region %s, cluster %s", self, self.region, self.cluster.pk)
         r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
@@ -349,8 +349,3 @@ def region_pre_delete_callback(sender, instance, using, **kwargs):
     if sender != RegionNodeSet:
         return
     instance.on_terminate()
-
-@receiver(models.signals.post_save, sender=RegionNodeSet)
-def region_post_save_callback(sender, instance, created, raw, using, **kwargs):
-    if sender == RegionNodeSet and created:
-        instance.on_save()

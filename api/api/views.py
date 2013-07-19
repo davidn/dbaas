@@ -112,6 +112,8 @@ class ClusterViewSet(mixins.CreateModelMixin,
 		for node in self.object.nodes.all():
 			if node.status == Node.INITIAL:
 				node.do_launch()
+		for region in self.object.regions.all():
+			region.do_launch()
 		install_cluster.delay(self.object)
 		serializer = self.get_serializer(self.object)
 		headers = self.get_success_headers(serializer.data)
@@ -147,6 +149,7 @@ class NodeViewSet(mixins.ListModelMixin,
 		self.object = self.get_object()
 		if self.object.status == Node.INITIAL:
 			self.object.do_launch()
+			self.object.region.do_launch()
 			install.delay(self.object)
 			serializer = self.get_serializer(self.object)
 			headers = self.get_success_headers(serializer.data)
