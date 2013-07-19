@@ -46,7 +46,7 @@ class StatusField(serializers.ChoiceField):
 		return dict(self.choices)[value]
 
 class PasswordField(serializers.CharField):
-	def to_native(self):
+	def to_native(self, value):
 		return None
 
 	def from_native(self, value):
