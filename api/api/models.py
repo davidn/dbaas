@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from time import sleep
+import re
 from Crypto import Random
 from Crypto.PublicKey import RSA
 from django.db import models
@@ -10,7 +11,7 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from logging import getLogger
 import boto.ec2
-from .route53 import RecordWithHealthCheck, HealthCheck, record
+from .route53 import RecordWithHealthCheck, HealthCheck, record, exception
 from boto import connect_route53
 from .uuid_field import UUIDField
 from api.route53 import RecordWithTargetHealthCheck
@@ -87,7 +88,13 @@ class RegionNodeSet(models.Model):
         rrs.add_change_record('DELETE', RecordWithTargetHealthCheck(name=self.cluster.dns_name,
             type='A', ttl=60, alias_hosted_zone_id=settings.ROUTE53_ZONE, alias_dns_name=self.dns_name,
             identifier="%s-%s" % (self.cluster.pk, self.region), region=self.region))
-        rrs.commit()
+        try:
+            rrs.commit()
+        except exception.DNSServerError, e:
+            if not re.match('bit it was not found', e.body):
+                raise
+            else:
+                logger.warning("%s: terminating dns for region %s, cluster %s skipped as record not found")
 
 class Node(models.Model):
     INITIAL=0
