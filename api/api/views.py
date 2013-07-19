@@ -41,7 +41,9 @@ class UserViewSet(mixins.ListModelMixin,
 	permission_classes = (IsOwnerOrAdminUserOrCreateMethod,)
 
 	def get_queryset(self):
-		return User.objects.filter(user=self.request.user)
+		if self.request.user and self.request.user.is_staff:
+			return User.objects.all()
+		return User.objects.filter(pk=self.request.user.pk)
 
 class ClusterViewSet(mixins.CreateModelMixin,
 			mixins.ListModelMixin,
