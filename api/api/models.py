@@ -262,9 +262,9 @@ runcmd:
         self.nid = self.cluster.next_nid()
         logger.debug("%s: Assigned NID %s", self, self.nid)
         # Security Group
-        sg = ec2regions[self.region].create_security_group('dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),'Security group for '+str(self))
+        sg = ec2regions[self.region.region].create_security_group('dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),'Security group for '+str(self))
         self.security_group = sg.id
-        ec2regions[self.region].authorize_security_group(
+        ec2regions[self.region.region].authorize_security_group(
             group_id=sg.id,
             ip_protocol='tcp',
             cidr_ip='0.0.0.0/0',
@@ -274,12 +274,12 @@ runcmd:
         self.save()
         # EC2 Instance
         try:
-            sgs = settings.EC2_REGIONS[self.region]['SECURITY_GROUPS'] + [sg.name]
+            sgs = settings.EC2_REGIONS[self.region.region]['SECURITY_GROUPS'] + [sg.name]
         except KeyError:
             sgs = [sg.name]
-        res = ec2regions[self.region].run_instances(
-            settings.EC2_REGIONS[self.region]["AMI"],
-            key_name=settings.EC2_REGIONS[self.region]['KEY_NAME'],
+        res = ec2regions[self.region.region].run_instances(
+            settings.EC2_REGIONS[self.region.region]["AMI"],
+            key_name=settings.EC2_REGIONS[self.region.region]['KEY_NAME'],
             instance_type=self.size,
             block_device_map=bdm,
             security_groups=sgs,
@@ -329,14 +329,14 @@ runcmd:
                 resource_records=[self.ip]))
             rrs.commit()
             r53.delete_health_check(self.health_check)
-            ec2regions[self.region].terminate_instances([self.instance_id])
+            ec2regions[self.region.region].terminate_instances([self.instance_id])
             if self.security_group != "":
                 self.status = self.SHUTTING_DOWN
                 self.save()
                 while self.shutting_down():
                     sleep(15)
                 logger.debug("%s: terminating security group %s", self, self.security_group)
-                ec2regions[self.region].delete_security_group(group_id=self.security_group)
+                ec2regions[self.region.region].delete_security_group(group_id=self.security_group)
 
 @receiver(models.signals.pre_delete, sender=Node)
 def node_pre_delete_callback(sender, instance, using, **kwargs):
