@@ -91,7 +91,7 @@ class RegionNodeSet(models.Model):
         try:
             rrs.commit()
         except exception.DNSServerError, e:
-            if not re.match('but it was not found', e.body):
+            if re.search('but it was not found', e.body) is None:
                 raise
             else:
                 logger.warning("%s: terminating dns for region %s, cluster %s skipped as record not found")
