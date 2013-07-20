@@ -76,10 +76,14 @@ class RegionNodeSet(models.Model):
         logger.debug("%s: setting up dns for region %s, cluster %s", self, self.region, self.cluster.pk)
         r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-        rrs.add_change_record('CREATE', RecordWithTargetHealthCheck(name=self.cluster.dns_name,
-            type='A', ttl=60, alias_hosted_zone_id=settings.ROUTE53_ZONE, alias_dns_name=self.dns_name,
-            identifier="%s-%s" % (self.cluster.pk, self.region), region=self.region))
+        rrs.add_change_record('CREATE', self.record)
         rrs.commit()
+
+    @property
+    def record(self):
+        return RecordWithTargetHealthCheck(name=self.cluster.dns_name,
+            type='A', ttl=60, alias_hosted_zone_id=settings.ROUTE53_ZONE, alias_dns_name=self.dns_name,
+            identifier="%s-%s" % (self.cluster.pk, self.region), region=self.region)
 
     def on_terminate(self):
         logger.debug("%s: terminating dns for region %s, cluster %s", self, self.region, self.cluster.pk)
@@ -311,6 +315,7 @@ runcmd:
             type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
         rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
             resource_records=[self.ip]))
+        rrs.add_change_record('CREATE', self.region.record)
         rrs.commit()
         self.status = self.RUNNING
         self.save()
