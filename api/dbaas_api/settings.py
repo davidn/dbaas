@@ -34,6 +34,26 @@ EC2_REGIONS = {
 	},
 }
 
+INSTANCE_TYPES = [
+    {"cpus" : 1, "ram" : 1, "name" : "t1.micro"},
+    {"cpus" : 1, "ram" : 2, "name" : "m1.small"},
+    {"cpus" : 1, "ram" : 4, "name" : "m1.medium"},
+    {"cpus" : 2, "ram" : 8, "name" : "m1.large"},
+    {"cpus" : 4, "ram" : 16, "name" : "m1.xlarge"},
+    {"cpus" : 4, "ram" : 16, "name" : "m3.xlarge"},
+    {"cpus" : 8, "ram" : 32, "name" : "m3.2xlarge"},
+    {"cpus" : 2, "ram" : 2, "name" : "c1.medium"},
+    {"cpus" : 8, "ram" : 8, "name" : "c1.xlarge"},
+    {"cpus" : 32, "ram" : 64, "name" : "cc2.8xlarge"},
+    {"cpus" : 2, "ram" : 16, "name" : "m2.xlarge"},
+    {"cpus" : 4, "ram" : 32, "name" : "m2.2xlarge"},
+    {"cpus" : 8, "ram" : 64, "name" : "m2.4xlarge"},
+    {"cpus" : 32, "ram" : 224, "name" : "cr1.8xlarge"},
+    {"cpus" : 16, "ram" : 64, "name" : "hi1.4xlarge"},
+    {"cpus" : 16, "ram" : 117, "name" : "hs1.8xlarge"},
+    {"cpus" : 32, "ram" : 16, "name" : "cg1.4xlarge"}
+];
+
 AWS_ACCESS_KEY=""
 AWS_SECRET_KEY=""
 

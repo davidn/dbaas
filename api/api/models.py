@@ -194,6 +194,10 @@ class Node(models.Model):
         return RSA.importKey(self.tinc_private_key).publickey().exportKey()
 
     @property
+    def buffer_pool_size(self):
+        return int(max(settings.INSTANCE_TYPES[self.size]["ram"]*0.8, settings.INSTANCE_TYPES[self.size]["ram"]-2)*2**30)
+
+    @property
     def cloud_config(self):
         connect_to_list = "\n    ".join("ConnectTo = node_"+str(node.nid) for node in self.cluster.nodes.all())
         rsa_priv = self.tinc_private_key.replace("\n", "\n    ")
@@ -212,6 +216,7 @@ write_files:
     auto_increment_increment=255
     geniedb_my_node_id={nid}
     geniedb_subscriptions={subscriptions}
+    geniedb_buffer_pool_size={buffer_pool_size}
     default_storage_engine=GenieDB
     port={port}
   path: /etc/mysql/conf.d/geniedb.cnf
@@ -252,6 +257,7 @@ runcmd:
            connect_to_list=connect_to_list,
            rsa_priv=rsa_priv,
            host_files=host_files,
+           buffer_pool_size=self.buffer_pool_size,
            mysql_setup=self.mysql_setup.replace("\n","\n    "))
 
     def do_launch(self):
