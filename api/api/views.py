@@ -80,7 +80,6 @@ class ClusterViewSet(mixins.CreateModelMixin,
 
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-	@action()
 	def add(self, request, *args, **kwargs):
 		self.object = self.get_object()
 		if isinstance(request.DATA,list):
