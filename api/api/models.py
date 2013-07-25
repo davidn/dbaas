@@ -64,6 +64,7 @@ def gen_private_key():
 class RegionNodeSet(models.Model):
     cluster = models.ForeignKey(Cluster, related_name='regions')
     region = models.CharField("EC2 Region", max_length=20)
+    launched = models.BooleanField("Launched")
 
     def __unicode__(self):
         return self.dns_name
@@ -78,6 +79,8 @@ class RegionNodeSet(models.Model):
         rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
         rrs.add_change_record('CREATE', self.record)
         rrs.commit()
+        self.launched = True
+        self.save()
 
     @property
     def record(self):
@@ -334,7 +337,6 @@ runcmd:
             type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
         rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
             resource_records=[self.ip]))
-        rrs.add_change_record('CREATE', self.region.record)
         rrs.commit()
         self.status = self.RUNNING
         self.save()

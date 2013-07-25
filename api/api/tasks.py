@@ -2,6 +2,7 @@
 
 from logging import getLogger
 from celery.task import task
+from celery import group
 from time import sleep
 from .models import Node
 
@@ -31,10 +32,17 @@ def install(node):
                 sleep(15)
 
 @task()
-def install_cluster(cluster):
-    install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)
-    for node in install_nodes:
+def install_region(region):
+    region.do_install()
+
+@task()
+def wait_nodes(nodes):
+    for node in nodes:
         while node.pending():
             sleep (15)
-    for node in install_nodes:
-        install.delay(node)
+
+def install_cluster(cluster):
+    install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)
+    regions = cluster.regions.filter(launched=False)
+    task = wait_nodes.s(install_nodes) | group(install.s(node) for node in install_nodes) | group(install_region.s(region) for region in regions)
+    return task.delay()

@@ -111,7 +111,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
 		for node in self.object.nodes.all():
 			if node.status == Node.INITIAL:
 				node.do_launch()
-		install_cluster.delay(self.object)
+		install_cluster(self.object)
 		serializer = self.get_serializer(self.object)
 		headers = self.get_success_headers(serializer.data)
 		return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
