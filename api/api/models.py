@@ -295,7 +295,7 @@ runcmd:
                     instance_type=self.size,
                     block_device_map=bdm,
                     security_groups=sgs,
-                    user_data ='#include\nhttp://'+Site.objects.get_current().domain+self.get_absolute_url()+'cloud_config/',
+                    user_data ='#include\nhttps://'+Site.objects.get_current().domain+self.get_absolute_url()+'cloud_config/',
                 )
             except:
                 try:
@@ -322,7 +322,7 @@ runcmd:
             'username':self.cluster.user.username,
             'cluster':str(self.cluster.pk),
             'node':str(self.pk),
-            'url':'http://'+Site.objects.get_current().domain+self.get_absolute_url(),
+            'url':'https://'+Site.objects.get_current().domain+self.get_absolute_url(),
         })
         r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         health_check = HealthCheck(connection=r53, caller_reference=self.instance_id,
