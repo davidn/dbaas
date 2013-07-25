@@ -56,7 +56,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 	password = PasswordField()
 	class Meta:
 		model = User
-		fields = ('username', 'first_name', 'last_name', 'email', 'password')
+		fields = ('url','username', 'first_name', 'last_name', 'email', 'password')
 
 	def validate_username(self, attrs, source):
 		if self.object is not None and attrs[source] != self.object.username:
@@ -121,7 +121,7 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 		self.fields['url'] = url_field
 	class Meta:
 		model = Node
-		fields = ('instance_id','nid','dns_name','ip','port','size', 'storage', 'region', 'status', 'cluster', 'iops', 'mysql_setup')
+		fields = ('url','instance_id','nid','dns_name','ip','port','size', 'storage', 'region', 'status', 'cluster', 'iops', 'mysql_setup')
 		read_only_fields = ('instance_id','ip','nid')
 
 	def validate_region(self,attrs,source):
@@ -134,4 +134,4 @@ class ClusterSerializer(serializers.HyperlinkedModelSerializer):
 	dns_name = serializers.CharField(read_only=True)
 	class Meta:
 		model = Cluster
-		fields = ('user','dns_name','nodes')
+		fields = ('url','user','dns_name','nodes')
