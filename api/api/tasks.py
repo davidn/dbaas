@@ -44,5 +44,5 @@ def wait_nodes(nodes):
 def install_cluster(cluster):
     install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)
     regions = cluster.regions.filter(launched=False)
-    task = wait_nodes.s(install_nodes) | group(install.s(node) for node in install_nodes) | group(install_region.s(region) for region in regions)
+    task = wait_nodes.s(install_nodes) | group([install.s(node) for node in install_nodes]) | group([install_region.s(region) for region in regions])
     return task.delay()
