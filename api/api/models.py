@@ -271,33 +271,45 @@ runcmd:
         # NID
         self.nid = self.cluster.next_nid()
         logger.debug("%s: Assigned NID %s", self, self.nid)
-        # Security Group
-        sg = ec2regions[self.region.region].create_security_group('dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),'Security group for '+str(self))
-        self.security_group = sg.id
-        ec2regions[self.region.region].authorize_security_group(
-            group_id=sg.id,
-            ip_protocol='tcp',
-            cidr_ip='0.0.0.0/0',
-            from_port=self.port,
-            to_port=self.port)
-        logger.debug("%s: Created Security Group %s (named %s) with port %s open", self, sg.id, sg.name, self.port)
-        self.save()
-        # EC2 Instance
         try:
-            sgs = settings.EC2_REGIONS[self.region.region]['SECURITY_GROUPS'] + [sg.name]
-        except KeyError:
-            sgs = [sg.name]
-        res = ec2regions[self.region.region].run_instances(
-            settings.EC2_REGIONS[self.region.region]["AMI"],
-            key_name=settings.EC2_REGIONS[self.region.region]['KEY_NAME'],
-            instance_type=self.size,
-            block_device_map=bdm,
-            security_groups=sgs,
-            user_data ='#include\nhttp://'+Site.objects.get_current().domain+self.get_absolute_url()+'cloud_config/',
-        )
+            # Security Group
+            sg = ec2regions[self.region.region].create_security_group('dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),'Security group for '+str(self))
+            self.security_group = sg.id
+            ec2regions[self.region.region].authorize_security_group(
+                group_id=sg.id,
+                ip_protocol='tcp',
+                cidr_ip='0.0.0.0/0',
+                from_port=self.port,
+                to_port=self.port)
+            logger.debug("%s: Created Security Group %s (named %s) with port %s open", self, sg.id, sg.name, self.port)
+            self.save()
+            # EC2 Instance
+            try:
+                sgs = settings.EC2_REGIONS[self.region.region]['SECURITY_GROUPS'] + [sg.name]
+            except KeyError:
+                sgs = [sg.name]
+            try:
+                res = ec2regions[self.region.region].run_instances(
+                    settings.EC2_REGIONS[self.region.region]["AMI"],
+                    key_name=settings.EC2_REGIONS[self.region.region]['KEY_NAME'],
+                    instance_type=self.size,
+                    block_device_map=bdm,
+                    security_groups=sgs,
+                    user_data ='#include\nhttp://'+Site.objects.get_current().domain+self.get_absolute_url()+'cloud_config/',
+                )
+            except:
+                try:
+                    ec2regions[self.region.region].delete_security_group(group_id=self.security_group)
+                except:
+                    pass
+        except:
+            logger.error("%s: Failed to launch instance", self)
+            self.status = self.ERROR
+            self.save()
+            raise
         self._instance = res.instances[0]
         self.instance_id = self.instance.id
-        logger.debug("%s: Rservation %s launched. Instance id %s", self, res.id, self.instance_id)
+        logger.debug("%s: Reservation %s launched. Instance id %s", self, res.id, self.instance_id)
         self.status = self.PROVISIONING
         self.save()
 
