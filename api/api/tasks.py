@@ -33,7 +33,7 @@ def install(node):
 
 @task()
 def install_region(region):
-    region.do_install()
+    region.do_launch()
 
 @task()
 def wait_nodes(nodes):
