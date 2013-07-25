@@ -34,25 +34,25 @@ EC2_REGIONS = {
 	},
 }
 
-INSTANCE_TYPES = [
-    {"cpus" : 1, "ram" : 1, "name" : "t1.micro"},
-    {"cpus" : 1, "ram" : 2, "name" : "m1.small"},
-    {"cpus" : 1, "ram" : 4, "name" : "m1.medium"},
-    {"cpus" : 2, "ram" : 8, "name" : "m1.large"},
-    {"cpus" : 4, "ram" : 16, "name" : "m1.xlarge"},
-    {"cpus" : 4, "ram" : 16, "name" : "m3.xlarge"},
-    {"cpus" : 8, "ram" : 32, "name" : "m3.2xlarge"},
-    {"cpus" : 2, "ram" : 2, "name" : "c1.medium"},
-    {"cpus" : 8, "ram" : 8, "name" : "c1.xlarge"},
-    {"cpus" : 32, "ram" : 64, "name" : "cc2.8xlarge"},
-    {"cpus" : 2, "ram" : 16, "name" : "m2.xlarge"},
-    {"cpus" : 4, "ram" : 32, "name" : "m2.2xlarge"},
-    {"cpus" : 8, "ram" : 64, "name" : "m2.4xlarge"},
-    {"cpus" : 32, "ram" : 224, "name" : "cr1.8xlarge"},
-    {"cpus" : 16, "ram" : 64, "name" : "hi1.4xlarge"},
-    {"cpus" : 16, "ram" : 117, "name" : "hs1.8xlarge"},
-    {"cpus" : 32, "ram" : 16, "name" : "cg1.4xlarge"}
-];
+INSTANCE_TYPES = {
+    "t1.micro": {"cpus": 1, "ram": 0.615, "approx_ram": 1},
+    "m1.small": {"cpus": 1, "ram": 1.7, "approx_ram": 2},
+    "m1.medium": {"cpus": 1, "ram": 3.75, "approx_ram": 4},
+    "m1.large": {"cpus": 2, "ram": 7.5, "approx_ram": 8},
+    "m1.xlarge": {"cpus": 4, "ram": 15, "approx_ram": 16},
+    "m3.xlarge": {"cpus": 4, "ram": 15, "approx_ram": 16},
+    "m3.2xlarge": {"cpus": 8, "ram": 30, "approx_ram": 32},
+    "c1.medium": {"cpus": 2, "ram": 1.7, "approx_ram": 2},
+    "c1.xlarge": {"cpus": 8, "ram": 7, "approx_ram": 8},
+    "cc2.8xlarge": {"cpus": 32, "ram": 60.5, "approx_ram": 64},
+    "m2.xlarge": {"cpus": 2, "ram": 17.1, "approx_ram": 16},
+    "m2.2xlarge": {"cpus": 4, "ram": 34.2, "approx_ram": 32},
+    "m2.4xlarge": {"cpus": 8, "ram": 68.4, "approx_ram": 64},
+    "cr1.8xlarge": {"cpus": 32, "ram": 244, "approx_ram": 244},
+    "hi1.4xlarge": {"cpus": 16, "ram": 60.5, "approx_ram": 64},
+    "hs1.8xlarge": {"cpus": 16, "ram": 117, "approx_ram": 117},
+    "cg1.4xlarge": {"cpus": 32, "ram": 22.5, "approx_ram": 16}
+};
 
 AWS_ACCESS_KEY=""
 AWS_SECRET_KEY=""
