@@ -249,7 +249,7 @@ $(function() {
 	$.markup.load(function() {
 		if (token == '') {
 			$("#main").markup("login");
-			$("#login-submit").on("click", login);
+			$("#login-submit").on("click", login_button);
 			$("#login-register").on("click", register);
 		} else {
 			refresh_home();
