@@ -235,7 +235,6 @@ write_files:
 - content: |
     Name = node_{nid}
     Device = /dev/net/tun
-    ExperimentalProtocol = yes
     {connect_to_list}
   path: /etc/tinc/cf/tinc.conf
   owner: root:root
