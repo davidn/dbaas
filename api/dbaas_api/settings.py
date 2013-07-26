@@ -22,16 +22,21 @@ DATABASES = {
 }
 
 EC2_REGIONS = {
-	'us-west-2': {
-		'AMI': 'ami-c39201f3',
-		'KEY_NAME': 'dbaas',
-		'SECURITY_GROUPS': ['dbaas']
-	},
-	'us-east-1': {
-		'AMI': 'ami-2a374e43',
+    'us-west-2': {
+        'AMI': 'ami-b3e57783',
         'KEY_NAME': 'dbaas',
-		'SECURITY_GROUPS': ['dbaas']
-	},
+        'SECURITY_GROUPS': ['dbaas']
+    },
+    'us-east-1': {
+        'AMI': 'ami-cdb0c8a4',
+        'KEY_NAME': 'dbaas',
+        'SECURITY_GROUPS': ['dbaas']
+    },
+    'ap-southeast-1': {
+        'AMI': 'ami-7a0f4728',
+        'KEY_NAME': 'dbaas',
+        'SECURITY_GROUPS': ['dbaas']
+    },
 }
 
 INSTANCE_TYPES = {
