@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from logging import getLogger
 from celery.task import task
@@ -52,6 +52,14 @@ def node_text(node):
        node_ip = node.ip
     )
 
+def node_html(node):
+    return settings.HTML_PER_NODE.format(
+       nid = node.nid,
+       region = node.region.region,
+       node_dns = node.dns_name,
+       node_ip = node.ip
+    )
+
 def ordinal(num):
     if 4 <= num <= 20 or 24 <= num <= 30:
         return "th"
@@ -61,22 +69,29 @@ def ordinal(num):
 @task()
 def launch_email(cluster):
     nodes = cluster.nodes.all()
-    send_mail(
+    params = {
+        'node_text': ''.join(node_text(node) for node in nodes),
+        'node_html': ''.join(node_html(node) for node in nodes),
+        'username': str(cluster.user),
+        'cluster_dns': cluster.dns_name,
+        'trial_end': datetime.date.today() + settings.TRIAL_LENGTH,
+        'ord': ordinal((datetime.date.today() + settings.TRIAL_LENGTH).day),
+        'port': nodes[0].port if len(nodes)>0 else 3306,
+        'db': '',
+        'dbusername': '',
+        'dbpassword': ''
+    }
+    email = EmailMultiAlternatives(
         subject=settings.EMAIL_SUBJECT,
-        message=settings.PLAINTEXT_EMAIL_TEMPLATE.format(
-            node_text='\n'.join(node_text(node) for node in nodes),
-            username=str(cluster.user),
-            cluster_dns=cluster.dns_name,
-            trial_end=datetime.date.today() + settings.TRIAL_LENGTH,
-            ord=ordinal((datetime.date.today() + settings.TRIAL_LENGTH).day),
-            port=nodes[0].port if len(nodes)>0 else 3306,
-            db='',
-            dbusername='',
-            dbpassword=''
-        ),
+        body=settings.PLAINTEXT_EMAIL_TEMPLATE.format(**params),
         from_email=settings.EMAIL_SENDER,
-        recipient_list=settings.EMAIL_RECIPIENTS
+        to=settings.EMAIL_RECIPIENTS
     )
+    email.attach_alternative(
+        settings.HTML_EMAIL_TEMPLATE.format(**params),
+        "text/html"
+    )
+    email.send()
 
 def install_cluster(cluster):
     install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)

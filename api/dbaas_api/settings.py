@@ -172,7 +172,7 @@ HTML_EMAIL_TEMPLATE="""
 <p>
     LBR DNS: {cluster_dns}
 </p>
-{node_text}
+{node_html}
 """
 PLAINTEXT_PER_NODE="""
 Node {nid}
