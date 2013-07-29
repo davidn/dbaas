@@ -22,20 +22,53 @@ DATABASES = {
 }
 
 EC2_REGIONS = {
+    'us-west-1': {
+        'AMI': 'ami-58664d1d',
+        'KEY_NAME': 'dbaas',
+        'SECURITY_GROUPS': ['dbaas'],
+        'name': 'EC2 US West (Northern California)',
+    },
     'us-west-2': {
         'AMI': 'ami-b3e57783',
         'KEY_NAME': 'dbaas',
-        'SECURITY_GROUPS': ['dbaas']
+        'SECURITY_GROUPS': ['dbaas'],
+        'name': 'EC2 US West (Oregon)',
     },
     'us-east-1': {
         'AMI': 'ami-cdb0c8a4',
         'KEY_NAME': 'dbaas',
-        'SECURITY_GROUPS': ['dbaas']
+        'SECURITY_GROUPS': ['dbaas'],
+        'name': 'EC2 US East (Northern Virginia)',
+    },
+    'eu-west-1': {
+        'AMI': 'ami-a1f8e6d5',
+        'KEY_NAME': 'dbaas',
+        'SECURITY_GROUPS': ['dbaas'],
+        'name': 'EC2 EU (Ireland)',
+    },
+    'ap-northeast-1': {
+        'AMI': 'ami-c16bfdc0',
+        'KEY_NAME': 'dbaas',
+        'SECURITY_GROUPS': ['dbaas'],
+        'name': 'EC2 Asia Pacific (Tokyo)',
     },
     'ap-southeast-1': {
         'AMI': 'ami-7a0f4728',
         'KEY_NAME': 'dbaas',
-        'SECURITY_GROUPS': ['dbaas']
+        'SECURITY_GROUPS': ['dbaas'],
+        'name': 'EC2 Asia Pacific (Singapore)',
+    },
+    'ap-southeast-2': {
+        'AMI': 'ami-1d851727',
+        'KEY_NAME': 'dbaas',
+        'SECURITY_GROUPS': ['dbaas'],
+        'name': 'EC2 Asia Pacific (Sydney)',
+    },
+    'sa-east-1': {
+        'AMI': 'ami-6fdb7f72',
+        'KEY_NAME': 'dbaas',
+        'SECURITY_GROUPS': ['dbaas'],
+        'name': 'EC2 South America (Sao Paulo)',
     },
 }
 
