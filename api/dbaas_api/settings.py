@@ -105,7 +105,7 @@ PLAINTEXT_EMAIL_TEMPLATE="""
 Hi {username}, please find the information for your cluster below. I wanted to
 point out a few things that you will need.
 
-1. There is a default database ‘{db}’ created.
+1. There is a default database '{db}' created.
 2. To create any table that you want replicated, you should add
    'ENGINE=GenieDB' to the end of the SQL statement.
    E.g. CREATE TABLE {db}.foo(a INT PRIMARY KEY, b INT) ENGINE=GenieDB;
