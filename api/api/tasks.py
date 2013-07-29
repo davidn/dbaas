@@ -47,9 +47,9 @@ def wait_nodes(nodes):
 def node_text(node):
     return settings.PLAINTEXT_PER_NODE.format(
        nid = node.nid,
-       location = node.region.region,
-       dns = node.dns_name,
-       ip = node.ip
+       region = node.region.region,
+       node_dns = node.dns_name,
+       node_ip = node.ip
     )
 
 def ordinal(day):

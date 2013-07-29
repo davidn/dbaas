@@ -177,7 +177,7 @@ HTML_EMAIL_TEMPLATE="""
 PLAINTEXT_PER_NODE="""
 Node {nid}
 Location: {region}
-DNS: {node-dns}
+DNS: {node_dns}
 IP: {node_ip}
 """
 HTML_PER_NODE="""
