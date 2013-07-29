@@ -307,6 +307,7 @@ runcmd:
                     ec2regions[self.region.region].delete_security_group(group_id=self.security_group)
                 except:
                     pass
+                raise
         except:
             logger.error("%s: Failed to launch instance", self)
             self.status = self.ERROR
