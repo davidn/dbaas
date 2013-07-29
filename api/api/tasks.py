@@ -69,7 +69,7 @@ def launch_email(cluster):
             cluster_dns=cluster.dns_name,
             trial_end=datetime.date.today() + settings.TRIAL_LENGTH,
             ord=ordinal((datetime.date.today() + settings.TRIAL_LENGTH).day),
-            port=node[0].port,
+            port=nodes[0].port if len(nodes)>0 else 3306,
             db='',
             dbusername='',
             dbpassword=''
