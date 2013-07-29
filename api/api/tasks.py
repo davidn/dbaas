@@ -52,11 +52,11 @@ def node_text(node):
        node_ip = node.ip
     )
 
-def ordinal(day):
-    if 4 <= day <= 20 or 24 <= day <= 30:
+def ordinal(num):
+    if 4 <= num <= 20 or 24 <= num <= 30:
         return "th"
     else:
-        return ["st", "nd", "rd"][day % 10 - 1]
+        return ["st", "nd", "rd"][num % 10 - 1]
 
 @task()
 def launch_email(cluster):
@@ -68,7 +68,7 @@ def launch_email(cluster):
             username=str(cluster.user),
             cluster_dns=cluster.dns_name,
             trial_end=datetime.date.today() + settings.TRIAL_LENGTH,
-            ord=ordinal(datetime.date.today() + settings.TRIAL_LENGTH),
+            ord=ordinal((datetime.date.today() + settings.TRIAL_LENGTH).day),
             port=node[0].port,
             db='',
             dbusername='',
