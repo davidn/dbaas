@@ -90,7 +90,8 @@ INSTANCE_TYPES = {
     "hi1.4xlarge": {"cpus": 16, "ram": 60.5, "approx_ram": 64},
     "hs1.8xlarge": {"cpus": 16, "ram": 117, "approx_ram": 117},
     "cg1.4xlarge": {"cpus": 32, "ram": 22.5, "approx_ram": 16}
-};
+}
+
 
 AWS_ACCESS_KEY=""
 AWS_SECRET_KEY=""
@@ -99,6 +100,92 @@ ROUTE53_ZONE=""
 CLUSTER_DNS_TEMPLATE="{cluster}.dbaas.example.com"
 REGION_DNS_TEMPLATE="{cluster}-{region}.dbaas.example.com"
 NODE_DNS_TEMPLATE="{cluster}-{node}.dbaas.example.com"
+EMAIL_SUBJECT="Your GenieDB cluster is ready!"
+PLAINTEXT_EMAIL_TEMPLATE="""
+Hi {username}, please find the information for your cluster below. I wanted to
+point out a few things that you will need.
+
+1. There is a default database ‘{db}’ created.
+2. To create any table that you want replicated, you should add
+   'ENGINE=GenieDB' to the end of the SQL statement.
+   E.g. CREATE TABLE {db}.foo(a INT PRIMARY KEY, b INT) ENGINE=GenieDB;
+3. To create any non-replicated table, you can use ENGINE=MyISAM or
+   ENGINE=InnoDB.
+4. You should set up application servers close to the individual servers.
+5. The common DNS name {cluster_dns} will automatically find the
+   nearest database
+6. The nodes can be directly accessed using specific domain name (notice the
+   -1, -2 etc) or IP addresses.
+
+This cluster will be available for your use till {trial_end}, at which point
+we convert it to paid or should shut it down. Let me know if you have any
+questions are issues.
+
+Cluster Details
+username: {dbusername}
+password: {dbpassword}   <-- Change the password at your earliest convenience
+database: {db}
+port: {port}
+
+LBR DNS: {cluster_dns}
+
+{node_text}
+"""
+HTML_EMAIL_TEMPLATE="""
+<p>
+    Hi {username}, please find the information for your cluster below. I wanted
+    to point out a few things that you will need.
+</p>
+<ol>
+    <li>There is a default database &quot;{db}&quot; created.</li>
+    <li>To create any table that you want replicated, you should add
+        &quot;ENGINE=GenieDB&quot; to the end of the SQL statement. E.g.
+        <code>CREATE TABLE {db}.foo(a INT PRIMARY KEY, b INT) ENGINE=GenieDB;
+        </code>
+    </li>
+    <li>To create any non-replicated table, you can use
+        <code>ENGINE=MyISAM</code> or <code>ENGINE=InnoDB</code>.</li>
+    <li>You should set up application servers close to the individual servers.
+    </li>
+    <li>The common DNS name <b>{cluster_dns}</b> will automatically find the
+        nearest database</li>
+    <li>The nodes can be directly accessed using specific domain name (notice
+        the -1, -2 etc) or IP addresses.</li>
+</ol>
+<p>
+    This cluster will be available for your use till {trial_end}, at which
+    point we convert it to paid or should shut it down. Let me know if you have
+    any questions are issues.
+</p>
+<p>
+<b>Cluster Details</b>
+    username: {dbusername}<br />
+    password: {dbpassword}   <-- Please change the password at your earliest
+    convenience :-)<br />
+    database: {db}<br />
+    port: {port}
+</p>
+<p>
+    LBR DNS: {cluster_dns}
+</p>
+{node_text}
+"""
+PLAINTEXT_PER_NODE="""
+Node {nid}
+Location: {region}
+DNS: {node-dns}
+IP: {node_ip}
+"""
+HTML_PER_NODE="""
+<p>
+    Node {nid}<br />
+    Location: {region}<br />
+    DNS: {node_dns}<br />
+    IP: {node_ip}<br />
+</p>
+"""
+EMAIL_SENDER="newcustomer@geniedb.com"
+EMAIL_RECIPIENTS=["newcustomer@geniedb.com"]
 
 DEFAULT_PORT = 3306
 

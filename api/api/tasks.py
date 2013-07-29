@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from django.core.mail import send_mail
+from django.conf import settings
 from logging import getLogger
 from celery.task import task
 from celery import group
@@ -41,8 +43,34 @@ def wait_nodes(nodes):
         while node.pending():
             sleep (15)
 
+def node_text(node):
+    return settings.PLAINTEXT_PER_NODE.format(
+       nid = node.nid,
+       location = node.region.region,
+       dns = node.dns_name,
+       ip = node.ip
+    )
+
+@task()
+def launch_email(cluster):
+    nodes = cluster.nodes.all()
+    send_mail(
+        subject=settings.EMAIL_SUBJECT,
+        message=settings.PLAINTEXT_EMAIL_TEMPLATE.format(
+            node_text='\n'.join(node_text(node) for node in nodes),
+            username=str(cluster.user),
+            cluster_dns=cluster.dns_name,
+            port=node[0].port,
+            db='',
+            dbusername='',
+            dbpassword=''
+        ),
+        from_email=settings.EMAIL_SENDER,
+        recipient_list=settings.EMAIL_RECIPIENTS
+    )
+
 def install_cluster(cluster):
     install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)
     regions = cluster.regions.filter(launched=False)
-    task = wait_nodes.si([node for node in install_nodes]) | group([install.si(node) for node in install_nodes]) | group([install_region.si(region) for region in regions])
+    task = wait_nodes.si([node for node in install_nodes]) | group([install.si(node) for node in install_nodes]) | group([install_region.si(region) for region in regions]) | launch_email.si(cluster)
     return task.delay()
