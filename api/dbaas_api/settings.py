@@ -139,9 +139,9 @@ LBR DNS: {cluster_dns}
 HTML_EMAIL_TEMPLATE="""<html>
   <head>
     <style>
-* {
+* {{
   font-family:verdana,geneva,sans-serif;
-}
+}}
     </style>
   </head>
   <body>
