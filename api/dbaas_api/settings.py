@@ -117,11 +117,11 @@ point out a few things that you will need.
 6. The nodes can be directly accessed using specific domain name (notice the
    -1, -2 etc) or IP addresses.
 
-This cluster will be available for your use until {trial_end}, at which point
-we can discuss the results of your trial and whether or not you want to move
-forward. Please don't hesitate to let me know if you have any questions or
-issues. We are happy to help with your testing or answer any questions you
-may have regarding distributed system architecture.
+This cluster will be available for your use until {trial_end:%d}{ord}
+{trial_end:%B}, at which point we can discuss the results of your trial and
+whether or not you want to move forward. Please don't hesitate to let me know
+if you have any questions or issues. We are happy to help with your testing or
+answer any questions you may have regarding distributed system architecture.
 
 Cluster Details
 username: {dbusername}
@@ -188,6 +188,8 @@ HTML_PER_NODE="""
     IP: {node_ip}<br />
 </p>
 """
+import datetime
+TRIAL_LENGTH=datetime.timedelta(weeks=1)
 EMAIL_SENDER="newcustomer@geniedb.com"
 EMAIL_RECIPIENTS=["newcustomer@geniedb.com"]
 

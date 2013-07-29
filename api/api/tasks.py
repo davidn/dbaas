@@ -7,6 +7,7 @@ from celery.task import task
 from celery import group
 from time import sleep
 from .models import Node
+import datetime
 
 logger = getLogger(__name__)
 
@@ -51,6 +52,12 @@ def node_text(node):
        ip = node.ip
     )
 
+def ordinal(day):
+    if 4 <= day <= 20 or 24 <= day <= 30:
+        return "th"
+    else:
+        return ["st", "nd", "rd"][day % 10 - 1]
+
 @task()
 def launch_email(cluster):
     nodes = cluster.nodes.all()
@@ -60,6 +67,8 @@ def launch_email(cluster):
             node_text='\n'.join(node_text(node) for node in nodes),
             username=str(cluster.user),
             cluster_dns=cluster.dns_name,
+            trial_end=datetime.date.today() + settings.TRIAL_LENGTH,
+            ord=ordinal(datetime.date.today() + settings.TRIAL_LENGTH),
             port=node[0].port,
             db='',
             dbusername='',
