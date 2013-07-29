@@ -117,9 +117,11 @@ point out a few things that you will need.
 6. The nodes can be directly accessed using specific domain name (notice the
    -1, -2 etc) or IP addresses.
 
-This cluster will be available for your use till {trial_end}, at which point
-we convert it to paid or should shut it down. Let me know if you have any
-questions are issues.
+This cluster will be available for your use until {trial_end}, at which point
+we can discuss the results of your trial and whether or not you want to move
+forward. Please don't hesitate to let me know if you have any questions or
+issues. We are happy to help with your testing or answer any questions you
+may have regarding distributed system architecture.
 
 Cluster Details
 username: {dbusername}
@@ -153,9 +155,11 @@ HTML_EMAIL_TEMPLATE="""
         the -1, -2 etc) or IP addresses.</li>
 </ol>
 <p>
-    This cluster will be available for your use till {trial_end}, at which
-    point we convert it to paid or should shut it down. Let me know if you have
-    any questions are issues.
+    This cluster will be available for your use until {trial_end}, at which
+    point we can discuss the results of your trial and whether or not you want
+    to move forward. Please don't hesitate to let me know if you have any
+    questions or issues. We are happy to help with your testing or answer any
+    questions you may have regarding distributed system architecture.
 </p>
 <p>
 <b>Cluster Details</b>
