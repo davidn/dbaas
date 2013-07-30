@@ -40,37 +40,40 @@ function generic_success(data, status, xhr) {
 
 function add_cluster(e) {
 	$(e.currentTarget).button('loading');
-	api_call('POST', 'clusters/', {}, function (data, status, xhr) {
+	api_call('POST', 'clusters/', {
+			dbname: $("#db_name").val(),
+			dbusername: $("#master_username").val(),
+			dbpassword: $("#master_password").val(),
+			port: $("#port").val()
+		},
+		function (data, status, xhr) {
 		var nodes = [];
-		$.each(regions, function(i, region) {
-			var node = {
-					region: region.name,
-					size: $("#node_size").val(),
-					storage: $("#allocated_storage").val(),
-					databases: [$("#db_name").val()],
-					username: $("#master_username").val(),
-					password: $("#master_password").val(),
-					port: $("#port").val()
-			};
-			if ($("#provision_iops").is(':checked')) {
-				node.iops = $("#iops").val();
-			}
-			for (var i = 0; i < $("#"+region.name+"_count").val(); i++) {
-				nodes.push(node);
-			}
-		});
-		if (nodes.length > 0) {
-			api_call('POST', data.url, nodes, function(data2, status2, xhr2) {
+			$.each(regions, function(i, region) {
+				var node = {
+						region: region.name,
+						size: $("#node_size").val(),
+						storage: $("#allocated_storage").val()
+				};
+				if ($("#provision_iops").is(':checked')) {
+					node.iops = $("#iops").val();
+				}
+				for (var i = 0; i < $("#"+region.name+"_count").val(); i++) {
+					nodes.push(node);
+				}
+			});
+			if (nodes.length > 0) {
+				api_call('POST', data.url, nodes, function(data2, status2, xhr2) {
+					$("#launch").modal('hide');
+					$(e.currentTarget).button('reset');
+					generic_success(data2, status2, xhr2);
+				}, generic_error);
+			} else {
 				$("#launch").modal('hide');
 				$(e.currentTarget).button('reset');
-				generic_success(data2, status2, xhr2);
-			}, generic_error);
-		} else {
-			$("#launch").modal('hide');
-			$(e.currentTarget).button('reset');
-			refresh_home();
-		}
-	}, generic_error);
+				refresh_home();
+			}
+		},
+		generic_error);
 }
 
 function add_node(e) {

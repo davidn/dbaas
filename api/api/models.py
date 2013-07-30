@@ -32,6 +32,10 @@ ec2regions = EC2Regions()
 class Cluster(models.Model):
     user = models.ForeignKey(User)
     uuid = UUIDField(primary_key=True)
+    port = models.PositiveIntegerField("MySQL Port", default=settings.DEFAULT_PORT)
+    dbname = models.CharField("Database Name", max_length=255)
+    dbusername = models.CharField("Database Username", max_length=255)
+    dbpassword = models.CharField("Database Password", max_length=255)
 
     def __repr__(self):
         return "Cluster(uuid={uuid}, user={user})".format(uuid=repr(self.uuid), user=repr(self.user))
@@ -132,11 +136,9 @@ class Node(models.Model):
     size = models.CharField("Size", max_length=20)
     storage = models.IntegerField("Allocated Storage")
     ip = models.IPAddressField("EC2 Instance IP Address", default="", blank=True)
-    port = models.PositiveIntegerField("MySQL Port", default=settings.DEFAULT_PORT)
     iops = models.IntegerField("Provisioned IOPS", default=None, blank=True, null=True)
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
     tinc_private_key = models.TextField("Tinc Private Key", default=gen_private_key)
-    mysql_setup = models.TextField("MySQL setup",blank=True)
     cluster = models.ForeignKey(Cluster, related_name='nodes')
 
     def __repr__(self):
@@ -230,7 +232,9 @@ write_files:
   owner: root:root
   permissions: '0644'
 - content: |
-   {mysql_setup}
+   CREATE DATABASE {dbname};
+   CREATE USER '{dbusername}'@'%' IDENTIFIED BY '{dbpassword}';
+   GRANT ALL ON {dbname}.* to '{dbusername}'@'%';
   path: /etc/mysqld-grants
   owner: root:root
   permissions: '0644'
@@ -259,13 +263,15 @@ write_files:
 runcmd:
 - [lokkit, -p, "{port}:tcp"]
 """.format(nid=self.nid,
-           port=self.port,
+           port=self.cluster.port,
            subscriptions=self.cluster.subscriptions,
+           dbname=self.cluster.dbname,
+           dbusername=self.cluster.dbusername,
+           dbpassword=self.cluster.dbpassword,
            connect_to_list=connect_to_list,
            rsa_priv=rsa_priv,
            host_files=host_files,
-           buffer_pool_size=self.buffer_pool_size,
-           mysql_setup=self.mysql_setup.replace("\n","\n    "))
+           buffer_pool_size=self.buffer_pool_size)
 
     def do_launch(self):
         """Do the initial, fast part of launching this node."""
@@ -286,9 +292,9 @@ runcmd:
                 group_id=sg.id,
                 ip_protocol='tcp',
                 cidr_ip='0.0.0.0/0',
-                from_port=self.port,
-                to_port=self.port)
-            logger.debug("%s: Created Security Group %s (named %s) with port %s open", self, sg.id, sg.name, self.port)
+                from_port=self.cluster.port,
+                to_port=self.cluster.port)
+            logger.debug("%s: Created Security Group %s (named %s) with port %s open", self, sg.id, sg.name, self.cluster.port)
             self.save()
             # EC2 Instance
             try:

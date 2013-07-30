@@ -63,45 +63,6 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 			serializers.ValidationError("Username changing disabled")
 		return attrs
 
-class MysqlSetupField(serializers.WritableField):
-	def field_from_native(self, data, files, field_name, into):
-		"""
-		Given a dictionary and a field name, updates the dictionary `into`,
-		with the field and it's deserialized value.
-		"""
-		if self.read_only:
-			return
-
-		try:
-			if self.use_files:
-				files = files or {}
-				native = files[field_name]
-			else:
-				native = data[field_name]
-		except KeyError:
-			if self.default is not None and not self.partial:
-				# Note: partial updates shouldn't set defaults
-				if serializers.is_simple_callable(self.default):
-					native = self.default()
-				else:
-					native = self.default
-			else:
-				databases = data['databases'] if 'databases' in data else []
-				username = data['username'] if 'username' in data else 'geniedb'
-				password = data['password'] if 'password' in data else 'password'
-				native = ''.join('CREATE DATABASE {0};'.format(db) for db in databases) + \
-					"CREATE USER '{0}'@'%' IDENTIFIED BY '{1}';".format(username, password) + \
-					''.join("GRANT ALL ON {0}.* to '{1}'@'%';".format(db,username) for db in databases) 
-
-		value = self.from_native(native)
-		if self.source == '*':
-			if value:
-				into.update(value)
-		else:
-			self.validate(value)
-			self.run_validators(value)
-			into[self.source or field_name] = value
-
 class RegionField(serializers.WritableField):
 	def to_native(self, value):
 		return value.region
@@ -112,7 +73,6 @@ class RegionField(serializers.WritableField):
 class NodeSerializer(serializers.HyperlinkedModelSerializer):
 	status = StatusField(choices=Node.STATUSES, read_only=True)
 	dns_name = serializers.CharField(read_only=True)
-	mysql_setup = MysqlSetupField()
 	region = RegionField(required=True)
 	def __init__(self, *args, **kwargs):
 		serializers.HyperlinkedModelSerializer.__init__(self, *args, **kwargs)
@@ -121,7 +81,7 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 		self.fields['url'] = url_field
 	class Meta:
 		model = Node
-		fields = ('url','instance_id','nid','dns_name','ip','port','size', 'storage', 'region', 'status', 'cluster', 'iops', 'mysql_setup')
+		fields = ('url','instance_id','nid','dns_name','ip','size', 'storage', 'region', 'status', 'cluster', 'iops')
 		read_only_fields = ('instance_id','ip','nid')
 
 	def validate_region(self,attrs,source):
@@ -134,4 +94,4 @@ class ClusterSerializer(serializers.HyperlinkedModelSerializer):
 	dns_name = serializers.CharField(read_only=True)
 	class Meta:
 		model = Cluster
-		fields = ('url','user','dns_name','nodes')
+		fields = ('url','user','dbname','dbusername','dbpassword','dns_name','port','nodes')
