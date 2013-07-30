@@ -95,6 +95,16 @@ function delete_node(e) {
 	api_call('DELETE', e.currentTarget.getAttribute('data-node'), {}, generic_success, generic_error);
 }
 
+function pause_node(e) {
+	$(e.currentTarget).button('loading');
+	api_call('POST', e.currentTarget.getAttribute('data-node')+'pause/', {}, generic_success, generic_error);
+}
+
+function resume_node(e) {
+	$(e.currentTarget).button('loading');
+	api_call('POST', e.currentTarget.getAttribute('data-node')+'resume/', {}, generic_success, generic_error);
+}
+
 function display_clusters(data, status, xhr) {
 	$("#home-div").remove();
 	$("#main").markup("home", {clusters: data, instance_types: instance_types, regions: regions});
@@ -106,6 +116,8 @@ function display_clusters(data, status, xhr) {
 	$(".add-node").on("click", add_node);
 	$(".launch-cluster").on("click", launch_cluster);
 	$(".delete-cluster").on("click", delete_cluster);
+	$(".pause-node").on("click", pause_node);
+	$(".resume-node").on("click", resume_node);
 	$(".delete-node").on("click", delete_node);
 	$(".node-box").on("click", toggle_node_details);
 }

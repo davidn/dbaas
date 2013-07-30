@@ -152,3 +152,19 @@ class NodeViewSet(mixins.ListModelMixin,
 			headers = self.get_success_headers(serializer.data)
 			return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
 		return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
+	@action()
+	def pause(self, request, *args, **kwargs):
+		self.object = self.get_object()
+		self.object.pause()
+		serializer = self.get_serializer(self.object)
+		headers = self.get_success_headers(serializer.data)
+		return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
+
+	@action()
+	def resume(self, request, *args, **kwargs):
+		self.object = self.get_object()
+		self.object.resume()
+		serializer = self.get_serializer(self.object)
+		headers = self.get_success_headers(serializer.data)
+		return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)

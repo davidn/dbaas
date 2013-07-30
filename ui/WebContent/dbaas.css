@@ -82,6 +82,14 @@ body {
 	color: red;
 }
 
+.pause-running {
+	display: inline-block;
+}
+
+.resume-paused {
+	display: inline-block;
+}
+
 #cpu-slider .ui-slider-handle, #ram-slider .ui-slider-handle {
 	background:#2E648F;
 	border: medium none;

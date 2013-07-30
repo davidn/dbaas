@@ -112,12 +112,14 @@ class Node(models.Model):
     RUNNING=6
     SHUTTING_DOWN=7
     OVER=8
+    PAUSED=9
     ERROR=1000
     STATUSES = (
         (INITIAL, 'not yet started'),
         (PROVISIONING, 'Provisioning EC2 instances'),
         (INSTALLING_CF, 'Installing GenieDB CloudFabric'),
         (RUNNING, 'running'),
+        (PAUSED, 'paused'),
         (SHUTTING_DOWN, 'shutting down'),
         (OVER, 'over'),
         (ERROR, 'An error occured')
@@ -346,8 +348,20 @@ runcmd:
         # self.status = self.RUNNING
         # self.save()
 
+    def pause(self):
+        assert(self.status == Node.RUNNING)
+        ec2regions[self.region.region].stop_instances([self.instance_id])
+        self.status = Node.PAUSED
+        self.save()
+
+    def resume(self):
+        assert(self.status == Node.PAUSED)
+        ec2regions[self.region.region].start_instances([self.instance_id])
+        self.status = Node.RUNNING
+        self.save()
+
     def on_terminate(self):
-        if self.status in (self.PROVISIONING, self.INSTALLING_CF, self.RUNNING, self.ERROR):
+        if self.status in (self.PROVISIONING, self.INSTALLING_CF, self.RUNNING, self.PAUSED, self.ERROR):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)

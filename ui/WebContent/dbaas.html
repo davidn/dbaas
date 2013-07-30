@@ -65,6 +65,8 @@
 						<span class="node-dns">{{this.ip}}:{{this.port}}</span>
 						<div class="node-buttons btn-toolbar">
 							<div class="btn-group">
+							<button class="btn pause-node hide pause-{{this.status}}" data-node="{{this.url}}" data-loading-text="Pausing..."><i class="icon-pause"></i> Pause</button>
+							<button class="btn resume-node hide resume-{{this.status}}" data-node="{{this.url}}" data-loading-text="Resuming..."><i class="icon-play"></i> Resume</button>
 								<button class="btn delete-node" data-node="{{this.url}}" data-loading-text="Deleting..."><i class="icon-remove"></i> Delete</button>
 							</div>
 				</div>
