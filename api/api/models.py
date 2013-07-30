@@ -151,8 +151,6 @@ class Node(models.Model):
             optional += ", status={status}".format(status=repr(self.status))
         if self.ip != "":
             optional += ", ip={ip}".format(ip=repr(self.ip))
-        if self.port != settings.DEFAULT_PORT:
-            optional += ", port={port}".format(port=repr(self.port))
         return "Node(pk={pk}, cluster={cluster}, size={size}, storage={storage}, region={region}{optional})".format(
             pk=repr(self.pk),
             cluster=repr(self.cluster),
@@ -340,7 +338,7 @@ runcmd:
         })
         r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         health_check = HealthCheck(connection=r53, caller_reference=self.instance_id,
-            ip_address=self.ip, port=self.port, health_check_type='TCP')
+            ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
         self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
         rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
         rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.region.dns_name,
