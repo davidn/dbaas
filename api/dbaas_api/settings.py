@@ -21,55 +21,64 @@ DATABASES = {
     }
 }
 
-EC2_REGIONS = {
-    'us-west-1': {
-        'AMI': 'ami-58664d1d',
+REGIONS = {
+    'az-us-west-1': {
+        'IMAGE': 'ami-58664d1d',
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 US West (Northern California)',
+        'NAME': 'EC2 US West (Northern California)',
     },
-    'us-west-2': {
-        'AMI': 'ami-b3e57783',
+    'az-us-west-2': {
+        'IMAGE': 'ami-b3e57783',
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 US West (Oregon)',
+        'NAME': 'EC2 US West (Oregon)',
     },
-    'us-east-1': {
-        'AMI': 'ami-cdb0c8a4',
+    'az-us-east-1': {
+        'IMAGE': 'ami-cdb0c8a4',
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 US East (Northern Virginia)',
+        'NAME': 'EC2 US East (Northern Virginia)',
     },
-    'eu-west-1': {
-        'AMI': 'ami-a1f8e6d5',
+    'az-eu-west-1': {
+        'IMAGE': 'ami-a1f8e6d5',
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 EU (Ireland)',
+        'NAME': 'EC2 EU (Ireland)',
     },
-    'ap-northeast-1': {
-        'AMI': 'ami-c16bfdc0',
+    'az-ap-northeast-1': {
+        'IMAGE': 'ami-c16bfdc0',
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 Asia Pacific (Tokyo)',
+        'NAME': 'EC2 Asia Pacific (Tokyo)',
     },
-    'ap-southeast-1': {
-        'AMI': 'ami-7a0f4728',
+    'az-ap-southeast-1': {
+        'IMAGE': 'ami-7a0f4728',
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 Asia Pacific (Singapore)',
+        'NAME': 'EC2 Asia Pacific (Singapore)',
     },
-    'ap-southeast-2': {
-        'AMI': 'ami-1d851727',
+    'az-ap-southeast-2': {
+        'IMAGE': 'ami-1d851727',
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 Asia Pacific (Sydney)',
+        'NAME': 'EC2 Asia Pacific (Sydney)',
     },
-    'sa-east-1': {
-        'AMI': 'ami-6fdb7f72',
+    'az-sa-east-1': {
+        'IMAGE': 'ami-6fdb7f72',
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 South America (Sao Paulo)',
+        'NAME': 'EC2 South America (Sao Paulo)',
     },
+    'rs-ord': {
+        'NAME': 'Rackspace Chicago'
+    },
+    'rs-dfw': {
+        'NAME': 'Rackspace Dallas'
+    },
+    'rs-syd': {
+        'NAME': 'Rackspace Sydney'
+    }
 }
 
 INSTANCE_TYPES = {
@@ -95,6 +104,11 @@ INSTANCE_TYPES = {
 
 AWS_ACCESS_KEY=""
 AWS_SECRET_KEY=""
+
+RACKSPACE_USER=""
+RACKSPACE_PASS=""
+RACKSPACE_TENANT=""
+RACKSPACE_AUTH_URL="https://identity.api.rackspacecloud.com/v2.0"
 
 ROUTE53_ZONE=""
 CLUSTER_DNS_TEMPLATE="{cluster}.dbaas.example.com"

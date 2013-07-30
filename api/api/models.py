@@ -15,6 +15,7 @@ from .route53 import RecordWithHealthCheck, HealthCheck, record, exception
 from boto import connect_route53
 from .uuid_field import UUIDField
 from api.route53 import RecordWithTargetHealthCheck
+import novaclient.v1_1
 
 logger = getLogger(__name__)
 
@@ -28,6 +29,142 @@ class EC2Regions(object):
         return self._regions[key]
 
 ec2regions = EC2Regions()
+
+
+class CloudCompute(object):
+    def __init__(self, region):
+        self.region = region
+
+    def launch(self, node):
+        pass
+
+    def pending(self, node):
+        pass
+
+    def shutting_down(self, node):
+        pass
+
+    def update(self, node, tags={}):
+        pass
+
+    def terminate(self, node):
+        pass
+
+class EC2(CloudCompute):
+    def __init__(self, region):
+        super(EC2, self).__init__(region)
+        self.ec2 = ec2regions[self.region[3:]]
+
+    def launch(self, node):
+        # Elastic Block Storage
+        dev_sda1 = boto.ec2.blockdevicemapping.BlockDeviceType(iops=node.iops, volume_type=node.volume_type)
+        dev_sda1.size = node.storage
+        bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
+        bdm['/dev/sda1'] = dev_sda1
+        logger.debug("%s: Assigned NID %s", node, node.nid)
+        sg = self.ec2.create_security_group('dbaas-cluster-{c}-node-{n}'.format(c=node.cluster.pk, n=node.nid),'Security group for '+str(node))
+        node.security_group = sg.id
+        self.ec2.authorize_security_group(
+            group_id=sg.id,
+            ip_protocol='tcp',
+            cidr_ip='0.0.0.0/0',
+            from_port=node.cluster.port,
+            to_port=node.cluster.port)
+        logger.debug("%s: Created Security Group %s (named %s) with port %s open", node, sg.id, sg.name, node.port)
+        node.save()
+        # EC2 Instance
+        try:
+            sgs = settings.REGIONS[self.region]['SECURITY_GROUPS'] + [sg.name]
+        except KeyError:
+            sgs = [sg.name]
+        try:
+            res = self.ec2.run_instances(
+                settings.REGIONS[self.region]["IMAGE"],
+                key_name=settings.REGIONS[self.region]['KEY_NAME'],
+                instance_type=node.size,
+                block_device_map=bdm,
+                security_groups=sgs,
+                user_data ='#include\nhttps://'+Site.objects.get_current().domain+node.get_absolute_url()+'cloud_config/',
+            )
+        except:
+            try:
+                self.ec2.delete_security_group(group_id=node.security_group)
+            except:
+                pass
+            raise
+        node.instance_id = res.instances[0].id
+        logger.debug("%s: Reservation %s launched. Instance id %s", node, res.id, node.instance_id)
+        node.status = node.PROVISIONING
+        node.save()
+
+    def pending(self, node):
+        return self.ec2.get_all_instances(instance_ids=[self.instance_id])[0].instances[0].update() == 'pending'
+
+    def shutting_down(self, node):
+        return self.ec2.get_all_instances(instance_ids=[self.instance_id])[0].instances[0].update() == 'shutting-down'
+
+    def update(self, node, tags={}):
+        instance = self.ec2.get_all_instances(instance_ids=[self.instance_id])[0].instances[0]
+        node.ip = instance.ip_address
+        node.save()
+        for k,v in tags.items():
+            instance.add_tag(k, v)
+
+    def terminate(self, node):
+        self.ec2.terminate_instances([node.instance_id])
+        if node.security_group != "":
+            node.status = self.SHUTTING_DOWN
+            node.save()
+            while node.shutting_down():
+                sleep(15)
+            logger.debug("%s: terminating security group %s", node, node.security_group)
+            self.ec2.delete_security_group(group_id=node.security_group)
+
+class Openstack(CloudCompute):
+    def __init__(self, region):
+        super(Openstack, self).__init__(region)
+        self.nova = novaclient.v1_1.client.Client(self.USER,
+            self.PASS,
+            self.TENANT,
+            self.AUTH_URL,
+            service_type="compute",
+            region_name=region[3:])
+
+    def launch(self, node):
+        try:
+            sgs = settings.REGIONS[self.region]['SECURITY_GROUPS'] + [sg.name]
+        except KeyError:
+            sgs = [sg.name]
+        server = self.nova.servers.create(
+            name= node.dns_name,
+            image=settings.REGIONS[self.region]['IMAGE'],
+            flavor=node.size,
+            security_groups=sgs,
+            key_name=settings.REGIONS[self.region]['KEY_NAME'],
+            availability_zone=self.region[3:],
+            block_device_mapping=''
+        )
+        node.instance_id = server.id
+        node.status=Node.PROVISIONING
+
+    def pending(self, node):
+        return self.nova.servers.get(node.instance_id).status == u'BUILD'
+
+    def shutting_down(self, node):
+        return self.nova.servers.get(node.instance_id).status == u'STOPPING'
+
+    def update(self, node, tags={}):
+        s = self.nova.servers.get(node.instance_id)
+        node.ip = s.accessIPv4
+
+    def terminate(self, node):
+        pass
+
+class Rackspace(Openstack):
+    USER = settings.RACKSPACE_USER
+    PASS = settings.RACKSPACE_PASS
+    TENANT = settings.RACKSPACE_TENANT
+    AUTH_URL = settings.RACKSPACE_AUTH_URL
 
 class Cluster(models.Model):
     user = models.ForeignKey(User)
@@ -96,6 +233,14 @@ class RegionNodeSet(models.Model):
             type='A', ttl=60, alias_hosted_zone_id=settings.ROUTE53_ZONE, alias_dns_name=self.dns_name,
             identifier=self.identifier, region=self.region)
 
+    @property
+    def connection(self):
+        if self.region[0:2] == "az":
+            return EC2()
+        elif self.region[0:2] == "rs":
+            return Rackspace()
+
+        raise KeyError("Unknown Region")
     def on_terminate(self):
         logger.debug("%s: terminating dns for region %s, cluster %s", self, self.region, self.cluster.pk)
         r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
@@ -164,16 +309,13 @@ class Node(models.Model):
         return self.dns_name
 
     def pending(self):
-        return self.instance.update()=='pending'
+        return self.region.connection.pending(self)
 
     def shutting_down(self):
-        return self.instance.update()=='shutting-down'
+        return self.region.connection.shutting_down(self)
 
     def update(self, tags={}):
-        self.ip = self.instance.ip_address
-        self.save()
-        for k,v in tags.items():
-            self.instance.add_tag(k, v)
+        return self.region.connection.update(self, tags)
 
     @models.permalink
     def get_absolute_url(self):
@@ -182,12 +324,6 @@ class Node(models.Model):
     @property
     def dns_name(self):
         return settings.NODE_DNS_TEMPLATE.format(cluster=self.cluster.pk, node=self.nid)
-
-    @property
-    def instance(self):
-        if not hasattr(self, '_instance'):
-            self._instance = ec2regions[self.region.region].get_all_instances(instance_ids=[self.instance_id])[0].instances[0]
-        return self._instance
 
     @property
     def volume_type(self):
@@ -273,55 +409,15 @@ runcmd:
 
     def do_launch(self):
         """Do the initial, fast part of launching this node."""
-        logger.info("%s: provisioning node", self)
-        # Elastic Block Storage
-        dev_sda1 = boto.ec2.blockdevicemapping.BlockDeviceType(iops=self.iops, volume_type=self.volume_type)
-        dev_sda1.size = self.storage
-        bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
-        bdm['/dev/sda1'] = dev_sda1
-        # NID
         self.nid = self.cluster.next_nid()
         logger.debug("%s: Assigned NID %s", self, self.nid)
+        logger.info("%s: provisioning node", self)
         try:
-            # Security Group
-            sg = ec2regions[self.region.region].create_security_group('dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),'Security group for '+str(self))
-            self.security_group = sg.id
-            ec2regions[self.region.region].authorize_security_group(
-                group_id=sg.id,
-                ip_protocol='tcp',
-                cidr_ip='0.0.0.0/0',
-                from_port=self.cluster.port,
-                to_port=self.cluster.port)
-            logger.debug("%s: Created Security Group %s (named %s) with port %s open", self, sg.id, sg.name, self.cluster.port)
-            self.save()
-            # EC2 Instance
-            try:
-                sgs = settings.EC2_REGIONS[self.region.region]['SECURITY_GROUPS'] + [sg.name]
-            except KeyError:
-                sgs = [sg.name]
-            try:
-                res = ec2regions[self.region.region].run_instances(
-                    settings.EC2_REGIONS[self.region.region]["AMI"],
-                    key_name=settings.EC2_REGIONS[self.region.region]['KEY_NAME'],
-                    instance_type=self.size,
-                    block_device_map=bdm,
-                    security_groups=sgs,
-                    user_data ='#include\nhttps://'+Site.objects.get_current().domain+self.get_absolute_url()+'cloud_config/',
-                )
-            except:
-                try:
-                    ec2regions[self.region.region].delete_security_group(group_id=self.security_group)
-                except:
-                    pass
-                raise
+            self.region.connection.launch(self)
         except:
-            logger.error("%s: Failed to launch instance", self)
             self.status = self.ERROR
             self.save()
             raise
-        self._instance = res.instances[0]
-        self.instance_id = self.instance.id
-        logger.debug("%s: Reservation %s launched. Instance id %s", self, res.id, self.instance_id)
         self.status = self.PROVISIONING
         self.save()
 
@@ -375,14 +471,7 @@ runcmd:
                 resource_records=[self.ip]))
             rrs.commit()
             r53.delete_health_check(self.health_check)
-            ec2regions[self.region.region].terminate_instances([self.instance_id])
-            if self.security_group != "":
-                self.status = self.SHUTTING_DOWN
-                self.save()
-                while self.shutting_down():
-                    sleep(15)
-                logger.debug("%s: terminating security group %s", self, self.security_group)
-                ec2regions[self.region.region].delete_security_group(group_id=self.security_group)
+            self.region.connection.terminate(self)
 
 @receiver(models.signals.pre_delete, sender=Node)
 def node_pre_delete_callback(sender, instance, using, **kwargs):
