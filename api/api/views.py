@@ -1,5 +1,6 @@
 from time import sleep
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from rest_framework import viewsets, mixins, status, permissions
 from .models import Cluster, Node
@@ -27,7 +28,7 @@ class IsOwnerOrAdminUserOrCreateMethod(permissions.IsAdminUser):
 		return super(IsOwnerOrAdminUserOrCreateMethod, self).has_object_permission(request,view,obj)
 
 	def has_permission(self, request, view):
-		if getattr(view, request.method.lower()) == view.create:
+		if getattr(view, request.method.lower()) == view.create and settings.ALLOW_REGISTRATIONS:
 			return True
 		return super(IsOwnerOrAdminUserOrCreateMethod, self).has_permission(request, view)
 
