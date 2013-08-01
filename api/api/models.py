@@ -50,6 +50,12 @@ class CloudCompute(object):
     def terminate(self, node):
         pass
 
+    def pause(self, node):
+        pass
+
+    def resume(self, node):
+        pass
+
 class EC2(CloudCompute):
     def __init__(self, region):
         super(EC2, self).__init__(region)
@@ -62,7 +68,7 @@ class EC2(CloudCompute):
         bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
         bdm['/dev/sda1'] = dev_sda1
         logger.debug("%s: Assigned NID %s", node, node.nid)
-        sg = self.ec2.create_security_group('dbaas-cluster-{c}-node-{n}'.format(c=node.cluster.pk, n=node.nid),'Security group for '+str(node))
+        sg = self.ec2.create_security_group(str(node),'Security group for '+str(node))
         node.security_group = sg.id
         self.ec2.authorize_security_group(
             group_id=sg.id,
@@ -120,6 +126,12 @@ class EC2(CloudCompute):
             logger.debug("%s: terminating security group %s", node, node.security_group)
             self.ec2.delete_security_group(group_id=node.security_group)
 
+    def pause(self, node):
+        ec2regions[self.region.region].stop_instances([self.instance_id])
+
+    def resume(self, node):
+        ec2regions[self.region.region].start_instances([self.instance_id])
+
 class Openstack(CloudCompute):
     def __init__(self, region):
         super(Openstack, self).__init__(region)
@@ -131,18 +143,12 @@ class Openstack(CloudCompute):
             region_name=region[3:])
 
     def launch(self, node):
-        try:
-            sgs = settings.REGIONS[self.region]['SECURITY_GROUPS'] + [sg.name]
-        except KeyError:
-            sgs = [sg.name]
         server = self.nova.servers.create(
             name= node.dns_name,
             image=settings.REGIONS[self.region]['IMAGE'],
             flavor=node.size,
-            security_groups=sgs,
             key_name=settings.REGIONS[self.region]['KEY_NAME'],
             availability_zone=self.region[3:],
-            block_device_mapping=''
         )
         node.instance_id = server.id
         node.status=Node.PROVISIONING
@@ -154,11 +160,19 @@ class Openstack(CloudCompute):
         return self.nova.servers.get(node.instance_id).status == u'STOPPING'
 
     def update(self, node, tags={}):
-        s = self.nova.servers.get(node.instance_id)
+        tags['id'] = node.instance_id
+        s = self.nova.servers.set_meta(node.instance_id, tags)
         node.ip = s.accessIPv4
+        node.save()
 
     def terminate(self, node):
-        pass
+        self.nova.servers.delete(node.instance_id)
+
+    def pause(self, node):
+        self.nova.servers.suspend(node.instance_id)
+
+    def resume(self, node):
+        self.nova.servers.resume(node.instance_id)
 
 class Rackspace(Openstack):
     USER = settings.RACKSPACE_USER
@@ -450,13 +464,13 @@ runcmd:
 
     def pause(self):
         assert(self.status == Node.RUNNING)
-        ec2regions[self.region.region].stop_instances([self.instance_id])
+        self.connection.pause(self)
         self.status = Node.PAUSED
         self.save()
 
     def resume(self):
         assert(self.status == Node.PAUSED)
-        ec2regions[self.region.region].start_instances([self.instance_id])
+        self.connection.resume(self)
         self.status = Node.RUNNING
         self.save()
 
