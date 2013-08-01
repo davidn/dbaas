@@ -63,6 +63,10 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 			serializers.ValidationError("Username changing disabled")
 		return attrs
 
+class RegionSerializer(serializers.Serializer):
+	id = serializers.CharField()
+	name = serializers.CharField()
+
 class RegionField(serializers.WritableField):
 	def to_native(self, value):
 		return value.region

@@ -16,6 +16,7 @@ from boto import connect_route53
 from .uuid_field import UUIDField
 from api.route53 import RecordWithTargetHealthCheck
 import novaclient.v1_1
+import collections
 
 logger = getLogger(__name__)
 
@@ -179,6 +180,8 @@ class Rackspace(Openstack):
     PASS = settings.RACKSPACE_PASS
     TENANT = settings.RACKSPACE_TENANT
     AUTH_URL = settings.RACKSPACE_AUTH_URL
+
+Region = collections.namedtuple('Region',['id','name'])
 
 class Cluster(models.Model):
     user = models.ForeignKey(User)

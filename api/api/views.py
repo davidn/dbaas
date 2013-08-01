@@ -3,8 +3,8 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from rest_framework import viewsets, mixins, status, permissions
-from .models import Cluster, Node
-from .serializers import UserSerializer, ClusterSerializer, NodeSerializer
+from .models import Cluster, Node, Region
+from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer
 from .tasks import install, install_cluster
 from rest_framework.response import Response
 from rest_framework.decorators import action, link
@@ -31,6 +31,12 @@ class IsOwnerOrAdminUserOrCreateMethod(permissions.IsAdminUser):
 		if getattr(view, request.method.lower()) == view.create and settings.ALLOW_REGISTRATIONS:
 			return True
 		return super(IsOwnerOrAdminUserOrCreateMethod, self).has_permission(request, view)
+
+
+class RegionsViewSet(viewsets.ViewSet):
+	def list(self, request, *args, **kwargs):
+		serializer = self.get_serializer([Region(rid, value['NAME']) for rid, value in settings.REGIONS.items()], many=True)
+		return Response(serializer.data)
 
 class UserViewSet(mixins.ListModelMixin,
 			mixins.RetrieveModelMixin,
