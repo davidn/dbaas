@@ -129,6 +129,10 @@ function login_callback(data, status, xhr) {
 	token = data.token;
 	localStorage.setItem('token',token);
 	$("#login-div").remove();
+	api_call('GET', 'regions/', {}, function(data, status, xhr) {
+		regions = data;
+		refresh_home();
+	}, register_error);
 	refresh_home();
 }
 
@@ -194,16 +198,7 @@ var instance_types = [
 	{id : 17, cpus : 32, ram : 16, name : "cg1.4xlarge"}
 ];
 
-var regions = [
-	{name:"us-west-1", text:"US West (N. California)"},
-	{name:"us-west-2", text:"US West (Oregon)"},
-	{name:"us-east-1", text:"US East (N. Virginia)"},
-	{name:"eu-west-1", text:"EU (Ireland)"},
-	{name:"ap-northeast-1", text:"Asia Pacific (Tokyo)"},
-	{name:"ap-southeast-1", text:"Asia Pacific (Singapore)"},
-	{name:"ap-southeast-2", text:"Asia Pacific (Sydney)"},
-	{name:"sa-east-1", text:"South America (São Paulo)"}
-];
+var regions = [];
 
 function adjust_instance_types() {
 	var cpus = $("#cpu_count")[0].options[$("#cpu_count")[0].selectedIndex].text;
