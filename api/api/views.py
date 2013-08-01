@@ -33,7 +33,7 @@ class IsOwnerOrAdminUserOrCreateMethod(permissions.IsAdminUser):
 		return super(IsOwnerOrAdminUserOrCreateMethod, self).has_permission(request, view)
 
 
-class RegionsViewSet(viewsets.ViewSet):
+class RegionViewSet(viewsets.ViewSet):
 	def list(self, request, *args, **kwargs):
 		serializer = self.get_serializer([Region(rid, value['NAME']) for rid, value in settings.REGIONS.items()], many=True)
 		return Response(serializer.data)
