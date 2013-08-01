@@ -257,9 +257,9 @@ class RegionNodeSet(models.Model):
     @property
     def connection(self):
         if self.region[0:2] == "az":
-            return EC2()
+            return EC2(self.region)
         elif self.region[0:2] == "rs":
-            return Rackspace()
+            return Rackspace(self.region)
 
         raise KeyError("Unknown Region")
     def on_terminate(self):
