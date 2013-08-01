@@ -133,7 +133,6 @@ function login_callback(data, status, xhr) {
 		regions = data;
 		refresh_home();
 	}, register_error);
-	refresh_home();
 }
 
 function login_error(xhr, status, error) {
@@ -262,7 +261,10 @@ $(function() {
 			$("#login-submit").on("click", login_button);
 			$("#login-register").on("click", register);
 		} else {
-			refresh_home();
+			api_call('GET', 'regions/', {}, function(data, status, xhr) {
+				regions = data;
+				refresh_home();
+			}, register_error);
 		}
 	});
 });
