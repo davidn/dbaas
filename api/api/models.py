@@ -77,7 +77,7 @@ class EC2(CloudCompute):
             cidr_ip='0.0.0.0/0',
             from_port=node.cluster.port,
             to_port=node.cluster.port)
-        logger.debug("%s: Created Security Group %s (named %s) with port %s open", node, sg.id, sg.name, node.port)
+        logger.debug("%s: Created Security Group %s (named %s) with port %s open", node, sg.id, sg.name, node.cluster.port)
         node.save()
         # EC2 Instance
         try:
