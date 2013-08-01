@@ -50,14 +50,14 @@ function add_cluster(e) {
 		var nodes = [];
 			$.each(regions, function(i, region) {
 				var node = {
-						region: region.name,
+						region: region.id,
 						size: $("#node_size").val(),
 						storage: $("#allocated_storage").val()
 				};
 				if ($("#provision_iops").is(':checked')) {
 					node.iops = $("#iops").val();
 				}
-				for (var i = 0; i < $("#"+region.name+"_count").val(); i++) {
+				for (var i = 0; i < $("#"+region.id+"_count").val(); i++) {
 					nodes.push(node);
 				}
 			});
