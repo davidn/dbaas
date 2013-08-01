@@ -150,6 +150,10 @@ class Openstack(CloudCompute):
             flavor=node.size,
             key_name=settings.REGIONS[self.region]['KEY_NAME'],
             availability_zone=self.region[3:],
+            files={
+                '/var/lib/cloud/seed/nocloud/user-data':'#include\nhttps://'+Site.objects.get_current().domain+node.get_absolute_url()+'cloud_config/',
+                '/var/lib/cloud/seed/nocloud/meta-data':'',
+            },
         )
         node.instance_id = server.id
         node.status=Node.PROVISIONING
