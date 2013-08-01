@@ -89,7 +89,7 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 		read_only_fields = ('instance_id','ip','nid')
 
 	def validate_region(self,attrs,source):
-		if attrs[source].region not in settings.EC2_REGIONS:
+		if attrs[source].region not in settings.REGIONS:
 			raise serializers.ValidationError("Unsupported Region")
 		return attrs
 
