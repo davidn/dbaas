@@ -71,13 +71,19 @@ REGIONS = {
         'NAME': 'EC2 South America (Sao Paulo)',
     },
     'rs-ord': {
-        'NAME': 'Rackspace Chicago'
+        'IMAGE': 'dbaas-v1',
+        'KEY_NAME': 'dbaas',
+        'NAME': 'Rackspace Chicago',
     },
     'rs-dfw': {
-        'NAME': 'Rackspace Dallas'
+        'IMAGE': 'dbaas-v1',
+        'KEY_NAME': 'dbaas',
+        'NAME': 'Rackspace Dallas',
     },
     'rs-syd': {
-        'NAME': 'Rackspace Sydney'
+        'IMAGE': 'dbaas-v1',
+        'KEY_NAME': 'dbaas',
+        'NAME': 'Rackspace Sydney',
     }
 }
 
