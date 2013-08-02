@@ -120,7 +120,7 @@ class EC2(CloudCompute):
     def terminate(self, node):
         self.ec2.terminate_instances([node.instance_id])
         if node.security_group != "":
-            node.status = self.SHUTTING_DOWN
+            node.status = Node.SHUTTING_DOWN
             node.save()
             while node.shutting_down():
                 sleep(15)
