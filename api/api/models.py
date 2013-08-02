@@ -128,10 +128,10 @@ class EC2(CloudCompute):
             self.ec2.delete_security_group(group_id=node.security_group)
 
     def pause(self, node):
-        ec2regions[node.region.region].stop_instances([node.instance_id])
+        self.ec2.stop_instances([node.instance_id])
 
     def resume(self, node):
-        ec2regions[node.region.region].start_instances([node.instance_id])
+        self.ec2.start_instances([node.instance_id])
 
 class Openstack(CloudCompute):
     def __init__(self, region):
@@ -216,16 +216,16 @@ class Cluster(models.Model):
     def subscriptions(self):
         return ",".join(":".join([str(node.nid), '192.168.33.'+str(node.nid), "5502"]) for node in self.nodes.all())
 
-    def get_region_set(self, region):
-        obj, _ = self.regions.get_or_create(cluster=self.pk, region=region)
+    def get_lbr_region_set(self, region):
+        obj, _ = self.lbr_regions.get_or_create(cluster=self.pk, lbr_region=settings.REGIONS[region]['LBR_REGION'])
         return obj
 
 def gen_private_key():
     return RSA.generate(2048, Random.new().read).exportKey()
 
-class RegionNodeSet(models.Model):
-    cluster = models.ForeignKey(Cluster, related_name='regions')
-    region = models.CharField("EC2 Region", max_length=20)
+class LBRRegionNodeSet(models.Model):
+    cluster = models.ForeignKey(Cluster, related_name='lbr_regions')
+    lbr_region = models.CharField("LBR Region", max_length=20)
     launched = models.BooleanField("Launched")
 
     def __unicode__(self):
@@ -233,10 +233,10 @@ class RegionNodeSet(models.Model):
 
     @property
     def dns_name(self):
-        return settings.REGION_DNS_TEMPLATE.format(cluster=self.cluster.pk, region=self.region)
+        return settings.REGION_DNS_TEMPLATE.format(cluster=self.cluster.pk, lbr_region=self.lbr_region)
 
     def do_launch(self):
-        logger.debug("%s: setting up dns for region %s, cluster %s", self, self.region, self.cluster.pk)
+        logger.debug("%s: setting up dns for lbr region %s, cluster %s", self, self.lbr_region, self.cluster.pk)
         r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
         rrs.add_change_record('CREATE', self.record)
@@ -246,24 +246,16 @@ class RegionNodeSet(models.Model):
 
     @property
     def identifier(self):
-        return "%s-%s" % (self.cluster.pk, self.region)
+        return "%s-%s" % (self.cluster.pk, self.lbr_region)
 
     @property
     def record(self):
         return RecordWithTargetHealthCheck(name=self.cluster.dns_name,
             type='A', ttl=60, alias_hosted_zone_id=settings.ROUTE53_ZONE, alias_dns_name=self.dns_name,
-            identifier=self.identifier, region=self.region)
+            identifier=self.identifier, region=self.lbr_region)
 
-    @property
-    def connection(self):
-        if self.region[0:2] == "az":
-            return EC2(self.region)
-        elif self.region[0:2] == "rs":
-            return Rackspace(self.region)
-
-        raise KeyError("Unknown Region")
     def on_terminate(self):
-        logger.debug("%s: terminating dns for region %s, cluster %s", self, self.region, self.cluster.pk)
+        logger.debug("%s: terminating dns for lbr region %s, cluster %s", self, self.lbr_region, self.cluster.pk)
         r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
         rrs.add_change_record('DELETE', self.record)
@@ -273,7 +265,7 @@ class RegionNodeSet(models.Model):
             if re.search('but it was not found', e.body) is None:
                 raise
             else:
-                logger.warning("%s: terminating dns for region %s, cluster %s skipped as record not found")
+                logger.warning("%s: terminating dns for lbr region %s, cluster %s skipped as record not found")
 
 class Node(models.Model):
     INITIAL=0
@@ -298,7 +290,8 @@ class Node(models.Model):
     security_group = models.CharField("EC2 Security Group ID", max_length=200, default="", blank=True)
     health_check = models.CharField("R53 Health Check ID", max_length=200, default="", blank=True)
     nid = models.IntegerField("Node ID", default=None, blank=True, null=True)
-    region = models.ForeignKey(RegionNodeSet, related_name='nodes')
+    lbr_region = models.ForeignKey(LBRRegionNodeSet, related_name='nodes')
+    region = models.CharField("Region", max_length=20)
     size = models.CharField("Size", max_length=20)
     storage = models.IntegerField("Allocated Storage")
     ip = models.IPAddressField("EC2 Instance IP Address", default="", blank=True)
@@ -322,7 +315,7 @@ class Node(models.Model):
             cluster=repr(self.cluster),
             size=repr(self.size),
             storage=repr(self.storage),
-            region=repr(self.region.region),
+            region=repr(self.region),
             optional=optional
         )
 
@@ -330,17 +323,28 @@ class Node(models.Model):
         return self.dns_name
 
     def pending(self):
-        return self.region.connection.pending(self)
+        return self.connection.pending(self)
 
     def shutting_down(self):
-        return self.region.connection.shutting_down(self)
+        return self.connection.shutting_down(self)
 
     def update(self, tags={}):
-        return self.region.connection.update(self, tags)
+        return self.connection.update(self, tags)
 
     @models.permalink
     def get_absolute_url(self):
         return ('node-detail', [self.cluster.pk, self.pk])
+
+    @property
+    def connection(self):
+        if not hasattr(self, '_connection'):
+            if self.region[0:2] == "az":
+                self._connection = EC2(self.region)
+            elif self.region[0:2] == "rs":
+                self._connection = Rackspace(self.region)
+            else:
+                raise KeyError("Unknown provider for region %s" % self.region)
+        return self._connection
 
     @property
     def dns_name(self):
@@ -434,7 +438,7 @@ runcmd:
         logger.debug("%s: Assigned NID %s", self, self.nid)
         logger.info("%s: provisioning node", self)
         try:
-            self.region.connection.launch(self)
+            self.connection.launch(self)
         except:
             self.status = self.ERROR
             self.save()
@@ -458,7 +462,7 @@ runcmd:
             ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
         self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
         rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-        rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.region.dns_name,
+        rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
             type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
         rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
             resource_records=[self.ip]))
@@ -486,13 +490,13 @@ runcmd:
             logger.debug("%s: terminating instance %s", self, self.instance_id)
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-            rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.region.dns_name,
+            rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
                 type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
             rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
                 resource_records=[self.ip]))
             rrs.commit()
             r53.delete_health_check(self.health_check)
-            self.region.connection.terminate(self)
+            self.connection.terminate(self)
 
 @receiver(models.signals.pre_delete, sender=Node)
 def node_pre_delete_callback(sender, instance, using, **kwargs):
@@ -500,8 +504,8 @@ def node_pre_delete_callback(sender, instance, using, **kwargs):
         return
     instance.on_terminate()
 
-@receiver(models.signals.pre_delete, sender=RegionNodeSet)
+@receiver(models.signals.pre_delete, sender=LBRRegionNodeSet)
 def region_pre_delete_callback(sender, instance, using, **kwargs):
-    if sender != RegionNodeSet:
+    if sender != LBRRegionNodeSet:
         return
     instance.on_terminate()

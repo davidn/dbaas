@@ -67,17 +67,9 @@ class RegionSerializer(serializers.Serializer):
 	id = serializers.CharField()
 	name = serializers.CharField()
 
-class RegionField(serializers.WritableField):
-	def to_native(self, value):
-		return value.region
-
-	def from_native(self, value):
-		return value
-
 class NodeSerializer(serializers.HyperlinkedModelSerializer):
 	status = StatusField(choices=Node.STATUSES, read_only=True)
 	dns_name = serializers.CharField(read_only=True)
-	region = RegionField(required=True)
 	def __init__(self, *args, **kwargs):
 		serializers.HyperlinkedModelSerializer.__init__(self, *args, **kwargs)
 		url_field = MultiHyperlinkedIdentityField(view_name='node-detail', lookup_field='pk')

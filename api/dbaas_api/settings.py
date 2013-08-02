@@ -27,63 +27,74 @@ REGIONS = {
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
         'NAME': 'EC2 US West (Northern California)',
+        'LBR_REGION': 'us-west-1',
     },
     'az-us-west-2': {
         'IMAGE': 'ami-b3e57783',
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
         'NAME': 'EC2 US West (Oregon)',
+        'LBR_REGION': 'us-west-2',
     },
     'az-us-east-1': {
         'IMAGE': 'ami-cdb0c8a4',
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
         'NAME': 'EC2 US East (Northern Virginia)',
+        'LBR_REGION': 'us-east-1',
     },
     'az-eu-west-1': {
         'IMAGE': 'ami-a1f8e6d5',
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
         'NAME': 'EC2 EU (Ireland)',
+        'LBR_REGION': 'eu-west-1',
     },
     'az-ap-northeast-1': {
         'IMAGE': 'ami-c16bfdc0',
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
         'NAME': 'EC2 Asia Pacific (Tokyo)',
+        'LBR_REGION': 'ap-northeast-1',
     },
     'az-ap-southeast-1': {
         'IMAGE': 'ami-7a0f4728',
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
         'NAME': 'EC2 Asia Pacific (Singapore)',
+        'LBR_REGION': 'ap-southeast-1',
     },
     'az-ap-southeast-2': {
         'IMAGE': 'ami-1d851727',
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
         'NAME': 'EC2 Asia Pacific (Sydney)',
+        'LBR_REGION': 'ap-southeast-2',
     },
     'az-sa-east-1': {
         'IMAGE': 'ami-6fdb7f72',
         'KEY_NAME': 'dbaas',
         'SECURITY_GROUPS': ['dbaas'],
         'NAME': 'EC2 South America (Sao Paulo)',
+        'LBR_REGION': 'sa-east-1',
     },
     'rs-ord': {
         'IMAGE': 'dbaas-v1',
         'KEY_NAME': 'dbaas',
         'NAME': 'Rackspace Chicago',
+        'LBR_REGION': 'us-east-1',
     },
     'rs-dfw': {
         'IMAGE': 'dbaas-v1',
         'KEY_NAME': 'dbaas',
         'NAME': 'Rackspace Dallas',
+        'LBR_REGION': 'us-west-1',
     },
     'rs-syd': {
         'IMAGE': 'dbaas-v1',
         'KEY_NAME': 'dbaas',
         'NAME': 'Rackspace Sydney',
+        'LBR_REGION': 'ap-southeast-2',
     }
 }
 
@@ -118,7 +129,7 @@ RACKSPACE_AUTH_URL="https://identity.api.rackspacecloud.com/v2.0"
 
 ROUTE53_ZONE=""
 CLUSTER_DNS_TEMPLATE="{cluster}.dbaas.example.com"
-REGION_DNS_TEMPLATE="{cluster}-{region}.dbaas.example.com"
+REGION_DNS_TEMPLATE="{cluster}-{lbr_region}.dbaas.example.com"
 NODE_DNS_TEMPLATE="{cluster}-{node}.dbaas.example.com"
 EMAIL_SUBJECT="Your GenieDB cluster is ready!"
 PLAINTEXT_EMAIL_TEMPLATE="""
