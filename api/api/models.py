@@ -105,13 +105,13 @@ class EC2(CloudCompute):
         node.save()
 
     def pending(self, node):
-        return self.ec2.get_all_instances(instance_ids=[self.instance_id])[0].instances[0].update() == 'pending'
+        return self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'pending'
 
     def shutting_down(self, node):
-        return self.ec2.get_all_instances(instance_ids=[self.instance_id])[0].instances[0].update() == 'shutting-down'
+        return self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'shutting-down'
 
     def update(self, node, tags={}):
-        instance = self.ec2.get_all_instances(instance_ids=[self.instance_id])[0].instances[0]
+        instance = self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0]
         node.ip = instance.ip_address
         node.save()
         for k,v in tags.items():
@@ -128,10 +128,10 @@ class EC2(CloudCompute):
             self.ec2.delete_security_group(group_id=node.security_group)
 
     def pause(self, node):
-        ec2regions[self.region.region].stop_instances([self.instance_id])
+        ec2regions[node.region.region].stop_instances([node.instance_id])
 
     def resume(self, node):
-        ec2regions[self.region.region].start_instances([self.instance_id])
+        ec2regions[node.region.region].start_instances([node.instance_id])
 
 class Openstack(CloudCompute):
     def __init__(self, region):
