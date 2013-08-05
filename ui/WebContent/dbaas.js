@@ -1,5 +1,5 @@
-var endpoint = '@ENDPOINT@';
-var auth_endpoint = '@AUTH_ENDPOINT@';
+var endpoint = 'http://localhost:8000/api/';
+var auth_endpoint = 'http://localhost:8000/api-token-auth/';
 var token = '';
 if (typeof(Storage) !== "undefined") {
     t = localStorage.getItem('token');
