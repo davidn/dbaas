@@ -1,7 +1,6 @@
-from django.conf import settings
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Cluster, Node
+from .models import Cluster, Node, Flavor, Provider, Region
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework.reverse import reverse
 from django.contrib.auth.hashers import make_password
@@ -63,9 +62,23 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 			serializers.ValidationError("Username changing disabled")
 		return attrs
 
-class RegionSerializer(serializers.Serializer):
-	id = serializers.CharField()
-	name = serializers.CharField()
+
+class FlavorSerializer(serializers.HyperlinkedModelSerializer):
+	class Meta:
+		model = Flavor
+		fields = ('url','code','name','ram','cpus')
+
+class RegionSerializer(serializers.HyperlinkedModelSerializer):
+	class Meta:
+		model = Region
+		fields = ('url','provider', 'code', 'name')
+
+class ProviderSerializer(serializers.HyperlinkedModelSerializer):
+	flavors = FlavorSerializer(many=True)
+	regions = RegionSerializer(many=True)
+	class Meta:
+		model = Provider
+		fields = ('url','name', 'code', 'flavors', 'regions')
 
 class NodeSerializer(serializers.HyperlinkedModelSerializer):
 	status = StatusField(choices=Node.STATUSES, read_only=True)
@@ -77,13 +90,8 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 		self.fields['url'] = url_field
 	class Meta:
 		model = Node
-		fields = ('url','instance_id','nid','dns_name','ip','size', 'storage', 'region', 'status', 'cluster', 'iops')
+		fields = ('url','instance_id','nid','dns_name','ip','flavor', 'storage', 'region', 'status', 'cluster', 'iops')
 		read_only_fields = ('instance_id','ip','nid')
-
-	def validate_region(self,attrs,source):
-		if attrs[source] not in settings.REGIONS:
-			raise serializers.ValidationError("Unsupported Region")
-		return attrs
 
 class ClusterSerializer(serializers.HyperlinkedModelSerializer):
 	nodes = NodeSerializer(many=True, read_only=True)

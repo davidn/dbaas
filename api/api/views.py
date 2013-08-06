@@ -3,8 +3,8 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from rest_framework import viewsets, mixins, status, permissions
-from .models import Cluster, Node, Region
-from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer
+from .models import Cluster, Node, Region, Provider, Flavor
+from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer
 from .tasks import install, install_cluster
 from rest_framework.response import Response
 from rest_framework.decorators import action, link
@@ -32,11 +32,23 @@ class IsOwnerOrAdminUserOrCreateMethod(permissions.IsAdminUser):
 			return True
 		return super(IsOwnerOrAdminUserOrCreateMethod, self).has_permission(request, view)
 
+class ProviderViewSet(mixins.ListModelMixin,
+			mixins.RetrieveModelMixin,
+			viewsets.GenericViewSet):
+	serializer_class = ProviderSerializer
+	queryset = Provider.objects.all()
 
-class RegionViewSet(viewsets.ViewSet):
-	def list(self, request, *args, **kwargs):
-		serializer = RegionSerializer([Region(rid, value['NAME']) for rid, value in settings.REGIONS.items()], many=True)
-		return Response(serializer.data)
+class RegionViewSet(mixins.ListModelMixin,
+			mixins.RetrieveModelMixin,
+			viewsets.GenericViewSet):
+	serializer_class = RegionSerializer
+	queryset = Region.objects.all()
+
+class FlavorViewSet(mixins.ListModelMixin,
+			mixins.RetrieveModelMixin,
+			viewsets.GenericViewSet):
+	serializer_class = FlavorSerializer
+	queryset = Flavor.objects.all()
 
 class UserViewSet(mixins.ListModelMixin,
 			mixins.RetrieveModelMixin,

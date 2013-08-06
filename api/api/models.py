@@ -16,55 +16,96 @@ from boto import connect_route53
 from .uuid_field import UUIDField
 from api.route53 import RecordWithTargetHealthCheck
 import novaclient.v1_1
-import collections
 
 logger = getLogger(__name__)
 
-class EC2Regions(object):
-    def __init__(self):
-        self._regions = {}
-    
-    def __getitem__(self,key):
-        if not self._regions.has_key(key):
-            self._regions[key] = boto.ec2.get_region(key).connect(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-        return self._regions[key]
+class Cluster(models.Model):
+    user = models.ForeignKey(User)
+    uuid = UUIDField(primary_key=True)
+    port = models.PositiveIntegerField("MySQL Port", default=settings.DEFAULT_PORT)
+    dbname = models.CharField("Database Name", max_length=255)
+    dbusername = models.CharField("Database Username", max_length=255)
+    dbpassword = models.CharField("Database Password", max_length=255)
 
-ec2regions = EC2Regions()
+    def __repr__(self):
+        return "Cluster(uuid={uuid}, user={user})".format(uuid=repr(self.uuid), user=repr(self.user))
 
+    def __unicode__(self):
+        return self.dns_name
 
-class CloudCompute(object):
-    def __init__(self, region):
-        self.region = region
+    @models.permalink
+    def get_absolute_url(self):
+        return ('cluster-detail', [self.pk])
 
-    def launch(self, node):
-        pass
+    def next_nid(self):
+        return max([node.nid for node in self.nodes.all()]+[0])+1
 
-    def pending(self, node):
-        pass
+    @property
+    def dns_name(self):
+        return settings.CLUSTER_DNS_TEMPLATE.format(cluster=self.pk)
 
-    def shutting_down(self, node):
-        pass
+    @property
+    def subscriptions(self):
+        return ",".join(":".join([str(node.nid), '192.168.33.'+str(node.nid), "5502"]) for node in self.nodes.all())
 
-    def update(self, node, tags={}):
-        pass
+    def get_lbr_region_set(self, region):
+        obj, _ = self.lbr_regions.get_or_create(cluster=self.pk, lbr_region=region.lbr_region)
+        return obj
 
-    def terminate(self, node):
-        pass
+def gen_private_key():
+    return RSA.generate(2048, Random.new().read).exportKey()
 
-    def pause(self, node):
-        pass
+class Provider(models.Model):
+    name = models.CharField("Name", max_length=255)
+    code = models.CharField(max_length=20)
 
-    def resume(self, node):
-        pass
+    @models.permalink
+    def get_absolute_url(self):
+        return ('provider-detail', [self.pk])
 
-class EC2(CloudCompute):
-    def __init__(self, region):
-        super(EC2, self).__init__(region)
-        self.ec2 = ec2regions[self.region[3:]]
+class Region(models.Model):
+    provider = models.ForeignKey(Provider, related_name='regions')
+    code = models.CharField("Code", max_length=20)
+    name = models.CharField("Name", max_length=255)
+    image = models.CharField("Image", max_length=255)
+    lbr_region = models.CharField("LBR Region", max_length=20)
+    key_name = models.CharField("SSH Key", max_length=255)
+    security_group = models.CharField("Security Group", max_length=255)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('region-detail', [self.pk])
+
+    @property
+    def connection(self):
+        if not hasattr(self, '_connection'):
+            if self.provider.name == "Amazon":
+                self._connection = EC2(self.region)
+            elif self.provider.Rackspace == "Rackspace":
+                self._connection = Rackspace(self.region)
+            else:
+                raise KeyError("Unknown provider '%s'" % self.provider.name)
+        return self._connection
+
+class EC2(Region):
+    class Meta:
+        proxy = True
+
+    @property
+    def ec2(self):
+        if not hasattr(self, '_ec2'):
+            self._ec2 = boto.ec2.get_region(self.code).connect(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+        return self._ec2
+
+    def null_or_io1(self, iops):
+        if iops is None:
+            return None
+        else:
+            return 'io1'
 
     def launch(self, node):
         # Elastic Block Storage
-        dev_sda1 = boto.ec2.blockdevicemapping.BlockDeviceType(iops=node.iops, volume_type=node.volume_type)
+        dev_sda1 = boto.ec2.blockdevicemapping.BlockDeviceType(iops=node.iops, volume_type=self.null_or_io1(node.iops))
         dev_sda1.size = node.storage
         bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
         bdm['/dev/sda1'] = dev_sda1
@@ -80,15 +121,15 @@ class EC2(CloudCompute):
         logger.debug("%s: Created Security Group %s (named %s) with port %s open", node, sg.id, sg.name, node.cluster.port)
         node.save()
         # EC2 Instance
-        try:
-            sgs = settings.REGIONS[self.region]['SECURITY_GROUPS'] + [sg.name]
-        except KeyError:
+        if self.security_group == "":
             sgs = [sg.name]
+        else:
+            sgs = [sg.name, self.security_group]
         try:
             res = self.ec2.run_instances(
-                settings.REGIONS[self.region]["IMAGE"],
-                key_name=settings.REGIONS[self.region]['KEY_NAME'],
-                instance_type=node.size,
+                self.image,
+                key_name=self.key_name,
+                instance_type=node.flavor.code,
                 block_device_map=bdm,
                 security_groups=sgs,
                 user_data ='#include\nhttps://'+Site.objects.get_current().domain+node.get_absolute_url()+'cloud_config/',
@@ -133,23 +174,28 @@ class EC2(CloudCompute):
     def resume(self, node):
         self.ec2.start_instances([node.instance_id])
 
-class Openstack(CloudCompute):
-    def __init__(self, region):
-        super(Openstack, self).__init__(region)
-        self.nova = novaclient.v1_1.client.Client(self.USER,
-            self.PASS,
-            self.TENANT,
-            self.AUTH_URL,
-            service_type="compute",
-            region_name=region[3:])
+class Openstack(Region):
+    class Meta:
+        proxy = True
+
+    @property
+    def nova(self):
+        if not hasattr(self, "_nova"):
+            self._nova = novaclient.v1_1.client.Client(self.USER,
+                self.PASS,
+                self.TENANT,
+                self.AUTH_URL,
+                service_type="compute",
+                region_name=self.code)
+        return self._nova
 
     def launch(self, node):
         server = self.nova.servers.create(
             name= node.dns_name,
-            image=settings.REGIONS[self.region]['IMAGE'],
-            flavor=node.size,
-            key_name=settings.REGIONS[self.region]['KEY_NAME'],
-            availability_zone=self.region[3:],
+            image=self.image,
+            flavor=node.flavor.code,
+            key_name=self.key_name,
+            availability_zone=self.code,
             files={
                 '/var/lib/cloud/seed/nocloud/user-data':'#include\nhttps://'+Site.objects.get_current().domain+node.get_absolute_url()+'cloud_config/',
                 '/var/lib/cloud/seed/nocloud/meta-data':'',
@@ -180,48 +226,24 @@ class Openstack(CloudCompute):
         self.nova.servers.resume(node.instance_id)
 
 class Rackspace(Openstack):
+    class Meta:
+        proxy = True
+
     USER = settings.RACKSPACE_USER
     PASS = settings.RACKSPACE_PASS
     TENANT = settings.RACKSPACE_TENANT
     AUTH_URL = settings.RACKSPACE_AUTH_URL
 
-Region = collections.namedtuple('Region',['id','name'])
-
-class Cluster(models.Model):
-    user = models.ForeignKey(User)
-    uuid = UUIDField(primary_key=True)
-    port = models.PositiveIntegerField("MySQL Port", default=settings.DEFAULT_PORT)
-    dbname = models.CharField("Database Name", max_length=255)
-    dbusername = models.CharField("Database Username", max_length=255)
-    dbpassword = models.CharField("Database Password", max_length=255)
-
-    def __repr__(self):
-        return "Cluster(uuid={uuid}, user={user})".format(uuid=repr(self.uuid), user=repr(self.user))
-
-    def __unicode__(self):
-        return self.dns_name
+class Flavor(models.Model):
+    provider = models.ForeignKey(Provider, related_name='flavors')
+    code = models.CharField("Code", max_length=20)
+    name = models.CharField("Name", max_length=255)
+    ram = models.PositiveIntegerField("RAM")
+    cpus = models.PositiveSmallIntegerField("CPUs")
 
     @models.permalink
     def get_absolute_url(self):
-        return ('cluster-detail', [self.pk])
-
-    def next_nid(self):
-        return max([node.nid for node in self.nodes.all()]+[0])+1
-
-    @property
-    def dns_name(self):
-        return settings.CLUSTER_DNS_TEMPLATE.format(cluster=self.pk)
-
-    @property
-    def subscriptions(self):
-        return ",".join(":".join([str(node.nid), '192.168.33.'+str(node.nid), "5502"]) for node in self.nodes.all())
-
-    def get_lbr_region_set(self, region):
-        obj, _ = self.lbr_regions.get_or_create(cluster=self.pk, lbr_region=settings.REGIONS[region]['LBR_REGION'])
-        return obj
-
-def gen_private_key():
-    return RSA.generate(2048, Random.new().read).exportKey()
+        return ('flavor-detail', [self.pk])
 
 class LBRRegionNodeSet(models.Model):
     cluster = models.ForeignKey(Cluster, related_name='lbr_regions')
@@ -286,19 +308,19 @@ class Node(models.Model):
         (OVER, 'over'),
         (ERROR, 'An error occured')
     )
-    instance_id = models.CharField("EC2 Instance ID", max_length=200, default="", blank=True)
-    security_group = models.CharField("EC2 Security Group ID", max_length=200, default="", blank=True)
+    cluster = models.ForeignKey(Cluster, related_name='nodes')
+    region = models.ForeignKey(Region, related_name='nodes')
+    flavor = models.ForeignKey(Flavor, related_name='nodes')
+    lbr_region = models.ForeignKey(LBRRegionNodeSet, related_name='nodes')
+    instance_id = models.CharField("Instance ID", max_length=200, default="", blank=True)
+    security_group = models.CharField("Security Group ID", max_length=200, default="", blank=True)
     health_check = models.CharField("R53 Health Check ID", max_length=200, default="", blank=True)
     nid = models.IntegerField("Node ID", default=None, blank=True, null=True)
-    lbr_region = models.ForeignKey(LBRRegionNodeSet, related_name='nodes')
-    region = models.CharField("Region", max_length=20)
-    size = models.CharField("Size", max_length=20)
     storage = models.IntegerField("Allocated Storage")
-    ip = models.IPAddressField("EC2 Instance IP Address", default="", blank=True)
+    ip = models.IPAddressField("Instance IP Address", default="", blank=True)
     iops = models.IntegerField("Provisioned IOPS", default=None, blank=True, null=True)
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
     tinc_private_key = models.TextField("Tinc Private Key", default=gen_private_key)
-    cluster = models.ForeignKey(Cluster, related_name='nodes')
 
     def __repr__(self):
         optional = ""
@@ -310,10 +332,10 @@ class Node(models.Model):
             optional += ", status={status}".format(status=repr(self.status))
         if self.ip != "":
             optional += ", ip={ip}".format(ip=repr(self.ip))
-        return "Node(pk={pk}, cluster={cluster}, size={size}, storage={storage}, region={region}{optional})".format(
+        return "Node(pk={pk}, cluster={cluster}, flavor={flavor}, storage={storage}, region={region}{optional})".format(
             pk=repr(self.pk),
             cluster=repr(self.cluster),
-            size=repr(self.size),
+            flavor=repr(self.flavor),
             storage=repr(self.storage),
             region=repr(self.region),
             optional=optional
@@ -336,26 +358,8 @@ class Node(models.Model):
         return ('node-detail', [self.cluster.pk, self.pk])
 
     @property
-    def connection(self):
-        if not hasattr(self, '_connection'):
-            if self.region[0:2] == "az":
-                self._connection = EC2(self.region)
-            elif self.region[0:2] == "rs":
-                self._connection = Rackspace(self.region)
-            else:
-                raise KeyError("Unknown provider for region %s" % self.region)
-        return self._connection
-
-    @property
     def dns_name(self):
         return settings.NODE_DNS_TEMPLATE.format(cluster=self.cluster.pk, node=self.nid)
-
-    @property
-    def volume_type(self):
-        if self.iops is None:
-            return None
-        else:
-            return 'io1'
 
     @property
     def public_key(self):
@@ -363,7 +367,7 @@ class Node(models.Model):
 
     @property
     def buffer_pool_size(self):
-        return int(max(settings.INSTANCE_TYPES[self.size]["ram"]*0.8, settings.INSTANCE_TYPES[self.size]["ram"]-2)*2**30)
+        return int(max(self.flavor.ram*0.8, self.flavor.ram-2)*2**30)
 
     @property
     def cloud_config(self):

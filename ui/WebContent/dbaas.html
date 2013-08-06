@@ -46,38 +46,38 @@
 		</div>
 		<div class="well well-large">
 			{{#each clusters}}
-			<div class="cluster-box">
-				<div class="btn-toolbar">
-					<div class="btn-group">
-						<button class="btn add-node" data-cluster="{{this.url}}"><i class="icon-plus"></i> Add Node</button>
-						<button class="btn launch-cluster" data-cluster="{{this.url}}"><i class="icon-play"></i> Launch</button>
-						<button class="btn delete-cluster" data-cluster="{{this.url}}" data-loading-text="Deleting..."><i class="icon-remove"></i> Delete</button>
+				<div class="cluster-box">
+					<div class="btn-toolbar">
+						<div class="btn-group">
+							<button class="btn add-node" data-cluster="{{this.url}}"><i class="icon-plus"></i> Add Node</button>
+							<button class="btn launch-cluster" data-cluster="{{this.url}}"><i class="icon-play"></i> Launch</button>
+							<button class="btn delete-cluster" data-cluster="{{this.url}}" data-loading-text="Deleting..."><i class="icon-remove"></i> Delete</button>
+						</div>
 					</div>
-				</div>
-				<div class="cluster-dns">{{this.dns_name}}</div>
-				{{#each this.nodes}}
-					<div class="node-box">
-						<span class="node-id pull-right">{{this.nid}}</span>
-						<span class="node-region">{{this.region}}</span>
-						<span class="node-status node-status-{{this.status}}">
-							&#x25cf; <span class="node-status-text">{{this.status}}</span>
-						</span>
-						<span class="node-dns">{{this.ip}}:{{port}}</span>
-						<div class="node-buttons btn-toolbar">
-							<div class="btn-group">
-							<button class="btn pause-node hide pause-{{this.status}}" data-node="{{this.url}}" data-loading-text="Pausing..."><i class="icon-pause"></i> Pause</button>
-							<button class="btn resume-node hide resume-{{this.status}}" data-node="{{this.url}}" data-loading-text="Resuming..."><i class="icon-play"></i> Resume</button>
-								<button class="btn delete-node" data-node="{{this.url}}" data-loading-text="Deleting..."><i class="icon-remove"></i> Delete</button>
+					<div class="cluster-dns">{{this.dns_name}}</div>
+					{{#each this.nodes}}
+						<div class="node-box">
+							<span class="node-id pull-right">{{this.nid}}</span>
+							<span class="node-region">{{this.region.name}}</span>
+							<span class="node-status node-status-{{this.status}}">
+								&#x25cf; <span class="node-status-text">{{this.status}}</span>
+							</span>
+							<span class="node-dns">{{this.ip}}:{{port}}</span>
+							<div class="node-buttons btn-toolbar">
+								<div class="btn-group">
+								<button class="btn pause-node hide pause-{{this.status}}" data-node="{{this.url}}" data-loading-text="Pausing..."><i class="icon-pause"></i> Pause</button>
+								<button class="btn resume-node hide resume-{{this.status}}" data-node="{{this.url}}" data-loading-text="Resuming..."><i class="icon-play"></i> Resume</button>
+									<button class="btn delete-node" data-node="{{this.url}}" data-loading-text="Deleting..."><i class="icon-remove"></i> Delete</button>
+								</div>
 							</div>
+						</div>
+					{{else}}
+						no nodes
+					{{/each}}
 				</div>
-					</div>
-				{{else}}
-					no nodes
-				{{/each}}
-			</div>
-		{{else}}
-			You have no clusters. Click "Add Cluster" to get started!
-		{{/each}}
+			{{else}}
+				You have no clusters. Click "Add Cluster" to get started!
+			{{/each}}
 		</div>
 	</div>
 	<div class="modal hide fade" role="dialog" id="launch" style="position:absolute" data-keyboard="false">
@@ -88,72 +88,78 @@
 		<div class="modal-body" style="max-height:80%">
 			<span><strong>Region Deployment</strong></span>
 			<div class="form-horizontal">
-				{{#each regions}}
-					<div class="control-group">
-						<label class="control-label" for="{{this.id}}_count">{{this.name}}</label>
-						<div class="controls">
-							<input class="input-small" id="{{this.id}}_count" name="{{this.id}}_count" size="2" type="text" value="0" />
+				{{#each providers}}
+					<h4>{{this.name}}</h4>
+					{{#each this.regions}}
+						<div class="control-group">
+							<label class="control-label" for="{{this.code}}_count">{{this.name}}</label>
+							<div class="controls">
+								<input class="input-small" id="{{this.code}}_count" name="{{this.code}}_count" size="2" type="text" value="0" />
+							</div>
 						</div>
-					</div>
+					{{/each}}
 				{{/each}}
 			</div>
 		
 			<span><strong>Provide the per-node resource allocations</strong></span>
-			<div class="form-horizontal row-fluid">
-				<div class="span8">
-					<div class="control-group">
-						<label class="control-label" for="cpu_count">No. of CPUs</label>
-						<div class="controls">
-							<select id="cpu_count" class="hide" name="cpu_count">
-								<option value="1">1</option>
-								<option value="2">2</option>
-								<option value="4">4</option>
-								<option value="8">8</option>
-							</select>
-							<div id="cpu-slider"></div>
-							<div class="slider-numbers">
-								<small>1</small>
-								<small>2</small>
-								<small>4</small>
-								<small>8</small>
+			{{#each providers}}
+				<h4>{{this.name}}</h4>
+				<div class="form-horizontal row-fluid">
+					<div class="span8">
+						<div class="control-group">
+							<label class="control-label" for="cpu_count">No. of CPUs</label>
+							<div class="controls">
+								<select id="{{this.code}}_cpu_count" class="hide" name="cpu_count">
+									<option value="1">1</option>
+									<option value="2">2</option>
+									<option value="4">4</option>
+									<option value="8">8</option>
+								</select>
+								<div id="{{this.code}}_cpu_slider"></div>
+								<div class="slider-numbers">
+									<small>1</small>
+									<small>2</small>
+									<small>4</small>
+									<small>8</small>
+								</div>
+							</div>
+						</div>
+			
+						<div class="control-group">
+							<label class="control-label" for="ram_amount">Amount of RAM (GB)</label>
+							<div class="controls">
+								<select id="{{this.code}}_ram_amount" class="hide" name="ram_amount">
+									<option value="1">1</option>
+									<option value="2">2</option>
+									<option value="4">4</option>
+									<option value="8">8</option>
+									<option value="16">16</option>
+									<option value="32">32</option>
+									<option value="64">64</option>
+								</select>
+								<div id="{{this.code}}_ram_slider"></div>
+								<div class="slider-numbers">
+									<small>1</small>
+									<small>2</small>
+									<small>4</small>
+									<small>8</small>
+									<small>16</small>
+									<small>32</small>
+									<small>64</small>
+								</div>
 							</div>
 						</div>
 					</div>
-		
-					<div class="control-group">
-						<label class="control-label" for="ram_amount">Amount of RAM (GB)</label>
-						<div class="controls">
-							<select id="ram_amount" class="hide" name="ram_amount">
-								<option value="1">1</option>
-								<option value="2">2</option>
-								<option value="4">4</option>
-								<option value="8">8</option>
-								<option value="16">16</option>
-								<option value="32">32</option>
-								<option value="64">64</option>
-							</select>
-							<div id="ram-slider"></div>
-							<div class="slider-numbers">
-								<small>1</small>
-								<small>2</small>
-								<small>4</small>
-								<small>8</small>
-								<small>16</small>
-								<small>32</small>
-								<small>64</small>
-							</div>
-						</div>
+			
+					<div class="span4">
+						<select id="{{this.code}}_node_size" name="node_size" size="3" style="height: 7em; width: 10em">
+							{{#each this.flavor}}
+								<option value="{{this.code}}">{{this.name}}</option>
+							{{/each}}
+						</select>
 					</div>
 				</div>
-		
-				<div class="span4">
-					<select id="node_size" name="node_size" size="3" style="height: 7em; width: 10em">
-						{{#each instance_type}}
-							<option value="{{this.name}}">{{this.name}}</option>
-						{{/each}}
-					</select>
-				</div>
-			</div>
+			{{/each}}
 		
 			<span><strong>Provide the details for your GenieDB Database Instance</strong></span>
 			<div class="form-horizontal">
@@ -161,7 +167,7 @@
 				<div class="control-group">
 					<label class="control-label" for="allocated_storage">
 						Allocated Storage
-						<a tabindex="-1" rel="tooltip" title="(Minimum: 5GB, Maximum: 3072 GB) Higher allocated storage may improve IOPS performance" class="question">?</a>
+						<a tabindex="-1" rel="tooltip" title="(Minimum: 7GB, Maximum: 3072 GB) Higher allocated storage may improve IOPS performance" class="question">?</a>
 					</label>
 					<div class="controls">
 						<div class="input-prepend">
