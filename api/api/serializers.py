@@ -83,6 +83,8 @@ class ProviderSerializer(serializers.HyperlinkedModelSerializer):
 class NodeSerializer(serializers.HyperlinkedModelSerializer):
 	status = StatusField(choices=Node.STATUSES, read_only=True)
 	dns_name = serializers.CharField(read_only=True)
+	region = serializers.SlugRelatedField(slug_field='code')
+	flavor = serializers.SlugRelatedField(slug_field='code')
 	def __init__(self, *args, **kwargs):
 		serializers.HyperlinkedModelSerializer.__init__(self, *args, **kwargs)
 		url_field = MultiHyperlinkedIdentityField(view_name='node-detail', lookup_field='pk')
