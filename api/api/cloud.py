@@ -10,8 +10,6 @@ logger = getLogger(__name__)
 class Cloud(object):
     def __init__(self, region):
         self.region = region
-    def __getattr__(self, name):
-        return getattr(self.region, name)
     def launch(self, node):
         pass
     def pending(self, node):
@@ -31,7 +29,7 @@ class EC2(Cloud):
     @property
     def ec2(self):
         if not hasattr(self, '_ec2'):
-            self._ec2 = boto.ec2.get_region(self.code).connect(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            self._ec2 = boto.ec2.get_region(self.region.code).connect(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         return self._ec2
 
     def null_or_io1(self, iops):
@@ -58,14 +56,14 @@ class EC2(Cloud):
         logger.debug("%s: Created Security Group %s (named %s) with port %s open", node, sg.id, sg.name, node.cluster.port)
         node.save()
         # EC2 Instance
-        if self.security_group == "":
+        if self.region.security_group == "":
             sgs = [sg.name]
         else:
-            sgs = [sg.name, self.security_group]
+            sgs = [sg.name, self.region.security_group]
         try:
             res = self.ec2.run_instances(
-                self.image,
-                key_name=self.key_name,
+                self.region.image,
+                key_name=self.region.key_name,
                 instance_type=node.flavor.code,
                 block_device_map=bdm,
                 security_groups=sgs,
@@ -120,16 +118,16 @@ class Openstack(Cloud):
                 self.TENANT,
                 self.AUTH_URL,
                 service_type="compute",
-                region_name=self.code)
+                region_name=self.region.code)
         return self._nova
 
     def launch(self, node):
         server = self.nova.servers.create(
             name= node.dns_name,
-            image=self.image,
+            image=self.region.image,
             flavor=node.flavor.code,
-            key_name=self.key_name,
-            availability_zone=self.code,
+            key_name=self.region.key_name,
+            availability_zone=self.region.code,
             files={
                 '/var/lib/cloud/seed/nocloud/user-data':'#include\nhttps://'+Site.objects.get_current().domain+node.get_absolute_url()+'cloud_config/',
                 '/var/lib/cloud/seed/nocloud/meta-data':'',
