@@ -79,9 +79,9 @@ class Region(models.Model):
     def connection(self):
         if not hasattr(self, '_connection'):
             if self.provider.code == "az":
-                self._connection = EC2(self.region)
+                self._connection = EC2(self)
             elif self.provider.code == "rs":
-                self._connection = Rackspace(self.region)
+                self._connection = Rackspace(self)
             else:
                 raise KeyError("Unknown provider '%s'" % self.provider.name)
         return self._connection
