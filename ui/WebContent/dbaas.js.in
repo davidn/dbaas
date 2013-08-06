@@ -58,7 +58,7 @@ function add_cluster(e) {
 					if ($("#provision_iops").is(':checked')) {
 						node.iops = $("#iops").val();
 					}
-					for (var k= 0; k < $("#"+region.id+"_count").val(); k++) {
+					for (var k= 0; k < $("#"+region.code+"_count").val(); k++) {
 						nodes.push(node);
 					}
 				})
@@ -184,7 +184,7 @@ function adjust_instance_types() {
 	providers.forEach(function(provider, i, arr) {
 		var cpus = $("#"+provider.code+"_cpu_count")[0].options[$("#"+provider.code+"_cpu_count")[0].selectedIndex].text;
 		var ram = $("#"+provider.code+"_ram_amount")[0].options[$("#"+provider.code+"_ram_amount")[0].selectedIndex].text;
-		var select = $("#"+provider.code+"_node_size")[0];
+		var select = $("#"+provider.code+"_flavor")[0];
 		for (var j = select.options.length - 1; j >= 0; j--) {
 			select.remove(j);
 		}
