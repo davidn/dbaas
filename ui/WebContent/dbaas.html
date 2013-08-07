@@ -41,7 +41,7 @@
 		<div class="modal-header">Cluster Summary
 			<button class="btn btn-primary marginleft60" data-toggle="modal" href="#addCluster"><i class="icon-plus"></i> Add Cluster</button>&nbsp;
 			<button class="btn btn-primary" id="refresh"><i class="icon-refresh"></i></button>
-			<button type="submit" class="btn btn-primary pull-right"><i class="icon-bar-chart"></i> CLUSTER STATS</button>
+			<button type="submit" class="btn btn-primary pull-right disabled"><i class="icon-bar-chart"></i> CLUSTER STATS</button>
 		</div>
 		<div class="well">
 			{{#each clusters}}
@@ -82,7 +82,7 @@
 			{{else}} <p class="lead">You don't have any clusters yet. You can either
 			<button class="btn btn-primary" data-toggle="modal" href="#addCluster"><i class="icon-plus"></i> ADD CLUSTER</button>
 			or use our
-			<button class="btn btn-success" data-toggle="modal" href="#addCluster">QUICK START</button>
+			<button class="btn btn-success"  rel="tooltip" title="Creates 2 node cluster for easy testing of GenieDB on Amazon EC2"  data-toggle="modal" href="#addCluster">QUICK START</button>
 			, which will give you a cluster with 2 Amazon EC2 micro nodes on the east and west coast of the US. </p>{{/each}}
 		</div>
 	</div>
@@ -100,7 +100,7 @@
 
 						<div class="control-group">
 							<label class="control-label" for="identifier"> Label
-								<a tabindex="-1" rel="tooltip" title="e.g. Pxroduction Cluster, myApp Cluster"><i class="icon-info-sign"></i></a>
+								<a tabindex="-1" rel="tooltip" title="e.g. Production Cluster, myApp Cluster"><i class="icon-info-sign"></i></a>
 							</label>
 
 							<div class="controls">
