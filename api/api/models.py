@@ -86,6 +86,11 @@ class Region(models.Model):
                 raise KeyError("Unknown provider '%s'" % self.provider.name)
         return self._connection
 
+    def __getstate__(self):
+        odict = self.__dict__.copy()
+        del odict['_connection']
+        return odict
+
 class Flavor(models.Model):
     provider = models.ForeignKey(Provider, related_name='flavors')
     code = models.CharField("Code", max_length=20)

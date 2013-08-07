@@ -32,6 +32,11 @@ class EC2(Cloud):
             self._ec2 = boto.ec2.get_region(self.region.code).connect(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         return self._ec2
 
+    def __getstate__(self):
+        odict = self.__dict__.copy()
+        del odict['_ec2']
+        return odict
+
     def null_or_io1(self, iops):
         if iops is None:
             return None
@@ -120,6 +125,11 @@ class Openstack(Cloud):
                 service_type="compute",
                 region_name=self.region.code)
         return self._nova
+
+    def __getstate__(self):
+        odict = self.__dict__.copy()
+        del odict['_nova']
+        return odict
 
     def launch(self, node):
         server = self.nova.servers.create(
