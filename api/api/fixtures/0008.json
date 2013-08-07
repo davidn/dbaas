@@ -1,0 +1,505 @@
+[
+  {
+    "model": "api.provider",
+    "pk": 1,
+    "fields": {
+      "name": "Amazon",
+      "code": "az"
+    }
+  },
+  {
+    "model": "api.provider",
+    "pk": 2,
+    "fields": {
+      "name": "Rackspace",
+      "code": "rs"
+    }
+  },
+  {
+    "model": "api.provider",
+    "pk": 3,
+    "fields": {
+      "name": "Test",
+      "code": "test"
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 1,
+    "fields": {
+      "provider": 1,
+      "code": "us-west-1",
+      "name": "EC2 US West (Northern California)",
+      "image": "ami-58664d1d",
+      "lbr_region": "us-west-1",
+      "key_name": "dbaas",
+      "security_group": "dbaas"
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 2,
+    "fields": {
+      "provider": 1,
+      "code": "us-west-2",
+      "name": "EC2 US West (Oregon)",
+      "image": "ami-b3e57783",
+      "lbr_region": "us-west-2",
+      "key_name": "dbaas",
+      "security_group": "dbaas"
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 3,
+    "fields": {
+      "provider": 1,
+      "code": "us-east-1",
+      "name": "EC2 US East (Northern Virginia)",
+      "image": "ami-cdb0c8a4",
+      "lbr_region": "us-east-1",
+      "key_name": "dbaas",
+      "security_group": "dbaas"
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 4,
+    "fields": {
+      "provider": 1,
+      "code": "eu-west-1",
+      "name": "EC2 EU (Ireland)",
+      "image": "ami-a1f8e6d5",
+      "lbr_region": "eu-west-1",
+      "key_name": "dbaas",
+      "security_group": "dbaas"
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 5,
+    "fields": {
+      "provider": 1,
+      "code": "ap-northeast-1",
+      "name": "EC2 Asia Pacific (Tokyo)",
+      "image": "ami-c16bfdc0",
+      "lbr_region": "ap-northeast-1",
+      "key_name": "dbaas",
+      "security_group": "dbaas"
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 6,
+    "fields": {
+      "provider": 1,
+      "code": "ap-southeast-1",
+      "name": "EC2 Asia Pacific (Singapore)",
+      "image": "ami-7a0f4728",
+      "lbr_region": "ap-southeast-1",
+      "key_name": "dbaas",
+      "security_group": "dbaas"
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 7,
+    "fields": {
+      "provider": 1,
+      "code": "ap-southeast-2",
+      "name": "EC2 Asia Pacific (Sydney)",
+      "image": "ami-1d851727",
+      "lbr_region": "ap-southeast-2",
+      "key_name": "dbaas",
+      "security_group": "dbaas"
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 8,
+    "fields": {
+      "provider": 1,
+      "code": "sa-east-1",
+      "name": "EC2 South America (Sao Paulo)",
+      "image": "ami-6fdb7f72",
+      "lbr_region": "sa-east-1",
+      "key_name": "dbaas",
+      "security_group": "dbaas"
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 9,
+    "fields": {
+      "provider": 2,
+      "code": "ord",
+      "name": "Rackspace Chicago",
+      "image": "01e1679f-ab40-48e4-ab0f-80b7e1aba438",
+      "lbr_region": "us-east-1",
+      "key_name": "dbaas",
+      "security_group": ""
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 10,
+    "fields": {
+      "provider": 2,
+      "code": "dfw",
+      "name": "Rackspace Dallas",
+      "image": "01e1679f-ab40-48e4-ab0f-80b7e1aba438",
+      "lbr_region": "us-west-1",
+      "key_name": "dbaas",
+      "security_group": ""
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 11,
+    "fields": {
+      "provider": 2,
+      "code": "syd",
+      "name": "Rackspace Sydney",
+      "image": "01e1679f-ab40-48e4-ab0f-80b7e1aba438",
+      "lbr_region": "ap-southeast-2",
+      "key_name": "dbaas",
+      "security_group": ""
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 12,
+    "fields": {
+      "provider": 3,
+      "code": "test-1",
+      "name": "Test One",
+      "image": "image-test-1",
+      "lbr_region": "test",
+      "key_name": "dbaas",
+      "security_group": ""
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 13,
+    "fields": {
+      "provider": 3,
+      "code": "test-2",
+      "name": "Test Two",
+      "image": "image-test-2",
+      "lbr_region": "test",
+      "key_name": "dbaas",
+      "security_group": ""
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 14,
+    "fields": {
+      "provider": 3,
+      "code": "test-3",
+      "name": "Test Three",
+      "image": "image-test-3",
+      "lbr_region": "test",
+      "key_name": "dbaas",
+      "security_group": ""
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 1,
+    "fields": {
+      "provider": 1,
+      "code": "t1.micro",
+      "name": "t1.micro",
+      "ram": 1,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 2,
+    "fields": {
+      "provider": 1,
+      "code": "m1.small",
+      "name": "m1.small",
+      "ram": 2,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 3,
+    "fields": {
+      "provider": 1,
+      "code": "m1.medium",
+      "name": "m1.medium",
+      "ram": 4,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 4,
+    "fields": {
+      "provider": 1,
+      "code": "m1.large",
+      "name": "m1.large",
+      "ram": 8,
+      "cpus": 2
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 5,
+    "fields": {
+      "provider": 1,
+      "code": "m1.xlarge",
+      "name": "m1.xlarge",
+      "ram": 16,
+      "cpus": 4
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 6,
+    "fields": {
+      "provider": 1,
+      "code": "m3.xlarge",
+      "name": "m3.xlarge",
+      "ram": 16,
+      "cpus": 4
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 7,
+    "fields": {
+      "provider": 1,
+      "code": "m3.2xlarge",
+      "name": "m3.2xlarge",
+      "ram": 32,
+      "cpus": 8
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 8,
+    "fields": {
+      "provider": 1,
+      "code": "c1.medium",
+      "name": "c1.medium",
+      "ram": 2,
+      "cpus": 2
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 9,
+    "fields": {
+      "provider": 1,
+      "code": "c1.xlarge",
+      "name": "c1.xlarge",
+      "ram": 8,
+      "cpus": 8
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 10,
+    "fields": {
+      "provider": 1,
+      "code": "cc2.8xlarge",
+      "name": "cc2.8xlarge",
+      "ram": 64,
+      "cpus": 32
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 11,
+    "fields": {
+      "provider": 1,
+      "code": "m2.xlarge",
+      "name": "m2.xlarge",
+      "ram": 16,
+      "cpus": 2
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 12,
+    "fields": {
+      "provider": 1,
+      "code": "m2.2xlarge",
+      "name": "m2.2xlarge",
+      "ram": 32,
+      "cpus": 4
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 13,
+    "fields": {
+      "provider": 1,
+      "code": "m2.4xlarge",
+      "name": "m2.4xlarge",
+      "ram": 64,
+      "cpus": 8
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 14,
+    "fields": {
+      "provider": 1,
+      "code": "cr1.8xlarge",
+      "name": "cr1.8xlarge",
+      "ram": 244,
+      "cpus": 32
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 15,
+    "fields": {
+      "provider": 1,
+      "code": "hi1.4xlarge",
+      "name": "hi1.4xlarge",
+      "ram": 64,
+      "cpus": 16
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 16,
+    "fields": {
+      "provider": 1,
+      "code": "hs1.8xlarge",
+      "name": "hs1.8xlarge",
+      "ram": 117,
+      "cpus": 16
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 17,
+    "fields": {
+      "provider": 1,
+      "code": "cg1.4xlarge",
+      "name": "cg1.4xlarge",
+      "ram": 16,
+      "cpus": 32
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 18,
+    "fields": {
+      "provider": 2,
+      "code": "2",
+      "name": "512MB Standard Instance",
+      "ram": 1,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 19,
+    "fields": {
+      "provider": 2,
+      "code": "3",
+      "name": "1GB Standard Instance",
+      "ram": 1,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 20,
+    "fields": {
+      "provider": 2,
+      "code": "4",
+      "name": "2GB Standard Instance",
+      "ram": 2,
+      "cpus": 2
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 21,
+    "fields": {
+      "provider": 2,
+      "code": "5",
+      "name": "4GB Standard Instance",
+      "ram": 4,
+      "cpus": 2
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 22,
+    "fields": {
+      "provider": 2,
+      "code": "6",
+      "name": "8GB Standard Instance",
+      "ram": 8,
+      "cpus": 4
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 23,
+    "fields": {
+      "provider": 2,
+      "code": "7",
+      "name": "15GB Standard Instance",
+      "ram": 16,
+      "cpus": 6
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 24,
+    "fields": {
+      "provider": 2,
+      "code": "8",
+      "name": "30GB Standard Instance",
+      "ram": 32,
+      "cpus": 8
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 25,
+    "fields": {
+      "provider": 3,
+      "code": "test-small",
+      "name": "Small Fake Instance",
+      "ram": 2,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 26,
+    "fields": {
+      "provider": 3,
+      "code": "test-medium",
+      "name": "Medium Fake Instance",
+      "ram": 4,
+      "cpus": 2
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 27,
+    "fields": {
+      "provider": 3,
+      "code": "test-large",
+      "name": "Large Fake Instance",
+      "ram": 8,
+      "cpus": 4
+    }
+  }
+]

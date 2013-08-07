@@ -1,14 +1,23 @@
 # -*- coding: utf-8 -*-
-import datetime
-from south.db import db
 from south.v2 import DataMigration
 from django.db import models
+from django.core.management import call_command
+
+def load_fixture(file_name, orm):
+    original_get_model = models.get_model
+    def get_model_southern_style(*args):
+        try:
+            return orm['.'.join(args)]
+        except:
+            return original_get_model(*args)
+    models.get_model = get_model_southern_style
+    call_command('loaddata', file_name)
+    models.get_model = original_get_model
 
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        from django.core.management import call_command
-        call_command("loaddata", "initial_data.json")
+        load_fixture("0008.json", orm)
 
     def backwards(self, orm):
         pass
