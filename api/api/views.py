@@ -36,7 +36,7 @@ class ProviderViewSet(mixins.ListModelMixin,
 			mixins.RetrieveModelMixin,
 			viewsets.GenericViewSet):
 	serializer_class = ProviderSerializer
-	queryset = Provider.objects.all()
+	queryset = Provider.objects.filter(enabled=True)
 
 class RegionViewSet(mixins.ListModelMixin,
 			mixins.RetrieveModelMixin,

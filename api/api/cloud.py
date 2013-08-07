@@ -33,9 +33,12 @@ class EC2(Cloud):
         return self._ec2
 
     def __getstate__(self):
-        odict = self.__dict__.copy()
-        del odict['_ec2']
-        return odict
+        if hasattr(self, '_ec2'):
+            odict = self.__dict__.copy()
+            del odict['_ec2']
+            return odict
+        else:
+            return self.__dict__
 
     def null_or_io1(self, iops):
         if iops is None:
@@ -72,7 +75,7 @@ class EC2(Cloud):
                 instance_type=node.flavor.code,
                 block_device_map=bdm,
                 security_groups=sgs,
-                user_data ='#include\nhttps://'+Site.objects.get_current().domain+node.get_absolute_url()+'cloud_config/',
+                user_data ='#include\nhttps://'+Site.objects.get_current().domain+node.get_absolute_url()+'cloud_config/\n',
             )
         except:
             try:
@@ -127,9 +130,12 @@ class Openstack(Cloud):
         return self._nova
 
     def __getstate__(self):
-        odict = self.__dict__.copy()
-        del odict['_nova']
-        return odict
+        if hasattr(self, '_nova'):
+            odict = self.__dict__.copy()
+            del odict['_nova']
+            return odict
+        else:
+            return self.__dict__
 
     def launch(self, node):
         server = self.nova.servers.create(
@@ -139,8 +145,8 @@ class Openstack(Cloud):
             key_name=self.region.key_name,
             availability_zone=self.region.code,
             files={
-                '/var/lib/cloud/seed/nocloud/user-data':'#include\nhttps://'+Site.objects.get_current().domain+node.get_absolute_url()+'cloud_config/',
-                '/var/lib/cloud/seed/nocloud/meta-data':'',
+                '/var/lib/cloud/seed/nocloud-net/user-data':'#include\nhttps://'+Site.objects.get_current().domain+node.get_absolute_url()+'cloud_config/\n',
+                '/var/lib/cloud/seed/nocloud-net/meta-data':'instance-id: iid-local01',
             },
         )
         node.instance_id = server.id
