@@ -3,8 +3,8 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from rest_framework import viewsets, mixins, status, permissions
-from .models import Cluster, Node
-from .serializers import UserSerializer, ClusterSerializer, NodeSerializer
+from .models import Cluster, Node, Region, Provider, Flavor
+from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer
 from .tasks import install, install_cluster
 from rest_framework.response import Response
 from rest_framework.decorators import action, link
@@ -31,6 +31,24 @@ class IsOwnerOrAdminUserOrCreateMethod(permissions.IsAdminUser):
 		if getattr(view, request.method.lower()) == view.create and settings.ALLOW_REGISTRATIONS:
 			return True
 		return super(IsOwnerOrAdminUserOrCreateMethod, self).has_permission(request, view)
+
+class ProviderViewSet(mixins.ListModelMixin,
+			mixins.RetrieveModelMixin,
+			viewsets.GenericViewSet):
+	serializer_class = ProviderSerializer
+	queryset = Provider.objects.all()
+
+class RegionViewSet(mixins.ListModelMixin,
+			mixins.RetrieveModelMixin,
+			viewsets.GenericViewSet):
+	serializer_class = RegionSerializer
+	queryset = Region.objects.all()
+
+class FlavorViewSet(mixins.ListModelMixin,
+			mixins.RetrieveModelMixin,
+			viewsets.GenericViewSet):
+	serializer_class = FlavorSerializer
+	queryset = Flavor.objects.all()
 
 class UserViewSet(mixins.ListModelMixin,
 			mixins.RetrieveModelMixin,
@@ -88,18 +106,21 @@ class ClusterViewSet(mixins.CreateModelMixin,
 			for d in request.DATA:
 				new_d = d.copy()
 				new_d["cluster"] = self.object.get_absolute_url()
-				new_d["region"] = self.object.get_region_set(d["region"])
 				data.append(new_d)
 		else:
 			data = request.DATA.copy()
 			data["cluster"] = self.object.get_absolute_url()
-			data["region"] = self.object.get_region_set(request.DATA["region"])
 		serializer = NodeSerializer(data=data, files=request.FILES, context={
 			'request': self.request,
 			'format': self.format_kwarg,
 			'view': self
 		})
 		if serializer.is_valid():
+			if isinstance(serializer.object, list):
+				for obj in serializer.object:
+					obj.lbr_region = self.object.get_lbr_region_set(obj.region)
+			else:
+				serializer.object.lbr_region = self.object.get_lbr_region_set(serializer.object.region)
 			serializer.save(force_insert=True)
 			headers = self.get_success_headers(serializer.data)
 			return Response(serializer.data, status=status.HTTP_201_CREATED,

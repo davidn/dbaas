@@ -1,6 +1,7 @@
 django
 django-celery
 boto
+python-novaclient
 south
 djangorestframework
 django-cors-headers

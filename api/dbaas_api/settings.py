@@ -22,84 +22,17 @@ DATABASES = {
     }
 }
 
-EC2_REGIONS = {
-    'us-west-1': {
-        'AMI': 'ami-58664d1d',
-        'KEY_NAME': 'dbaas',
-        'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 US West (Northern California)',
-    },
-    'us-west-2': {
-        'AMI': 'ami-b3e57783',
-        'KEY_NAME': 'dbaas',
-        'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 US West (Oregon)',
-    },
-    'us-east-1': {
-        'AMI': 'ami-cdb0c8a4',
-        'KEY_NAME': 'dbaas',
-        'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 US East (Northern Virginia)',
-    },
-    'eu-west-1': {
-        'AMI': 'ami-a1f8e6d5',
-        'KEY_NAME': 'dbaas',
-        'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 EU (Ireland)',
-    },
-    'ap-northeast-1': {
-        'AMI': 'ami-c16bfdc0',
-        'KEY_NAME': 'dbaas',
-        'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 Asia Pacific (Tokyo)',
-    },
-    'ap-southeast-1': {
-        'AMI': 'ami-7a0f4728',
-        'KEY_NAME': 'dbaas',
-        'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 Asia Pacific (Singapore)',
-    },
-    'ap-southeast-2': {
-        'AMI': 'ami-1d851727',
-        'KEY_NAME': 'dbaas',
-        'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 Asia Pacific (Sydney)',
-    },
-    'sa-east-1': {
-        'AMI': 'ami-6fdb7f72',
-        'KEY_NAME': 'dbaas',
-        'SECURITY_GROUPS': ['dbaas'],
-        'name': 'EC2 South America (Sao Paulo)',
-    },
-}
-
-INSTANCE_TYPES = {
-    "t1.micro": {"cpus": 1, "ram": 0.615, "approx_ram": 1},
-    "m1.small": {"cpus": 1, "ram": 1.7, "approx_ram": 2},
-    "m1.medium": {"cpus": 1, "ram": 3.75, "approx_ram": 4},
-    "m1.large": {"cpus": 2, "ram": 7.5, "approx_ram": 8},
-    "m1.xlarge": {"cpus": 4, "ram": 15, "approx_ram": 16},
-    "m3.xlarge": {"cpus": 4, "ram": 15, "approx_ram": 16},
-    "m3.2xlarge": {"cpus": 8, "ram": 30, "approx_ram": 32},
-    "c1.medium": {"cpus": 2, "ram": 1.7, "approx_ram": 2},
-    "c1.xlarge": {"cpus": 8, "ram": 7, "approx_ram": 8},
-    "cc2.8xlarge": {"cpus": 32, "ram": 60.5, "approx_ram": 64},
-    "m2.xlarge": {"cpus": 2, "ram": 17.1, "approx_ram": 16},
-    "m2.2xlarge": {"cpus": 4, "ram": 34.2, "approx_ram": 32},
-    "m2.4xlarge": {"cpus": 8, "ram": 68.4, "approx_ram": 64},
-    "cr1.8xlarge": {"cpus": 32, "ram": 244, "approx_ram": 244},
-    "hi1.4xlarge": {"cpus": 16, "ram": 60.5, "approx_ram": 64},
-    "hs1.8xlarge": {"cpus": 16, "ram": 117, "approx_ram": 117},
-    "cg1.4xlarge": {"cpus": 32, "ram": 22.5, "approx_ram": 16}
-}
-
-
 AWS_ACCESS_KEY=""
 AWS_SECRET_KEY=""
 
+RACKSPACE_USER=""
+RACKSPACE_PASS=""
+RACKSPACE_TENANT=""
+RACKSPACE_AUTH_URL="https://identity.api.rackspacecloud.com/v2.0"
+
 ROUTE53_ZONE=""
 CLUSTER_DNS_TEMPLATE="{cluster}.dbaas.example.com"
-REGION_DNS_TEMPLATE="{cluster}-{region}.dbaas.example.com"
+REGION_DNS_TEMPLATE="{cluster}-{lbr_region}.dbaas.example.com"
 NODE_DNS_TEMPLATE="{cluster}-{node}.dbaas.example.com"
 EMAIL_SUBJECT="Your GenieDB cluster is ready!"
 PLAINTEXT_EMAIL_TEMPLATE="""

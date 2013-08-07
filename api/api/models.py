@@ -10,24 +10,13 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from logging import getLogger
-import boto.ec2
 from .route53 import RecordWithHealthCheck, HealthCheck, record, exception
 from boto import connect_route53
 from .uuid_field import UUIDField
 from api.route53 import RecordWithTargetHealthCheck
+from .cloud import EC2, Rackspace
 
 logger = getLogger(__name__)
-
-class EC2Regions(object):
-    def __init__(self):
-        self._regions = {}
-    
-    def __getitem__(self,key):
-        if not self._regions.has_key(key):
-            self._regions[key] = boto.ec2.get_region(key).connect(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-        return self._regions[key]
-
-ec2regions = EC2Regions()
 
 class Cluster(models.Model):
     user = models.ForeignKey(User)
@@ -58,16 +47,64 @@ class Cluster(models.Model):
     def subscriptions(self):
         return ",".join(":".join([str(node.nid), '192.168.33.'+str(node.nid), "5502"]) for node in self.nodes.all())
 
-    def get_region_set(self, region):
-        obj, _ = self.regions.get_or_create(cluster=self.pk, region=region)
+    def get_lbr_region_set(self, region):
+        obj, _ = self.lbr_regions.get_or_create(cluster=self.pk, lbr_region=region.lbr_region)
         return obj
 
 def gen_private_key():
     return RSA.generate(2048, Random.new().read).exportKey()
 
-class RegionNodeSet(models.Model):
-    cluster = models.ForeignKey(Cluster, related_name='regions')
-    region = models.CharField("EC2 Region", max_length=20)
+class Provider(models.Model):
+    name = models.CharField("Name", max_length=255)
+    code = models.CharField(max_length=20)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('provider-detail', [self.pk])
+
+class Region(models.Model):
+    provider = models.ForeignKey(Provider, related_name='regions')
+    code = models.CharField("Code", max_length=20)
+    name = models.CharField("Name", max_length=255)
+    image = models.CharField("Image", max_length=255)
+    lbr_region = models.CharField("LBR Region", max_length=20)
+    key_name = models.CharField("SSH Key", max_length=255)
+    security_group = models.CharField("Security Group", max_length=255)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('region-detail', [self.pk])
+
+    @property
+    def connection(self):
+        if not hasattr(self, '_connection'):
+            if self.provider.code == "az":
+                self._connection = EC2(self)
+            elif self.provider.code == "rs":
+                self._connection = Rackspace(self)
+            else:
+                raise KeyError("Unknown provider '%s'" % self.provider.name)
+        return self._connection
+
+    def __getstate__(self):
+        odict = self.__dict__.copy()
+        del odict['_connection']
+        return odict
+
+class Flavor(models.Model):
+    provider = models.ForeignKey(Provider, related_name='flavors')
+    code = models.CharField("Code", max_length=20)
+    name = models.CharField("Name", max_length=255)
+    ram = models.PositiveIntegerField("RAM")
+    cpus = models.PositiveSmallIntegerField("CPUs")
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('flavor-detail', [self.pk])
+
+class LBRRegionNodeSet(models.Model):
+    cluster = models.ForeignKey(Cluster, related_name='lbr_regions')
+    lbr_region = models.CharField("LBR Region", max_length=20)
     launched = models.BooleanField("Launched")
 
     def __unicode__(self):
@@ -75,10 +112,10 @@ class RegionNodeSet(models.Model):
 
     @property
     def dns_name(self):
-        return settings.REGION_DNS_TEMPLATE.format(cluster=self.cluster.pk, region=self.region)
+        return settings.REGION_DNS_TEMPLATE.format(cluster=self.cluster.pk, lbr_region=self.lbr_region)
 
     def do_launch(self):
-        logger.debug("%s: setting up dns for region %s, cluster %s", self, self.region, self.cluster.pk)
+        logger.debug("%s: setting up dns for lbr region %s, cluster %s", self, self.lbr_region, self.cluster.pk)
         r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
         rrs.add_change_record('CREATE', self.record)
@@ -88,16 +125,16 @@ class RegionNodeSet(models.Model):
 
     @property
     def identifier(self):
-        return "%s-%s" % (self.cluster.pk, self.region)
+        return "%s-%s" % (self.cluster.pk, self.lbr_region)
 
     @property
     def record(self):
         return RecordWithTargetHealthCheck(name=self.cluster.dns_name,
             type='A', ttl=60, alias_hosted_zone_id=settings.ROUTE53_ZONE, alias_dns_name=self.dns_name,
-            identifier=self.identifier, region=self.region)
+            identifier=self.identifier, region=self.lbr_region)
 
     def on_terminate(self):
-        logger.debug("%s: terminating dns for region %s, cluster %s", self, self.region, self.cluster.pk)
+        logger.debug("%s: terminating dns for lbr region %s, cluster %s", self, self.lbr_region, self.cluster.pk)
         r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
         rrs.add_change_record('DELETE', self.record)
@@ -107,7 +144,7 @@ class RegionNodeSet(models.Model):
             if re.search('but it was not found', e.body) is None:
                 raise
             else:
-                logger.warning("%s: terminating dns for region %s, cluster %s skipped as record not found")
+                logger.warning("%s: terminating dns for lbr region %s, cluster %s skipped as record not found")
 
 class Node(models.Model):
     INITIAL=0
@@ -120,7 +157,7 @@ class Node(models.Model):
     ERROR=1000
     STATUSES = (
         (INITIAL, 'not yet started'),
-        (PROVISIONING, 'Provisioning EC2 instances'),
+        (PROVISIONING, 'Provisioning Instances'),
         (INSTALLING_CF, 'Installing GenieDB CloudFabric'),
         (RUNNING, 'running'),
         (PAUSED, 'paused'),
@@ -128,18 +165,19 @@ class Node(models.Model):
         (OVER, 'over'),
         (ERROR, 'An error occured')
     )
-    instance_id = models.CharField("EC2 Instance ID", max_length=200, default="", blank=True)
-    security_group = models.CharField("EC2 Security Group ID", max_length=200, default="", blank=True)
+    cluster = models.ForeignKey(Cluster, related_name='nodes')
+    region = models.ForeignKey(Region, related_name='nodes')
+    flavor = models.ForeignKey(Flavor, related_name='nodes')
+    lbr_region = models.ForeignKey(LBRRegionNodeSet, related_name='nodes')
+    instance_id = models.CharField("Instance ID", max_length=200, default="", blank=True)
+    security_group = models.CharField("Security Group ID", max_length=200, default="", blank=True)
     health_check = models.CharField("R53 Health Check ID", max_length=200, default="", blank=True)
     nid = models.IntegerField("Node ID", default=None, blank=True, null=True)
-    region = models.ForeignKey(RegionNodeSet, related_name='nodes')
-    size = models.CharField("Size", max_length=20)
     storage = models.IntegerField("Allocated Storage")
-    ip = models.IPAddressField("EC2 Instance IP Address", default="", blank=True)
+    ip = models.IPAddressField("Instance IP Address", default="", blank=True)
     iops = models.IntegerField("Provisioned IOPS", default=None, blank=True, null=True)
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
     tinc_private_key = models.TextField("Tinc Private Key", default=gen_private_key)
-    cluster = models.ForeignKey(Cluster, related_name='nodes')
 
     def __repr__(self):
         optional = ""
@@ -151,12 +189,12 @@ class Node(models.Model):
             optional += ", status={status}".format(status=repr(self.status))
         if self.ip != "":
             optional += ", ip={ip}".format(ip=repr(self.ip))
-        return "Node(pk={pk}, cluster={cluster}, size={size}, storage={storage}, region={region}{optional})".format(
+        return "Node(pk={pk}, cluster={cluster}, flavor={flavor}, storage={storage}, region={region}{optional})".format(
             pk=repr(self.pk),
             cluster=repr(self.cluster),
-            size=repr(self.size),
+            flavor=repr(self.flavor),
             storage=repr(self.storage),
-            region=repr(self.region.region),
+            region=repr(self.region),
             optional=optional
         )
 
@@ -164,16 +202,13 @@ class Node(models.Model):
         return self.dns_name
 
     def pending(self):
-        return self.instance.update()=='pending'
+        return self.region.connection.pending(self)
 
     def shutting_down(self):
-        return self.instance.update()=='shutting-down'
+        return self.region.connection.shutting_down(self)
 
     def update(self, tags={}):
-        self.ip = self.instance.ip_address
-        self.save()
-        for k,v in tags.items():
-            self.instance.add_tag(k, v)
+        return self.region.connection.update(self, tags)
 
     @models.permalink
     def get_absolute_url(self):
@@ -184,25 +219,12 @@ class Node(models.Model):
         return settings.NODE_DNS_TEMPLATE.format(cluster=self.cluster.pk, node=self.nid)
 
     @property
-    def instance(self):
-        if not hasattr(self, '_instance'):
-            self._instance = ec2regions[self.region.region].get_all_instances(instance_ids=[self.instance_id])[0].instances[0]
-        return self._instance
-
-    @property
-    def volume_type(self):
-        if self.iops is None:
-            return None
-        else:
-            return 'io1'
-
-    @property
     def public_key(self):
         return RSA.importKey(self.tinc_private_key).publickey().exportKey()
 
     @property
     def buffer_pool_size(self):
-        return int(max(settings.INSTANCE_TYPES[self.size]["ram"]*0.8, settings.INSTANCE_TYPES[self.size]["ram"]-2)*2**30)
+        return int(max(self.flavor.ram*0.8, self.flavor.ram-2)*2**30)
 
     @property
     def cloud_config(self):
@@ -273,55 +295,15 @@ runcmd:
 
     def do_launch(self):
         """Do the initial, fast part of launching this node."""
-        logger.info("%s: provisioning node", self)
-        # Elastic Block Storage
-        dev_sda1 = boto.ec2.blockdevicemapping.BlockDeviceType(iops=self.iops, volume_type=self.volume_type)
-        dev_sda1.size = self.storage
-        bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
-        bdm['/dev/sda1'] = dev_sda1
-        # NID
         self.nid = self.cluster.next_nid()
         logger.debug("%s: Assigned NID %s", self, self.nid)
+        logger.info("%s: provisioning node", self)
         try:
-            # Security Group
-            sg = ec2regions[self.region.region].create_security_group('dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),'Security group for '+str(self))
-            self.security_group = sg.id
-            ec2regions[self.region.region].authorize_security_group(
-                group_id=sg.id,
-                ip_protocol='tcp',
-                cidr_ip='0.0.0.0/0',
-                from_port=self.cluster.port,
-                to_port=self.cluster.port)
-            logger.debug("%s: Created Security Group %s (named %s) with port %s open", self, sg.id, sg.name, self.cluster.port)
-            self.save()
-            # EC2 Instance
-            try:
-                sgs = settings.EC2_REGIONS[self.region.region]['SECURITY_GROUPS'] + [sg.name]
-            except KeyError:
-                sgs = [sg.name]
-            try:
-                res = ec2regions[self.region.region].run_instances(
-                    settings.EC2_REGIONS[self.region.region]["AMI"],
-                    key_name=settings.EC2_REGIONS[self.region.region]['KEY_NAME'],
-                    instance_type=self.size,
-                    block_device_map=bdm,
-                    security_groups=sgs,
-                    user_data ='#include\nhttps://'+Site.objects.get_current().domain+self.get_absolute_url()+'cloud_config/',
-                )
-            except:
-                try:
-                    ec2regions[self.region.region].delete_security_group(group_id=self.security_group)
-                except:
-                    pass
-                raise
+            self.region.connection.launch(self)
         except:
-            logger.error("%s: Failed to launch instance", self)
             self.status = self.ERROR
             self.save()
             raise
-        self._instance = res.instances[0]
-        self.instance_id = self.instance.id
-        logger.debug("%s: Reservation %s launched. Instance id %s", self, res.id, self.instance_id)
         self.status = self.PROVISIONING
         self.save()
 
@@ -341,7 +323,7 @@ runcmd:
             ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
         self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
         rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-        rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.region.dns_name,
+        rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
             type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
         rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
             resource_records=[self.ip]))
@@ -354,13 +336,13 @@ runcmd:
 
     def pause(self):
         assert(self.status == Node.RUNNING)
-        ec2regions[self.region.region].stop_instances([self.instance_id])
+        self.region.connection.pause(self)
         self.status = Node.PAUSED
         self.save()
 
     def resume(self):
         assert(self.status == Node.PAUSED)
-        ec2regions[self.region.region].start_instances([self.instance_id])
+        self.region.connection.resume(self)
         self.status = Node.RUNNING
         self.save()
 
@@ -369,20 +351,13 @@ runcmd:
             logger.debug("%s: terminating instance %s", self, self.instance_id)
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-            rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.region.dns_name,
+            rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
                 type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
             rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
                 resource_records=[self.ip]))
             rrs.commit()
             r53.delete_health_check(self.health_check)
-            ec2regions[self.region.region].terminate_instances([self.instance_id])
-            if self.security_group != "":
-                self.status = self.SHUTTING_DOWN
-                self.save()
-                while self.shutting_down():
-                    sleep(15)
-                logger.debug("%s: terminating security group %s", self, self.security_group)
-                ec2regions[self.region.region].delete_security_group(group_id=self.security_group)
+            self.region.connection.terminate(self)
 
 @receiver(models.signals.pre_delete, sender=Node)
 def node_pre_delete_callback(sender, instance, using, **kwargs):
@@ -390,8 +365,8 @@ def node_pre_delete_callback(sender, instance, using, **kwargs):
         return
     instance.on_terminate()
 
-@receiver(models.signals.pre_delete, sender=RegionNodeSet)
+@receiver(models.signals.pre_delete, sender=LBRRegionNodeSet)
 def region_pre_delete_callback(sender, instance, using, **kwargs):
-    if sender != RegionNodeSet:
+    if sender != LBRRegionNodeSet:
         return
     instance.on_terminate()

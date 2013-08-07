@@ -47,7 +47,7 @@ def wait_nodes(nodes):
 def node_text(node):
     return settings.PLAINTEXT_PER_NODE.format(
        nid = node.nid,
-       region = node.region.region,
+       region = node.region,
        node_dns = node.dns_name,
        node_ip = node.ip
     )
@@ -55,7 +55,7 @@ def node_text(node):
 def node_html(node):
     return settings.HTML_PER_NODE.format(
        nid = node.nid,
-       region = node.region.region,
+       region = node.region,
        node_dns = node.dns_name,
        node_ip = node.ip
     )
@@ -95,6 +95,6 @@ def launch_email(cluster):
 
 def install_cluster(cluster):
     install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)
-    regions = cluster.regions.filter(launched=False)
-    task = wait_nodes.si([node for node in install_nodes]) | group([install.si(node) for node in install_nodes]) | group([install_region.si(region) for region in regions]) | launch_email.si(cluster)
+    lbr_regions = cluster.lbr_regions.filter(launched=False)
+    task = wait_nodes.si([node for node in install_nodes]) | group([install.si(node) for node in install_nodes]) | group([install_region.si(lbr_region) for lbr_region in lbr_regions]) | launch_email.si(cluster)
     return task.delay()

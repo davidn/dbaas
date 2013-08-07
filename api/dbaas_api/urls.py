@@ -45,6 +45,9 @@ class DbaasRouter(routers.SimpleRouter):
 router = DbaasRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'clusters', views.ClusterViewSet)
+router.register(r'providers', views.ProviderViewSet)
+router.register(r'regions', views.RegionViewSet)
+router.register(r'flavor', views.FlavorViewSet)
 router.register(r'clusters/(?P<cluster>[^/]+)', views.NodeViewSet)
 
 urlpatterns = patterns('',
