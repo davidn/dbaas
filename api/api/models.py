@@ -14,7 +14,7 @@ from .route53 import RecordWithHealthCheck, HealthCheck, record, exception
 from boto import connect_route53
 from .uuid_field import UUIDField
 from api.route53 import RecordWithTargetHealthCheck
-from .cloud import EC2, Rackspace
+from .cloud import EC2, Rackspace, Cloud
 
 logger = getLogger(__name__)
 
@@ -57,6 +57,7 @@ def gen_private_key():
 class Provider(models.Model):
     name = models.CharField("Name", max_length=255)
     code = models.CharField(max_length=20)
+    enabled = models.BooleanField(default=True)
 
     @models.permalink
     def get_absolute_url(self):
@@ -82,6 +83,8 @@ class Region(models.Model):
                 self._connection = EC2(self)
             elif self.provider.code == "rs":
                 self._connection = Rackspace(self)
+            elif self.provider.code == "test":
+                self._connection = Cloud(self)
             else:
                 raise KeyError("Unknown provider '%s'" % self.provider.name)
         return self._connection
@@ -119,10 +122,11 @@ class LBRRegionNodeSet(models.Model):
 
     def do_launch(self):
         logger.debug("%s: setting up dns for lbr region %s, cluster %s", self, self.lbr_region, self.cluster.pk)
-        r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-        rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-        rrs.add_change_record('CREATE', self.record)
-        rrs.commit()
+        if self.lbr_region != 'test':
+            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+            rrs.add_change_record('CREATE', self.record)
+            rrs.commit()
         self.launched = True
         self.save()
 
@@ -138,16 +142,17 @@ class LBRRegionNodeSet(models.Model):
 
     def on_terminate(self):
         logger.debug("%s: terminating dns for lbr region %s, cluster %s", self, self.lbr_region, self.cluster.pk)
-        r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-        rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-        rrs.add_change_record('DELETE', self.record)
-        try:
-            rrs.commit()
-        except exception.DNSServerError, e:
-            if re.search('but it was not found', e.body) is None:
-                raise
-            else:
-                logger.warning("%s: terminating dns for lbr region %s, cluster %s skipped as record not found")
+        if self.lbr_region != 'test':
+            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+            rrs.add_change_record('DELETE', self.record)
+            try:
+                rrs.commit()
+            except exception.DNSServerError, e:
+                if re.search('but it was not found', e.body) is None:
+                    raise
+                else:
+                    logger.warning("%s: terminating dns for lbr region %s, cluster %s skipped as record not found")
 
 class Node(models.Model):
     INITIAL=0
@@ -321,16 +326,17 @@ runcmd:
             'node':str(self.pk),
             'url':'https://'+Site.objects.get_current().domain+self.get_absolute_url(),
         })
-        r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-        health_check = HealthCheck(connection=r53, caller_reference=self.instance_id,
-            ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
-        self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
-        rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-        rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-            type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
-        rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
-            resource_records=[self.ip]))
-        rrs.commit()
+        if self.region.provider.code != 'test':
+            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            health_check = HealthCheck(connection=r53, caller_reference=self.instance_id,
+                ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
+            self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
+            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+            rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
+                type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
+            rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
+                resource_records=[self.ip]))
+            rrs.commit()
         self.status = self.RUNNING
         self.save()
         #... wait until node has fetched config and installed and tests run...
@@ -352,14 +358,15 @@ runcmd:
     def on_terminate(self):
         if self.status in (self.PROVISIONING, self.INSTALLING_CF, self.RUNNING, self.PAUSED, self.ERROR):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
-            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-            rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-                type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
-            rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
-                resource_records=[self.ip]))
-            rrs.commit()
-            r53.delete_health_check(self.health_check)
+            if self.region.provider.code != 'test':
+                r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+                rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+                rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
+                    type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
+                rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
+                    resource_records=[self.ip]))
+                rrs.commit()
+                r53.delete_health_check(self.health_check)
             self.region.connection.terminate(self)
 
 @receiver(models.signals.pre_delete, sender=Node)

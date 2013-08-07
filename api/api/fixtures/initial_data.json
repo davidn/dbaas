@@ -4,7 +4,8 @@
     "pk": 1,
     "fields": {
       "name": "Amazon",
-      "code": "az"
+      "code": "az",
+      "enabled": true
     }
   },
   {
@@ -12,7 +13,17 @@
     "pk": 2,
     "fields": {
       "name": "Rackspace",
-      "code": "rs"
+      "code": "rs",
+      "enabled": true
+    }
+  },
+  {
+    "model": "api.provider",
+    "pk": 3,
+    "fields": {
+      "name": "Test",
+      "code": "test",
+      "enabled": false
     }
   },
   {
@@ -154,6 +165,45 @@
       "name": "Rackspace Sydney",
       "image": "01e1679f-ab40-48e4-ab0f-80b7e1aba438",
       "lbr_region": "ap-southeast-2",
+      "key_name": "dbaas",
+      "security_group": ""
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 12,
+    "fields": {
+      "provider": 3,
+      "code": "test-1",
+      "name": "Test One",
+      "image": "image-test-1",
+      "lbr_region": "test",
+      "key_name": "dbaas",
+      "security_group": ""
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 13,
+    "fields": {
+      "provider": 3,
+      "code": "test-2",
+      "name": "Test Two",
+      "image": "image-test-2",
+      "lbr_region": "test",
+      "key_name": "dbaas",
+      "security_group": ""
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 14,
+    "fields": {
+      "provider": 3,
+      "code": "test-3",
+      "name": "Test Three",
+      "image": "image-test-3",
+      "lbr_region": "test",
       "key_name": "dbaas",
       "security_group": ""
     }
@@ -420,6 +470,39 @@
       "name": "30GB Standard Instance",
       "ram": 32,
       "cpus": 8
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 25,
+    "fields": {
+      "provider": 3,
+      "code": "test-small",
+      "name": "Small Fake Instance",
+      "ram": 2,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 26,
+    "fields": {
+      "provider": 3,
+      "code": "test-medium",
+      "name": "Medium Fake Instance",
+      "ram": 4,
+      "cpus": 2
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 27,
+    "fields": {
+      "provider": 3,
+      "code": "test-large",
+      "name": "Large Fake Instance",
+      "ram": 8,
+      "cpus": 4
     }
   }
 ]
