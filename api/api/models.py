@@ -157,7 +157,7 @@ class Node(models.Model):
     ERROR=1000
     STATUSES = (
         (INITIAL, 'not yet started'),
-        (PROVISIONING, 'Provisioning EC2 instances'),
+        (PROVISIONING, 'Provisioning Instances'),
         (INSTALLING_CF, 'Installing GenieDB CloudFabric'),
         (RUNNING, 'running'),
         (PAUSED, 'paused'),
