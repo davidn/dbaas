@@ -145,8 +145,8 @@ class Openstack(Cloud):
             key_name=self.region.key_name,
             availability_zone=self.region.code,
             files={
-                '/var/lib/cloud/seed/nocloud/user-data':'#include\nhttps://'+Site.objects.get_current().domain+node.get_absolute_url()+'cloud_config/\n',
-                '/var/lib/cloud/seed/nocloud/meta-data':'instance-id: iid-local01',
+                '/var/lib/cloud/seed/nocloud-net/user-data':'#include\nhttps://'+Site.objects.get_current().domain+node.get_absolute_url()+'cloud_config/\n',
+                '/var/lib/cloud/seed/nocloud-net/meta-data':'instance-id: iid-local01',
             },
         )
         node.instance_id = server.id
