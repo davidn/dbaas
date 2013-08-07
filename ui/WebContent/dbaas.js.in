@@ -113,6 +113,8 @@ function resume_node(e) {
 function display_clusters(data, status, xhr) {
 	$("#home-div").remove();
 	$("#main").markup("home", {clusters: data, providers: providers});
+    activateToolTips();
+
 	setup_dialog();
 	$("#refresh").on("click", refresh_home);
 	$("#logout").on("click", logout);
@@ -173,9 +175,11 @@ function logout(e) {
 	token = '';
 	localStorage.removeItem('token');
 	$("#main").markup("login");
+    activateToolTips();
+
 	$("#login-submit").on("click", login_button);
 	$("#login-register").on("click", register);
-	
+
 }
 
 var providers = [];
@@ -219,7 +223,7 @@ function setup_dialog() {
 			cpu_slider.slider("value", this.selectedIndex + 1);
 			adjust_instance_types();
 		});
-	
+
 		var ram_select = $("#"+provider.code+"_ram_amount");
 		var ram_slider = $("#"+provider.code+"_ram_slider").slider({
 			min : 1,
@@ -243,6 +247,7 @@ $(function() {
 	$.markup.load(function() {
 		if (token == '') {
 			$("#main").markup("login");
+            activateToolTips();
 			$("#login-submit").on("click", login_button);
 			$("#login-register").on("click", register);
 		} else {
@@ -253,3 +258,13 @@ $(function() {
 		}
 	});
 });
+
+$(document).ready(function () {
+    activateToolTips();
+});
+
+function activateToolTips(){
+    if ($("[rel=tooltip]").length) {
+        $("[rel=tooltip]").tooltip();
+    }
+}

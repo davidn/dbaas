@@ -35,7 +35,12 @@
 
 <markup id="home">
 	<div id="home-div" class="box summary">
+		<div class="div-logout">
+			Welcome {{username}} &nbsp;&nbsp;&nbsp;<button id="logout" class="btn btn-primary btn-small">LOGOUT</button>
+		</div>
 		<div class="modal-header">Cluster Summary
+			<button class="btn btn-primary marginleft60" data-toggle="modal" href="#addCluster"><i class="icon-plus"></i> Add Cluster</button>&nbsp;
+			<button class="btn btn-primary" id="refresh"><i class="icon-refresh"></i></button>
 			<button type="submit" class="btn btn-primary pull-right"><i class="icon-bar-chart"></i> CLUSTER STATS</button>
 		</div>
 		<div class="well">
@@ -74,16 +79,11 @@
 				</div>
 				{{else}} no nodes {{/each}}
 			</div>
-			{{else}} You have no clusters. Click "Add Cluster" to get started! {{/each}}
-		</div>
-		<div class="btn-toolbar">
-			<div class="btn-group">
-				<button class="btn btn-success" data-toggle="modal" href="#addCluster"><i class="icon-plus"></i> Add Cluster</button>
-				<button class="btn" id="refresh"><i class="icon-repeat"></i> Refresh</button>
-			</div>
-			<div class="pull-right">
-				<button class="btn btn-link" id="logout"><i class="icon-off"></i> Logout</button>
-			</div>
+			{{else}} <p class="lead">You don't have any clusters yet. You can either
+			<button class="btn btn-primary" data-toggle="modal" href="#addCluster"><i class="icon-plus"></i> ADD CLUSTER</button>
+			or use our
+			<button class="btn btn-success" data-toggle="modal" href="#addCluster">QUICK START</button>
+			, which will give you a cluster with 2 Amazon EC2 micro nodes on the east and west coast of the US. </p>{{/each}}
 		</div>
 	</div>
 

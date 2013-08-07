@@ -1,4 +1,3 @@
-
 html{
     background: url(MapBkg.png) no-repeat center center fixed;
     -webkit-background-size: cover;
@@ -22,15 +21,15 @@ body{
     color: #fff;
 }
 
-#dbaasHeader {
+#dbaasHeader{
     padding-top: 50px;
     padding-left: 10%;
 }
-#gdbHeader {
+
+#gdbHeader{
     padding-top: 25px;
     padding-right: 10%;
 }
-
 
 .modal-header{
     background-color: #39559f;
@@ -44,41 +43,54 @@ body{
 
 .modal-footer{
     background-color: #c1c1c1;
-    padding:15px;
-    margin:0px;
+    padding: 15px;
+    margin: 0px;
     border-radius: 0px 0px 2px 2px;
-    border:0;
-    text-align:left;
+    border: 0;
+    text-align: left;
 }
 
-.btn {
+.btn{
     border-radius: 2px;
 }
 
-.btn-success {
+.btn-success{
     background-color: #26bd38;
 }
 
-.btn-primary {
+.btn-primary{
     background-color: #5473c4;
-    border:0;
+    border: 0;
 }
 
 .min-controls{
     margin-left: 20px;
 }
 
-.login {
-    margin-top:50px;
-    width:340px;
+.login{
+    margin-top: 50px;
+    width: 340px;
 }
-.summary {
-    margin-top:75px;
+
+.summary{
+    margin-top: 75px;
+}
+
+.marginleft60{
+    margin-left: 60px;
+}
+
+.div-logout{
+    position: absolute;
+    top: 50px;
+    left: 400px;
+    overflow: visible;
+    color: #6f6f6f;
 }
 
 .input-login{
-    width:100%;
-    height:40px;
+    width: 100%;
+    height: 40px;
     margin-bottom: 5px;
     background-color: #ebebeb;
     border-radius: 2px;
@@ -86,16 +98,14 @@ body{
     padding-left: 15px;
 }
 
-.form-login {
-    margin:0px;
+.form-login{
+    margin: 0px;
 }
 
 .modal-content{
     border: 0px;
     background: #dadada;
 }
-
-
 
 .cluster-box{
     border: 2px solid #4a62c0;
