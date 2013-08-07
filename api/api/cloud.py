@@ -33,9 +33,12 @@ class EC2(Cloud):
         return self._ec2
 
     def __getstate__(self):
-        odict = self.__dict__.copy()
-        del odict['_ec2']
-        return odict
+        if hasattr(self, '_ec2'):
+            odict = self.__dict__.copy()
+            del odict['_ec2']
+            return odict
+        else:
+            return self.__dict__
 
     def null_or_io1(self, iops):
         if iops is None:
@@ -127,9 +130,12 @@ class Openstack(Cloud):
         return self._nova
 
     def __getstate__(self):
-        odict = self.__dict__.copy()
-        del odict['_nova']
-        return odict
+        if hasattr(self, '_nova'):
+            odict = self.__dict__.copy()
+            del odict['_nova']
+            return odict
+        else:
+            return self.__dict__
 
     def launch(self, node):
         server = self.nova.servers.create(

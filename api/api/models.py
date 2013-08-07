@@ -87,9 +87,12 @@ class Region(models.Model):
         return self._connection
 
     def __getstate__(self):
-        odict = self.__dict__.copy()
-        del odict['_connection']
-        return odict
+        if hasattr(self,'_connection'):
+            odict = self.__dict__.copy()
+            del odict['_connection']
+            return odict
+        else:
+            return self.__dict__
 
 class Flavor(models.Model):
     provider = models.ForeignKey(Provider, related_name='flavors')
