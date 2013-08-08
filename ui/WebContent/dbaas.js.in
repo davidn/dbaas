@@ -17,7 +17,7 @@ if(typeof(Storage)!=="undefined") {
 
 function api_call(method, path, object, success, error) {
 	var headers = token == '' ? {}: {Authorization: 'Token '+token};
-	$.ajax(path.indexOf('https://')==0?path:endpoint+path, {
+	$.ajax(path.indexOf('http')==0?path:endpoint+path, {
 		type: method,
 		contentType: 'application/json',
 		success: success,
@@ -126,6 +126,7 @@ function display_clusters(data, status, xhr) {
 	$("#logout").on("click", logout);
 	$("#add-cluster").off("click");
 	$("#add-cluster").on("click", add_cluster);
+	$("#quickstart").on("click", quickStart);
 	$(".add-node").on("click", add_node);
 	$(".launch-cluster").on("click", launch_cluster);
 	$(".delete-cluster").on("click", delete_cluster);
@@ -183,50 +184,25 @@ function generateKey(length){
 }
 
 function quickStart(e) {
-	$(e.currentTarget).button('loading');
 	api_call('POST', 'clusters/', {
-			dbname: "quickstart",
-			dbusername: "appuser",
-			dbpassword: generateKey(10),
-			port: 3306
-		},
-		function (data, status, xhr) {
-		var nodes = [];
-			$.each(providers, function(i, provider) {
-				$.each(provider.regions, function(j, region) {
-					var node = {
-							region: region.code,
-							flavor: $("#"+provider.code+"_flavor").val(),
-							storage: $("#allocated_storage").val()
-					};
-					if ($("#provision_iops").is(':checked')) {
-						node.iops = $("#iops").val();
-					}
-					for (var k= 0; k < $("#"+region.code+"_count").val(); k++) {
-						nodes.push(node);
-					}
-				})
-			});
-			if (nodes.length > 0) {
-				api_call('POST', data.url, nodes, function(data2, status2, xhr2) {
-					$("#launch").modal('hide');
-					$(e.currentTarget).button('reset');
-					generic_success(data2, status2, xhr2);
-				}, generic_error);
-			} else {
-				$("#launch").modal('hide');
-				$(e.currentTarget).button('reset');
-				refresh_home();
-			}
-		},
-		generic_error);
+		dbname: "quickstart",
+		dbusername: "appuser",
+		dbpassword: generateKey(10),
+		port: 3306
+	}, function (data, status, xhr) {
+		var nodes = [{	region: "us-west-2",
+		flavor: "test-small",
+		storage: 10},{region: "us-east-1",
+		flavor: "test-small",
+		storage: 10}];
+		api_call('POST', data.url, nodes, function(data2, status2, xhr2) {
+			$("#launch").modal('hide');
+			$(e.currentTarget).button('reset');
+			generic_success(data2, status2, xhr2);
+		}, generic_error);
+	}, generic_error);
 }
-
-
-
-
-
-
+ 
 function logout(e) {
 	$("#home-div").remove();
 	token = '';
