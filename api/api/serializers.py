@@ -4,6 +4,7 @@ from .models import Cluster, Node, Flavor, Provider, Region
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework.reverse import reverse
 from django.contrib.auth.hashers import make_password
+import math
 
 class MultiHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
 	def get_url(self, obj, view_name, request, format):
@@ -51,6 +52,20 @@ class PasswordField(serializers.CharField):
 	def from_native(self, value):
 		return make_password(value)
 
+class RamField(serializers.IntegerField):
+	def to_native(self, ram_mb_exact):
+		# 1. Round base-2 logarithm... ie nearest power of two.
+		# 2. Subtract 10 to convert MiB->GiB
+		# 3. max(0, ...) to ensure 1GiB minimum
+		# 4. 2** to convert back from logarithm to bytes
+		ram_gb_approx = 2**max(0,int(round(math.log(ram_mb_exact,2)))-10)
+		return serializers.IntegerField.to_native(self, ram_gb_approx)
+
+	def from_native(self, ram_gb):
+		# Unwise to use this field in writable serializer as the serialize
+		# then deserialize round trip loses data.
+		return serializers.IntegerField.from_native(self, ram_gb*1024)
+
 class UserSerializer(serializers.HyperlinkedModelSerializer):
 	password = PasswordField()
 	class Meta:
@@ -64,6 +79,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class FlavorSerializer(serializers.HyperlinkedModelSerializer):
+	ram = RamField()
 	class Meta:
 		model = Flavor
 		fields = ('url','code','name','ram','cpus')
