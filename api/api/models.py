@@ -232,7 +232,7 @@ class Node(models.Model):
 
     @property
     def buffer_pool_size(self):
-        return int(max(self.flavor.ram*0.8, self.flavor.ram-2048)*2**20)
+        return int(max(self.flavor.ram*0.7, self.flavor.ram-2048)*2**20)
 
     @property
     def cloud_config(self):
