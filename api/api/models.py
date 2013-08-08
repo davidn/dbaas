@@ -101,7 +101,7 @@ class Flavor(models.Model):
     provider = models.ForeignKey(Provider, related_name='flavors')
     code = models.CharField("Code", max_length=20)
     name = models.CharField("Name", max_length=255)
-    ram = models.PositiveIntegerField("RAM")
+    ram = models.PositiveIntegerField("RAM (MiB)")
     cpus = models.PositiveSmallIntegerField("CPUs")
 
     @models.permalink
@@ -232,7 +232,7 @@ class Node(models.Model):
 
     @property
     def buffer_pool_size(self):
-        return int(max(self.flavor.ram*0.8, self.flavor.ram-2)*2**30)
+        return int(max(self.flavor.ram*0.8, self.flavor.ram-2)*2**20)
 
     @property
     def cloud_config(self):
