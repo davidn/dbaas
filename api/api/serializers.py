@@ -108,8 +108,8 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 		self.fields['url'] = url_field
 	class Meta:
 		model = Node
-		fields = ('url','label','instance_id','nid','dns_name','ip','flavor', 'storage', 'region', 'status', 'cluster', 'iops')
-		read_only_fields = ('instance_id','ip','nid')
+		fields = ('url','label','nid','dns_name','ip','flavor', 'storage', 'region', 'status', 'cluster', 'iops')
+		read_only_fields = ('ip','nid')
 
 class ClusterSerializer(serializers.HyperlinkedModelSerializer):
 	nodes = NodeSerializer(many=True, read_only=True)
