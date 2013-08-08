@@ -137,7 +137,7 @@
       "provider": 2,
       "code": "ord",
       "name": "Rackspace Chicago",
-      "image": "e965fea6-89ea-457b-a740-0fa1850a3004",
+      "image": "7d480268-6aa2-4f8b-8d42-9118836821d8",
       "lbr_region": "us-east-1",
       "key_name": "dbaas",
       "security_group": ""
@@ -150,7 +150,7 @@
       "provider": 2,
       "code": "dfw",
       "name": "Rackspace Dallas",
-      "image": "e965fea6-89ea-457b-a740-0fa1850a3004",
+      "image": "7d480268-6aa2-4f8b-8d42-9118836821d8",
       "lbr_region": "us-west-1",
       "key_name": "dbaas",
       "security_group": ""
@@ -163,7 +163,7 @@
       "provider": 2,
       "code": "syd",
       "name": "Rackspace Sydney",
-      "image": "e965fea6-89ea-457b-a740-0fa1850a3004",
+      "image": "7d480268-6aa2-4f8b-8d42-9118836821d8",
       "lbr_region": "ap-southeast-2",
       "key_name": "dbaas",
       "security_group": ""
