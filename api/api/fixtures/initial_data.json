@@ -4,8 +4,7 @@
     "pk": 1,
     "fields": {
       "name": "Amazon",
-      "code": "az",
-      "enabled": true
+      "code": "az"    
     }
   },
   {
@@ -13,8 +12,7 @@
     "pk": 2,
     "fields": {
       "name": "Rackspace",
-      "code": "rs",
-      "enabled": true
+      "code": "rs"
     }
   },
   {
@@ -22,8 +20,7 @@
     "pk": 3,
     "fields": {
       "name": "Test",
-      "code": "test",
-      "enabled": false
+      "code": "test"
     }
   },
   {

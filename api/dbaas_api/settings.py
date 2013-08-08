@@ -122,7 +122,7 @@ TRIAL_LENGTH=datetime.timedelta(weeks=1)
 EMAIL_SENDER="newcustomer@geniedb.com"
 EMAIL_RECIPIENTS=["newcustomer@geniedb.com"]
 
-ALLOW_REGISTRATIONS=False
+ALLOW_REGISTRATIONS=True
 
 DEFAULT_PORT = 3306
 
