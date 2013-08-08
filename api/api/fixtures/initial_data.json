@@ -479,7 +479,7 @@
       "provider": 3,
       "code": "test-small",
       "name": "Small Fake Instance",
-      "ram": 2,
+      "ram": 2048,
       "cpus": 1
     }
   },
@@ -490,7 +490,7 @@
       "provider": 3,
       "code": "test-medium",
       "name": "Medium Fake Instance",
-      "ram": 4,
+      "ram": 4096,
       "cpus": 2
     }
   },
@@ -501,7 +501,7 @@
       "provider": 3,
       "code": "test-large",
       "name": "Large Fake Instance",
-      "ram": 8,
+      "ram": 8192,
       "cpus": 4
     }
   }
