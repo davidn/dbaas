@@ -21,6 +21,7 @@ logger = getLogger(__name__)
 class Cluster(models.Model):
     user = models.ForeignKey(User)
     uuid = UUIDField(primary_key=True)
+    label = models.CharField(max_length=255, blank=True, default="")
     port = models.PositiveIntegerField("MySQL Port", default=settings.DEFAULT_PORT)
     dbname = models.CharField("Database Name", max_length=255)
     dbusername = models.CharField("Database Username", max_length=255)
@@ -173,6 +174,7 @@ class Node(models.Model):
         (OVER, 'over'),
         (ERROR, 'An error occured')
     )
+    label = models.CharField(max_length=255, blank=True, default="")
     cluster = models.ForeignKey(Cluster, related_name='nodes')
     region = models.ForeignKey(Region, related_name='nodes')
     flavor = models.ForeignKey(Flavor, related_name='nodes')
