@@ -284,7 +284,17 @@ write_files:
   owner: root:root
   permissions: '0755'
 - content: |
-  path: /etc/tinc/cf/rsa_key.priv
+    PidFile=/var/run/zabbix/zabbix_agentd.pid
+    LogFile=/var/log/zabbix/zabbix_agentd.log
+    LogFileSize=0
+    Server=zabbix.geniedb.com
+    ServerActive=zabbix.geniedb.com
+    Hostname={dns_name}
+    Include=/etc/zabbix/zabbix_agentd.d/
+  path: /etc/zabbix/zabbix_agentd.conf
+  permissions: '0644'
+  owner: root:root
+- path: /etc/tinc/cf/rsa_key.priv
   owner: root:root
   permissions: '0600'
   content: |
@@ -293,6 +303,7 @@ write_files:
 runcmd:
 - [lokkit, -p, "{port}:tcp"]
 """.format(nid=self.nid,
+           dns_name=self.dns_name,
            port=self.cluster.port,
            subscriptions=self.cluster.subscriptions,
            dbname=self.cluster.dbname,
