@@ -47,7 +47,7 @@ def wait_nodes(nodes):
 def node_text(node):
     return settings.PLAINTEXT_PER_NODE.format(
        nid = node.nid,
-       region = node.region,
+       region = node.region.name,
        node_dns = node.dns_name,
        node_ip = node.ip
     )
@@ -55,7 +55,7 @@ def node_text(node):
 def node_html(node):
     return settings.HTML_PER_NODE.format(
        nid = node.nid,
-       region = node.region,
+       region = node.region.name,
        node_dns = node.dns_name,
        node_ip = node.ip
     )
