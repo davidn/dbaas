@@ -171,7 +171,7 @@ class Node(models.Model):
         (PAUSED, 'paused'),
         (SHUTTING_DOWN, 'shutting down'),
         (OVER, 'over'),
-        (ERROR, 'An error occured')
+        (ERROR, 'An error occurred')
     )
     cluster = models.ForeignKey(Cluster, related_name='nodes')
     region = models.ForeignKey(Region, related_name='nodes')

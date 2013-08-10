@@ -80,6 +80,29 @@ body{
     margin-left: 60px;
 }
 
+.node-popup{
+    background-color: #707070;
+    padding: 15px 0px;
+}
+
+.node-popup>li>a:hover, .node-popup>li>a:focus{
+    background-color: #313131;
+    background-image: -webkit-gradient(linear, left 0, left 100%, from(#313131), to(#313131));
+    background-image: -webkit-linear-gradient(top, #313131, 0%, #313131, 100%);
+    background-image: -moz-linear-gradient(top, #313131 0, #313131 100%);
+    background-image: linear-gradient(to bottom, #313131 0, #313131 100%);
+    background-repeat: repeat-x;
+}
+
+.node-popup>li>a{
+    color: #ebebeb;
+    padding: 0px 30px;
+}
+
+.node-popup>li>a>i{
+    color: #a4a4a4;
+}
+
 .div-logout{
     position: absolute;
     top: 50px;
@@ -110,27 +133,27 @@ body{
 .cluster-box{
     background: #ebebeb;
 }
+
 .cluster-group{
     background: #dadada;
 }
 
-.node-box{
-    float: left;
-    border: 1px solid #4a62c0;
-    background: #dfdfdf;
-    padding: 8px;
-    margin: 8px;
-    width: 20%;
-    height: 2em;
-    overflow: hidden;
-    font-size: large;
-    transition: width 1s, height 1s;
+.cluster-title{
+    color: #8b8b8b;
+    font-size: 24px;
 }
 
-.node-box-selected{
-    width: 40%;
-    height: 7em;
-    transition: width 1s, height 1s;
+.cluster-heading{
+    border-bottom: 0;
+}
+
+/* TODO: Use proper class selector over id tag */
+#row0{
+    border-top: 0;
+}
+
+.node-header{
+    color: #afafaf;
 }
 
 .node-region{
@@ -142,75 +165,35 @@ body{
     display: block;
 }
 
-.node-id{
-    font-size: x-large;
-    font-weight: bold;
+.node-status-marker{
+    text-align: center;
+    width: 24px;
 }
 
 .node-status{
-    color: yellow;
-}
-
-.node-status-text{
-    font-size: small;
+    color: #afafaf;
+    font-style: italic;
 }
 
 .node-status-running{
     color: green;
 }
 
-.node-status-An{
+.node-status-error{
     color: red;
 }
 
-.pause-running{
-    display: inline-block;
+.table-nodes{
+    margin-bottom: 0;
 }
 
-.resume-paused{
-    display: inline-block;
+a.dropdown-toggle{
+    color: #333;
+}
+a.dropdown-toggle:hover{
+    text-decoration: none;
 }
 
-#cpu-slider .ui-slider-handle, #ram-slider .ui-slider-handle{
-    background: #2e648f;
-    border: medium none;
-    top: -5px;
-    width: 0.75em;
-    height: 1.3em;
-}
-
-#cpu-slider, #ram-slider{
-    float: left;
-    margin-right: 10px;
-    margin-top: 7px;
-    width: 100%;
-    border-radius: 10px 10px 10px 10px;
-    background: #ebedef;
-    border: 1px solid #ebedef;
-}
-
-#cpu-slider .ui-widget-header, #ram-slider .ui-widget-header{
-    background: #4479a3;
-    border-radius: 10px 10px 10px 10px;
-}
-
-.slider-numbers{
-    display: inline-block;
-    margin-top: 2px;
-    margin-bottom: -2em;
-    float: left;
-    width: 100%;
-    text-align: justify;
-}
-
-.slider-numbers small{
-    display: inline-block;
-    font-size: 14px;
-    color: #999;
-}
-
-.slider-numbers:after{
-    content: '';
-    width: 100%;
-    display: inline-block;
+#jqstooltip{
+    box-sizing: content-box;
 }
