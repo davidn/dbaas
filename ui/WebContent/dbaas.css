@@ -108,17 +108,10 @@ body{
 }
 
 .cluster-box{
-    border: 2px solid #4a62c0;
-    background: #fff;
-    margin: 20px;
-    padding: 8px;
+    background: #ebebeb;
 }
-
-.cluster-box:after{
-    content: "";
-    display: table;
-    line-height: 0;
-    clear: both;
+.cluster-group{
+    background: #dadada;
 }
 
 .node-box{

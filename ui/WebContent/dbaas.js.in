@@ -116,24 +116,40 @@ function resume_node(e) {
 	api_call('POST', e.currentTarget.getAttribute('data-node')+'resume/', {}, generic_success, generic_error);
 }
 
+
+function getProviderByFlavor(flavor) {
+    return providers[providers.indexOf(flavor)];
+}
+
+function lookupNodeData(data){
+        data.forEach(function(node,i,arr){
+            node.label = node.label? node.label: node.region? node.region : 'Node'+i;
+          node.provider = getProviderByFlavor(node.flavor);
+        });
+    return data;
+}
+
 function display_clusters(data, status, xhr) {
 	$("#home-div").remove();
-	$("#main").markup("home", {username: username, clusters: data, providers: providers});
+
+	$("#main").markup("home", {username: username, clusters: lookupNodeData(data), providers: providers});
     activateToolTips();
 
 	setup_dialog();
 	$("#refresh").on("click", refresh_home);
 	$("#logout").on("click", logout);
-	$("#add-cluster").off("click");
 	$("#add-cluster").on("click", add_cluster);
-	$("#quickstart").on("click", quickStart);
-	$(".add-node").on("click", add_node);
 	$(".launch-cluster").on("click", launch_cluster);
 	$(".delete-cluster").on("click", delete_cluster);
-	$(".pause-node").on("click", pause_node);
-	$(".resume-node").on("click", resume_node);
-	$(".delete-node").on("click", delete_node);
-	$(".node-box").on("click", toggle_node_details);
+
+    $(".delete-node").on("click", delete_node);
+    $(".pause-node").on("click", pause_node);
+    $(".clone-node").on("click", clone_node);
+    $(".clone-node").on("click", clone_node);
+    $(".add-node").on("click", add_node);
+    $(".resume-node").on("click", resume_node);
+
+    $("#quickstart").on("click", quickStart);
 }
 
 function login_callback(data, status, xhr) {
@@ -180,7 +196,7 @@ function login() {
 }
 
 function generateKey(length){
-	return (Math.PI * Math.max(0.01, Math.random())).toString(36).substr(2, length); 
+	return (Math.PI * Math.max(0.01, Math.random())).toString(36).substr(2, length);
 }
 
 function quickStart(e) {
@@ -190,9 +206,9 @@ function quickStart(e) {
 		dbpassword: generateKey(10),
 		port: 3306
 	}, function (data, status, xhr) {
-		var nodes = [{	region: "us-west-2",
+		var nodes = [{	region: "test-1",
 		flavor: "test-small",
-		storage: 10},{region: "us-east-1",
+		storage: 10},{region: "test-2",
 		flavor: "test-small",
 		storage: 10}];
 		api_call('POST', data.url, nodes, function(data2, status2, xhr2) {
@@ -202,7 +218,7 @@ function quickStart(e) {
 		}, generic_error);
 	}, generic_error);
 }
- 
+
 function logout(e) {
 	$("#home-div").remove();
 	token = '';
@@ -214,7 +230,6 @@ function logout(e) {
 
 	$("#login-submit").on("click", login_button);
 	$("#login-register").on("click", register);
-
 }
 
 var providers = [];

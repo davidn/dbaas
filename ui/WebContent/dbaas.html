@@ -42,52 +42,70 @@
 		<div class="modal-header">Cluster Summary
 			<button class="btn btn-primary marginleft60" data-toggle="modal" href="#addCluster"><i class="icon-plus"></i> Add Cluster
 			</button>
-								  &nbsp;
+			&nbsp;
 			<button class="btn btn-primary" id="refresh"><i class="icon-refresh"></i></button>
 			<button type="submit" class="btn btn-primary pull-right disabled"><i class="icon-bar-chart"></i> CLUSTER STATS</button>
 		</div>
-		<div class="well">
+		<div class="panel cluster-group">
 			{{#each clusters}}
-			<div class="cluster-box">
-				<div class="btn-toolbar">
-					<div class="btn-group">
-						<button class="btn add-node" data-cluster="{{this.url}}"><i class="icon-plus"></i> Add Node</button>
-						<button class="btn launch-cluster" data-cluster="{{this.url}}"><i class="icon-play"></i> Launch</button>
-						<button class="btn delete-cluster" data-cluster="{{this.url}}" data-loading-text="Deleting...">
-							<i class="icon-remove"></i> Delete
-						</button>
-					</div>
-				</div>
-				<div class="cluster-dns">{{this.dns_name}}</div>
-				{{#each this.nodes}}
-				<div class="node-box">
-					<span class="node-id pull-right">{{this.nid}}</span> <span class="node-region">{{this.region}}</span>
-						<span class="node-status node-status-{{this.status}}">
-							&#x25cf; <span class="node-status-text">{{this.status}}</span>
-						</span> <span class="node-dns">{{this.ip}}:{{port}}</span>
+			<div class="panel">
+				<div class="panel-heading">
+					<h3 class="panel-title">{{this.db_name}}</h3>
 
-					<div class="node-buttons btn-toolbar">
-						<div class="btn-group">
-							<button class="btn pause-node hide pause-{{this.status}}" data-node="{{this.url}}" data-loading-text="Pausing...">
-								<i class="icon-pause"></i> Pause
-							</button>
-							<button class="btn resume-node hide resume-{{this.status}}" data-node="{{this.url}}" data-loading-text="Resuming...">
-								<i class="icon-play"></i> Resume
-							</button>
-							<button class="btn delete-node" data-node="{{this.url}}" data-loading-text="Deleting...">
-								<i class="icon-remove"></i> Delete
-							</button>
-						</div>
+					<div class="btn-toolbar pull-right">
+						<button class="btn add-node btn-success btn-small" data-cluster="{{this.url}}">Add Node</button>
+						<button class="btn launch-cluster btn-success btn-small" data-cluster="{{this.url}}">Launch</button>
+						<button class="btn delete-cluster btn-danger btn-small" data-cluster="{{this.url}}" data-loading-text="Deleting...">Delete</button>
 					</div>
 				</div>
-				{{else}} no nodes {{/each}}
+
+				<table class="table table-bordered">
+					<thead>
+					<tr>
+						<th>Name</th>
+						<th>Provider</th>
+						<th>Instance Type</th>
+						<th>Status</th>
+						<th>CPU</th>
+						<th>IOPS</th>
+						<th></th>
+					</tr>
+					</thead>
+					<tbody>
+
+					{{#each this.nodes}}
+					<tr>
+						<td>{{this.nid}}{{this.region}}</td>
+						<td>{{this.provider}}</td>
+						<td>{{this.flavor}}</td>
+						<td class="node-status node-status-{{this.status}}">{{this.status}}</td>
+						<td>{{this.iops}}</td>
+						<td>{{this.cpu}}</td>
+					</tr>
+					{{this.ip}}:{{port}}
+					{{this.nid}}
+
+					<div class="dropdown">TODO:Icon for Menu
+						<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+							<li><a tabindex="-1" id="deleteNode" href="#">Delete Node</a></li>
+							<li><a tabindex="-1" id="pauseNode" href="#">Pause Node</a></li>
+							<li><a tabindex="-1" id="cloneNode" href="#">Clone Node</a></li>
+							<li><a tabindex="-1" id="upgradeNode" href="#">Upgrade Node</a></li>
+							<li class="divider"></li>
+							<li><a tabindex="-1" id="displayStats" href="#">Detailed Stats</a></li>
+						</ul>
+					</div>
+					{{else}} no nodes {{/each}}
+					</tbody>
+				</table>
+
 			</div>
 			{{else}}
 			<p class="lead">You don't have any clusters yet. You can either
 				<button class="btn btn-primary" data-toggle="modal" href="#addCluster"><i class="icon-plus"></i> ADD CLUSTER</button>
-							or use our
+				or use our
 				<button class="btn btn-success" id="quickstart" rel="tooltip" title="Creates 2 node cluster for easy testing of GenieDB on Amazon EC2" data-toggle="modal" href="#processing">QUICK START</button>
-							, which builds a cluster with two small Amazon EC2 nodes distributed on the east and west coast of the US.
+				, which builds a cluster with two small Amazon EC2 nodes distributed on the east and west coast of the US.
 			</p>
 			{{/each}}
 		</div>
@@ -175,7 +193,7 @@
 				<div class="modal-body" style="max-height:80%">Cluster is being created, EC2 can take 2-3 minutes to bring the nodes online.
 				</div>
 				<div class="modal-footer">
-					<input class="btn btn-primary"  data-dismiss="modal" value="OK"/>
+					<input class="btn btn-primary" data-dismiss="modal" value="OK"/>
 				</div>
 			</div>
 		</div>
