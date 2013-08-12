@@ -37,18 +37,21 @@ class ProviderViewSet(mixins.ListModelMixin,
 			viewsets.GenericViewSet):
 	serializer_class = ProviderSerializer
 	queryset = Provider.objects.filter(enabled=True)
+	permission_classes = (permissions.IsAuthenticated,)
 
 class RegionViewSet(mixins.ListModelMixin,
 			mixins.RetrieveModelMixin,
 			viewsets.GenericViewSet):
 	serializer_class = RegionSerializer
 	queryset = Region.objects.all()
+	permission_classes = (permissions.IsAuthenticated,)
 
 class FlavorViewSet(mixins.ListModelMixin,
 			mixins.RetrieveModelMixin,
 			viewsets.GenericViewSet):
 	serializer_class = FlavorSerializer
 	queryset = Flavor.objects.all()
+	permission_classes = (permissions.IsAuthenticated,)
 
 class UserViewSet(mixins.ListModelMixin,
 			mixins.RetrieveModelMixin,
