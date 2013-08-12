@@ -48,7 +48,11 @@ class EC2(Cloud):
 
     def launch(self, node):
         # Elastic Block Storage
-        dev_sda1 = boto.ec2.blockdevicemapping.BlockDeviceType(iops=node.iops, volume_type=self.null_or_io1(node.iops))
+        dev_sda1 = boto.ec2.blockdevicemapping.BlockDeviceType(
+            iops=node.iops,
+            volume_type=self.null_or_io1(node.iops),
+            delete_on_termination=True
+        )
         dev_sda1.size = node.storage
         bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
         bdm['/dev/sda1'] = dev_sda1

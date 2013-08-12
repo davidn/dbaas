@@ -15,12 +15,14 @@ from boto import connect_route53
 from .uuid_field import UUIDField
 from api.route53 import RecordWithTargetHealthCheck
 from .cloud import EC2, Rackspace, Cloud
+import config
 
 logger = getLogger(__name__)
 
 class Cluster(models.Model):
     user = models.ForeignKey(User)
     uuid = UUIDField(primary_key=True)
+    label = models.CharField(max_length=255, blank=True, default="")
     port = models.PositiveIntegerField("MySQL Port", default=settings.DEFAULT_PORT)
     dbname = models.CharField("Database Name", max_length=255)
     dbusername = models.CharField("Database Username", max_length=255)
@@ -173,6 +175,7 @@ class Node(models.Model):
         (OVER, 'over'),
         (ERROR, 'An error occurred')
     )
+    label = models.CharField(max_length=255, blank=True, default="")
     cluster = models.ForeignKey(Cluster, related_name='nodes')
     region = models.ForeignKey(Region, related_name='nodes')
     flavor = models.ForeignKey(Flavor, related_name='nodes')
@@ -282,7 +285,17 @@ write_files:
   owner: root:root
   permissions: '0755'
 - content: |
-  path: /etc/tinc/cf/rsa_key.priv
+    PidFile=/var/run/zabbix/zabbix_agentd.pid
+    LogFile=/var/log/zabbix/zabbix_agentd.log
+    LogFileSize=0
+    Server=zabbix.geniedb.com
+    ServerActive=zabbix.geniedb.com
+    Hostname={dns_name}
+    Include=/etc/zabbix/zabbix_agentd.d/
+  path: /etc/zabbix/zabbix_agentd.conf
+  permissions: '0644'
+  owner: root:root
+- path: /etc/tinc/cf/rsa_key.priv
   owner: root:root
   permissions: '0600'
   content: |
@@ -291,6 +304,7 @@ write_files:
 runcmd:
 - [lokkit, -p, "{port}:tcp"]
 """.format(nid=self.nid,
+           dns_name=self.dns_name,
            port=self.cluster.port,
            subscriptions=self.cluster.subscriptions,
            dbname=self.cluster.dbname,
