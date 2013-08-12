@@ -8,6 +8,7 @@ from celery import group
 from time import sleep
 from .models import Node
 import datetime
+from livesettings import config_value
 
 logger = getLogger(__name__)
 
@@ -45,7 +46,7 @@ def wait_nodes(nodes):
             sleep (15)
 
 def node_text(node):
-    return settings.PLAINTEXT_PER_NODE.format(
+    return config_value('api_email','PLAINTEXT_PER_NODE').format(
        nid = node.nid,
        region = node.region.name,
        node_dns = node.dns_name,
@@ -53,7 +54,7 @@ def node_text(node):
     )
 
 def node_html(node):
-    return settings.HTML_PER_NODE.format(
+    return config_value('api_email','HTML_PER_NODE').format(
        nid = node.nid,
        region = node.region.name,
        node_dns = node.dns_name,
@@ -82,13 +83,13 @@ def launch_email(cluster):
         'dbpassword': cluster.dbpassword
     }
     email = EmailMultiAlternatives(
-        subject=settings.EMAIL_SUBJECT,
-        body=settings.PLAINTEXT_EMAIL_TEMPLATE.format(**params),
-        from_email=settings.EMAIL_SENDER,
-        to=settings.EMAIL_RECIPIENTS
+        subject=config_value('api_email','SUBJECT'),
+        body=config_value('api_email','PLAINTEXT').format(**params),
+        from_email=config_value('api_email','SENDER'),
+        to=config_value('api_email','RECIPIENTS')
     )
     email.attach_alternative(
-        settings.HTML_EMAIL_TEMPLATE.format(**params),
+        config_value('api_email','HTML').format(**params),
         "text/html"
     )
     email.send()

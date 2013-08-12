@@ -15,6 +15,7 @@ from boto import connect_route53
 from .uuid_field import UUIDField
 from api.route53 import RecordWithTargetHealthCheck
 from .cloud import EC2, Rackspace, Cloud
+import config
 
 logger = getLogger(__name__)
 
