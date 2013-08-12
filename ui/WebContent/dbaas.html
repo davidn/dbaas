@@ -74,7 +74,7 @@
 					</thead>
 					<tbody>
 					{{#each this.nodes}}
-					<tr>
+					<tr data-node="{{this.url}}">
 						<td id="row{{@index}}" class="node-status-marker"><i class="icon-circle {{this.statusClass}}"></i></td>
 						<td id="row{{@index}}">{{this.label}}</td>
 						<td id="row{{@index}}">{{this.provider.name}}</td>
@@ -84,10 +84,8 @@
 						<td id="row{{@index}}"><span class="inlinesparkline">{{this.iops}}</span></td>
 						<td id="row{{@index}}">
 							<div class="btn-group">
-								<a class="dropdown-toggle" data-hover="dropdown" data-toggle="dropdown">
-									<i class="icon-reorder"></i>
-								</a>
-								<ul class="dropdown-menu node-popup">
+								<a class="dropdown-toggle" data-hover="dropdown" data-toggle="dropdown"> <i class="icon-reorder"></i> </a>
+								<ul class="dropdown-menu node-popup pull-right">
 									<li><a tabindex="-1" id="node-stats" href="#"><i class="icon-bar-chart"></i> &nbsp; Detailed Stats</a>
 									</li>
 									<li class="divider"></li>
@@ -98,7 +96,8 @@
 									<li><a tabindex="-1" id="node-upgrade" href="#"><i class="icon-chevron-up"></i> &nbsp; Upgrade Node</a>
 									</li>
 									<li class="divider"></li>
-									<li><a tabindex="-1" id="node-delete" href="#"><i class="icon-remove"></i> &nbsp; Delete Node</a></li>
+									<li><a tabindex="-1" class="node-delete" href="#"><i class="icon-remove"></i> &nbsp; Delete Node</a>
+									</li>
 								</ul>
 							</div>
 						</td>
@@ -193,7 +192,23 @@
 					</div>
 				</div>
 				<div class="modal-footer">
-					<input class="btn btn-primary" id="add-cluster" type="submit" value="Create Cluster and Add Nodes" data-loading-text="Creating..."/>
+					<input class="btn btn-primary" id="add-cluster" type="submit" value="Create Cluster"/>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="alertModal" class="modal fade" tabindex="-1" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h3 id="myModalLabel">Alert</h3>
+				</div>
+				<div class="modal-body">
+					<p id="alertBody">One fine body…</p>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Close</button>
 				</div>
 			</div>
 		</div>

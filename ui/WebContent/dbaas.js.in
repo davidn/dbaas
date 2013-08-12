@@ -31,23 +31,22 @@ function api_call(method, path, object, success, error) {
 }
 
 function generic_error(xhr, status, error) {
-    $("#main").prepend('<div class="alert alert-block alert-error fade in"><a class="close" data-dismiss="alert" href="#">&times;</a><h4 class="alert-heading">Error: ' + status + '</h4><p>' + error + '</p></div>');
+    //$("#main").prepend('<div class="alert alert-block alert-error fade in"><a class="close" data-dismiss="alert" href="#">&times;</a><h4 class="alert-heading">Error: ' + status + '</h4><p>' + error + '</p></div>');
+    console.log(status, error);
+    $('#alertBody').html(error);
+    $('#alertModal').modal('show');
 }
 
-function toggle_node_details(e) {
-    $(e.currentTarget).toggleClass("node-box-selected");
-}
-
-function refresh_home() {
+function onRefresh() {
     api_call('GET', 'clusters/', {}, display_clusters, generic_error);
 }
 
 function generic_success(data, status, xhr) {
-    refresh_home();
+    onRefresh();
 }
 
-function add_cluster(e) {
-    $(e.currentTarget).button('loading');
+function onAddCluster(e) {
+    console.log('onAddCluster');
     api_call('POST', 'clusters/', {
             dbname: $("#db_name").val(),
             dbusername: $("#master_username").val(),
@@ -55,42 +54,17 @@ function add_cluster(e) {
             port: $("#port").val()
         },
         function (data, status, xhr) {
-            var nodes = [];
-            $.each(providers, function (i, provider) {
-                $.each(provider.regions, function (j, region) {
-                    var node = {
-                        region: region.code,
-                        flavor: $("#" + provider.code + "_flavor").val(),
-                        storage: $("#allocated_storage").val()
-                    };
-                    if ($("#provision_iops").is(':checked')) {
-                        node.iops = $("#iops").val();
-                    }
-                    for (var k = 0; k < $("#" + region.code + "_count").val(); k++) {
-                        nodes.push(node);
-                    }
-                })
-            });
-            if (nodes.length > 0) {
-                api_call('POST', data.url, nodes, function (data2, status2, xhr2) {
-                    $("#launch").modal('hide');
-                    $(e.currentTarget).button('reset');
-                    generic_success(data2, status2, xhr2);
-                }, generic_error);
-            } else {
-                $("#launch").modal('hide');
-                $(e.currentTarget).button('reset');
-                refresh_home();
-            }
+            $("#addCluster").modal('hide');
+            onRefresh();
         },
         generic_error);
 }
 
-function nodeAdd(e) {
+function onNodeAdd(e) {
     generic_error(null, 'unsupported', 'Adding a node to an existing cluster is currently unsupported');
 }
 
-function launch_cluster(e) {
+function onLaunchCluster(e) {
     $(e.currentTarget).button('loading');
     api_call('POST', e.currentTarget.getAttribute('data-cluster') + 'launch_all/', {}, function (data, status, xhr) {
         $(e.currentTarget).button('reset');
@@ -98,29 +72,33 @@ function launch_cluster(e) {
     }, generic_error);
 }
 
-function clusterDelete(e) {
+function onClusterDelete(e) {
     api_call('DELETE', e.currentTarget.getAttribute('data-cluster'), {}, generic_success, generic_error);
 }
 
-function nodeDelete(e) {
-    api_call('DELETE', e.currentTarget.getAttribute('data-node'), {}, generic_success, generic_error);
+function getNodeUrlFromMenu(menuTag){
+    return $(menuTag).closest('tr').attr('data-node');
 }
 
-function nodePause(e) {
-    api_call('POST', e.currentTarget.getAttribute('data-node') + 'pause/', {}, generic_success, generic_error);
+function onNodeDelete(e) {
+    api_call('DELETE', getNodeUrlFromMenu(e.currentTarget), {}, generic_success, generic_error);
 }
 
-function nodeResume(e) {
-    api_call('POST', e.currentTarget.getAttribute('data-node') + 'resume/', {}, generic_success, generic_error);
+function onNodePause(e) {
+    api_call('POST', getNodeUrlFromMenu(e.currentTarget) + 'pause/', {}, generic_success, generic_error);
 }
 
-function nodeClone(e) {
+function onNodeResume(e) {
+    api_call('POST', getNodeUrlFromMenu(e.currentTarget) + 'resume/', {}, generic_success, generic_error);
+}
+
+function onNodeClone(e) {
     // TODO: Display add node panel with copy of current
 }
-function nodeUpgrade(e) {
+function onNodeUpgrade(e) {
     // TODO: Display upgrade panel
 }
-function nodeStats(e) {
+function onNodeStats(e) {
     // TODO: Display stats panel
 }
 
@@ -155,17 +133,16 @@ function getStatusCode(statusLabel) {
 
 /* TODO Remove mock stats */
 function getRandomizer(bottom, top) {
-    return function() {
-        return Math.floor( Math.random() * ( 1 + top - bottom ) ) + bottom;
+    return function () {
+        return Math.floor(Math.random() * ( 1 + top - bottom )) + bottom;
     }
 }
-
 function mockStats(max) {
-    var rollDie = getRandomizer( 0, max );
+    var randomizer = getRandomizer(0, max);
 
     var results = [];
-    for ( var i = 0; i<60; i++ ) {
-        results.push(rollDie());
+    for (var i = 0; i < 60; i++) {
+        results.push(randomizer());
     }
     return results;
 }
@@ -192,25 +169,24 @@ function display_clusters(data, status, xhr) {
     $("#main").markup("home", {username: username, clusters: lookupClusterData(data), providers: providers});
     activateMarkup();
 
-    setup_dialog();
-    $("#refresh").on("click", refresh_home);
-    $("#logout").on("click", logout);
-    $("#add-cluster").on("click", add_cluster);
-    $(".launch-cluster").on("click", launch_cluster);
-    $(".delete-cluster").on("click", clusterDelete);
+    $("#refresh").off("click").on("click", onRefresh);
+    $("#logout").off("click").on("click", onLogout);
+    $("#add-cluster").off("click").on("click", onAddCluster);
+    $(".launch-cluster").off("click").on("click", onLaunchCluster);
+    $(".delete-cluster").off("click").on("click", onClusterDelete);
 
 
-    $(".add-node").on("click", nodeAdd);
+    $(".add-node").off("click").on("click", onNodeAdd);
 
-    $(".node-delete").on("click", nodeDelete);
-    $(".node-pause").on("click", nodePause);
-    $(".node-resume").on("click", nodeResume);
-    $(".node-clone").on("click", nodeClone);
-    $(".node-upgrade").on("click", nodeUpgrade);
-    $(".node-stats").on("click", nodeStats);
+    $(".node-delete").off("click").on("click", onNodeDelete);
+    $(".node-pause").off("click").on("click", onNodePause);
+    $(".node-resume").off("click").on("click", onNodeResume);
+    $(".node-clone").off("click").on("click", onNodeClone);
+    $(".node-upgrade").off("click").on("click", onNodeUpgrade);
+    $(".node-stats").off("click").on("click", onNodeStats);
 
 
-    $("#quickstart").on("click", quickStart);
+    $("#quickstart").on("click", onQuickStart);
 }
 
 function login_callback(data, status, xhr) {
@@ -219,7 +195,7 @@ function login_callback(data, status, xhr) {
     $("#login-div").remove();
     api_call('GET', 'providers/', {}, function (data, status, xhr) {
         providers = data;
-        refresh_home();
+        onRefresh();
     }, register_error);
 }
 
@@ -230,12 +206,12 @@ function register_error(xhr, status, error) {
     $("#register-fail").show();
 }
 
-function register(e) {
+function onRegister(e) {
     e.preventDefault();
     api_call('POST', 'users/', {username: $("#username").val(), password: $("#password").val()}, login, register_error);
 }
 
-function login_button(e) {
+function onLogin(e) {
     e.preventDefault();
     login();
 }
@@ -260,7 +236,7 @@ function generateKey(length) {
     return (Math.PI * Math.max(0.01, Math.random())).toString(36).substr(2, length);
 }
 
-function quickStart(e) {
+function onQuickStart(e) {
     api_call('POST', 'clusters/', {
         dbname: "quickstart",
         dbusername: "appuser",
@@ -283,7 +259,7 @@ function quickStart(e) {
     }, generic_error);
 }
 
-function logout(e) {
+function onLogout(e) {
     $("#home-div").remove();
     token = '';
     username = '';
@@ -292,96 +268,11 @@ function logout(e) {
     $("#main").markup("login");
     activateMarkup();
 
-    $("#login-submit").on("click", login_button);
-    $("#login-register").on("click", register);
+    $("#login-submit").on("click", onLogin);
+    $("#login-register").on("click", onRegister);
 }
 
 var providers = [];
-
-function adjust_instance_types() {
-    providers.forEach(function (provider, i, arr) {
-        var cpus = $("#" + provider.code + "_cpu_count")[0].options[$("#" + provider.code + "_cpu_count")[0].selectedIndex].text;
-        var ram = $("#" + provider.code + "_ram_amount")[0].options[$("#" + provider.code + "_ram_amount")[0].selectedIndex].text;
-        var select = $("#" + provider.code + "_flavor")[0];
-        for (var j = select.options.length - 1; j >= 0; j--) {
-            select.remove(j);
-        }
-        provider.flavors.forEach(function (flavor, j, flavors) {
-            if (flavor.ram == ram && flavor.cpus == cpus) {
-                var opt = document.createElement("option");
-                opt.text = flavor.name;
-                opt.value = flavor.code;
-                select.add(opt);
-            }
-        });
-        //$("#step_two")[0].disabled = select.options.length == 0;
-        if (select.options.length != 0)
-            select.options.selectedIndex = 0;
-    });
-}
-
-function setup_dialog() {
-    /*	providers.forEach(function(provider, i, arr) {
-     var cpu_select = $("#"+provider.code+"_cpu_count");
-     var cpu_slider = $("#"+provider.code+"_cpu_slider").slider({
-     min : 1,
-     max : 4,
-     range : "min",
-     value : cpu_select[0].selectedIndex + 1,
-     slide : function(event, ui) {
-     cpu_select[0].selectedIndex = ui.value - 1;
-     adjust_instance_types();
-     }
-     });
-     cpu_select.change(function() {
-     cpu_slider.slider("value", this.selectedIndex + 1);
-     adjust_instance_types();
-     });
-
-     var ram_select = $("#"+provider.code+"_ram_amount");
-     var ram_slider = $("#"+provider.code+"_ram_slider").slider({
-     min : 1,
-     max : 7,
-     range : "min",
-     value : ram_select[0].selectedIndex + 1,
-     slide : function(event, ui) {
-     ram_select[0].selectedIndex = ui.value - 1;
-     adjust_instance_types();
-     }
-     });
-     ram_select.change(function() {
-     ram_slider.slider("value", this.selectedIndex + 1);
-     adjust_instance_types();
-     });
-     });
-     adjust_instance_types();
-     */
-}
-
-$(function () {
-    $.markup.load(function () {
-        if (token == '') {
-            $("#main").markup("login");
-            activateMarkup();
-            $("#login-submit").on("click", login_button);
-            $("#login-register").on("click", register);
-        } else {
-            api_call('GET', 'providers/', {}, function (data, status, xhr) {
-                providers = data;
-                refresh_home();
-            }, register_error);
-        }
-    });
-});
-
-$(document).ready(function () {
-    $.fn.sparkline.defaults.common.lineColor = '#8e8e8e';
-//    $.fn.sparkline.defaults.common.fillColor = '#313131';
-    $.fn.sparkline.defaults.common.fillColor = undefined;
-
-
-    activateMarkup();
-});
 
 function activateMarkup() {
     if ($("[rel=tooltip]").length) {
@@ -391,3 +282,24 @@ function activateMarkup() {
     $('.inlinesparkline').sparkline();
 
 }
+
+$(function () {
+    $.fn.sparkline.defaults.common.lineColor = '#8e8e8e';
+    $.fn.sparkline.defaults.common.fillColor = undefined;
+
+    activateMarkup();
+
+    $.markup.load(function () {
+        if (token == '') {
+            $("#main").markup("login");
+            activateMarkup();
+            $("#login-submit").on("click", onLogin);
+            $("#login-register").on("click", onRegister);
+        } else {
+            api_call('GET', 'providers/', {}, function (data, status, xhr) {
+                providers = data;
+                onRefresh();
+            }, register_error);
+        }
+    });
+});
