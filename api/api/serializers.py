@@ -87,7 +87,7 @@ class FlavorSerializer(serializers.HyperlinkedModelSerializer):
 class RegionSerializer(serializers.HyperlinkedModelSerializer):
 	class Meta:
 		model = Region
-		fields = ('url','provider', 'code', 'name')
+		fields = ('url','provider', 'code', 'name', 'longitude', 'latitude')
 
 class ProviderSerializer(serializers.HyperlinkedModelSerializer):
 	flavors = FlavorSerializer(many=True)
