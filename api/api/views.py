@@ -183,7 +183,7 @@ class NodeViewSet(mixins.ListModelMixin,
 			return Response(status=status.HTTP_404_NOT_FOUND)
 		history = [
 			float(h['value']) for h in
-			z.history.get(itemid=items[0]['itemid'],limit=count,output="extend",history=0)
+			z.history.get(itemids=items[0]['itemid'],limit=count,output="extend",history=0)
 		]
 		return Response(data=history, status=status.HTTP_200_OK)
 
@@ -214,7 +214,7 @@ class NodeViewSet(mixins.ListModelMixin,
 				return Response(status=status.HTTP_404_NOT_FOUND)
 			res[key_name] = [
 				float(h['value']) for h in
-				z.history.get(itemid=items[0]['itemid'],limit=120,output="extend",history=0)
+				z.history.get(itemids=items[0]['itemid'],limit=120,output="extend",history=0)
 			]
 		return Response(data=res, status=status.HTTP_200_OK)
 
