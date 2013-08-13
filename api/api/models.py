@@ -2,6 +2,7 @@
 
 from time import sleep
 import re
+from sha import sha
 from Crypto import Random
 from Crypto.PublicKey import RSA
 from django.db import models
@@ -267,7 +268,7 @@ write_files:
   permissions: '0644'
 - content: |
    CREATE DATABASE {dbname};
-   CREATE USER '{dbusername}'@'%' IDENTIFIED BY '{dbpassword}';
+   CREATE USER '{dbusername}'@'%' IDENTIFIED BY PASSWORD '{dbpassword}';
    GRANT ALL ON {dbname}.* to '{dbusername}'@'%';
   path: /etc/mysqld-grants
   owner: root:root
@@ -312,7 +313,7 @@ runcmd:
            subscriptions=self.cluster.subscriptions,
            dbname=self.cluster.dbname,
            dbusername=self.cluster.dbusername,
-           dbpassword=self.cluster.dbpassword,
+           dbpassword='*'+sha(sha(self.cluster.dbpassword).digest()).hexdigest().upper(),
            connect_to_list=connect_to_list,
            rsa_priv=rsa_priv,
            host_files=host_files,
