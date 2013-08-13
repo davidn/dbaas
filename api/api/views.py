@@ -189,11 +189,12 @@ class NodeViewSet(mixins.ListModelMixin,
 		z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
 		items = z.item.get(host=node.dns_name,filter={"key_":key})
 		if len(items) == 0:
-			return Response(status=status.HTTP_404_NOT_FOUND)
-		history = [
-			float(h['value']) for h in
-			z.history.get(itemids=items[0]['itemid'],limit=count,output="extend",history=0)
-		]
+			history = []
+		else:
+			history = [
+				float(h['value']) for h in
+				z.history.get(itemids=items[0]['itemid'],limit=count,output="extend",history=0)
+			]
 		return Response(data=history, status=status.HTTP_200_OK)
 
 	@link()
@@ -222,12 +223,11 @@ class NodeViewSet(mixins.ListModelMixin,
 		res = {}
 		for key, key_name in (("system.cpu.util[]","cpu"),("vfs.dev.write[,ops,]","wiops"),("vfs.dev.read[,ops,]","riops")):
 			items = z.item.get(host=self.object.dns_name,filter={"key_":key})
-			if len(items) == 0:
-				return Response(status=status.HTTP_404_NOT_FOUND)
-			res[key_name] = [
-				float(h['value']) for h in
-				z.history.get(itemids=items[0]['itemid'],limit=120,output="extend",history=0)
-			]
+			if len(items) != 0:
+				res[key_name] = [
+					float(h['value']) for h in
+					z.history.get(itemids=items[0]['itemid'],limit=120,output="extend",history=0)
+				]
 		return Response(data=res, status=status.HTTP_200_OK)
 
 	@action()
