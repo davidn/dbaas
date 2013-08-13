@@ -76,7 +76,7 @@ function onClusterDelete(e) {
     api_call('DELETE', e.currentTarget.getAttribute('data-cluster'), {}, generic_success, generic_error);
 }
 
-function getNodeUrlFromMenu(menuTag){
+function getNodeUrlFromMenu(menuTag) {
     return $(menuTag).closest('tr').attr('data-node');
 }
 
@@ -202,8 +202,13 @@ function login_callback(data, status, xhr) {
 function login_error(xhr, status, error) {
     $("#login-fail").show();
 }
+
 function register_error(xhr, status, error) {
     $("#register-fail").show();
+}
+
+function onInvalidToken(xhr, status, error) {
+    showLoginScreen('Session has Expired');
 }
 
 function onRegister(e) {
@@ -260,16 +265,24 @@ function onQuickStart(e) {
 }
 
 function onLogout(e) {
+    showLoginScreen();
+}
+
+function showLoginScreen(errorMessage){
     $("#home-div").remove();
-    token = '';
-    username = '';
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
+//    token = '';
+//    username = '';
+//    localStorage.removeItem('token');
+//    localStorage.removeItem('username');
     $("#main").markup("login");
     activateMarkup();
 
     $("#login-submit").on("click", onLogin);
     $("#login-register").on("click", onRegister);
+
+    if (errorMessage){
+        $("#register-fail").show();
+    }
 }
 
 var providers = [];
@@ -291,15 +304,12 @@ $(function () {
 
     $.markup.load(function () {
         if (token == '') {
-            $("#main").markup("login");
-            activateMarkup();
-            $("#login-submit").on("click", onLogin);
-            $("#login-register").on("click", onRegister);
+            showLoginScreen();
         } else {
             api_call('GET', 'providers/', {}, function (data, status, xhr) {
                 providers = data;
                 onRefresh();
-            }, register_error);
+            }, onInvalidToken);
         }
     });
 });
