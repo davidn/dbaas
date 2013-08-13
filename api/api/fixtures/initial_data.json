@@ -36,7 +36,9 @@
       "image": "ami-58664d1d",
       "lbr_region": "us-west-1",
       "key_name": "dbaas",
-      "security_group": "dbaas"
+      "security_group": "dbaas",
+      "latitude": 41.48,
+      "longitude": -120.53
     }
   },
   {
@@ -49,7 +51,9 @@
       "image": "ami-b3e57783",
       "lbr_region": "us-west-2",
       "key_name": "dbaas",
-      "security_group": "dbaas"
+      "security_group": "dbaas",
+      "latitude": 46.15,
+      "longitude": -123.88
     }
   },
   {
@@ -62,7 +66,9 @@
       "image": "ami-cdb0c8a4",
       "lbr_region": "us-east-1",
       "key_name": "dbaas",
-      "security_group": "dbaas"
+      "security_group": "dbaas",
+      "latitude": 38.13,
+      "longitude": -78.45
     }
   },
   {
@@ -75,7 +81,9 @@
       "image": "ami-a1f8e6d5",
       "lbr_region": "eu-west-1",
       "key_name": "dbaas",
-      "security_group": "dbaas"
+      "security_group": "dbaas",
+      "latitude": 53,
+      "longitude": -8
     }
   },
   {
@@ -88,7 +96,9 @@
       "image": "ami-c16bfdc0",
       "lbr_region": "ap-northeast-1",
       "key_name": "dbaas",
-      "security_group": "dbaas"
+      "security_group": "dbaas",
+      "latitude": 35.41,
+      "longitude": 139.42
     }
   },
   {
@@ -101,7 +111,9 @@
       "image": "ami-7a0f4728",
       "lbr_region": "ap-southeast-1",
       "key_name": "dbaas",
-      "security_group": "dbaas"
+      "security_group": "dbaas",
+      "latitude": 1.37,
+      "longitude": 103.8
     }
   },
   {
@@ -114,7 +126,9 @@
       "image": "ami-1d851727",
       "lbr_region": "ap-southeast-2",
       "key_name": "dbaas",
-      "security_group": "dbaas"
+      "security_group": "dbaas",
+      "latitude": -33.8683,
+      "longitude": 151.2111
     }
   },
   {
@@ -127,7 +141,9 @@
       "image": "ami-6fdb7f72",
       "lbr_region": "sa-east-1",
       "key_name": "dbaas",
-      "security_group": "dbaas"
+      "security_group": "dbaas",
+      "latitude": -23.34,
+      "longitude": -46.38
     }
   },
   {
@@ -140,7 +156,9 @@
       "image": "51e156e1-7dd9-48fd-ad78-7bb9836c4324",
       "lbr_region": "us-east-1",
       "key_name": "dbaas",
-      "security_group": ""
+      "security_group": "",
+      "latitude": 41.8819,
+      "longitude": -87.65
     }
   },
   {
@@ -153,7 +171,9 @@
       "image": "51e156e1-7dd9-48fd-ad78-7bb9836c4324",
       "lbr_region": "us-west-1",
       "key_name": "dbaas",
-      "security_group": ""
+      "security_group": "",
+      "latitude": 32.7828,
+      "longitude": -96.7967
     }
   },
   {
@@ -166,7 +186,9 @@
       "image": "51e156e1-7dd9-48fd-ad78-7bb9836c4324",
       "lbr_region": "ap-southeast-2",
       "key_name": "dbaas",
-      "security_group": ""
+      "security_group": "",
+      "latitude": -33.8683,
+      "longitude": 151.2111
     }
   },
   {
@@ -179,7 +201,9 @@
       "image": "image-test-1",
       "lbr_region": "test",
       "key_name": "dbaas",
-      "security_group": ""
+      "security_group": "",
+      "latitude": 90,
+      "longitude": 0
     }
   },
   {
@@ -192,7 +216,9 @@
       "image": "image-test-2",
       "lbr_region": "test",
       "key_name": "dbaas",
-      "security_group": ""
+      "security_group": "",
+      "latitude": -90,
+      "longitude": 0
     }
   },
   {
@@ -205,7 +231,9 @@
       "image": "image-test-3",
       "lbr_region": "test",
       "key_name": "dbaas",
-      "security_group": ""
+      "security_group": "",
+      "latitude": 0,
+      "longitude": 0
     }
   },
   {

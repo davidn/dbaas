@@ -16,6 +16,7 @@ from .uuid_field import UUIDField
 from api.route53 import RecordWithTargetHealthCheck
 from .cloud import EC2, Rackspace, Cloud
 import config
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 logger = getLogger(__name__)
 
@@ -73,6 +74,8 @@ class Region(models.Model):
     lbr_region = models.CharField("LBR Region", max_length=20)
     key_name = models.CharField("SSH Key", max_length=255)
     security_group = models.CharField("Security Group", max_length=255)
+    longitude = models.FloatField("Longitude", validators=[MaxValueValidator(-180), MinValueValidator(180)])
+    latitude = models.FloatField("Latitude", validators=[MaxValueValidator(90), MinValueValidator(-90)])
 
     @models.permalink
     def get_absolute_url(self):
