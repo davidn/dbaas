@@ -150,6 +150,12 @@ class ClusterViewSet(mixins.CreateModelMixin,
 		headers = self.get_success_headers(serializer.data)
 		return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
 
+def random_walk(initial_value=0, min_value=0, max_value=100, step=2):
+	import random
+	while True:
+		yield initial_value
+		initial_value = random.choice((max(min_value, initial_value-step),min(max_value, initial_value+step)))
+
 class NodeViewSet(mixins.ListModelMixin,
 			mixins.RetrieveModelMixin,
 			mixins.DestroyModelMixin,
@@ -176,6 +182,9 @@ class NodeViewSet(mixins.ListModelMixin,
 		return HttpResponse(self.object.cloud_config, content_type='text/cloud-config')
 
 	def zabbix_history(self, node, key, count=120):
+		if node.region.provider.code == 'test':
+			from itertools import islice
+			return Response(data=list(islice(random_walk(),120)), headers={"X-Data-Source", "test"}, status=status.HTTP_200_OK)
 		z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
 		z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
 		items = z.item.get(host=node.dns_name,filter={"key_":key})
@@ -204,6 +213,9 @@ class NodeViewSet(mixins.ListModelMixin,
 
 	@link()
 	def stats(self, request, *args, **kwargs):
+		if node.region.provider.code == 'test':
+			from itertools import islice
+			return Response(data={"cpu":list(islice(random_walk(),120)),"wiops":list(islice(random_walk(),120)), "riops":list(islice(random_walk(),120))}, headers={"X-Data-Source", "test"}, status=status.HTTP_200_OK)
 		self.object = self.get_object()
 		z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
 		z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
