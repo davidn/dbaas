@@ -21,6 +21,9 @@ DATABASES = {
     }
 }
 
+MYSQL_USER="dbaas"
+MYSQL_PASS=""
+
 ZABBIX_ENDPOINT="http://zabbix.example.com/zabbix/"
 ZABBIX_USER=""
 ZABBIX_PASSWORD=""

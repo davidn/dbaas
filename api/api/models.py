@@ -269,7 +269,9 @@ write_files:
 - content: |
    CREATE DATABASE {dbname};
    CREATE USER '{dbusername}'@'%' IDENTIFIED BY PASSWORD '{dbpassword}';
+   CREATE USER '{mysql_user}'@'%' IDENTIFIED BY PASSWORD '{mysql_password}';
    GRANT ALL ON {dbname}.* to '{dbusername}'@'%';
+   GRANT ALL ON *.* to '{mysql_user}'@'%' WITH GRANT OPTION;
   path: /etc/mysqld-grants
   owner: root:root
   permissions: '0644'
@@ -314,6 +316,8 @@ runcmd:
            dbname=self.cluster.dbname,
            dbusername=self.cluster.dbusername,
            dbpassword='*'+sha(sha(self.cluster.dbpassword).digest()).hexdigest().upper(),
+           mysql_user=settings.MYSQL_USER,
+           mysql_password='*'+sha(sha(settings.MYSQL_PASSWORD).digest()).hexdigest().upper(),
            connect_to_list=connect_to_list,
            rsa_priv=rsa_priv,
            host_files=host_files,
