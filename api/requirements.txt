@@ -7,3 +7,4 @@ djangorestframework
 django-cors-headers
 django-livesettings>=1.14-13
 django-keyedcache
+pyzabbix

@@ -7,8 +7,9 @@ from .models import Cluster, Node, Region, Provider, Flavor
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer
 from .tasks import install, install_cluster
 from rest_framework.response import Response
-from rest_framework.decorators import action, link
+from rest_framework.decorators import action, link, api_view, permission_classes
 from django.http.response import HttpResponse
+from pyzabbix import ZabbixAPI
 
 class Owner(permissions.BasePermission):
 	def has_object_permission(self, request, view, obj):
@@ -66,6 +67,14 @@ class UserViewSet(mixins.ListModelMixin,
 		if self.request.user and self.request.user.is_staff:
 			return User.objects.all()
 		return User.objects.filter(pk=self.request.user.pk)
+
+@api_view(('GET',))
+@permission_classes((permissions.IsAuthenticated,))
+def identity(request):
+	if not request.user:
+		return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
+	serializer = UserSerializer(request.user)
+	return Response(serializer.data)
 
 class ClusterViewSet(mixins.CreateModelMixin,
 			mixins.ListModelMixin,
@@ -141,6 +150,12 @@ class ClusterViewSet(mixins.CreateModelMixin,
 		headers = self.get_success_headers(serializer.data)
 		return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
 
+def random_walk(initial_value=0, min_value=0, max_value=100, step=2):
+	import random
+	while True:
+		yield initial_value
+		initial_value = random.choice((max(min_value, initial_value-step),min(max_value, initial_value+step)))
+
 class NodeViewSet(mixins.ListModelMixin,
 			mixins.RetrieveModelMixin,
 			mixins.DestroyModelMixin,
@@ -165,6 +180,55 @@ class NodeViewSet(mixins.ListModelMixin,
 			while node.pending():
 				sleep(15)
 		return HttpResponse(self.object.cloud_config, content_type='text/cloud-config')
+
+	def zabbix_history(self, node, key, count=120):
+		if node.region.provider.code == 'test':
+			from itertools import islice
+			return Response(data=list(islice(random_walk(),120)), headers={"X-Data-Source", "test"}, status=status.HTTP_200_OK)
+		z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
+		z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
+		items = z.item.get(host=node.dns_name,filter={"key_":key})
+		if len(items) == 0:
+			history = []
+		else:
+			history = [
+				float(h['value']) for h in
+				z.history.get(itemids=items[0]['itemid'],limit=count,output="extend",history=0)
+			]
+		return Response(data=history, status=status.HTTP_200_OK)
+
+	@link()
+	def cpu(self, request, *args, **kwargs):
+		self.object = self.get_object()
+		return self.zabbix_history(self.object,"system.cpu.util[]")
+
+	@link()
+	def wiops(self, request, *args, **kwargs):
+		self.object = self.get_object()
+		return self.zabbix_history(self.object,"vfs.dev.write[,ops,]")
+
+	@link()
+	def riops(self, request, *args, **kwargs):
+		self.object = self.get_object()
+		return self.zabbix_history(self.object,"vfs.dev.read[,ops,]")
+
+	@link()
+	def stats(self, request, *args, **kwargs):
+		if node.region.provider.code == 'test':
+			from itertools import islice
+			return Response(data={"cpu":list(islice(random_walk(),120)),"wiops":list(islice(random_walk(),120)), "riops":list(islice(random_walk(),120))}, headers={"X-Data-Source", "test"}, status=status.HTTP_200_OK)
+		self.object = self.get_object()
+		z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
+		z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
+		res = {}
+		for key, key_name in (("system.cpu.util[]","cpu"),("vfs.dev.write[,ops,]","wiops"),("vfs.dev.read[,ops,]","riops")):
+			items = z.item.get(host=self.object.dns_name,filter={"key_":key})
+			if len(items) != 0:
+				res[key_name] = [
+					float(h['value']) for h in
+					z.history.get(itemids=items[0]['itemid'],limit=120,output="extend",history=0)
+				]
+		return Response(data=res, status=status.HTTP_200_OK)
 
 	@action()
 	def launch(self, request, *args, **kwargs):
