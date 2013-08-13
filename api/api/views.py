@@ -9,6 +9,7 @@ from .tasks import install, install_cluster
 from rest_framework.response import Response
 from rest_framework.decorators import action, link
 from django.http.response import HttpResponse
+from pyzabbix import ZabbixAPI
 
 class Owner(permissions.BasePermission):
 	def has_object_permission(self, request, view, obj):
@@ -165,6 +166,49 @@ class NodeViewSet(mixins.ListModelMixin,
 			while node.pending():
 				sleep(15)
 		return HttpResponse(self.object.cloud_config, content_type='text/cloud-config')
+
+	def zabbix_history(self, node, key, count=120):
+		z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
+		z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
+		items = z.item.get(host=node.dns_name,filter={"key_":key})
+		if len(items) == 0:
+			return Response(status=status.HTTP_404_NOT_FOUND)
+		history = [
+			float(h['value']) for h in
+			z.history.get(itemid=items[0]['itemid'],limit=count,output="extend",history=0)
+		]
+		return Response(data=history, status=status.HTTP_200_OK)
+
+	@link()
+	def cpu(self, request, *args, **kwargs):
+		self.object = self.get_object()
+		return self.zabbix_history(self.object,"system.cpu.util[]")
+
+	@link()
+	def wiops(self, request, *args, **kwargs):
+		self.object = self.get_object()
+		return self.zabbix_history(self.object,"vfs.dev.write[,ops,]")
+
+	@link()
+	def riops(self, request, *args, **kwargs):
+		self.object = self.get_object()
+		return self.zabbix_history(self.object,"vfs.dev.read[,ops,]")
+
+	@link()
+	def stats(self, request, *args, **kwargs):
+		self.object = self.get_object()
+		z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
+		z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
+		res = {}
+		for key, key_name in (("system.cpu.util[]","cpu"),("vfs.dev.write[,ops,]","wiops"),("vfs.dev.read[,ops,]","riops")):
+			items = z.item.get(host=self.object.dns_name,filter={"key_":key})
+			if len(items) == 0:
+				return Response(status=status.HTTP_404_NOT_FOUND)
+			res[key_name] = [
+				float(h['value']) for h in
+				z.history.get(itemid=items[0]['itemid'],limit=120,output="extend",history=0)
+			]
+		return Response(data=res, status=status.HTTP_200_OK)
 
 	@action()
 	def launch(self, request, *args, **kwargs):

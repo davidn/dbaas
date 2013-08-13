@@ -21,6 +21,10 @@ DATABASES = {
     }
 }
 
+ZABBIX_ENDPOINT="http://zabbix.example.com/zabbix/"
+ZABBIX_USER=""
+ZABBIX_PASSWORD=""
+
 AWS_ACCESS_KEY=""
 AWS_SECRET_KEY=""
 
