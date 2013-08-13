@@ -214,10 +214,14 @@ class NodeViewSet(mixins.ListModelMixin,
 
 	@link()
 	def stats(self, request, *args, **kwargs):
-		if node.region.provider.code == 'test':
-			from itertools import islice
-			return Response(data={"cpu":list(islice(random_walk(),120)),"wiops":list(islice(random_walk(),120)), "riops":list(islice(random_walk(),120))}, headers={"X-Data-Source", "test"}, status=status.HTTP_200_OK)
 		self.object = self.get_object()
+		if self.object.region.provider.code == 'test':
+			from itertools import islice
+			return Response(data={
+					"cpu":list(islice(random_walk(),120)),
+					"wiops":list(islice(random_walk(),120)),
+					"riops":list(islice(random_walk(),120))},
+				headers={"X-Data-Source", "test"}, status=status.HTTP_200_OK)
 		z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
 		z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
 		res = {}
