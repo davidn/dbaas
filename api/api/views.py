@@ -7,7 +7,7 @@ from .models import Cluster, Node, Region, Provider, Flavor
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer
 from .tasks import install, install_cluster
 from rest_framework.response import Response
-from rest_framework.decorators import action, link
+from rest_framework.decorators import action, link, api_view, permission_classes
 from django.http.response import HttpResponse
 from pyzabbix import ZabbixAPI
 
@@ -67,6 +67,14 @@ class UserViewSet(mixins.ListModelMixin,
 		if self.request.user and self.request.user.is_staff:
 			return User.objects.all()
 		return User.objects.filter(pk=self.request.user.pk)
+
+@api_view(('GET',))
+@permission_classes((permissions.IsAuthenticated,))
+def identity(request):
+	if not request.user:
+		return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
+	serializer = UserSerializer(request.user)
+	return Response(serializer.data)
 
 class ClusterViewSet(mixins.CreateModelMixin,
 			mixins.ListModelMixin,
