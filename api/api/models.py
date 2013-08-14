@@ -390,10 +390,16 @@ runcmd:
         try:
             cur = con.cursor()
             try:
-                # Note we don't use real placeholder syntax as CREATE DATABASE fails
-                # if quotes are present
-                cur.execute("CREATE DATABASE IF NOT EXISTS " + dbname + ";")
-                cur.execute("GRANT ALL ON " + dbname + ".* to %s@'%%';", (self.cluster.dbusername,))
+                try:
+                    # Note we don't use real placeholder syntax as CREATE DATABASE fails
+                    # if quotes are present
+                    cur.execute("CREATE DATABASE IF NOT EXISTS " + dbname + ";")
+                except Warning:
+                    pass
+                try:
+                    cur.execute("GRANT ALL ON " + dbname + ".* to %s@'%%';", (self.cluster.dbusername,))
+                except Warning:
+                    pass
             finally:
                 cur.close()
         finally:
