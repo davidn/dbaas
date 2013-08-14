@@ -140,6 +140,13 @@ class ClusterViewSet(mixins.CreateModelMixin,
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 	@action()
+	def add_database(self, request, *args, **kwargs):
+		self.object = self.get_object()
+		for node in self.object.nodes.filter(status=Node.RUNNING):
+			node.add_database(request.DATA['dbname'])
+		return Response(status=status.HTTP_200_OK)
+
+	@action()
 	def launch_all(self, request, *args, **kwargs):
 		self.object = self.get_object()
 		for node in self.object.nodes.all():

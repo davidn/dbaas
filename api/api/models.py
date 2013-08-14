@@ -17,6 +17,7 @@ from .uuid_field import UUIDField
 from api.route53 import RecordWithTargetHealthCheck
 from .cloud import EC2, Rackspace, Cloud
 import config
+import MySQLdb
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 logger = getLogger(__name__)
@@ -376,6 +377,26 @@ runcmd:
         self.region.connection.resume(self)
         self.status = Node.RUNNING
         self.save()
+
+    def add_database(self, dbname):
+        if len(dbname)>64:
+            raise RuntimeError("Database name too long: %s" % dbname)
+        if not re.match(r'^\w*[A-Za-z]\w*$', dbname):
+            raise RuntimeError("Database name must consist of at least one letter and numbers only: %s" % dbname)
+        con = MySQLdb.connect(host=self.dns_name,
+                user=settings.MYSQL_USER,
+                passwd=settings.MYSQL_PASSWORD,
+                port=self.cluster.port)
+        try:
+            cur = con.cursor()
+            try:
+                # Note we don't use real placeholder syntax as CREATE DATABASE fails
+                # if quotes are present
+                cur.execute("CREATE DATABASE IF NOT EXISTS %s;" % dbname)
+            finally:
+                cur.close()
+        finally:
+            con.close()
 
     def on_terminate(self):
         if self.status in (self.PROVISIONING, self.INSTALLING_CF, self.RUNNING, self.PAUSED, self.ERROR):
