@@ -16,13 +16,9 @@
 						<button type="submit" class="btn btn-success" id="login-submit" data-loading-text="Logging in...">LOGIN</button>
 						<button type="submit" class="btn btn-link" id="login-forgot" data-loading-text="Sending reminder...">Forgot Password?</button>
 					</div>
-					<div id="login-fail" class="alert alert-bock alert-error fade in" style="display: none">
+					<div id="login-error" class="alert alert-danger fade in" style="display: none">
 						<button type="button" class="close" data-dismiss="alert">&times;</button>
-						Login Failed.
-					</div>
-					<div id="register-fail" class="alert alert-bock alert-error fade in" style="display: none">
-						<button type="button" class="close" data-dismiss="alert">&times;</button>
-						Registration Failed.
+						<span id="login-error-message">Login Failed.</span>
 					</div>
 				</div>
 				<div class="modal-footer">
@@ -50,11 +46,12 @@
 			{{#each clusters}}
 			<div class="panel">
 				<div class="panel-heading cluster-heading">
-					<span class="panel-title cluster-title">{{this.dbname}}</span>
-
+					<span class="panel-title cluster-title">{{this.label}}</span>
 					<div class=" pull-right">
+						{{#if this.canLaunch}}
 						<button class="btn add-node btn-success btn-small" data-cluster="{{this.url}}">ADD NODE</button>
 						<button class="btn launch-cluster btn-success btn-small" data-cluster="{{this.url}}">LAUNCH</button>
+						{{/if}}
 						<button class="btn delete-cluster btn-danger btn-small" data-cluster="{{this.url}}" data-loading-text="Deleting...">DELETE</button>
 					</div>
 				</div>
@@ -86,14 +83,14 @@
 							<div class="btn-group">
 								<a class="dropdown-toggle" data-hover="dropdown" data-toggle="dropdown"> <i class="icon-reorder"></i> </a>
 								<ul class="dropdown-menu node-popup pull-right">
-									<li><a tabindex="-1" id="node-stats" href="#"><i class="icon-bar-chart"></i> &nbsp; Detailed Stats</a>
+									<li><a tabindex="-1" class="node-stats" href="#"><i class="icon-bar-chart"></i> &nbsp; Detailed Stats</a>
 									</li>
 									<li class="divider"></li>
-									<li><a tabindex="-1" id="node-pause" href="#"><i class="icon-pause "></i> &nbsp; Pause Node</a></li>
-									<li><a tabindex="-1" id="node-resume" href="#"><i class="icon-play"></i> &nbsp; Resume Node</a></li>
+									<li><a tabindex="-1" class="node-pause" href="#"><i class="icon-pause "></i> &nbsp; Pause Node</a></li>
+									<li><a tabindex="-1" class="node-resume" href="#"><i class="icon-play"></i> &nbsp; Resume Node</a></li>
 									<li class="divider"></li>
-									<li><a tabindex="-1" id="node-clone" href="#"><i class="icon-plus"></i> &nbsp; Clone Node</a></li>
-									<li><a tabindex="-1" id="node-upgrade" href="#"><i class="icon-chevron-up"></i> &nbsp; Upgrade Node</a>
+									<li><a tabindex="-1" class="node-clone" href="#"><i class="icon-plus"></i> &nbsp; Clone Node</a></li>
+									<li><a tabindex="-1" class="node-upgrade" href="#"><i class="icon-chevron-up"></i> &nbsp; Upgrade Node</a>
 									</li>
 									<li class="divider"></li>
 									<li><a tabindex="-1" class="node-delete" href="#"><i class="icon-remove"></i> &nbsp; Delete Node</a>

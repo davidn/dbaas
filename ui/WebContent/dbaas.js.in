@@ -31,8 +31,6 @@ function api_call(method, path, object, success, error) {
 }
 
 function generic_error(xhr, status, error) {
-    //$("#main").prepend('<div class="alert alert-block alert-error fade in"><a class="close" data-dismiss="alert" href="#">&times;</a><h4 class="alert-heading">Error: ' + status + '</h4><p>' + error + '</p></div>');
-    console.log(status, error);
     $('#alertBody').html(error);
     $('#alertModal').modal('show');
 }
@@ -46,11 +44,11 @@ function generic_success(data, status, xhr) {
 }
 
 function onAddCluster(e) {
-    console.log('onAddCluster');
     api_call('POST', 'clusters/', {
             dbname: $("#db_name").val(),
             dbusername: $("#master_username").val(),
             dbpassword: $("#master_password").val(),
+            label: $("#identifier").val(),
             port: $("#port").val()
         },
         function (data, status, xhr) {
@@ -115,20 +113,20 @@ function getProviderByFlavor(flavor) {
 }
 
 var statuses = [
-    {code: 'initial', label: 'not yet started'},
-    {code: 'provisioning', label: 'Provisioning Instances'},
-    {code: 'installing_cf', label: 'Installing GenieDB CloudFabric'},
-    {code: 'running', label: 'running'},
-    {code: 'paused', label: 'paused'},
-    {code: 'shutting_down', label: 'shutting down'},
-    {code: 'over', label: 'over'},
-    {code: 'error', label: 'An error occurred'}
+    {index: 0, code: 'initial', label: 'not yet started'},
+    {index: 1, code: 'provisioning', label: 'Provisioning Instances'},
+    {index: 2, code: 'installing_cf', label: 'Installing GenieDB CloudFabric'},
+    {index: 3, code: 'running', label: 'running'},
+    {index: 4, code: 'paused', label: 'paused'},
+    {index: 5, code: 'shutting_down', label: 'shutting down'},
+    {index: 6, code: 'over', label: 'over'},
+    {index: 7, code: 'error', label: 'An error occurred'}
 ];
 
-function getStatusCode(statusLabel) {
+function getStatusByLabel(statusLabel) {
     return statuses.filter(function (status) {
         return status.label === statusLabel;
-    })[0].code;
+    })[0];
 }
 
 /* TODO Remove mock stats */
@@ -147,10 +145,13 @@ function mockStats(max) {
     return results;
 }
 function lookupNodeData(data) {
+    data.maxStatus = 0;
     data.forEach(function (node, i, arr) {
         node.label = node.label ? node.label : node.region ? node.region : 'Node' + i;
         node.provider = getProviderByFlavor(node.flavor);
-        node.statusClass = 'node-status-' + getStatusCode(node.status);
+        var status = getStatusByLabel(node.status);
+        node.statusClass = 'node-status-' + status.code;
+        data.maxStatus = Math.max(status.index, data.maxStatus);
         node.cpu = mockStats(100);
         node.iops = mockStats(10000);
     });
@@ -159,6 +160,8 @@ function lookupNodeData(data) {
 function lookupClusterData(data) {
     data.forEach(function (cluster, i, arr) {
         lookupNodeData(cluster.nodes);
+        cluster.canLaunch = cluster.nodes.maxStatus === 0;
+        cluster.label = cluster.label || cluster.dbname;
     });
     return data;
 }
@@ -174,8 +177,6 @@ function display_clusters(data, status, xhr) {
     $("#add-cluster").off("click").on("click", onAddCluster);
     $(".launch-cluster").off("click").on("click", onLaunchCluster);
     $(".delete-cluster").off("click").on("click", onClusterDelete);
-
-
     $(".add-node").off("click").on("click", onNodeAdd);
 
     $(".node-delete").off("click").on("click", onNodeDelete);
@@ -200,11 +201,15 @@ function login_callback(data, status, xhr) {
 }
 
 function login_error(xhr, status, error) {
-    $("#login-fail").show();
+    if (xhr.responseJSON.non_field_errors[0]){
+        updateLoginError(xhr.responseJSON.non_field_errors[0]);
+    } else {
+        updateLoginError('Login Failed');
+    }
 }
 
 function register_error(xhr, status, error) {
-    $("#register-fail").show();
+    updateLoginError(error);
 }
 
 function onInvalidToken(xhr, status, error) {
@@ -268,21 +273,26 @@ function onLogout(e) {
     showLoginScreen();
 }
 
+function updateLoginError(errorMessage) {
+    if (errorMessage) {
+        $("#login-error-message").html(errorMessage);
+        $('#login-error').show("slow");
+    } else {
+        $('#login-error').hide();
+    }
+}
 function showLoginScreen(errorMessage){
     $("#home-div").remove();
-//    token = '';
-//    username = '';
-//    localStorage.removeItem('token');
-//    localStorage.removeItem('username');
+    token = '';
+    username = '';
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
     $("#main").markup("login");
     activateMarkup();
 
     $("#login-submit").on("click", onLogin);
     $("#login-register").on("click", onRegister);
-
-    if (errorMessage){
-        $("#register-fail").show();
-    }
+    updateLoginError(errorMessage);
 }
 
 var providers = [];
