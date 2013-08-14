@@ -393,6 +393,7 @@ runcmd:
                 # Note we don't use real placeholder syntax as CREATE DATABASE fails
                 # if quotes are present
                 cur.execute("CREATE DATABASE IF NOT EXISTS %s;" % dbname)
+                cur.execute("GRANT ALL ON %s.* to '%s@'%%';", dbname, self.cluster.dbusername)
             finally:
                 cur.close()
         finally:
