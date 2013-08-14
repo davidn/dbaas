@@ -98,6 +98,7 @@ class ProviderSerializer(serializers.HyperlinkedModelSerializer):
 
 class NodeSerializer(serializers.HyperlinkedModelSerializer):
 	status = StatusField(choices=Node.STATUSES, read_only=True)
+	status_code = serializers.ChoiceField(choices=Node.STATUSES, source='status', read_only=True)
 	dns_name = serializers.CharField(read_only=True)
 	region = serializers.SlugRelatedField(slug_field='code')
 	flavor = serializers.SlugRelatedField(slug_field='code')
@@ -108,7 +109,7 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 		self.fields['url'] = url_field
 	class Meta:
 		model = Node
-		fields = ('url','label','nid','dns_name','ip','flavor', 'storage', 'region', 'status', 'cluster', 'iops')
+		fields = ('url','label','nid','dns_name','ip','flavor', 'storage', 'region', 'status', 'status_code', 'cluster', 'iops')
 		read_only_fields = ('ip','nid')
 
 class ClusterSerializer(serializers.HyperlinkedModelSerializer):
