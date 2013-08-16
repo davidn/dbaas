@@ -80,7 +80,7 @@ class Cluster(models.Model):
 
     def launch(self):
         if self.iam_key == "":
-            iam = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             if self.iam_arn == "":
                 res= iam.create_user(self.uuid)
                 self.iam_arn = res['create_user_response']['create_user_result']['user']['arn']
