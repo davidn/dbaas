@@ -242,17 +242,6 @@ class NodeViewSet(mixins.ListModelMixin,
 		return Response(data=res, status=status.HTTP_200_OK)
 
 	@action()
-	def launch(self, request, *args, **kwargs):
-		self.object = self.get_object()
-		if self.object.status == Node.INITIAL:
-			self.object.do_launch()
-			install.delay(self.object)
-			serializer = self.get_serializer(self.object)
-			headers = self.get_success_headers(serializer.data)
-			return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
-		return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
-
-	@action()
 	def pause(self, request, *args, **kwargs):
 		self.object = self.get_object()
 		self.object.pause()

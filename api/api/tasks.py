@@ -13,15 +13,6 @@ from livesettings import config_value
 logger = getLogger(__name__)
 
 @task()
-def launch(node):
-    try:
-        node.do_launch()
-    except:
-        node.status = node.ERROR
-        node.save()
-        raise
-
-@task()
 def install(node):
     for i in xrange(10,0,-1):
         try:
