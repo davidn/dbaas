@@ -79,9 +79,9 @@ class Cluster(models.Model):
         return self.dns_name
 
     def launch(self):
-        if self.iam_key is "":
+        if self.iam_key == "":
             iam = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-            if self.iam_arn is "":
+            if self.iam_arn == "":
                 res= iam.create_user(self.uuid)
                 self.iam_arn = res['create_user_response']['create_user_result']['user']['arn']
                 self.save()
@@ -112,9 +112,9 @@ class Cluster(models.Model):
         bucket = s3.lookup(self.uuid)
         if bucket is not None:
             bucket.delete()
-        if self.iam_arn is not "":
+        if self.iam_arn != "":
             iam = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-            if self.iam_key is not "":
+            if self.iam_key != "":
                 iam.delete_access_key(self.iam_key,self.uuid)
                 self.iam_key = ""
                 self.save()
