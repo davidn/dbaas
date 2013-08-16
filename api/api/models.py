@@ -384,6 +384,7 @@ write_files:
     ServerActive=zabbix.geniedb.com
     Hostname={dns_name}
     Include=/etc/zabbix/zabbix_agentd.d/
+    EnableRemoteCommands=1
   path: /etc/zabbix/zabbix_agentd.conf
   permissions: '0644'
   owner: root:root
