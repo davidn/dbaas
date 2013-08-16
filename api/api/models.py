@@ -101,11 +101,11 @@ class Cluster(models.Model):
               "Sid": "IPAllow",
               "Effect": "Allow",
               "Principal": {
-                "AWS": "{iam}"
+                "AWS": "%(iam)s"
               },
               "Action": "s3:*",
-              "Resource": ["arn:aws:s3:::{bucket}","arn:aws:s3:::{bucket}/*"],
-        }]}""".format(iam=self.iam_arn, bucket=self.uuid))
+              "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
+        }]}""" % {'iam':self.iam_arn, 'bucket':self.uuid})
 
     def terminate(self):
         s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
