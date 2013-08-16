@@ -94,8 +94,12 @@ def launch_email(cluster):
     )
     email.send()
 
+@task()
+def launch_cluster(cluster):
+    cluster.lauch()
+
 def install_cluster(cluster):
     install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)
     lbr_regions = cluster.lbr_regions.filter(launched=False)
-    task = wait_nodes.si([node for node in install_nodes]) | group([install.si(node) for node in install_nodes]) | group([install_region.si(lbr_region) for lbr_region in lbr_regions]) | launch_email.si(cluster)
+    task = launch_cluster.si(cluster) | wait_nodes.si([node for node in install_nodes]) | group([install.si(node) for node in install_nodes]) | group([install_region.si(lbr_region) for lbr_region in lbr_regions]) | launch_email.si(cluster)
     return task.delay()
