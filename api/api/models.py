@@ -113,7 +113,7 @@ class Cluster(models.Model):
         if bucket is not None:
             bucket.delete()
         if self.iam_arn != "":
-            iam = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             if self.iam_key != "":
                 iam.delete_access_key(self.iam_key,self.uuid)
                 self.iam_key = ""
