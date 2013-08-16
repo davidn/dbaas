@@ -391,13 +391,16 @@ write_files:
 - path: /etc/mysqlbackup.logrotate
   content: |
     compress
-    /var/backup/mysqldump.sql {
+    /var/backup/mysqlbackup.sql {{
         dateext
         dateformat -%Y%m%d.%s
         rotate {backup_count}
-    }
+    }}
   owner: root:root
   permissions: '0644'
+- path: /var/backup/.ensure_dir
+  content: |
+    Ensure /var/backup created
 - path: /etc/cron.d/backup
   content: |
     {backup_schedule} root /usr/local/bin/backup
@@ -413,7 +416,7 @@ write_files:
   content: |
     #!/bin/sh
     mysqldump --all-databases > /var/backup/mysqlbackup.sql
-    logrotate -fs /etc/mysqlbackup.state /etc/mysqlbackup.conf
+    logrotate -fs /etc/mysqlbackup.state /etc/mysqlbackup.logrotate
     s3cmd sync --delete-removed /var/backup/ s3://{cluster}/{nid}/
   owner: root:root
   permissions: '0755'
