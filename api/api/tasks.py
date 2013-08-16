@@ -87,7 +87,7 @@ def launch_email(cluster):
 
 @task()
 def launch_cluster(cluster):
-    cluster.lauch()
+    cluster.launch()
 
 def install_cluster(cluster):
     install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)
