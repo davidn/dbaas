@@ -79,19 +79,19 @@ class Cluster(models.Model):
         return self.dns_name
 
     def launch(self):
+        if self.iam_key is "":
+            iam = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            if self.iam_arn is "":
+                res= iam.create_user(self.uuid)
+                self.iam_arn = res['create_user_response']['create_user_result']['user']['arn']
+                self.save()
+            res = iam.create_access_key(self.uuid)
+            self.iam_key = res['create_access_key_response']['create_access_key_result']['access_key']['access_key_id']
+            self.iam_secret = res['create_access_key_response']['create_access_key_result']['access_key']['secret_access_key']
+            self.save()
         s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         bucket = s3.lookup(self.uuid)
         if bucket is None:
-            if self.iam_key is "":
-                iam = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-                if self.iam_arn is "":
-                    res= iam.create_user(self.uuid)
-                    self.iam_arn = res['create_user_response']['create_user_result']['user']['arn']
-                    self.save()
-                res = iam.create_access_key(self.uuid)
-                self.iam_key = res['create_access_key_response']['create_access_key_result']['access_key']['access_key_id']
-                self.iam_secret = res['create_access_key_response']['create_access_key_result']['access_key']['secret_access_key']
-                self.save()
             bucket = s3.create_bucket(self.uuid)
         bucket.set_policy("""{
           "Version": "2008-10-17",
