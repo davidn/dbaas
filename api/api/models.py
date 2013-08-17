@@ -339,6 +339,8 @@ class Node(models.Model):
   owner: root:root
   permissions: '0644'""".format(nid=node.nid,address=node.dns_name,rsa_pub=node.public_key.replace("\n","\n    ")) for node in self.cluster.nodes.all())
         return  """#cloud-config
+runcmd:
+- [ mkdir, -p, /var/backup ]
 write_files:
 - content: |
     [mysqld]
@@ -398,9 +400,6 @@ write_files:
     }}
   owner: root:root
   permissions: '0644'
-- path: /var/backup/.ensure_dir
-  content: |
-    Ensure /var/backup created
 - path: /etc/cron.d/backup
   content: |
     {backup_schedule} root /usr/local/bin/backup
