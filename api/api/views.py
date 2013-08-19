@@ -18,7 +18,7 @@ class Owner(permissions.BasePermission):
 		if isinstance(obj, Node):
 			return obj.cluster.user == request.user
 		return False
-	
+
 	def has_permission(self, request, view):
 		return not request.user.is_anonymous()
 
@@ -98,7 +98,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
 		else:
 			data = request.DATA.copy()
 			data["user"] = reverse('user-detail',args=(request.user.pk,))
-		
+
 		serializer = self.get_serializer(data=data, files=request.FILES)
 
 		if serializer.is_valid():
@@ -228,7 +228,7 @@ class NodeViewSet(mixins.ListModelMixin,
 					"cpu":list(islice(random_walk(),120)),
 					"wiops":list(islice(random_walk(),120)),
 					"riops":list(islice(random_walk(),120))},
-				headers={"X-Data-Source", "test"}, status=status.HTTP_200_OK)
+				headers={"X-Data-Source": "test"}, status=status.HTTP_200_OK)
 		z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
 		z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
 		res = {}

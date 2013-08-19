@@ -38,6 +38,9 @@ function api_call(method, path, object, success, error) {
 }
 
 function generic_error(xhr, status, error) {
+    console.log(xhr);
+    console.log(status);
+    console.log(error);
     $('#alertBody').html(error);
     $('#alertModal').modal('show');
 }
@@ -69,12 +72,15 @@ function onNodeAdd(e) {
     generic_error(null, 'unsupported', 'Adding a node to an existing cluster is currently unsupported');
 }
 
-function onLaunchCluster(e) {
-    $(e.currentTarget).button('loading');
-    api_call('POST', e.currentTarget.getAttribute('data-cluster') + 'launch_all/', {}, function (data, status, xhr) {
+function launchCluster(clusterURL) {
+    api_call('POST', clusterURL + 'launch_all/', {}, function (data, status, xhr) {
         $(e.currentTarget).button('reset');
         generic_success(data, status, xhr);
     }, generic_error);
+}
+function onLaunchCluster(e) {
+    $(e.currentTarget).button('loading');
+    launchCluster(e.currentTarget.getAttribute('data-cluster'));
 }
 
 function onClusterDelete(e) {
@@ -137,23 +143,7 @@ function getStatusByLabel(statusLabel) {
     })[0];
 }
 
-/* TODO Remove mock stats */
-function getRandomizer(bottom, top) {
-    return function () {
-        return Math.floor(Math.random() * ( 1 + top - bottom )) + bottom;
-    }
-}
-
-function mockStats(max) {
-    var randomizer = getRandomizer(0, max);
-
-    var results = [];
-    for (var i = 0; i < 60; i++) {
-        results.push(randomizer());
-    }
-    return results;
-}
-function lookupNodeData(data) {
+function lookupNodeData(clusterIndex, data) {
     data.maxStatus = 0;
     data.forEach(function (node, i, arr) {
         node.label = node.label ? node.label : node.region ? node.region : 'Node' + i;
@@ -161,14 +151,23 @@ function lookupNodeData(data) {
         var status = getStatusByLabel(node.status);
         node.statusClass = 'node-status-' + status.code;
         data.maxStatus = Math.max(status.index, data.maxStatus);
-        node.cpu = mockStats(100);
-        node.iops = mockStats(10000);
+        node.id = "node-" + clusterIndex + "-" + node.nid;
+        api_call('GET', node.url + 'stats/', {}, function (data, status, xhr) {
+            node.cpu = data.cpu;
+            node.riops = data.riops;
+            node.wiops = data.wiops;
+            $('#'+node.id+"-cpu").sparkline(node.cpu, {width:"100px"});
+            $('#'+node.id+"-iops").sparkline(node.riops, {width:"100px", lineColor:"#0F0"});
+            $('#'+node.id+"-iops").sparkline(node.wiops, {width:"100px", lineColor:"#F00", composite:true});
+            $.sparkline_display_visible();
+            }, generic_error);
     });
     return data;
 }
+
 function lookupClusterData(data) {
     data.forEach(function (cluster, i, arr) {
-        lookupNodeData(cluster.nodes);
+        lookupNodeData(i, cluster.nodes);
         cluster.canLaunch = cluster.nodes.maxStatus === 0;
         cluster.label = cluster.label || cluster.dbname;
     });
@@ -262,13 +261,15 @@ function getFlavorFromRegion(region){
 }
 
 function onQuickStart(e) {
+    $(e.currentTarget).button('loading');
     api_call('POST', 'clusters/', {
+        label: "Quick Start Cluster",
         dbname: "quickstart",
         dbusername: "appuser",
         dbpassword: generateKey(10),
         backup_schedule: "* * * * *",
         port: 3306
-    }, function (data, status, xhr) {
+    }, function (cluster, status, xhr) {
         var nodes = [
             {    region:  $('#quickStartNode1').select2("val"),
                 flavor: getFlavorFromRegion($('#quickStartNode1').select2("val")),
@@ -277,10 +278,10 @@ function onQuickStart(e) {
                 flavor: getFlavorFromRegion($('#quickStartNode2').select2("val")),
                 storage: 10}
         ];
-        api_call('POST', data.url, nodes, function (data2, status2, xhr2) {
+        api_call('POST', cluster.url, nodes, function (data2, status2, xhr2) {
             $("#launch").modal('hide');
             $(e.currentTarget).button('reset');
-            generic_success(data2, status2, xhr2);
+            launchCluster(cluster.url);
         }, generic_error);
     }, generic_error);
 }
@@ -306,8 +307,8 @@ function showLoginScreen(errorMessage){
     $("#main").markup("login");
     activateMarkup();
 
-    $("#login-submit").on("click", onLogin);
-    $("#login-register").on("click", onRegister);
+    $("#login-submit").off("click").on("click", onLogin);
+    $("#login-register").off("click").on("click", onRegister);
     updateLoginError(errorMessage);
 }
 
@@ -323,7 +324,7 @@ function activateMarkup() {
 }
 
 function onShowQuickStart() {
-    $("#quickstart").on("click", onQuickStart);
+    $("#quickstart").off("click").on("click", onQuickStart);
 
     // TODO Find out why this throws an exception with reloading the segment.  Is it not cleaning up with the handlebars reload?
     try{
