@@ -178,7 +178,7 @@ class Node(models.Model):
         (PAUSED, 'paused'),
         (SHUTTING_DOWN, 'shutting down'),
         (OVER, 'over'),
-        (ERROR, 'An error occured')
+        (ERROR, 'An error occurred')
     )
     label = models.CharField(max_length=255, blank=True, default="")
     cluster = models.ForeignKey(Cluster, related_name='nodes')

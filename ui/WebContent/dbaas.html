@@ -1,251 +1,269 @@
-
 <markup id="login">
-	<div id="login-div">
-		<h3>Log in to GenieDB DBaaS</h3>
-		<form class="form-horizontal box" id="login-form">
-			<div class="control-group">
-				<label class="control-label" for="username">Username</label>
-				<div class="controls">
-					<input type="text" id="username" placeholder="Username">
+	<div id="login-div" class="modal-dialog login">
+		<div class="modal-content login">
+			<form id="login-form" class="form-login">
+				<div class="modal-header">Account Login</div>
+				<div class="modal-body">
+					<p>
+						<input class="input-login" type="text" id="username" placeholder="Email Address">
+					</p>
+
+					<p>
+						<input class="input-login" type="password" id="password" placeholder="Password">
+					</p>
+
+					<div>
+						<button type="submit" class="btn btn-success" id="login-submit" data-loading-text="Logging in...">LOGIN</button>
+						<button type="submit" class="btn btn-link" id="login-forgot" data-loading-text="Sending reminder...">Forgot Password?</button>
+					</div>
+					<div id="login-error" class="alert alert-danger fade in" style="display: none">
+						<button type="button" class="close" data-dismiss="alert">&times;</button>
+						<span id="login-error-message">Login Failed.</span>
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="password">Password</label>
-				<div class="controls">
-					<input type="password" id="password" placeholder="Password">
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary" id="login-register" data-loading-text="Creating Account...">CREATE ACCOUNT</button>
 				</div>
-			</div>
-			<div class="control-group">
-				<div class="controls">
-					<button type="submit" class="btn" id="login-submit" data-loading-text="Signing in...">Sign in</button>
-					<button type="submit" class="btn" id="login-register" data-loading-text="Creating Account...">Register</button>
-				</div>
-			</div>
-			<div id="login-fail" class="alert alert-bock alert-error fade in" style="display: none">
-				<button type="button" class="close" data-dismiss="alert">&times;</button>
-				Login Failed.
-			</div>
-			<div id="register-fail" class="alert alert-bock alert-error fade in" style="display: none">
-				<button type="button" class="close" data-dismiss="alert">&times;</button>
-				Registration Failed.
-			</div>
-		</form>
+			</form>
+		</div>
 	</div>
 </markup>
 
 <markup id="home">
-	<div id="home-div" class="box">
-		<div class="btn-toolbar">
-			<div class="btn-group">
-				<button class="btn" data-toggle="modal" href="#launch"><i class="icon-plus"></i> Add Cluster</button>
-				<button class="btn" id="refresh"><i class="icon-repeat"></i> Refresh</button>
-			</div>
-			<div class="btn-group pull-right">
-				<button class="btn" id="logout"><i class="icon-off"></i> Logout</button>
-			</div>
+	<div id="home-div" class="box summary">
+		<div class="div-logout">
+			Welcome {{this.username}} &nbsp;&nbsp;&nbsp;
+			<button id="logout" class="btn btn-primary btn-small">LOGOUT</button>
 		</div>
-		<div class="well well-large">
+		<div class="modal-header">Cluster Summary
+			<button class="btn btn-primary marginleft60" data-toggle="modal" href="#addCluster"><i class="icon-plus"></i> ADD CLUSTER
+			</button>
+			&nbsp;
+			<button class="btn btn-primary" id="refresh"><i class="icon-refresh"></i></button>
+			<button type="submit" class="btn btn-primary pull-right disabled"><i class="icon-bar-chart"></i> CLUSTER STATS</button>
+		</div>
+		<div class="panel cluster-group">
 			{{#each clusters}}
-				<div class="cluster-box">
-					<div class="btn-toolbar">
-						<div class="btn-group">
-							<button class="btn add-node" data-cluster="{{this.url}}"><i class="icon-plus"></i> Add Node</button>
-							<button class="btn launch-cluster" data-cluster="{{this.url}}"><i class="icon-play"></i> Launch</button>
-							<button class="btn delete-cluster" data-cluster="{{this.url}}" data-loading-text="Deleting..."><i class="icon-remove"></i> Delete</button>
-						</div>
+			<div class="panel">
+				<div class="panel-heading cluster-heading">
+					<span class="panel-title cluster-title">{{this.label}}</span>
+
+					<div class=" pull-right">
+						{{#if this.canLaunch}}
+						<button class="btn add-node btn-success btn-small" data-cluster="{{this.url}}">ADD NODE</button>
+						<button class="btn launch-cluster btn-success btn-small" data-cluster="{{this.url}}" data-loading-text="Launching...">LAUNCH</button>
+						{{/if}}
+						<button class="btn delete-cluster btn-danger btn-small" data-cluster="{{this.url}}" data-loading-text="Deleting...">DELETE</button>
 					</div>
-					<div class="cluster-dns">{{this.dns_name}}</div>
+				</div>
+
+				<table class="table table-hover table-condensed table-nodes">
+					<thead class="node-header">
+					<tr>
+						<th></th>
+						<th>Name</th>
+						<th>Provider</th>
+						<th>Instance Type</th>
+						<th>Status</th>
+						<th>CPU</th>
+						<th>IOPS</th>
+						<th></th>
+					</tr>
+					</thead>
+					<tbody>
 					{{#each this.nodes}}
-						<div class="node-box">
-							<span class="node-id pull-right">{{this.nid}}</span>
-							<span class="node-region">{{this.region.name}}</span>
-							<span class="node-status node-status-{{this.status}}">
-								&#x25cf; <span class="node-status-text">{{this.status}}</span>
-							</span>
-							<span class="node-dns">{{this.ip}}:{{port}}</span>
-							<div class="node-buttons btn-toolbar">
-								<div class="btn-group">
-								<button class="btn pause-node hide pause-{{this.status}}" data-node="{{this.url}}" data-loading-text="Pausing..."><i class="icon-pause"></i> Pause</button>
-								<button class="btn resume-node hide resume-{{this.status}}" data-node="{{this.url}}" data-loading-text="Resuming..."><i class="icon-play"></i> Resume</button>
-									<button class="btn delete-node" data-node="{{this.url}}" data-loading-text="Deleting..."><i class="icon-remove"></i> Delete</button>
-								</div>
+					<tr data-node="{{this.url}}">
+						<td id="row{{@index}}" class="node-status-marker"><i class="icon-circle {{this.statusClass}}"></i></td>
+						<td id="row{{@index}}">{{this.label}}</td>
+						<td id="row{{@index}}">{{this.provider.name}}</td>
+						<td id="row{{@index}}">{{this.flavor}}</td>
+						<td id="row{{@index}}" class="node-status {{this.statusClass}}">{{this.status}}</td>
+						<td id="row{{@index}}"><span class="inlinesparkline">{{this.cpu}}</span></td>
+						<td id="row{{@index}}"><span class="inlinesparkline">{{this.iops}}</span></td>
+						<td id="row{{@index}}">
+							<div class="btn-group">
+								<a class="dropdown-toggle" data-hover="dropdown" data-toggle="dropdown"> <i class="icon-reorder"></i> </a>
+								<ul class="dropdown-menu node-popup pull-right">
+									<li class="disabled">
+										<a tabindex="-1" class="node-stats" href="#"><i class="icon-bar-chart"></i> &nbsp; Detailed Stats</a>
+									</li>
+									<li class="divider"></li>
+									<li><a tabindex="-1" class="node-pause" href="#"><i class="icon-pause "></i> &nbsp; Pause Node</a></li>
+									<li><a tabindex="-1" class="node-resume" href="#"><i class="icon-play"></i> &nbsp; Resume Node</a></li>
+									<li class="divider"></li>
+									<li class="disabled"><a tabindex="-1" class="node-clone " href="#"><i class="icon-plus"></i> &nbsp; Clone Node</a></li>
+									<li class="disabled">
+										<a tabindex="-1" class="node-upgrade" href="#"><i class="icon-chevron-up"></i> &nbsp; Upgrade Node</a>
+									</li>
+									<li class="divider"></li>
+									<li><a tabindex="-1" class="node-delete" href="#"><i class="icon-remove"></i> &nbsp; Delete Node</a>
+									</li>
+								</ul>
 							</div>
-						</div>
+						</td>
+					</tr>
 					{{else}}
-						no nodes
+					<tr>
+						<td colspan="8">Your cluster currently has no nodes.
+							<button class="btn add-node btn-success btn-small" data-cluster="{{this.url}}">Add Node</button>
+						</td>
+					</tr>
 					{{/each}}
-				</div>
+					</tbody>
+				</table>
+
+			</div>
 			{{else}}
-				You have no clusters. Click "Add Cluster" to get started!
+			<p class="lead">You don't have any clusters yet. You can either
+				<button class="btn btn-primary" data-toggle="modal" href="#addCluster"><i class="icon-plus"></i> ADD CLUSTER</button>
+				or use our
+				<button class="btn btn-success" id="showQuickStart" rel="tooltip" title="Creates 2 node cluster for easy testing of GenieDB on Amazon EC2" data-toggle="modal" href="#quickStartView">QUICK START</button>
+				, which builds a cluster with two small Amazon EC2 nodes distributed on the east and west coast of the US.
+			</p>
 			{{/each}}
 		</div>
 	</div>
-	<div class="modal hide fade" role="dialog" id="launch" style="position:absolute" data-keyboard="false">
-		<div class="modal-header">
-			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-			<h3>New Cluster</h3>
-		</div>
-		<div class="modal-body" style="max-height:80%">
-			<span><strong>Region Deployment</strong></span>
-			<div class="form-horizontal">
-				{{#each providers}}
-					<h4>{{this.name}}</h4>
-					{{#each this.regions}}
+
+	<div class="modal fade" id="addCluster">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">×</button>
+					<h3>Define New Cluster</h3>
+				</div>
+				<div class="modal-body" style="max-height:80%">
+
+					<div class="form-horizontal">
+
 						<div class="control-group">
-							<label class="control-label" for="{{this.code}}_count">{{this.name}}</label>
+							<label class="control-label" for="identifier"> Label
+								<a tabindex="-1" rel="tooltip" title="e.g. Production Cluster, myApp Cluster"><i class="icon-info-sign"></i></a>
+							</label>
+
 							<div class="controls">
-								<input class="input-small" id="{{this.code}}_count" name="{{this.code}}_count" size="2" type="text" value="0" />
+								<input id="identifier" name="identifier" size="30" placeholder="Label" type="text"/>
 							</div>
 						</div>
-					{{/each}}
-				{{/each}}
-			</div>
-		
-			<span><strong>Provide the per-node resource allocations</strong></span>
-			{{#each providers}}
-				<h4>{{this.name}}</h4>
-				<div class="form-horizontal row-fluid">
-					<div class="span8">
 						<div class="control-group">
-							<label class="control-label" for="cpu_count">No. of CPUs</label>
+							<label class="control-label" for="master_username"> Master Username
+								<a tabindex="-1" rel="tooltip" title="e.g. awsuser, appuser, etc" class="question"><i class="icon-info-sign"></i></a>
+							</label>
+
 							<div class="controls">
-								<select id="{{this.code}}_cpu_count" class="hide" name="cpu_count">
-									<option value="1">1</option>
-									<option value="2">2</option>
-									<option value="4">4</option>
-									<option value="8">8</option>
-								</select>
-								<div id="{{this.code}}_cpu_slider"></div>
-								<div class="slider-numbers">
-									<small>1</small>
-									<small>2</small>
-									<small>4</small>
-									<small>8</small>
-								</div>
+								<input id="master_username" name="master_username" size="30" type="text"/>
 							</div>
 						</div>
-			
 						<div class="control-group">
-							<label class="control-label" for="ram_amount">Amount of RAM (GB)</label>
+							<label class="control-label" for="master_password"> Master Password
+								<a tabindex="-1" rel="tooltip" title="Please choose a secure password" class="question"><i class="icon-info-sign"></i></a></label>
+
 							<div class="controls">
-								<select id="{{this.code}}_ram_amount" class="hide" name="ram_amount">
-									<option value="1">1</option>
-									<option value="2">2</option>
-									<option value="4">4</option>
-									<option value="8">8</option>
-									<option value="16">16</option>
-									<option value="32">32</option>
-									<option value="64">64</option>
-								</select>
-								<div id="{{this.code}}_ram_slider"></div>
-								<div class="slider-numbers">
-									<small>1</small>
-									<small>2</small>
-									<small>4</small>
-									<small>8</small>
-									<small>16</small>
-									<small>32</small>
-									<small>64</small>
-								</div>
+								<input id="master_password" name="master_password" size="30" type="password"/>
+							</div>
+						</div>
+
+						<div class="control-group">
+							<label class="control-label" for="master_password"> Master Password Confirm </label>
+
+							<div class="controls">
+								<input id="master_password_confirm" name="master_password_confirm" size="30" type="password"/>
+							</div>
+						</div>
+
+						<div class="control-group">
+							<label class="control-label" for="db_name"> Database Name
+								<a tabindex="-1" rel="tooltip" title="Note: If no database name is specified then no initial MySQL database will be created on the cluster"><i class="icon-info-sign"></i></a>
+							</label>
+
+							<div class="controls">
+								<input id="db_name" name="db_name" size="30" type="text"/>
+							</div>
+						</div>
+
+						<div class="control-group">
+							<label class="control-label" for="db_port">Database Port
+								<a tabindex="-1" rel="tooltip" title="Using a non-standard port (3306) is recommended"><i class="icon-info-sign"></i></a>
+							</label>
+
+							<div class="controls">
+								<input id="db_port" name="db_port" size="30" type="text" value="3306"/>
 							</div>
 						</div>
 					</div>
-			
-					<div class="span4">
-						<select id="{{this.code}}_flavor" name="node_size" size="3" style="height: 7em; width: 10em">
-							{{#each this.flavor}}
-								<option value="{{this.code}}">{{this.name}}</option>
+				</div>
+				<div class="modal-footer">
+					<input class="btn btn-primary" id="add-cluster" type="submit" value="Create Cluster"/>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="alertModal" class="modal fade" tabindex="-1" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h3 id="myModalLabel">Alert</h3>
+				</div>
+				<div class="modal-body">
+					<p id="alertBody">One fine body…</p>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="quickStartView">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h3>Creating Quick Start Cluster</h3>
+				</div>
+				<div class="modal-body" style="max-height:80%">
+
+
+					<div class="form-group">
+						<label> Node 1 Region</label>
+					</div>
+					<select id="quickStartNode1" class="select2" style="width: 80%">
+						{{#each providers}}
+						<optgroup label="{{this.name}}">
+							{{#each this.regions}}
+							<option value="{{this.code}}">{{this.name}}</option>
 							{{/each}}
-						</select>
+						</optgroup>
+						{{/each}}
+					</select>
+
+					<div class="form-group">
+						<label> </label>
 					</div>
+
+					<div class="form-group">
+						<label for="quickStartNode2"> Node 2 Region</label>
+					</div>
+					<select id="quickStartNode2" class="select2" style="width: 80%">
+						{{#each providers}}
+						<optgroup label="{{this.name}}">
+							{{#each this.regions}}
+							<option value="{{this.code}}">{{this.name}}</option>
+							{{/each}}
+						</optgroup>
+						{{/each}}
+					</select>
+
+					<div class="form-group">
+						<label> </label>
+					</div>
+
 				</div>
-			{{/each}}
-		
-			<span><strong>Provide the details for your GenieDB Database Instance</strong></span>
-			<div class="form-horizontal">
-		
-				<div class="control-group">
-					<label class="control-label" for="allocated_storage">
-						Allocated Storage
-						<a tabindex="-1" rel="tooltip" title="(Minimum: 7GB, Maximum: 3072 GB) Higher allocated storage may improve IOPS performance" class="question">?</a>
-					</label>
-					<div class="controls">
-						<div class="input-prepend">
-							<span class="add-on">GB</span>
-							<input class="span2" id="allocated_storage" name="allocated_storage" size="30" type="text" value="10" />
-						</div>
-					</div>
-				</div>
-		
-				<div class="control-group">
-					<label class="control-label" for="provision_iops">Use Provisioned IOPS</label>
-					<div class="controls">
-						<input id="provision_iops" name="provision_iops" type="checkbox" value="1" />
-					</div>
-				</div>
-		
-				<div class="control-group">
-					<label class="control-label" for="iops">IOPS</label>
-					<div class="controls">
-						<input class="input-mini" id="iops" name="iops" size="30" type="text" />
-					</div>
-				</div>
-		
-		
-				<div class="control-group">
-					<label class="control-label" for="identifier"> DB Instance Identifier <a tabindex="-1" rel="tooltip" title="e.g. mydbinstance" class="question">?</a>
-					</label>
-					<div class="controls">
-						<input id="identifier" name="identifier" size="30" type="text" />
-					</div>
-				</div>
-		
-		
-				<div class="control-group">
-					<label class="control-label" for="master_username"> Master Username <a tabindex="-1" rel="tooltip" title="e.g. awsuser" class="question">?</a>
-					</label>
-					<div class="controls">
-						<input id="master_username" name="master_username" size="30" type="text" />
-					</div>
-				</div>
-		
-		
-				<div class="control-group">
-					<label class="control-label" for="master_password">
-						Master Password <a tabindex="-1"
-						rel="tooltip" title="e.g. mypassword" class="question">?</a>
-					</label>
-					<div class="controls">
-						<input id="master_password"
-							name="master_password" size="30" type="password" />
-					</div>
-				</div>
-		
-				<div class="control-group">
-					<label class="control-label" for="db_name">
-						Database Name <a tabindex="-1"
-						rel="tooltip"
-						title="Note: if no database name is specified then no initial MYSQL database will be created on the DB instance."
-						class="question">?</a>
-					</label>
-					<div class="controls">
-						<input id="db_name" name="db_name"
-							size="30" type="text" />
-					</div>
-				</div>
-		
-				<div class="control-group">
-					<label class="control-label" for="db_port">Database
-						Port</label>
-					<div class="controls">
-						<input id="db_port" name="db_port"
-							size="30" type="text" value="3306" />
-					</div>
+				<div class="modal-footer">
+					<input class="btn btn-primary" id="quickstart" data-dismiss="modal" value="OK"/>
+					<input class="btn" data-dismiss="modal" value="CANCEL"/>
 				</div>
 			</div>
 		</div>
-		<div class="modal-footer">
-			<input class="btn btn-primary" id="add-cluster" type="submit" value="Continue" data-loading-text="Launching..."/>
-		</div>
 	</div>
+
 </markup>

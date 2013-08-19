@@ -1,5 +1,5 @@
-ENDPOINT?=https://dbaas.geniedb.com:4000/api/
-AUTH_ENDPOINT?=https://dbaas.geniedb.com:4000/api-token-auth/
+ENDPOINT?=http://localhost:8000/api/
+AUTH_ENDPOINT?=http://localhost:8000/api-token-auth/
 
 all: dbaas.js
 

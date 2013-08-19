@@ -5,14 +5,15 @@ TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
+    ('Marc Bir', 'mbir@geniedb.com')
 )
 
 MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': '',                      # Or path to database file if using sqlite3.
+        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'sqlite.db',                      # Or path to database file if using sqlite3.
         # The following settings are not used with sqlite3:
         'USER': '',
         'PASSWORD': '',
@@ -43,7 +44,7 @@ NODE_DNS_TEMPLATE="{cluster}-{node}.dbaas.example.com"
 import datetime
 TRIAL_LENGTH=datetime.timedelta(weeks=1)
 
-ALLOW_REGISTRATIONS=False
+ALLOW_REGISTRATIONS=True
 
 DEFAULT_PORT = 3306
 
@@ -55,6 +56,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     )
 }
 
@@ -180,12 +182,25 @@ CORS_ORIGIN_ALLOW_ALL=True
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
         }
     },
     'handlers': {
+        'console':{
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
@@ -198,6 +213,11 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        'api.models': {
+            'handlers': ['console'],
+            'formatter': 'verbose',
+            'level': 'DEBUG'
+        }
     }
 }
 

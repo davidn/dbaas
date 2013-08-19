@@ -1,135 +1,208 @@
-body {
-	background:url(background-bg.png) repeat-x left top #000000;
-	font-family: "open sans";
+html{
+    background: url(MapBkg.png) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    font-family: 'Lato', sans-serif;
 }
 
-#main {
-	padding-top:150px;
-	padding-bottom: 100px;
+.alert-danger{
+    margin-top: 10px;
+    color: #fff;
+    background-color: #ce7a7b;
+    border-color: #ce7a7b;
 }
 
-#main > h3 {
-	color:#ffffff;
+body{
+    background: transparent;
+    font-family: 'Lato', sans-serif;
 }
 
-.box {
-	border:8px solid #1d3160;
-	width:935px;
-	padding: 18px;
-	min-height: 785px;
-	background:#ffffff;
+#main{
+    padding-top: 30px;
+    padding-bottom: 100px;
 }
 
-.cluster-box {
-	border: 2px solid #4a62c0;
-	background:#ffffff;
-	margin: 20px;
-	padding: 8px;
+#main > h3{
+    color: #fff;
 }
 
-.cluster-box:after {
-	content: "";
-	display: table;
-	line-height: 0;
-	clear: both;
+#dbaasHeader{
+    padding-top: 50px;
+    padding-left: 10%;
 }
 
-.node-box {
-	float: left;
-	border: 1px solid #4a62c0;
-	background: #dfdfdf;
-	padding: 8px;
-	margin: 8px;
-	width: 20%;
-	height: 2em;
-	overflow: hidden;
-	font-size: large;
-	transition: width 1s, height 1s;
+#gdbHeader{
+    padding-top: 25px;
+    padding-right: 10%;
 }
 
-.node-box-selected {
-	width: 40%;
-	height: 7em;
-	transition: width 1s, height 1s;
+.modal-header{
+    background-color: #39559f;
+    font-size: 16pt;
+    color: #99b1f3;
+    padding-left: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-radius: 2px 2px 0px 0px;
 }
 
-.node-region {
-	display: block;
+.modal-footer{
+    background-color: #c1c1c1;
+    padding: 15px;
+    margin: 0px;
+    border-radius: 0px 0px 2px 2px;
+    border: 0;
+    text-align: left;
 }
 
-.node-dns {
-	font-size: small;
-	display: block;
+.btn{
+    border-radius: 2px;
 }
 
-.node-id {
-	font-size: x-large;
-	font-weight: bold;
+.btn-success{
+    background-color: #26bd38;
 }
 
-.node-status {
-	color: yellow;
+.btn-primary{
+    background-color: #5473c4;
+    border: 0;
 }
 
-.node-status-text {
-	font-size: small;
+.min-controls{
+    margin-left: 20px;
 }
 
-.node-status-running {
-	color: green;
-}
-.node-status-An {
-	color: red;
+.login{
+    margin-top: 50px;
+    width: 340px;
 }
 
-.pause-running {
-	display: inline-block;
+.summary{
+    margin-top: 75px;
 }
 
-.resume-paused {
-	display: inline-block;
+.marginleft60{
+    margin-left: 60px;
 }
 
-#cpu-slider .ui-slider-handle, #ram-slider .ui-slider-handle {
-	background:#2E648F;
-	border: medium none;
-	top: -5px;
-	width: 0.75em;
-	height: 1.3em;
+.node-popup{
+    background-color: #707070;
+    padding: 15px 0px;
 }
 
-#cpu-slider, #ram-slider {
-	float: left;
-	margin-right: 10px;
-	margin-top: 7px;
-	width: 100%;
-	border-radius: 10px 10px 10px 10px;
-	background:#EBEDEF;
-	border: 1px solid #EBEDEF;
+.node-popup>li>a:hover, .node-popup>li>a:focus{
+    background-color: #313131;
+    background-image: -webkit-gradient(linear, left 0, left 100%, from(#313131), to(#313131));
+    background-image: -webkit-linear-gradient(top, #313131, 0%, #313131, 100%);
+    background-image: -moz-linear-gradient(top, #313131 0, #313131 100%);
+    background-image: linear-gradient(to bottom, #313131 0, #313131 100%);
+    background-repeat: repeat-x;
 }
 
-#cpu-slider .ui-widget-header, #ram-slider .ui-widget-header {
-	background:#4479A3;
-	border-radius: 10px 10px 10px 10px;
+.node-popup>li>a{
+    color: #ebebeb;
+    padding: 0px 30px;
 }
 
-.slider-numbers {
-	display: inline-block;
-	margin-top: 2px;
-	margin-bottom: -2em;
-	float: left;
-	width: 100%;
-	text-align: justify;
+.node-popup>li>a>i{
+    color: #a4a4a4;
 }
 
-.slider-numbers small {
-	display: inline-block;
-	font-size: 14px;
-	color: #999999;
+.div-logout{
+    position: absolute;
+    top: 50px;
+    left: 400px;
+    overflow: visible;
+    color: #6f6f6f;
 }
 
-.slider-numbers:after {
-	content: '';
-	width: 100%;
-	display: inline-block;
+.input-login{
+    width: 100%;
+    height: 40px;
+    margin-bottom: 5px;
+    background-color: #ebebeb;
+    border-radius: 2px;
+    border-width: 0;
+    padding-left: 15px;
+}
+
+.form-login{
+    margin: 0px;
+}
+
+.modal-content{
+    border: 0px;
+    background: #dadada;
+}
+
+.cluster-box{
+    background: #ebebeb;
+}
+
+.cluster-group{
+    background: #dadada;
+    border-radius: 0px 0px 4px 4px;
+}
+
+.cluster-title{
+    color: #8b8b8b;
+    font-size: 24px;
+}
+
+.cluster-heading{
+    border-bottom: 0;
+}
+
+/* TODO: Use proper class selector over id tag */
+#row0{
+    border-top: 0;
+}
+
+.node-header{
+    color: #afafaf;
+}
+
+.node-region{
+    display: block;
+}
+
+.node-dns{
+    font-size: small;
+    display: block;
+}
+
+.node-status-marker{
+    text-align: center;
+    width: 24px;
+}
+
+.node-status{
+    color: #afafaf;
+    font-style: italic;
+}
+
+.node-status-running{
+    color: green;
+}
+
+.node-status-error{
+    color: red;
+}
+
+.table-nodes{
+    margin-bottom: 0;
+}
+
+a.dropdown-toggle{
+    color: #333;
+}
+
+a.dropdown-toggle:hover{
+    text-decoration: none;
+}
+
+#jqstooltip{
+    box-sizing: content-box;
 }
