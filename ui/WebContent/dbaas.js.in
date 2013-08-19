@@ -1,5 +1,12 @@
 /*jshint globalstrict: true*/
 
+
+if (typeof String.prototype.startsWith != 'function') {
+  String.prototype.startsWith = function (str){
+    return this.slice(0, str.length) == str;
+  };
+}
+
 var endpoint = '@ENDPOINT@';
 var auth_endpoint = '@AUTH_ENDPOINT@';
 var token = '';
@@ -71,6 +78,7 @@ function onLaunchCluster(e) {
 }
 
 function onClusterDelete(e) {
+    $(e.currentTarget).button('loading');
     api_call('DELETE', e.currentTarget.getAttribute('data-cluster'), {}, generic_success, generic_error);
 }
 
@@ -135,6 +143,7 @@ function getRandomizer(bottom, top) {
         return Math.floor(Math.random() * ( 1 + top - bottom )) + bottom;
     }
 }
+
 function mockStats(max) {
     var randomizer = getRandomizer(0, max);
 
@@ -170,7 +179,6 @@ function display_clusters(data, status, xhr) {
     $("#home-div").remove();
 
     $("#main").markup("home", {username: username, clusters: lookupClusterData(data), providers: providers});
-    activateMarkup();
 
     $("#refresh").off("click").on("click", onRefresh);
     $("#logout").off("click").on("click", onLogout);
@@ -185,9 +193,11 @@ function display_clusters(data, status, xhr) {
     $(".node-clone").off("click").on("click", onNodeClone);
     $(".node-upgrade").off("click").on("click", onNodeUpgrade);
     $(".node-stats").off("click").on("click", onNodeStats);
+    $("#showQuickStart").off("click").on("click", onShowQuickStart);
 
 
-    $("#quickstart").on("click", onQuickStart);
+    activateMarkup();
+
 }
 
 function login_callback(data, status, xhr) {
@@ -246,19 +256,25 @@ function generateKey(length) {
     return (Math.PI * Math.max(0.01, Math.random())).toString(36).substr(2, length);
 }
 
+
+function getFlavorFromRegion(region){
+    return region.startsWith("test") ? "test-small" : "m1.small";
+}
+
 function onQuickStart(e) {
     api_call('POST', 'clusters/', {
         dbname: "quickstart",
         dbusername: "appuser",
         dbpassword: generateKey(10),
+        backup_schedule: "* * * * *",
         port: 3306
     }, function (data, status, xhr) {
         var nodes = [
-            {    region: "test-1",
-                flavor: "test-small",
+            {    region:  $('#quickStartNode1').select2("val"),
+                flavor: getFlavorFromRegion($('#quickStartNode1').select2("val")),
                 storage: 10},
-            {region: "test-2",
-                flavor: "test-small",
+            {region: $('#quickStartNode2').select2("val"),
+                flavor: getFlavorFromRegion($('#quickStartNode2').select2("val")),
                 storage: 10}
         ];
         api_call('POST', data.url, nodes, function (data2, status2, xhr2) {
@@ -304,6 +320,25 @@ function activateMarkup() {
     $('.dropdown-toggle').dropdownHover();
     $('.inlinesparkline').sparkline();
 
+}
+
+function onShowQuickStart() {
+    $("#quickstart").on("click", onQuickStart);
+
+    // TODO Find out why this throws an exception with reloading the segment.  Is it not cleaning up with the handlebars reload?
+    try{
+        $('.select2').select2();
+    } catch(e) {
+    }
+
+    // Default Values
+    // Production
+    $('#quickStartNode1').select2("val","us-west-2");
+    $('#quickStartNode2').select2("val","us-east-1");
+
+    // Testing
+    $('#quickStartNode1').select2("val","test-1");
+    $('#quickStartNode2').select2("val","test-2");
 }
 
 $(function () {
