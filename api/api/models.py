@@ -405,7 +405,7 @@ write_files:
     {backup_schedule} root /usr/local/bin/backup
   owner: root:root
   permissions: '0755'
-- path: /root/.s3cmd
+- path: /root/.s3cfg
   content: |
     access_key = {iam_key}
     secret_key = {iam_secret}
