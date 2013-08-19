@@ -339,8 +339,6 @@ class Node(models.Model):
   owner: root:root
   permissions: '0644'""".format(nid=node.nid,address=node.dns_name,rsa_pub=node.public_key.replace("\n","\n    ")) for node in self.cluster.nodes.all())
         return  """#cloud-config
-runcmd:
-- [ mkdir, -p, /var/backup ]
 write_files:
 - content: |
     [mysqld]
@@ -427,6 +425,7 @@ write_files:
 {host_files}
 runcmd:
 - [lokkit, -p, "{port}:tcp"]
+- [ mkdir, -p, /var/backup ]
 """.format(nid=self.nid,
            dns_name=self.dns_name,
            cluster=self.cluster.pk,
