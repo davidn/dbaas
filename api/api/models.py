@@ -402,7 +402,7 @@ write_files:
   content: |
     {backup_schedule} root /usr/local/bin/backup
   owner: root:root
-  permissions: '0755'
+  permissions: '0644'
 - path: /root/.s3cfg
   content: |
     access_key = {iam_key}
