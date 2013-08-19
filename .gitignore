@@ -91,3 +91,5 @@ config/*.conf
 
 
 ui/WebContent/dbaas.js
+
+*.iml
