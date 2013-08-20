@@ -89,6 +89,7 @@ class Cluster(models.Model):
             self.iam_key = res['create_access_key_response']['create_access_key_result']['access_key']['access_key_id']
             self.iam_secret = res['create_access_key_response']['create_access_key_result']['access_key']['secret_access_key']
             self.save()
+            sleep(3) # S3 takes a while to treat new ARN as valid
         s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         bucket = s3.lookup(self.uuid)
         if bucket is None:
