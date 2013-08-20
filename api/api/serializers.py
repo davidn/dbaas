@@ -7,6 +7,7 @@ from django.contrib.auth.hashers import make_password
 import math
 from django.core.exceptions import ValidationError
 from api.models import cron_validator
+import dateutil.parser
 
 class MultiHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
 	def get_url(self, obj, view_name, request, format):
@@ -137,8 +138,13 @@ class ClusterSerializer(serializers.HyperlinkedModelSerializer):
 		model = Cluster
 		fields = ('url','label','user','dbname','dbusername','dbpassword','dns_name','port','nodes', 'backup_count', 'backup_schedule')
 
+class DateUtilField(serializers.DateTimeField):
+	def from_native(self, value):
+		return serializers.DateTimeField.from_native(self, dateutil.parser.parse(value))
+
 # Serializer for getting data from node
 class BackupWriteSerializer(serializers.ModelSerializer):
+	time = DateUtilField()
 	class Meta:
 		model = Backup
 		fields = ('node','filename','time','size')
