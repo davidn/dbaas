@@ -3,6 +3,7 @@
 from time import sleep
 import re
 from sha import sha
+from itertools import islice
 from Crypto import Random
 from Crypto.PublicKey import RSA
 from django.db import models
@@ -58,6 +59,13 @@ def cron_validator(value):
                 if not re.match(r'^\d+$', part_step[1]):
                     raise ValidationError("Invalid step: %s" % part_step[1])
 
+def split_every(n, iterable):
+    i = iter(iterable)
+    piece = list(islice(i, n))
+    while piece:
+        yield piece
+        piece = list(islice(i, n))
+
 class Cluster(models.Model):
     user = models.ForeignKey(User)
     uuid = UUIDField(primary_key=True)
@@ -112,6 +120,9 @@ class Cluster(models.Model):
         s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         bucket = s3.lookup(self.uuid)
         if bucket is not None:
+            # Must empty bucket before delete
+            for keys in split_every(1000, bucket):
+                bucket.delete_keys(keys)
             bucket.delete()
         if self.iam_arn != "":
             iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
