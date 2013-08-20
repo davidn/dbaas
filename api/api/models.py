@@ -441,7 +441,7 @@ write_files:
         stat --printf '  {{"filename":"%n", "time":"%y", "size":"%s"}}' "$i"
       done
       printf '\\n]\\n'
-    )
+    )"
   owner: root:root
   permissions: '0755'
 - path: /etc/tinc/cf/rsa_key.priv
