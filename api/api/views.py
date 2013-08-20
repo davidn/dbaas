@@ -247,7 +247,7 @@ class NodeViewSet(mixins.ListModelMixin,
 		serializer = BackupReadSerializer(self.object.backups.all())
 		return Response(serializer.data)
 
-	@action()
+	@action(permission_classes=[permissions.AllowAny])
 	def set_backups(self, request, *args, **kwargs):
 		self.object = self.get_object() # The NODE object
 		if isinstance(request.DATA,list):
