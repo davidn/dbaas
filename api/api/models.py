@@ -471,7 +471,7 @@ runcmd:
            backup_count=self.cluster.backup_count,
            iam_key=self.cluster.iam_key,
            iam_secret=self.cluster.iam_secret,
-           set_backup_url='https://'+Site.objects.get_current().domain+reverse('node-set-backup', args=[self.cluster.pk, self.pk]),
+           set_backup_url='https://'+Site.objects.get_current().domain+reverse('node-set-backups', args=[self.cluster.pk, self.pk]),
     )
 
     def do_launch(self):
