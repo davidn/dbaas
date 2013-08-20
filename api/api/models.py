@@ -424,9 +424,9 @@ write_files:
 - path: /usr/local/bin/backup
   content: |
     #!/bin/sh
-    mysqldump --all-databases > /var/backup/mysqlbackup.sql
-    logrotate -fs /etc/mysqlbackup.state /etc/mysqlbackup.logrotate
-    s3cmd sync --delete-removed /var/backup/ s3://{cluster}/{nid}/
+    /usr/bin/mysqldump --all-databases > /var/backup/mysqlbackup.sql
+    /usr/sbin/logrotate -fs /etc/mysqlbackup.state /etc/mysqlbackup.logrotate
+    /usr/bin/s3cmd sync --delete-removed /var/backup/ s3://{cluster}/{nid}/
   owner: root:root
   permissions: '0755'
 - path: /etc/tinc/cf/rsa_key.priv
