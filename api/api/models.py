@@ -21,6 +21,7 @@ import config
 import MySQLdb
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 
 logger = getLogger(__name__)
 
@@ -427,6 +428,20 @@ write_files:
     /usr/bin/mysqldump --all-databases > /var/backup/mysqlbackup.sql
     /usr/sbin/logrotate -fs /etc/mysqlbackup.state /etc/mysqlbackup.logrotate
     /usr/bin/s3cmd sync --delete-removed /var/backup/ s3://{cluster}/{nid}/
+    /usr/bin/curl {set_backup_url} -X POST -H "Content-type: application/json" -d "$(
+      c=false
+      cd /var/backup/
+      printf '[\n'
+      for i in *; do
+        if $c; then
+          printf ',\n'
+        else
+          c=true
+        fi
+        stat --printf '  {{"filename":"%n", "time":"%y", "size":"%s"}}' "$i"
+      done
+      printf '\n]\n'
+    )
   owner: root:root
   permissions: '0755'
 - path: /etc/tinc/cf/rsa_key.priv
@@ -456,6 +471,7 @@ runcmd:
            backup_count=self.cluster.backup_count,
            iam_key=self.cluster.iam_key,
            iam_secret=self.cluster.iam_secret,
+           set_backup_url='https://'+Site.objects.get_current().domain+reverse('node-set-backup', args=[self.cluster.pk, self.pk]),
     )
 
     def do_launch(self):
@@ -552,6 +568,18 @@ runcmd:
                 rrs.commit()
                 r53.delete_health_check(self.health_check)
             self.region.connection.terminate(self)
+
+class Backup(models.Model):
+    node = models.ForeignKey(Node, related_name='backups')
+    filename = models.CharField(max_length=255)
+    time = models.DateTimeField()
+    size = models.PositiveIntegerField("Backup size (MB)")
+
+    def get_url(self):
+        s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+        return s3.generate_url(3600,
+                "GET", self.node.cluster.uuid,
+                '/%s/%s' % (self.node.nid, self.filename))
 
 @receiver(models.signals.pre_delete, sender=Node)
 def node_pre_delete_callback(sender, instance, using, **kwargs):

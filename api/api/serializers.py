@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Cluster, Node, Flavor, Provider, Region
+from .models import Cluster, Node, Flavor, Provider, Region, Backup
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework.reverse import reverse
 from django.contrib.auth.hashers import make_password
@@ -136,3 +136,16 @@ class ClusterSerializer(serializers.HyperlinkedModelSerializer):
 	class Meta:
 		model = Cluster
 		fields = ('url','label','user','dbname','dbusername','dbpassword','dns_name','port','nodes', 'backup_count', 'backup_schedule')
+
+# Serializer for getting data from node
+class BackupWriteSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Backup
+		fields = ('node','filename','time','size')
+
+# Serializer for sending data to users
+class BackupReadSerializer(serializers.ModelSerializer):
+	url = serializers.CharField(source='get_url')
+	class Meta:
+		model = Backup
+		fields = ('url','time','size')
