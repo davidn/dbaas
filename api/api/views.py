@@ -254,11 +254,11 @@ class NodeViewSet(mixins.ListModelMixin,
 			data = []
 			for d in request.DATA:
 				new_d = d.copy()
-				new_d["node"] = self.object.get_absolute_url()
+				new_d["node"] = self.object.pk
 				data.append(new_d)
 		else:
 			data = request.DATA.copy()
-			data["node"] = self.object.get_absolute_url()
+			data["node"] = self.object.pk
 		serializer = BackupWriteSerializer(data=data, files=request.FILES, context={
 			'request': self.request,
 			'format': self.format_kwarg,
