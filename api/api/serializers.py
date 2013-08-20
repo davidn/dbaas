@@ -1,10 +1,13 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Cluster, Node, Flavor, Provider, Region
+from .models import Cluster, Node, Flavor, Provider, Region, Backup
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework.reverse import reverse
 from django.contrib.auth.hashers import make_password
 import math
+from django.core.exceptions import ValidationError
+from api.models import cron_validator
+import dateutil.parser
 
 class MultiHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
 	def get_url(self, obj, view_name, request, format):
@@ -112,9 +115,43 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 		fields = ('url','label','nid','dns_name','ip','flavor', 'storage', 'region', 'status', 'status_code', 'cluster', 'iops')
 		read_only_fields = ('ip','nid')
 
+# This class allows submission as a plain integer (hours)
+class CronField(serializers.CharField):
+	def from_native(self, value):
+		try:
+			cron_validator(value)
+			return value
+		except ValidationError as e:
+			try:
+				h = int(value, 10)
+			except:
+				raise e
+			if h < 1:
+				raise e
+			return "0 */%d * * *" % h
+
 class ClusterSerializer(serializers.HyperlinkedModelSerializer):
 	nodes = NodeSerializer(many=True, read_only=True)
 	dns_name = serializers.CharField(read_only=True)
+	backup_schedule = CronField()
 	class Meta:
 		model = Cluster
-		fields = ('url','label','user','dbname','dbusername','dbpassword','dns_name','port','nodes')
+		fields = ('url','label','user','dbname','dbusername','dbpassword','dns_name','port','nodes', 'backup_count', 'backup_schedule')
+
+class DateUtilField(serializers.DateTimeField):
+	def from_native(self, value):
+		return serializers.DateTimeField.from_native(self, dateutil.parser.parse(value))
+
+# Serializer for getting data from node
+class BackupWriteSerializer(serializers.ModelSerializer):
+	time = DateUtilField()
+	class Meta:
+		model = Backup
+		fields = ('node','filename','time','size')
+
+# Serializer for sending data to users
+class BackupReadSerializer(serializers.ModelSerializer):
+	url = serializers.CharField(source='get_url')
+	class Meta:
+		model = Backup
+		fields = ('url','time','size')

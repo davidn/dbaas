@@ -3,6 +3,7 @@
 from time import sleep
 import re
 from sha import sha
+from itertools import islice
 from Crypto import Random
 from Crypto.PublicKey import RSA
 from django.db import models
@@ -12,15 +13,59 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from logging import getLogger
 from .route53 import RecordWithHealthCheck, HealthCheck, record, exception
-from boto import connect_route53
+from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
 from api.route53 import RecordWithTargetHealthCheck
 from .cloud import EC2, Rackspace, Cloud
 import config
 import MySQLdb
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 
 logger = getLogger(__name__)
+
+cronvalidators = (
+    lambda x, allowtext: (re.match(r'^\d+$',x) and 0 <= int(x,10) <= 59) or allowtext and x == '*',
+    lambda x, allowtext: (re.match(r'^\d+$',x) and 0 <= int(x,10) <= 23) or allowtext and x == '*',
+    lambda x, allowtext: (re.match(r'^\d+$',x) and 1 <= int(x,10) <= 31) or allowtext and x == '*',
+    lambda x, allowtext: (re.match(r'^\d+$',x) and 1 <= int(x,10) <= 12) or allowtext and x.lower() in ('*','jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'),
+    lambda x, allowtext: (re.match(r'^\d+$',x) and 0 <= int(x,10) <= 07)or allowtext and x.lower() in ('*','mon','tue','wed','thu','fri','sat','sun')
+)
+
+def cron_validator(value):
+    if "\n" in value or "\r" in value:
+        raise ValidationError("No new lines allowed in schedule")
+    values = value.split()
+    if len(values) != 5:
+        raise ValidationError("Schedule must have exactly 5 whitespace separated fields")
+    for period, field in enumerate(values):
+        for part in field.split(","):
+            part_step = part.split("/")
+            if not 0 < len(part_step) <= 2:
+                raise ValidationError("Invalid schedule step: %s" % part)
+            part_range = part_step[0].split("-")
+            if not 0 < len(part_range) <= 2:
+                raise ValidationError("Invalid schedule range: %s" % part_step[0])
+            if len(part_range) == 2:
+                if not cronvalidators[period](part_range[0], False):
+                    raise ValidationError("Invalid range part: %s" % part_range[0])
+                if not cronvalidators[period](part_range[1], False):
+                    raise ValidationError("Invalid range part: %s" % part_range[1])
+            elif not cronvalidators[period](part_range[0], True):
+                    raise ValidationError("Invalid range part: %s" % part_range[0])
+            if len(part_step) > 1:
+                if len(part_range) == 1 and part_range[0] != '*':
+                    raise ValidationError("Schedule step requires a range to step over")
+                if not re.match(r'^\d+$', part_step[1]):
+                    raise ValidationError("Invalid step: %s" % part_step[1])
+
+def split_every(n, iterable):
+    i = iter(iterable)
+    piece = list(islice(i, n))
+    while piece:
+        yield piece
+        piece = list(islice(i, n))
 
 class Cluster(models.Model):
     user = models.ForeignKey(User)
@@ -30,12 +75,65 @@ class Cluster(models.Model):
     dbname = models.CharField("Database Name", max_length=255)
     dbusername = models.CharField("Database Username", max_length=255)
     dbpassword = models.CharField("Database Password", max_length=255)
+    backup_count = models.PositiveIntegerField("Number of backups to keep", default=24)
+    backup_schedule = models.CharField("Cron-style backup schedule", max_length=255, validators=[cron_validator], default="3 */2 * * *")
+    iam_arn = models.CharField(max_length=255, blank=True, default="")
+    iam_key = models.CharField(max_length=255, blank=True, default="")
+    iam_secret = models.CharField(max_length=255, blank=True, default="")
 
     def __repr__(self):
         return "Cluster(uuid={uuid}, user={user})".format(uuid=repr(self.uuid), user=repr(self.user))
 
     def __unicode__(self):
         return self.dns_name
+
+    def launch(self):
+        if self.iam_key == "":
+            iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            if self.iam_arn == "":
+                res= iam.create_user(self.uuid)
+                self.iam_arn = res['create_user_response']['create_user_result']['user']['arn']
+                self.save()
+            res = iam.create_access_key(self.uuid)
+            self.iam_key = res['create_access_key_response']['create_access_key_result']['access_key']['access_key_id']
+            self.iam_secret = res['create_access_key_response']['create_access_key_result']['access_key']['secret_access_key']
+            self.save()
+            sleep(3) # S3 takes a while to treat new ARN as valid
+        s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+        bucket = s3.lookup(self.uuid)
+        if bucket is None:
+            bucket = s3.create_bucket(self.uuid)
+        bucket.set_policy("""{
+          "Version": "2008-10-17",
+          "Id": "S3PolicyId1",
+          "Statement": [
+            {
+              "Sid": "IPAllow",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "%(iam)s"
+              },
+              "Action": "s3:*",
+              "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
+        }]}""" % {'iam':self.iam_arn, 'bucket':self.uuid})
+
+    def terminate(self):
+        s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+        bucket = s3.lookup(self.uuid)
+        if bucket is not None:
+            # Must empty bucket before delete
+            for keys in split_every(1000, bucket):
+                bucket.delete_keys(keys)
+            bucket.delete()
+        if self.iam_arn != "":
+            iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            if self.iam_key != "":
+                iam.delete_access_key(self.iam_key,self.uuid)
+                self.iam_key = ""
+                self.save()
+            iam.delete_user(self.uuid)
+            self.iam_arn = ""
+            self.save()
 
     @models.permalink
     def get_absolute_url(self):
@@ -299,9 +397,53 @@ write_files:
     ServerActive=zabbix.geniedb.com
     Hostname={dns_name}
     Include=/etc/zabbix/zabbix_agentd.d/
+    EnableRemoteCommands=1
   path: /etc/zabbix/zabbix_agentd.conf
   permissions: '0644'
   owner: root:root
+- path: /etc/mysqlbackup.logrotate
+  content: |
+    compress
+    /var/backup/mysqlbackup.sql {{
+        dateext
+        dateformat -%Y%m%d.%s
+        rotate {backup_count}
+    }}
+  owner: root:root
+  permissions: '0644'
+- path: /etc/cron.d/backup
+  content: |
+    {backup_schedule} root /usr/local/bin/backup
+  owner: root:root
+  permissions: '0644'
+- path: /root/.s3cfg
+  content: |
+    access_key = {iam_key}
+    secret_key = {iam_secret}
+  owner: root:root
+  permissions: '0600'
+- path: /usr/local/bin/backup
+  content: |
+    #!/bin/sh
+    /usr/bin/mysqldump --all-databases > /var/backup/mysqlbackup.sql
+    /usr/sbin/logrotate -fs /etc/mysqlbackup.state /etc/mysqlbackup.logrotate
+    /usr/bin/s3cmd sync --delete-removed /var/backup/ s3://{cluster}/{nid}/
+    /usr/bin/curl {set_backup_url} -X POST -H "Content-type: application/json" -d "$(
+      c=false
+      cd /var/backup/
+      printf '[\\n'
+      for i in *; do
+        if $c; then
+          printf ',\\n'
+        else
+          c=true
+        fi
+        stat --printf '  {{"filename":"%n", "time":"%y", "size":"%s"}}' "$i"
+      done
+      printf '\\n]\\n'
+    )"
+  owner: root:root
+  permissions: '0755'
 - path: /etc/tinc/cf/rsa_key.priv
   owner: root:root
   permissions: '0600'
@@ -310,8 +452,10 @@ write_files:
 {host_files}
 runcmd:
 - [lokkit, -p, "{port}:tcp"]
+- [ mkdir, -p, /var/backup ]
 """.format(nid=self.nid,
            dns_name=self.dns_name,
+           cluster=self.cluster.pk,
            port=self.cluster.port,
            subscriptions=self.cluster.subscriptions,
            dbname=self.cluster.dbname,
@@ -322,7 +466,13 @@ runcmd:
            connect_to_list=connect_to_list,
            rsa_priv=rsa_priv,
            host_files=host_files,
-           buffer_pool_size=self.buffer_pool_size)
+           buffer_pool_size=self.buffer_pool_size,
+           backup_schedule=self.cluster.backup_schedule.format(nid=self.nid),
+           backup_count=self.cluster.backup_count,
+           iam_key=self.cluster.iam_key,
+           iam_secret=self.cluster.iam_secret,
+           set_backup_url='https://'+Site.objects.get_current().domain+reverse('node-set-backups', args=[self.cluster.pk, self.pk]),
+    )
 
     def do_launch(self):
         """Do the initial, fast part of launching this node."""
@@ -419,6 +569,18 @@ runcmd:
                 r53.delete_health_check(self.health_check)
             self.region.connection.terminate(self)
 
+class Backup(models.Model):
+    node = models.ForeignKey(Node, related_name='backups')
+    filename = models.CharField(max_length=255)
+    time = models.DateTimeField()
+    size = models.PositiveIntegerField("Backup size (MB)")
+
+    def get_url(self):
+        s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+        return s3.generate_url(3600,
+                "GET", self.node.cluster.uuid,
+                '/%s/%s' % (self.node.nid, self.filename))
+
 @receiver(models.signals.pre_delete, sender=Node)
 def node_pre_delete_callback(sender, instance, using, **kwargs):
     if sender != Node:
@@ -430,3 +592,9 @@ def region_pre_delete_callback(sender, instance, using, **kwargs):
     if sender != LBRRegionNodeSet:
         return
     instance.on_terminate()
+
+@receiver(models.signals.pre_delete, sender=Cluster)
+def cluster_pre_delete_callback(sender, instance, using, **kwargs):
+    if sender != Cluster:
+        return
+    instance.terminate()

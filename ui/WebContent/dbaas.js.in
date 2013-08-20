@@ -267,7 +267,8 @@ function onQuickStart(e) {
         dbname: "quickstart",
         dbusername: "appuser",
         dbpassword: generateKey(10),
-        backup_schedule: "* * * * *",
+        backup_schedule: "0 3,15 * * *",
+        backup_count: "14",
         port: 3306
     }, function (cluster, status, xhr) {
         var nodes = [

@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from rest_framework import viewsets, mixins, status, permissions
 from .models import Cluster, Node, Region, Provider, Flavor
-from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer
+from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
 from .tasks import install, install_cluster
 from rest_framework.response import Response
 from rest_framework.decorators import action, link, api_view, permission_classes
@@ -241,16 +241,36 @@ class NodeViewSet(mixins.ListModelMixin,
 				]
 		return Response(data=res, status=status.HTTP_200_OK)
 
-	@action()
-	def launch(self, request, *args, **kwargs):
+	@link()
+	def backups(self, request, *args, **kwargs):
 		self.object = self.get_object()
-		if self.object.status == Node.INITIAL:
-			self.object.do_launch()
-			install.delay(self.object)
-			serializer = self.get_serializer(self.object)
+		serializer = BackupReadSerializer(self.object.backups.all())
+		return Response(serializer.data)
+
+	@action(permission_classes=[permissions.AllowAny])
+	def set_backups(self, request, *args, **kwargs):
+		self.object = self.get_object() # The NODE object
+		if isinstance(request.DATA,list):
+			data = []
+			for d in request.DATA:
+				new_d = d.copy()
+				new_d["node"] = self.object.pk
+				data.append(new_d)
+		else:
+			data = request.DATA.copy()
+			data["node"] = self.object.pk
+		serializer = BackupWriteSerializer(data=data, files=request.FILES, context={
+			'request': self.request,
+			'format': self.format_kwarg,
+			'view': self
+		})
+		if serializer.is_valid():
+			self.object.backups.all().delete()
+			serializer.save(force_insert=True)
 			headers = self.get_success_headers(serializer.data)
-			return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
-		return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+			return Response(serializer.data, status=status.HTTP_201_CREATED,
+							headers=headers)
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 	@action()
 	def pause(self, request, *args, **kwargs):
