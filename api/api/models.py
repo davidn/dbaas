@@ -165,6 +165,9 @@ class Provider(models.Model):
     def get_absolute_url(self):
         return ('provider-detail', [self.pk])
 
+    def __unicode__(self):
+        return self.name
+
 class Region(models.Model):
     provider = models.ForeignKey(Provider, related_name='regions')
     code = models.CharField("Code", max_length=20)
@@ -179,6 +182,9 @@ class Region(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('region-detail', [self.pk])
+
+    def __unicode__(self):
+        return self.name
 
     @property
     def connection(self):
@@ -211,6 +217,9 @@ class Flavor(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('flavor-detail', [self.pk])
+
+    def __unicode__(self):
+        return self.name
 
 class LBRRegionNodeSet(models.Model):
     cluster = models.ForeignKey(Cluster, related_name='lbr_regions')
