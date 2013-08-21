@@ -102,6 +102,9 @@ class User(AbstractBaseUser):
         help_text=_('Designates whether this user should be treated as '
                     'active. Unselect this instead of deleting accounts.'))
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+    is_paid = models.BooleanField(_('paid'), default=False,
+        help_text=_('Designates wheter this user should be allowed to '
+                    'create arbitary nodes and clusters.'))
 
     objects = UserManager()
 

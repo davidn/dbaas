@@ -73,7 +73,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     password = PasswordField()
     class Meta:
         model = get_user_model()
-        fields = ('url','email', 'first_name', 'last_name', 'password')
+        fields = ('url','email', 'first_name', 'last_name', 'password', 'is_paid')
 
     def validate_email(self, attrs, source):
         if self.object is not None and attrs[source] != self.object.email:
