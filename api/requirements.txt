@@ -5,8 +5,8 @@ python-novaclient
 south
 djangorestframework
 django-cors-headers
-django-livesettings>=1.14-13
+hg+https://bitbucket.org/bkroeze/django-livesettings
 django-keyedcache
 pyzabbix
 MySQL-python
-dateutil
+python-dateutil
