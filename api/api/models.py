@@ -12,10 +12,9 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from logging import getLogger
-from .route53 import RecordWithHealthCheck, HealthCheck, record, exception
+from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception
 from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
-from api.route53 import RecordWithTargetHealthCheck
 from .cloud import EC2, Rackspace, Cloud
 import .config
 import MySQLdb
