@@ -59,6 +59,8 @@ function onAddCluster(e) {
             dbusername: $("#master_username").val(),
             dbpassword: $("#master_password").val(),
             label: $("#identifier").val(),
+            backup_schedule: "0 3,15 * * *",
+            backup_count: "14",
             port: $("#port").val()
         },
         function (data, status, xhr) {
