@@ -22,16 +22,11 @@ class Owner(permissions.BasePermission):
     def has_permission(self, request, view):
         return not request.user.is_anonymous()
 
-class IsOwnerOrAdminUserOrCreateMethod(permissions.IsAdminUser):
+class IsOwnerOrAdminUser(permissions.IsAdminUser):
     def has_object_permission(self, request, view, obj):
         if obj == request.user:
             return True
-        return super(IsOwnerOrAdminUserOrCreateMethod, self).has_object_permission(request,view,obj)
-
-    def has_permission(self, request, view):
-        if getattr(view, request.method.lower()) == view.create and settings.ALLOW_REGISTRATIONS:
-            return True
-        return super(IsOwnerOrAdminUserOrCreateMethod, self).has_permission(request, view)
+        return super(IsOwnerOrAdminUser, self).has_object_permission(request,view,obj)
 
 class ProviderViewSet(mixins.ListModelMixin,
             mixins.RetrieveModelMixin,
@@ -56,12 +51,11 @@ class FlavorViewSet(mixins.ListModelMixin,
 
 class UserViewSet(mixins.ListModelMixin,
             mixins.RetrieveModelMixin,
-            mixins.CreateModelMixin,
             mixins.UpdateModelMixin,
             viewsets.GenericViewSet):
     model = get_user_model()
     serializer_class = UserSerializer
-    permission_classes = (IsOwnerOrAdminUserOrCreateMethod,)
+    permission_classes = (IsOwnerOrAdminUser,)
 
     def get_queryset(self):
         if self.request.user and self.request.user.is_staff:

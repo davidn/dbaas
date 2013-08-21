@@ -43,8 +43,6 @@ NODE_DNS_TEMPLATE="{cluster}-{node}.dbaas.example.com"
 import datetime
 TRIAL_LENGTH=datetime.timedelta(weeks=1)
 
-ALLOW_REGISTRATIONS=False
-
 DEFAULT_PORT = 3306
 
 HOSTS_DIR='/tmp/hosts'
@@ -167,8 +165,12 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'corsheaders',
     'livesettings',
+    'registration',
+    'rest_registration',
     'api'
 )
+
+ACCOUNT_ACTIVATION_DAYS=7
 
 AUTH_USER_MODEL='api.User'
 
