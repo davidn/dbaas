@@ -87,34 +87,34 @@ SENDER="newcustomer@geniedb.com"
 RECIPIENTS=["newcustomer@geniedb.com"]
 
 EMAIL_GROUP = ConfigurationGroup(
-	'api_email',
-	"EMail settings"
+    'api_email',
+    "EMail settings"
 )
 
 config_register(StringValue(
-	EMAIL_GROUP,
-	'SENDER',
-	default=SENDER,
-	description="Address to send emails from"
+    EMAIL_GROUP,
+    'SENDER',
+    default=SENDER,
+    description="Address to send emails from"
 ))
 config_register(MultipleStringValue(
-	EMAIL_GROUP,
-	'RECIPIENTS',
-	default=RECIPIENTS,
-	description="Addresses to send emails to"
+    EMAIL_GROUP,
+    'RECIPIENTS',
+    default=RECIPIENTS,
+    description="Addresses to send emails to"
 ))
 config_register(StringValue(
-	EMAIL_GROUP,
-	'SUBJECT',
-	default=SUBJECT,
-	description="Email subject"
+    EMAIL_GROUP,
+    'SUBJECT',
+    default=SUBJECT,
+    description="Email subject"
 ))
 config_register(LongStringValue(
-	EMAIL_GROUP,
-	'PLAINTEXT_PER_NODE',
-	default=PLAINTEXT_PER_NODE,
-	description="Plain text for each node",
-        help_text="""Template parameters:
+    EMAIL_GROUP,
+    'PLAINTEXT_PER_NODE',
+    default=PLAINTEXT_PER_NODE,
+    description="Plain text for each node",
+    help_text="""Template parameters:
 {nid} = Node ID
 {region} = Region
 {node_dns} = DNS Address
@@ -122,11 +122,11 @@ config_register(LongStringValue(
 """
 ))
 config_register(LongStringValue(
-	EMAIL_GROUP,
-	'HTML_PER_NODE',
-	default=HTML_PER_NODE,
-	description="HTML for each node",
-        help_text="""Template parameters:
+    EMAIL_GROUP,
+    'HTML_PER_NODE',
+    default=HTML_PER_NODE,
+    description="HTML for each node",
+    help_text="""Template parameters:
 {nid} = Node ID
 {region} = Region
 {node_dns} = DNS Address
@@ -134,11 +134,11 @@ config_register(LongStringValue(
 """
 ))
 config_register(LongStringValue(
-	EMAIL_GROUP,
-	'PLAINTEXT',
-	default=PLAINTEXT,
-	description="Plain text email body",
-        help_text="""Template parameters:
+    EMAIL_GROUP,
+    'PLAINTEXT',
+    default=PLAINTEXT,
+    description="Plain text email body",
+    help_text="""Template parameters:
 {node_text} = concatenated per-node plaintext
 {node_html} = concatenated per-node HTML
 {username} = DBaaS username
@@ -152,11 +152,11 @@ config_register(LongStringValue(
 """
 ))
 config_register(LongStringValue(
-	EMAIL_GROUP,
-	'HTML',
-	default=HTML,
-	description="HTML email body",
-        help_text="""Template parameters:
+    EMAIL_GROUP,
+    'HTML',
+    default=HTML,
+    description="HTML email body",
+    help_text="""Template parameters:
 {node_text} = concatenated per-node plaintext
 {node_html} = concatenated per-node HTML
 {username} = DBaaS username

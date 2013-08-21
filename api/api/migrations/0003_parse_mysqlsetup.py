@@ -8,7 +8,7 @@ from django.db import models
 class Migration(DataMigration):
 
     def forwards(self, orm):
-	for cluster in orm.Cluster.objects.all():
+        for cluster in orm.Cluster.objects.all():
             cluster.dbusername = cluster.user.username
             try:
                 n = cluster.nodes.all()[0]
