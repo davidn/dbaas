@@ -170,6 +170,8 @@ INSTALLED_APPS = (
     'api'
 )
 
+AUTH_USER_MODEL='api.User'
+
 CORS_ORIGIN_ALLOW_ALL=True
 
 # A sample logging configuration. The only tangible logging

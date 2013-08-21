@@ -73,11 +73,11 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     password = PasswordField()
     class Meta:
         model = get_user_model()
-        fields = ('url','username', 'first_name', 'last_name', 'email', 'password')
+        fields = ('url','email', 'first_name', 'last_name', 'password')
 
-    def validate_username(self, attrs, source):
-        if self.object is not None and attrs[source] != self.object.username:
-            serializers.ValidationError("Username changing disabled")
+    def validate_email(self, attrs, source):
+        if self.object is not None and attrs[source] != self.object.email:
+            serializers.ValidationError("Email changing disabled")
         return attrs
 
 
