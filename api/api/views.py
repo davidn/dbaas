@@ -1,5 +1,5 @@
 from time import sleep
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from rest_framework import viewsets, mixins, status, permissions
@@ -59,14 +59,14 @@ class UserViewSet(mixins.ListModelMixin,
             mixins.CreateModelMixin,
             mixins.UpdateModelMixin,
             viewsets.GenericViewSet):
-    model = User
+    model = get_user_model()
     serializer_class = UserSerializer
     permission_classes = (IsOwnerOrAdminUserOrCreateMethod,)
 
     def get_queryset(self):
         if self.request.user and self.request.user.is_staff:
-            return User.objects.all()
-        return User.objects.filter(pk=self.request.user.pk)
+            return get_user_model().objects.all()
+        return get_user_model().objects.filter(pk=self.request.user.pk)
 
 @api_view(('GET',))
 @permission_classes((permissions.IsAuthenticated,))

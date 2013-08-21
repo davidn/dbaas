@@ -9,7 +9,6 @@ from Crypto.PublicKey import RSA
 from django.db import models
 from django.dispatch.dispatcher import receiver
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from logging import getLogger
 from .route53 import RecordWithHealthCheck, HealthCheck, record, exception
@@ -68,7 +67,7 @@ def split_every(n, iterable):
         piece = list(islice(i, n))
 
 class Cluster(models.Model):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
     uuid = UUIDField(primary_key=True)
     label = models.CharField(max_length=255, blank=True, default="")
     port = models.PositiveIntegerField("MySQL Port", default=settings.DEFAULT_PORT)

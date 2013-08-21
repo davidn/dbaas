@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from .models import Cluster, Node, Flavor, Provider, Region, Backup
 from django.core.urlresolvers import NoReverseMatch
@@ -72,7 +72,7 @@ class RamField(serializers.IntegerField):
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     password = PasswordField()
     class Meta:
-        model = User
+        model = get_user_model()
         fields = ('url','username', 'first_name', 'last_name', 'email', 'password')
 
     def validate_username(self, attrs, source):
