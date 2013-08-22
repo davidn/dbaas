@@ -279,6 +279,7 @@ class Flavor(models.Model):
     name = models.CharField("Name", max_length=255)
     ram = models.PositiveIntegerField("RAM (MiB)")
     cpus = models.PositiveSmallIntegerField("CPUs")
+    free_allowed = models.BooleanField("Free users allowed", default=False)
 
     @models.permalink
     def get_absolute_url(self):

@@ -85,6 +85,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
     def create(self, request, *args, **kwargs):
         if isinstance(request.DATA,list):
             data = []
+            n=len(request.DATA)
             for d in request.DATA:
                 new_d = d.copy()
                 new_d["user"] = reverse('user-detail',args=(request.user.pk,))
@@ -92,6 +93,10 @@ class ClusterViewSet(mixins.CreateModelMixin,
         else:
             data = request.DATA.copy()
             data["user"] = reverse('user-detail',args=(request.user.pk,))
+            n=1
+
+        if request.user.is_free and request.user.clusters.count() + n > 1:
+            return Response({'non_field_errors':['Free users cannot create more than one cluster']},status=status.HTTP_403_FORBIDDEN)
 
         serializer = self.get_serializer(data=data, files=request.FILES)
 
@@ -109,6 +114,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
         self.object = self.get_object()
         if isinstance(request.DATA,list):
             data = []
+            n = len(request.DATA)
             for d in request.DATA:
                 new_d = d.copy()
                 new_d["cluster"] = self.object.get_absolute_url()
@@ -116,11 +122,22 @@ class ClusterViewSet(mixins.CreateModelMixin,
         else:
             data = request.DATA.copy()
             data["cluster"] = self.object.get_absolute_url()
+            n = 1
+
+        if request.user.is_free and self.object.nodes.count() + n > 2:
+            return Response({'non_field_errors':['Free users cannot create more than two nodes']},status=status.HTTP_403_FORBIDDEN)
+
         serializer = NodeSerializer(data=data, files=request.FILES, context={
             'request': self.request,
             'format': self.format_kwarg,
             'view': self
         })
+
+        if request.user.is_free and
+            (isinstance(serializer.object, list) and any(not serializer.object.flavor.free_allowed for n in serializer.object)) or
+            (isinstance(serializer.object, Node) and not serializer.object.flavor.free_allowed):
+            return Response({'non_field_errors':['Free users cannot create this flavor node']},status=status.HTTP_403_FORBIDDEN)
+
         if serializer.is_valid():
             if isinstance(serializer.object, list):
                 for obj in serializer.object:
