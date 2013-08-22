@@ -105,7 +105,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
             data["user"] = reverse('user-detail',args=(request.user.pk,))
             n=1
 
-        if request.user.is_free and request.user.clusters.count() + n > 1:
+        if not request.user.is_paid and request.user.clusters.count() + n > 1:
             return Response({'non_field_errors':['Free users cannot create more than one cluster']},status=status.HTTP_403_FORBIDDEN)
 
         serializer = self.get_serializer(data=data, files=request.FILES)
@@ -134,7 +134,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
             data["cluster"] = self.object.get_absolute_url()
             n = 1
 
-        if request.user.is_free and self.object.nodes.count() + n > 2:
+        if not request.user.is_paid and self.object.nodes.count() + n > 2:
             return Response({'non_field_errors':['Free users cannot create more than two nodes']},status=status.HTTP_403_FORBIDDEN)
 
         serializer = NodeSerializer(data=data, files=request.FILES, context={
@@ -143,7 +143,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
             'view': self
         })
 
-        if request.user.is_free and
+        if not request.user.is_paid and
             (isinstance(serializer.object, list) and any(not serializer.object.flavor.free_allowed for n in serializer.object)) or
             (isinstance(serializer.object, Node) and not serializer.object.flavor.free_allowed):
             return Response({'non_field_errors':['Free users cannot create this flavor node']},status=status.HTTP_403_FORBIDDEN)
