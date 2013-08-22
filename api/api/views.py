@@ -2,6 +2,7 @@ from time import sleep
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.core.mail import mail_admins
 from rest_framework import viewsets, mixins, status, permissions
 from .models import Cluster, Node, Region, Provider, Flavor
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
@@ -69,6 +70,15 @@ def identity(request):
         return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
     serializer = UserSerializer(request.user)
     return Response(serializer.data)
+
+@api_view(('POST',))
+@permission_classes((permissions.IsAuthenticated,))
+def upgrade(request):
+    if not request.user:
+        return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
+    mail_admins("User want's to upgrade", "User %s wants to upgrade" % request.user)
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
 class ClusterViewSet(mixins.CreateModelMixin,
             mixins.ListModelMixin,
