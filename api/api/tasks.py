@@ -9,6 +9,9 @@ from time import sleep
 from .models import Node
 import datetime
 from livesettings import config_value
+from django.dispatch.dispatcher import receiver
+from django.db import models
+from django.contrib.auth import get_user_model
 
 logger = getLogger(__name__)
 
@@ -94,3 +97,26 @@ def install_cluster(cluster):
     lbr_regions = cluster.lbr_regions.filter(launched=False)
     task = launch_cluster.si(cluster) | wait_nodes.si([node for node in install_nodes]) | group([install.si(node) for node in install_nodes]) | group([install_region.si(lbr_region) for lbr_region in lbr_regions]) | launch_email.si(cluster)
     return task.delay()
+
+@task()
+def send_reminder(user, reminder):
+    if user.is_paid:
+        return
+    email = EmailMultiAlternatives(
+        subject=reminder['SUBJECT'],
+        body=reminder['PLAINTEXT'],
+        from_email=reminder['SENDER'],
+        to=[user.email]
+    )
+    email.attach_alternative(
+        reminder['HTML'],
+        "text/html"
+    )
+    email.send()
+
+@receiver(models.signals.post_save, sender=get_user_model())
+def schedule_reminders(sender, instance, created, using, update_fields, **kwargs):
+    if sender != get_user_model():
+        return
+    for reminder in getattr(settings,'REMINDERS',()):
+        send_reminder.apply_async((instance, reminder), eta=reminder['ETA'])
