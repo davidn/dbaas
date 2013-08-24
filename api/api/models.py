@@ -21,6 +21,7 @@ import MySQLdb
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from boto.exception import S3ResponseError
 
 logger = getLogger(__name__)
 
@@ -97,24 +98,33 @@ class Cluster(models.Model):
             self.iam_key = res['create_access_key_response']['create_access_key_result']['access_key']['access_key_id']
             self.iam_secret = res['create_access_key_response']['create_access_key_result']['access_key']['secret_access_key']
             self.save()
-            sleep(3) # S3 takes a while to treat new ARN as valid
         s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         bucket = s3.lookup(self.uuid)
         if bucket is None:
             bucket = s3.create_bucket(self.uuid)
-        bucket.set_policy("""{
-          "Version": "2008-10-17",
-          "Id": "S3PolicyId1",
-          "Statement": [
-            {
-              "Sid": "IPAllow",
-              "Effect": "Allow",
-              "Principal": {
-                "AWS": "%(iam)s"
-              },
-              "Action": "s3:*",
-              "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
-        }]}""" % {'iam':self.iam_arn, 'bucket':self.uuid})
+        # S3 takes a while to treat new ARN as valid
+        for i in xrange(15):
+            try:
+                bucket.set_policy("""{
+                  "Version": "2008-10-17",
+                  "Id": "S3PolicyId1",
+                  "Statement": [
+                    {
+                      "Sid": "IPAllow",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "%(iam)s"
+                      },
+                      "Action": "s3:*",
+                      "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
+                }]}""" % {'iam':self.iam_arn, 'bucket':self.uuid})
+                continue
+            except S3ResponseError, e:
+                if e.message == "Invalid principal in policy":
+                    logger.info("Retrying S3 permission grant")
+                    sleep(2)
+                else:
+                    raise
 
     def terminate(self):
         s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
