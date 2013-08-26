@@ -143,9 +143,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
             'view': self
         })
 
-        if not request.user.is_paid and
-            (isinstance(serializer.object, list) and any(not serializer.object.flavor.free_allowed for n in serializer.object)) or
-            (isinstance(serializer.object, Node) and not serializer.object.flavor.free_allowed):
+        if not request.user.is_paid and (isinstance(serializer.object, list) and any(not serializer.object.flavor.free_allowed for n in serializer.object)) or (isinstance(serializer.object, Node) and not serializer.object.flavor.free_allowed):
             return Response({'non_field_errors':['Free users cannot create this flavor node']},status=status.HTTP_403_FORBIDDEN)
 
         if serializer.is_valid():
