@@ -72,7 +72,7 @@ def split_every(n, iterable):
 
 class UserManager(BaseUserManager):
 
-    def create_user(self, email=None, password=None, **extra_fields):
+    def create_user(self, email, password=None, **extra_fields):
         """
         Creates and saves a User with the given email and password.
         """

@@ -11,9 +11,14 @@ from .serializers import RegistrationSerializer
 class RegistrationView(GenericViewSet):
     permission_classes= (permissions.AllowAny,)
     serializer_class = RegistrationSerializer
+    model = RegistrationProfile
+    lookup_field='activation_key'
     def create(self, request, *args, **kwargs):
         if not self.registration_allowed(request):
             return Response(status=status.HTTP_403_FORBIDDEN)
+        serializer = self.get_serializer(data=request.DATA, files=request.FILES)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
             self.register(request, request.DATA)
             return Response(status=status.HTTP_201_CREATED)
@@ -22,12 +27,20 @@ class RegistrationView(GenericViewSet):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, *args, **kwargs):
-        activated_user = RegistrationProfile.objects.activate_user(kwargs["pk"])
+        self.object = self.get_object()
+        serializer = self.get_serializer(self.object)
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        activated_user = RegistrationProfile.objects.activate_user(kwargs["activation_key"])
         if activated_user:
+            if request.DATA.has_key('password'):
+                activated_user.set_password(request.DATA["password"])
+                activated_user.save()
             signals.user_activated.send(sender=self.__class__,
                                         user=activated_user,
                                         request=request)
-            return Response(status.HTTP_202_ACCEPTED, headers={"Location":activated_user.get_absolute_url()})
+            return Response(status=status.HTTP_202_ACCEPTED, headers={"Location":activated_user.get_absolute_url()})
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     def register(self, request, data):
@@ -54,13 +67,12 @@ class RegistrationView(GenericViewSet):
         class of this backend as the sender.
 
         """
-        email, password = data['email'], data['password']
+        email, password = data['email'], data.get('password', None)
         if Site._meta.installed:
             site = Site.objects.get_current()
         else:
             site = RequestSite(request)
-        new_user = RegistrationProfile.objects.create_inactive_user(email,
-                                                                    password, site)
+        new_user = RegistrationProfile.objects.create_inactive_user(email, password, site)
         signals.user_registered.send(sender=self.__class__,
                                      user=new_user,
                                      request=request)
