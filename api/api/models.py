@@ -2,7 +2,7 @@
 
 from time import sleep
 import re
-from sha import sha
+from hashlib import sha1
 from itertools import islice
 from Crypto import Random
 from Crypto.PublicKey import RSA
@@ -532,9 +532,9 @@ runcmd:
            subscriptions=self.cluster.subscriptions,
            dbname=self.cluster.dbname,
            dbusername=self.cluster.dbusername,
-           dbpassword='*'+sha(sha(self.cluster.dbpassword).digest()).hexdigest().upper(),
+           dbpassword='*'+sha1(sha1(self.cluster.dbpassword).digest()).hexdigest().upper(),
            mysql_user=settings.MYSQL_USER,
-           mysql_password='*'+sha(sha(settings.MYSQL_PASSWORD).digest()).hexdigest().upper(),
+           mysql_password='*'+sha1(sha1(settings.MYSQL_PASSWORD).digest()).hexdigest().upper(),
            connect_to_list=connect_to_list,
            rsa_priv=rsa_priv,
            host_files=host_files,
