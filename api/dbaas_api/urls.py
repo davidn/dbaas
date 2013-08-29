@@ -6,10 +6,15 @@ from api import views
 admin.autodiscover()
 
 class DbaasRouter(routers.SimpleRouter):
+    def __init__(self, trailing_slash=True):
+        routers.SimpleRouter.__init__(self, trailing_slash=trailing_slash)
+        if trailing_slash=='optional':
+            self.trailing_slash='/?'
+
     routes = [
         # List route.
         routers.Route(
-            url=r'^{prefix}/$',
+            url=r'^{prefix}{trailing_slash}$',
             mapping={
                 'get': 'list',
                 'post': 'create'
@@ -19,7 +24,7 @@ class DbaasRouter(routers.SimpleRouter):
         ),
         # Detail route.
         routers.Route(
-            url=r'^{prefix}/{lookup}/$',
+            url=r'^{prefix}/{lookup}{trailing_slash}$',
             mapping={
                 'get': 'retrieve',
                 'put': 'update',
@@ -33,7 +38,7 @@ class DbaasRouter(routers.SimpleRouter):
         # Dynamically generated routes.
         # Generated using @action or @link decorators on methods of the viewset.
         routers.Route(
-            url=r'^{prefix}/{lookup}/{methodname}/$',
+            url=r'^{prefix}/{lookup}/{methodname}{trailing_slash}$',
             mapping={
                 '{httpmethod}': '{methodname}',
             },
@@ -42,7 +47,7 @@ class DbaasRouter(routers.SimpleRouter):
         ),
     ]
 
-router = DbaasRouter()
+router = DbaasRouter(trailing_slash='optional')
 router.register(r'users', views.UserViewSet)
 router.register(r'clusters', views.ClusterViewSet)
 router.register(r'providers', views.ProviderViewSet)
@@ -56,8 +61,8 @@ urlpatterns = patterns('',
     # url(r'^dbaas_api/', include('dbaas_api.foo.urls')),
     url(r'^api/', include(router.urls)),
     url(r'^register', include('rest_registration.urls')),
-    url(r'^api/self/', views.identity),
-    url(r'^api/upgrade/', views.upgrade),
+    url(r'^api/self', views.identity),
+    url(r'^api/upgrade', views.upgrade),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api-token-auth/', 'rest_framework.authtoken.views.obtain_auth_token'),
     url(r'^settings/', include('livesettings.urls')),

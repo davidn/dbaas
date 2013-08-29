@@ -10,4 +10,4 @@ django-keyedcache
 pyzabbix
 MySQL-python
 dateutil
-django-registration
+django-registration>=2.3.6
