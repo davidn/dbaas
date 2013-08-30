@@ -14,9 +14,17 @@ class ClusterAdmin(admin.ModelAdmin):
         return cluster.nodes.count()
     cluster_size.short_description = 'Number of Nodes'
 
+class RegionInline(admin.StackedInline):
+    model=Region
+    extra=0
+
+class FlavorInline(admin.StackedInline):
+    model=Flavor
+    extra=0
+
+class ProviderAdmin(admin.ModelAdmin):
+    inlines = [RegionInline, FlavorInline]
 
 admin.site.register(Cluster, ClusterAdmin)
 admin.site.register(Node)
-admin.site.register(Provider)
-admin.site.register(Region)
-admin.site.register(Flavor)
+admin.site.register(Provider, ProviderAdmin)

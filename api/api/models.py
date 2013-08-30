@@ -11,10 +11,9 @@ from django.dispatch.dispatcher import receiver
 from django.conf import settings
 from django.contrib.sites.models import Site
 from logging import getLogger
-from .route53 import RecordWithHealthCheck, HealthCheck, record, exception
+from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception
 from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
-from api.route53 import RecordWithTargetHealthCheck
 from .cloud import EC2, Rackspace, Cloud
 import config
 import MySQLdb
@@ -25,6 +24,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 from django.core.mail import send_mail
+from boto.exception import S3ResponseError
 
 logger = getLogger(__name__)
 
@@ -169,24 +169,33 @@ class Cluster(models.Model):
             self.iam_key = res['create_access_key_response']['create_access_key_result']['access_key']['access_key_id']
             self.iam_secret = res['create_access_key_response']['create_access_key_result']['access_key']['secret_access_key']
             self.save()
-            sleep(3) # S3 takes a while to treat new ARN as valid
         s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         bucket = s3.lookup(self.uuid)
         if bucket is None:
             bucket = s3.create_bucket(self.uuid)
-        bucket.set_policy("""{
-          "Version": "2008-10-17",
-          "Id": "S3PolicyId1",
-          "Statement": [
-            {
-              "Sid": "IPAllow",
-              "Effect": "Allow",
-              "Principal": {
-                "AWS": "%(iam)s"
-              },
-              "Action": "s3:*",
-              "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
-        }]}""" % {'iam':self.iam_arn, 'bucket':self.uuid})
+        # S3 takes a while to treat new ARN as valid
+        for i in xrange(15):
+            try:
+                bucket.set_policy("""{
+                  "Version": "2008-10-17",
+                  "Id": "S3PolicyId1",
+                  "Statement": [
+                    {
+                      "Sid": "IPAllow",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "%(iam)s"
+                      },
+                      "Action": "s3:*",
+                      "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
+                }]}""" % {'iam':self.iam_arn, 'bucket':self.uuid})
+                continue
+            except S3ResponseError, e:
+                if e.message == "Invalid principal in policy":
+                    logger.info("Retrying S3 permission grant")
+                    sleep(2)
+                else:
+                    raise
 
     def terminate(self):
         s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
@@ -237,6 +246,9 @@ class Provider(models.Model):
     def get_absolute_url(self):
         return ('provider-detail', [self.pk])
 
+    def __unicode__(self):
+        return self.name
+
 class Region(models.Model):
     provider = models.ForeignKey(Provider, related_name='regions')
     code = models.CharField("Code", max_length=20)
@@ -251,6 +263,9 @@ class Region(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('region-detail', [self.pk])
+
+    def __unicode__(self):
+        return self.name
 
     @property
     def connection(self):
@@ -284,6 +299,9 @@ class Flavor(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('flavor-detail', [self.pk])
+
+    def __unicode__(self):
+        return self.name
 
 class LBRRegionNodeSet(models.Model):
     cluster = models.ForeignKey(Cluster, related_name='lbr_regions')
