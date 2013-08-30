@@ -23,7 +23,6 @@ class RegistrationView(GenericViewSet):
             self.register(request, request.DATA)
             return Response(status=status.HTTP_201_CREATED)
         except:
-            raise
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, *args, **kwargs):
@@ -72,7 +71,7 @@ class RegistrationView(GenericViewSet):
             site = Site.objects.get_current()
         else:
             site = RequestSite(request)
-        new_user = RegistrationProfile.objects.create_inactive_user(email, password, site)
+        new_user = RegistrationProfile.objects.create_inactive_user(email, password, site, getattr(settings,'SEND_REGISTRATION_EMAIL',True))
         signals.user_registered.send(sender=self.__class__,
                                      user=new_user,
                                      request=request)
