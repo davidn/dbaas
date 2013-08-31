@@ -4,7 +4,12 @@
    contain the root `toctree` directive.
 
 Welcome to DBaaS API's documentation!
-==============================
+=====================================
+
+This documentation provides low level details for what the various
+pieces of code do. For high level doumentation, see `the wiki`_.
+
+.. _the wiki: https://geniedb.atlassian.net/wiki/x/AoAzAQ
 
 Contents:
 
