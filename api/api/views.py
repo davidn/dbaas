@@ -1,3 +1,19 @@
+#!/usr/bin/python
+
+"""An API providing users access to the facilities provided by :py:mod:`~api.models`.
+
+There are several aspects to the API, each with their own class (a viewset):
+
+* Listing :py:class:`~api.models.Provider`, :py:class:`~api.models.Region` and :py:class:`~api.models.Flavor`
+
+* Listing :py:class:`User`
+
+* Listing, creating, launching and deleteing :py:class:`~api.models.Cluster`.
+
+* Listing, creating, pausing, resuming, viewing stats of, viewing backups of and deleteing :py:class:`~api.models.Node`.
+
+"""
+
 from time import sleep
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -12,6 +28,7 @@ from django.http.response import HttpResponse
 from pyzabbix import ZabbixAPI
 
 class Owner(permissions.BasePermission):
+    """Allows a user access to Clusters and Nodes she owns."""
     def has_object_permission(self, request, view, obj):
         if isinstance(obj, Cluster):
             return obj.user == request.user
@@ -23,6 +40,7 @@ class Owner(permissions.BasePermission):
         return not request.user.is_anonymous()
 
 class IsOwnerOrAdminUserOrCreateMethod(permissions.IsAdminUser):
+    """Allows owners or admins access, and allows anyone create access."""
     def has_object_permission(self, request, view, obj):
         if obj == request.user:
             return True
@@ -36,6 +54,7 @@ class IsOwnerOrAdminUserOrCreateMethod(permissions.IsAdminUser):
 class ProviderViewSet(mixins.ListModelMixin,
             mixins.RetrieveModelMixin,
             viewsets.GenericViewSet):
+    """List and retrieve :py:class:`~api.Provider`."""
     serializer_class = ProviderSerializer
     queryset = Provider.objects.filter(enabled=True)
     permission_classes = (permissions.IsAuthenticated,)
@@ -43,6 +62,7 @@ class ProviderViewSet(mixins.ListModelMixin,
 class RegionViewSet(mixins.ListModelMixin,
             mixins.RetrieveModelMixin,
             viewsets.GenericViewSet):
+    """List and retrieve :py:class:`~api.Region`."""
     serializer_class = RegionSerializer
     queryset = Region.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
@@ -50,6 +70,7 @@ class RegionViewSet(mixins.ListModelMixin,
 class FlavorViewSet(mixins.ListModelMixin,
             mixins.RetrieveModelMixin,
             viewsets.GenericViewSet):
+    """List and retrieve :py:class:`~api.Flavor`."""
     serializer_class = FlavorSerializer
     queryset = Flavor.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
@@ -59,6 +80,7 @@ class UserViewSet(mixins.ListModelMixin,
             mixins.CreateModelMixin,
             mixins.UpdateModelMixin,
             viewsets.GenericViewSet):
+    """List, retrieve update and create :py:class:`~api.Region`."""
     model = User
     serializer_class = UserSerializer
     permission_classes = (IsOwnerOrAdminUserOrCreateMethod,)
@@ -71,6 +93,7 @@ class UserViewSet(mixins.ListModelMixin,
 @api_view(('GET',))
 @permission_classes((permissions.IsAuthenticated,))
 def identity(request):
+    """Tell the logged in user about herself."""
     if not request.user:
         return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
     serializer = UserSerializer(request.user)

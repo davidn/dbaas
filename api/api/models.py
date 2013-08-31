@@ -1,5 +1,17 @@
 #!/usr/bin/python
 
+"""Manage clusters of GenieDB nodes.
+
+This module provides classes to create, manage and destroy clusters of GenieDB
+nodes.  It consists of three related classes, Cluster, Node and
+LBRRegionNodeSet. Each Cluster contains several Nodes; each cluster has
+LBRRegionNodeSet which in turn contain Nodes, such that the LBRRegionNodeSets
+partition the Nodes in a cluster. See `the wiki`_ for more info.
+
+.. _the wiki: https://geniedb.atlassian.net/wiki/x/NgCYAQ
+
+"""
+
 from time import sleep
 import re
 from sha import sha
@@ -32,8 +44,10 @@ cronvalidators = (
     lambda x, allowtext: (re.match(r'^\d+$',x) and 1 <= int(x,10) <= 12) or allowtext and x.lower() in ('*','jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'),
     lambda x, allowtext: (re.match(r'^\d+$',x) and 0 <= int(x,10) <= 07)or allowtext and x.lower() in ('*','mon','tue','wed','thu','fri','sat','sun')
 )
+"""Functions for validating each field of a cron schedule"""
 
 def cron_validator(value):
+    """Raise an error if :param value: is not a valid cron schedule."""
     if "\n" in value or "\r" in value:
         raise ValidationError("No new lines allowed in schedule")
     values = value.split()
@@ -61,6 +75,7 @@ def cron_validator(value):
                     raise ValidationError("Invalid step: %s" % part_step[1])
 
 def split_every(n, iterable):
+    """"Given an iterable, return slices of the iterable in separate lists."""
     i = iter(iterable)
     piece = list(islice(i, n))
     while piece:
@@ -68,6 +83,13 @@ def split_every(n, iterable):
         piece = list(islice(i, n))
 
 class Cluster(models.Model):
+    """Manage a cluster.
+    
+    This cluster is a container for a group of nodes which are kept in sync
+    by GenieDB. It also stores common properties, and is responsible for
+    managing the space in which backups are stored.
+    
+    """
     user = models.ForeignKey(User)
     uuid = UUIDField(primary_key=True)
     label = models.CharField(max_length=255, blank=True, default="")
@@ -88,6 +110,7 @@ class Cluster(models.Model):
         return self.dns_name
 
     def launch(self):
+        """Set up an IAM user and S3 bucket for nodes in this cluster to send backups to."""
         if self.iam_key == "":
             iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             if self.iam_arn == "":
@@ -127,6 +150,7 @@ class Cluster(models.Model):
                     raise
 
     def terminate(self):
+        """Clean up the S3 bucket and IAM user associated with this cluster."""
         s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         bucket = s3.lookup(self.uuid)
         if bucket is not None:
@@ -149,6 +173,7 @@ class Cluster(models.Model):
         return ('cluster-detail', [self.pk])
 
     def next_nid(self):
+        """Return the next available node id."""
         return max([node.nid for node in self.nodes.all()]+[0])+1
 
     @property
@@ -160,13 +185,16 @@ class Cluster(models.Model):
         return ",".join(":".join([str(node.nid), '192.168.33.'+str(node.nid), "5502"]) for node in self.nodes.all())
 
     def get_lbr_region_set(self, region):
+        """Given a Region object, return the LBRRegionNodeSet for that region in this cluster, creating one if needed."""
         obj, _ = self.lbr_regions.get_or_create(cluster=self.pk, lbr_region=region.lbr_region)
         return obj
 
 def gen_private_key():
+    """Generate a 2048 bit RSA key, exported as ASCII, suitable for use with tinc."""
     return RSA.generate(2048, Random.new().read).exportKey()
 
 class Provider(models.Model):
+    """Represent a Cloud Compute provider."""
     name = models.CharField("Name", max_length=255)
     code = models.CharField(max_length=20)
     enabled = models.BooleanField(default=True)
@@ -179,6 +207,7 @@ class Provider(models.Model):
         return self.name
 
 class Region(models.Model):
+    """Represent a region in a Cloud"""
     provider = models.ForeignKey(Provider, related_name='regions')
     code = models.CharField("Code", max_length=20)
     name = models.CharField("Name", max_length=255)
@@ -218,6 +247,7 @@ class Region(models.Model):
             return self.__dict__
 
 class Flavor(models.Model):
+    """Represent a size/type of instance that can be created in a cloud"""
     provider = models.ForeignKey(Provider, related_name='flavors')
     code = models.CharField("Code", max_length=20)
     name = models.CharField("Name", max_length=255)
@@ -232,6 +262,13 @@ class Flavor(models.Model):
         return self.name
 
 class LBRRegionNodeSet(models.Model):
+    """A set of Nodes in a cluster in the same DNS routing region
+
+    See `the wiki`_ for more info.
+
+    .. _the wiki: https://geniedb.atlassian.net/wiki/x/NgCYAQ
+
+    """
     cluster = models.ForeignKey(Cluster, related_name='lbr_regions')
     lbr_region = models.CharField("LBR Region", max_length=20)
     launched = models.BooleanField("Launched")
@@ -278,6 +315,13 @@ class LBRRegionNodeSet(models.Model):
                     logger.warning("%s: terminating dns for lbr region %s, cluster %s skipped as record not found")
 
 class Node(models.Model):
+    """Manage an individual instance in the cloud.
+    
+    Each node has a Cloud instance, and two DNS entries. This class is
+    responsible for setting these up, including passing node-specific
+    data to newly created instances.
+    
+    """
     INITIAL=0
     PROVISIONING=3
     INSTALLING_CF=4
@@ -334,9 +378,11 @@ class Node(models.Model):
         return self.dns_name
 
     def pending(self):
+        """Return True if the instance is still being provisioned by the underlying cloud provider."""
         return self.region.connection.pending(self)
 
     def shutting_down(self):
+        """Return True if the underlying cloud provider is in the process of shutting down the instance."""
         return self.region.connection.shutting_down(self)
 
     def update(self, tags={}):
@@ -360,6 +406,7 @@ class Node(models.Model):
 
     @property
     def cloud_config(self):
+        """Return a string to be passed to cloud-init on a newly provisioned node."""
         connect_to_list = "\n    ".join("ConnectTo = node_"+str(node.nid) for node in self.cluster.nodes.all())
         rsa_priv = self.tinc_private_key.replace("\n", "\n    ")
         host_files = "\n".join("""- content: |
@@ -535,18 +582,21 @@ runcmd:
         # self.save()
 
     def pause(self):
+        """Suspend this node."""
         assert(self.status == Node.RUNNING)
         self.region.connection.pause(self)
         self.status = Node.PAUSED
         self.save()
 
     def resume(self):
+        """Resume this node."""
         assert(self.status == Node.PAUSED)
         self.region.connection.resume(self)
         self.status = Node.RUNNING
         self.save()
 
     def add_database(self, dbname):
+        """Create a new MySQL database on this node and grant the user permission to it."""
         if len(dbname)>64:
             raise RuntimeError("Database name too long: %s" % dbname)
         if not re.match(r'^\w*[A-Za-z]\w*$', dbname):
@@ -574,6 +624,7 @@ runcmd:
             con.close()
 
     def on_terminate(self):
+        """Shutdown the node and remove DNS entries."""
         if self.status in (self.PROVISIONING, self.INSTALLING_CF, self.RUNNING, self.PAUSED, self.ERROR):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
             if self.region.provider.code != 'test':
@@ -588,6 +639,7 @@ runcmd:
             self.region.connection.terminate(self)
 
 class Backup(models.Model):
+    """A record of a backup."""
     node = models.ForeignKey(Node, related_name='backups')
     filename = models.CharField(max_length=255)
     time = models.DateTimeField()
@@ -601,18 +653,21 @@ class Backup(models.Model):
 
 @receiver(models.signals.pre_delete, sender=Node)
 def node_pre_delete_callback(sender, instance, using, **kwargs):
+    """Terminate Nodes when the instances is deleted"""
     if sender != Node:
         return
     instance.on_terminate()
 
 @receiver(models.signals.pre_delete, sender=LBRRegionNodeSet)
 def region_pre_delete_callback(sender, instance, using, **kwargs):
+    """Terminate LBRRegionNodeSets when the instances is deleted"""
     if sender != LBRRegionNodeSet:
         return
     instance.on_terminate()
 
 @receiver(models.signals.pre_delete, sender=Cluster)
 def cluster_pre_delete_callback(sender, instance, using, **kwargs):
+    """Terminate Clusters when the instances is deleted"""
     if sender != Cluster:
         return
     instance.terminate()

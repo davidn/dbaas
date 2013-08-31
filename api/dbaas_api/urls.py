@@ -5,7 +5,14 @@ from api import views
 
 admin.autodiscover()
 
+# This class is a customization of the rest_framework router. The only
+# difference is the addition of the 'post': 'add' mapping.
 class DbaasRouter(routers.SimpleRouter):
+    """Router with added 'add' method to handle POST to an object.
+
+    This is needed for our non-standard hierarchical use of the rest_framework.
+
+    """
     routes = [
         # List route.
         routers.Route(
@@ -51,9 +58,6 @@ router.register(r'flavor', views.FlavorViewSet)
 router.register(r'clusters/(?P<cluster>[^/]+)', views.NodeViewSet)
 
 urlpatterns = patterns('',
-    # Examples:
-    # url(r'^$', 'dbaas_api.views.home', name='home'),
-    # url(r'^dbaas_api/', include('dbaas_api.foo.urls')),
     url(r'^api/', include(router.urls)),
     url(r'^api/self/', views.identity),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
