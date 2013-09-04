@@ -1,0 +1,24 @@
+<div class="container">
+
+	<div class="modal-dialog login">
+		<div class="modal-content login">
+			<form id="activateForm" class="form-login">
+				<div class="modal-header">Welcome to Genie DBaaS</div>
+				<div class="modal-body">
+				<p>
+				Thanks for registering.  Set your password and we will spin up your first database instance.
+				</p>
+					<p>
+						<input type="password" class="input-login" ng:model="password" placeholder="Password" required ng-class="{'form-invalid': showValidationMessages && !activateForm.passwd.$valid}">
+					</p>
+					<p>
+						<input type="password" class="input-login" ng:model="verifyPassword" placeholder="Verify Password" required ng-class="{'form-invalid': showValidationMessages && !activateForm.passwd.$valid}">
+					</p>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-success " ng:click="save()">SAVE</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>

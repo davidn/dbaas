@@ -1,0 +1,26 @@
+{
+  "name": "geniedb-dbaas",
+  "version": "1.0.0",
+  "dependencies": {
+    "angular": "latest",
+    "angular-animate": "latest",
+    "angular-cookies": "latest",
+    "angular-loader": "latest",
+    "angular-mocks": "latest",
+    "angular-resource": "latest",
+    "angular-route": "latest",
+    "angular-sanitize": "latest",
+    "angular-ui": "latest",
+    "angular-ui-bootstrap": "latest",
+    "angular-ui-select2": "latest",
+    "angulartics": "latest",
+    "bootstrap": "latest",
+    "font-awesome": "latest",
+    "ngstorage": "latest",
+    "jquery": "latest",
+    "select2": "latest"
+  },
+  "resolutions": {
+    "angular": "1.2.0-rc.1"
+  }
+}

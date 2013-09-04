@@ -1,0 +1,39 @@
+<div class="modal-dialog">
+	<div class="modal-content">
+		<div class="modal-header">
+			<h3>Creating Quick Start Cluster</h3>
+		</div>
+		<div class="modal-body" style="max-height:80%">
+			<p>
+				Getting started with a test cluster is as easy as choosing two data centers. No cost to you for trying a two node cluster running on your choice of Rackspace or Amazon EC2 for 7 days. </p>
+			<div class="form-group">
+				<label> Node 1 Region</label>
+			<select ui-select2 ng-model="quickStartNode1" data-placeholder="Pick a region" style="width: 80%">
+				<optgroup ng-repeat="provider in providers" label="{{provider.name}}">
+					<option ng-repeat="region in provider.regions" value="{{region.code}}">{{region.name}}</option>
+				</optgroup>
+			</select>
+			</div>
+			<div class="form-group">
+				<label> Node 2 Region</label>
+			<select ui-select2 ng-model="quickStartNode2" data-placeholder="Pick a number" style="width: 80%">
+				<optgroup ng-repeat="provider in providers" label="{{provider.name}}">
+					<option ng-repeat="region in provider.regions" value="{{region.code}}">{{region.name}}</option>
+				</optgroup>
+			</select>
+			</div>
+			<div ng-controller="AlertCtrl">
+				<div ng-repeat="alert in alerts" >
+					<div class="alert alert-{{alert.type}}">
+					<button type="button" ng:click="closeAlert($index)" class="close">x</button>
+					{{alert.msg}}
+				</div>
+				</div>
+			</div>
+
+		</div>
+		<div class="modal-footer">
+			<button type="submit" class="btn btn-success" btn-loading="isLoading" data-loading-text="Launching..." ng:click="launch()" >LAUNCH</button>
+		</div>
+	</div>
+</div>

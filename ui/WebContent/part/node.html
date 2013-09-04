@@ -1,0 +1,30 @@
+<div class="modal-dialog">
+	<div class="modal-content">
+		<div class="modal-header">
+			<h3>Add Node</h3>
+		</div>
+		<div class="modal-body" style="max-height:80%">
+			<div class="form-group">
+				<label> Node 1 Region</label>
+				<select ui-select2 ng-model="quickStartNode1" data-placeholder="Pick a region" style="width: 80%">
+					<optgroup ng-repeat="provider in providers" label="{{provider.name}}">
+						<option ng-repeat="region in provider.regions" value="{{region.code}}">{{region.name}}</option>
+					</optgroup>
+				</select>
+			</div>
+			<div ng-controller="AlertCtrl">
+				<div ng-repeat="alert in alerts">
+					<div class="alert alert-{{alert.type}}">
+						<button type="button" ng:click="closeAlert($index)" class="close">x</button>
+						{{alert.msg}}
+					</div>
+				</div>
+			</div>
+
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-success" btn-loading="isLoading" data-loading-text="Adding..." ng-click="save()">SAVE</button>
+			<button class="btn btn-primary pull-right" ng-click="cancel()">CANCEL</button>
+		</div>
+	</div>
+</div>

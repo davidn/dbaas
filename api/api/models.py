@@ -155,13 +155,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Cluster(models.Model):
     """Manage a cluster.
-    
+
     This cluster is a container for a group of nodes which are kept in sync
     by GenieDB. It also stores common properties, and is responsible for
     managing the space in which backups are stored.
-    
+
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='clusters')
+
     uuid = UUIDField(primary_key=True)
     label = models.CharField(max_length=255, blank=True, default="")
     port = models.PositiveIntegerField("MySQL Port", default=settings.DEFAULT_PORT)
@@ -388,11 +389,11 @@ class LBRRegionNodeSet(models.Model):
 
 class Node(models.Model):
     """Manage an individual instance in the cloud.
-    
+
     Each node has a Cloud instance, and two DNS entries. This class is
     responsible for setting these up, including passing node-specific
     data to newly created instances.
-    
+
     """
     INITIAL=0
     PROVISIONING=3

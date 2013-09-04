@@ -1,5 +1,5 @@
 html{
-    background: url(MapBkg.png) no-repeat center center fixed;
+    background: url(img/MapBkg.png) no-repeat center center fixed;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
@@ -17,7 +17,9 @@ html{
 body{
     background: transparent;
     font-family: 'Lato', sans-serif;
+  padding-top: 100px;
 }
+
 
 #main{
     padding-top: 30px;
@@ -35,7 +37,6 @@ body{
 
 #gdbHeader{
     padding-top: 25px;
-    padding-right: 10%;
 }
 
 .modal-header{
@@ -55,7 +56,10 @@ body{
     border-radius: 0px 0px 2px 2px;
     border: 0;
     text-align: left;
+    vertical-align: middle;
+    line-height: 2em;
 }
+
 
 .btn{
     border-radius: 2px;
@@ -76,14 +80,15 @@ body{
 
 .login{
     margin-top: 50px;
-    width: 340px;
+    width: 350px;
 }
 
 .summary{
     margin-top: 75px;
 }
 
-.marginleft60{
+
+.add-cluster-btn{
     margin-left: 60px;
 }
 
@@ -92,30 +97,13 @@ body{
     padding: 15px 0px;
 }
 
-.node-popup>li>a:hover, .node-popup>li>a:focus{
-    background-color: #313131;
-    background-image: -webkit-gradient(linear, left 0, left 100%, from(#313131), to(#313131));
-    background-image: -webkit-linear-gradient(top, #313131, 0%, #313131, 100%);
-    background-image: -moz-linear-gradient(top, #313131 0, #313131 100%);
-    background-image: linear-gradient(to bottom, #313131 0, #313131 100%);
-    background-repeat: repeat-x;
-}
-
-.node-popup>li>a{
-    color: #ebebeb;
-    padding: 0px 30px;
-}
-
-.node-popup>li>a>i{
-    color: #a4a4a4;
-}
-
 .div-logout{
     position: absolute;
     top: 50px;
     left: 400px;
     overflow: visible;
     color: #6f6f6f;
+    z-index:1050;
 }
 
 .input-login{
@@ -155,13 +143,16 @@ body{
     border-bottom: 0;
 }
 
-/* TODO: Use proper class selector over id tag */
-#row0{
+#nodeTable > tbody > tr .row0{
     border-top: 0;
 }
 
 .node-header{
     color: #afafaf;
+}
+
+#nodeTable > .node-header > tr > th{
+    border-bottom: 0;
 }
 
 .node-region{
@@ -206,3 +197,10 @@ a.dropdown-toggle:hover{
 #jqstooltip{
     box-sizing: content-box;
 }
+
+
+.form-invalid{
+  border-color: #f00;
+  border-width: 1px;
+}
+

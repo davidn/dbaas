@@ -1,0 +1,208 @@
+html{
+    background: url(MapBkg.png) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    font-family: 'Lato', sans-serif;
+}
+
+.alert-danger{
+    margin-top: 10px;
+    color: #fff;
+    background-color: #ce7a7b;
+    border-color: #ce7a7b;
+}
+
+body{
+    background: transparent;
+    font-family: 'Lato', sans-serif;
+}
+
+#main{
+    padding-top: 30px;
+    padding-bottom: 100px;
+}
+
+#main > h3{
+    color: #fff;
+}
+
+#dbaasHeader{
+    padding-top: 50px;
+    padding-left: 10%;
+}
+
+#gdbHeader{
+    padding-top: 25px;
+    padding-right: 10%;
+}
+
+.modal-header{
+    background-color: #39559f;
+    font-size: 16pt;
+    color: #99b1f3;
+    padding-left: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-radius: 2px 2px 0px 0px;
+}
+
+.modal-footer{
+    background-color: #c1c1c1;
+    padding: 15px;
+    margin: 0px;
+    border-radius: 0px 0px 2px 2px;
+    border: 0;
+    text-align: left;
+}
+
+.btn{
+    border-radius: 2px;
+}
+
+.btn-success{
+    background-color: #26bd38;
+}
+
+.btn-primary{
+    background-color: #5473c4;
+    border: 0;
+}
+
+.min-controls{
+    margin-left: 20px;
+}
+
+.login{
+    margin-top: 50px;
+    width: 340px;
+}
+
+.summary{
+    margin-top: 75px;
+}
+
+.marginleft60{
+    margin-left: 60px;
+}
+
+.node-popup{
+    background-color: #707070;
+    padding: 15px 0px;
+}
+
+.node-popup>li>a:hover, .node-popup>li>a:focus{
+    background-color: #313131;
+    background-image: -webkit-gradient(linear, left 0, left 100%, from(#313131), to(#313131));
+    background-image: -webkit-linear-gradient(top, #313131, 0%, #313131, 100%);
+    background-image: -moz-linear-gradient(top, #313131 0, #313131 100%);
+    background-image: linear-gradient(to bottom, #313131 0, #313131 100%);
+    background-repeat: repeat-x;
+}
+
+.node-popup>li>a{
+    color: #ebebeb;
+    padding: 0px 30px;
+}
+
+.node-popup>li>a>i{
+    color: #a4a4a4;
+}
+
+.div-logout{
+    position: absolute;
+    top: 50px;
+    left: 400px;
+    overflow: visible;
+    color: #6f6f6f;
+}
+
+.input-login{
+    width: 100%;
+    height: 40px;
+    margin-bottom: 5px;
+    background-color: #ebebeb;
+    border-radius: 2px;
+    border-width: 0;
+    padding-left: 15px;
+}
+
+.form-login{
+    margin: 0px;
+}
+
+.modal-content{
+    border: 0px;
+    background: #dadada;
+}
+
+.cluster-box{
+    background: #ebebeb;
+}
+
+.cluster-group{
+    background: #dadada;
+    border-radius: 0px 0px 4px 4px;
+}
+
+.cluster-title{
+    color: #8b8b8b;
+    font-size: 24px;
+}
+
+.cluster-heading{
+    border-bottom: 0;
+}
+
+/* TODO: Use proper class selector over id tag */
+#row0{
+    border-top: 0;
+}
+
+.node-header{
+    color: #afafaf;
+}
+
+.node-region{
+    display: block;
+}
+
+.node-dns{
+    font-size: small;
+    display: block;
+}
+
+.node-status-marker{
+    text-align: center;
+    width: 24px;
+}
+
+.node-status{
+    color: #afafaf;
+    font-style: italic;
+}
+
+.node-status-running{
+    color: green;
+}
+
+.node-status-error{
+    color: red;
+}
+
+.table-nodes{
+    margin-bottom: 0;
+}
+
+a.dropdown-toggle{
+    color: #333;
+}
+
+a.dropdown-toggle:hover{
+    text-decoration: none;
+}
+
+#jqstooltip{
+    box-sizing: content-box;
+}

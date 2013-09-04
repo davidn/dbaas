@@ -1,37 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html ng-app="GenieDBaaS">
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title>GenieDB DBaaS</title>
-	<link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js" type="text/javascript"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js" type="text/javascript"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js" type="text/javascript"></script>
-	<link href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.3/css/base/minified/jquery-ui.min.css" rel="stylesheet" type="text/css"/>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.0-rc1/js/bootstrap.min.js" type="text/javascript"></script>
-	<link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.0-rc1/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
-	<script src="jquery.markup.js" type="text/javascript"></script>
-	<script src="jquery.sparkline.min.js" type="text/javascript"></script>
-	<link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
-	<script src="twitter-bootstrap-hover-dropdown.min.js"></script>
 
-	<script src="dbaas.js" type="text/javascript"></script>
+	<script src="bower_components/jquery/jquery.js"></script>
+	<script src="bower_components/angular/angular.js"></script>
+	<script src="bower_components/angular-route/angular-route.js"></script>
+	<script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+	<script src="bower_components/angular-resource-unstable/angular-resource.js"></script>
+	<script src="bower_components/angulartics/src/angulartics.js"></script>
+	<script src="bower_components/angulartics/src/angulartics-google-analytics.js"></script>
+	<script src="bower_components/ngstorage/ngstorage.js"></script>
+	<script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+	<script type="text/javascript" src="bower_components/select2/select2.js"></script>
+	<script src="bower_components/angular-ui-select2/src/select2.js"></script>
+
+	<script type="text/javascript" src="bower_components/restangular/dist/restangular.js"></script>
+
+
+	<link href="bower_components/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
+	<link href="bower_components/font-awesome/css/font-awesome.css" rel="stylesheet">
+	<link rel="stylesheet" href="bower_components/select2/select2.css">
+
+
+	<script src="dbaas.js"></script>
 	<link href="dbaas.css" rel="stylesheet" type="text/css"/>
-	<link href="dbaas.html" rel="markup" type="text/x-markup-handlebars"/>
-
-	<link href="select2.css" rel="stylesheet"/>
-	<script src="select2.min.js"></script>
-
+	<link rel="shortcut icon" href="img/favicon.png">
 </head>
 <body>
-<div id="gdbHeader" class="pull-right">
-	<img src="GenieDB_Logo.png"/>
+<div ng-controller="MainCntl" class="container">
+	<div class="navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+				<div id="dbaasHeader">
+					<a href="#"> <img src="img/DBaaSConsole_Logo.png"/> </a>
+				</div>
+			</div>
+			<div id="gdbHeader" class="pull-right">
+				<a href="http://www.geniedb.com/"><img src="img/GenieDB_Logo.png"/></a>
+			</div>
+		</div>
+	</div>
+
+	<div ng-view></div>
 </div>
-<div id="dbaasHeader" class="pull-left">
-	<img src="DBaaSConsole_Logo.png"/>
-</div>
-<div class="container" id="main">
-	<noscript>This page requires javascript.</noscript>
-</div>
+
+<br/> <br/> <br/> <br/> <br/> <br/> <a href="#">Home</a> | <a href="#try">Register</a> | <a href="#thankyou">Thanks</a> |
+<a href="#activate/someHash">Activate</a> | <a href="#quickstart">Quickstart</a> | <a href="#list">List</a> |
+<a href="#monitor">Monitor</a> | <a href="#BoGuS">Bogus</a> |
+<script type="text/javascript">
+
+	var _gaq = _gaq || [];
+	_gaq.push(['_setAccount', 'UA-22758127-2']);
+	_gaq.push(['_trackPageview']);
+
+	(function () {
+		var ga = document.createElement('script');
+		ga.type = 'text/javascript';
+		ga.async = true;
+		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		var s = document.getElementsByTagName('script')[0];
+		s.parentNode.insertBefore(ga, s);
+	})();
+
+</script>
 </body>
 </html>
