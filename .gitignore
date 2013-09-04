@@ -90,6 +90,5 @@ db/schema.rb
 config/*.conf
 
 
-ui/WebContent/dbaas.js
+ui/WebContent/bower_components
 
-*.iml
