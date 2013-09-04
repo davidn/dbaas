@@ -699,5 +699,49 @@
       "ram": 1,
       "cpus": 1
     }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 28,
+    "fields": {
+      "provider": 4,
+      "code": "hp",
+      "name": "Unspecified HP Cloud",
+      "ram": 1,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 29,
+    "fields": {
+      "provider": 5,
+      "code": "layeredtech",
+      "name": "Unspecified LayeredTech",
+      "ram": 1,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 30,
+    "fields": {
+      "provider": 6,
+      "code": "datapipe",
+      "name": "Unspecified DataPipe",
+      "ram": 1,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 31,
+    "fields": {
+      "provider": 7,
+      "code": "gce",
+      "name": "Unspecified Google Compute Engine",
+      "ram": 1,
+      "cpus": 1
+    }
   }
 ]
