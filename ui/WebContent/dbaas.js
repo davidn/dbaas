@@ -11,7 +11,7 @@ var User;
 // TODO: Service to log errors server side
 // TODO: Move btnLoading to library
 
-var dbaasApp = angular.module('GenieDBaaS', ['ngRoute', 'ngSanitize', 'ngResource', 'ngStorage', 'ui.select2', 'angulartics', 'angulartics.google.analytics']).config(function ($routeProvider) {
+var dbaasApp = angular.module('GenieDBaaS', ['passwordChecker','ngRoute', 'ngSanitize', 'ngResource', 'ngStorage', 'ui.select2', 'angulartics', 'angulartics.google.analytics']).config(function ($routeProvider) {
     $routeProvider.
         when("/", {templateUrl: 'part/welcome.html', controller: WelcomeCntl}).
         when("/list", {templateUrl: 'part/list.html', controller: ListCntl}).
@@ -51,7 +51,23 @@ var dbaasApp = angular.module('GenieDBaaS', ['ngRoute', 'ngSanitize', 'ngResourc
         };
     });
 
-// TODO: Move to data JS
+angular.module('passwordChecker', [])
+	.directive('pwCheck', [function () {
+	return {
+		require: 'ngModel',
+		link: function (scope, elem, attrs, ctrl) {
+			var firstPassword = '#' + attrs.pwCheck;
+			elem.add(firstPassword).on('keyup', function () {
+				scope.$apply(function () {
+					var v = elem.val()===$(firstPassword).val();
+					ctrl.$setValidity('pwmatch', v);
+				});
+			});
+		}
+	}
+}]);
+
+// TODO: Move to service JS
 dbaasApp.provider('apiModel', function () {
     var Provider;
     var Cluster;
@@ -168,7 +184,7 @@ dbaasApp.provider('apiModel', function () {
 
 
 function MainCntl($scope, $resource, $localStorage, $http) {
-    $http.defaults.headers.common['Authorization'] = 'Token ' + $localStorage.user.token;
+//    $http.defaults.headers.common['Authorization'] = 'Token ' + $localStorage.user.token;
 
     $scope.alerts = [];
     Registration = $resource(registrationEndpoint + 'register/:activation_code', {activation_code: '@activation_code'});
@@ -180,6 +196,7 @@ function MainCntl($scope, $resource, $localStorage, $http) {
 }
 
 function WelcomeCntl($scope, $location, $http) {
+    // Clear token if it exists
     $scope.alerts = [];
     $scope.form = angular.copy($scope.$storage.user);
     $scope.showValidationMessages = false;
@@ -272,10 +289,15 @@ function RegisterCntl($scope, $routeParams, $location) {
 }
 
 function ListCntl($scope, $location, apiModel, $http, $localStorage) {
+    if (!$localStorage.user.token){
+        $location.path("/");
+    }
+
     $scope.form = angular.copy($scope.user);
     $scope.alerts = [];
     $scope.providers = apiModel.getProviders();
     $scope.clusters = apiModel.getClusters(true);
+    // TODO: If login token is invalid, redirect home
 
     $scope.logout = function () {
 //        $localStorage.user.token = "";

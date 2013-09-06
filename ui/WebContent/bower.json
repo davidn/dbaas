@@ -7,7 +7,7 @@
     "angular-cookies": "latest",
     "angular-loader": "latest",
     "angular-mocks": "latest",
-    "angular-resource": "latest",
+    "angular-resource-unstable": "latest",
     "angular-route": "latest",
     "angular-sanitize": "latest",
     "angular-ui": "latest",
@@ -21,6 +21,6 @@
     "select2": "latest"
   },
   "resolutions": {
-    "angular": "1.2.0-rc.1"
+    "angular": "1.2.0-rc.2"
   }
 }

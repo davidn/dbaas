@@ -9,14 +9,15 @@
 				Thanks for registering.  Set your password and we will spin up your first database instance.
 				</p>
 					<p>
-						<input type="password" class="input-login" ng:model="password" placeholder="Password" required ng-class="{'form-invalid': showValidationMessages && !activateForm.passwd.$valid}">
+						<input type="password" id="pw1" class="input-login" ng-model="password" placeholder="Password" required ng-class="{'form-invalid': showValidationMessages && !activateForm.passwd.$valid}">
 					</p>
 					<p>
-						<input type="password" class="input-login" ng:model="verifyPassword" placeholder="Verify Password" required ng-class="{'form-invalid': showValidationMessages && !activateForm.passwd.$valid}">
+						<input type="password" class="input-login" ng-model="verifyPassword" placeholder="Verify Password" pw-check="pw1" required ng-class="{'form-invalid': showValidationMessages && !activateForm.passwd.$valid}">
+						<span ng-show="activateForm.verifyPassword.$error.pwmatch">Passwords don't match.</span>
 					</p>
 				</div>
 				<div class="modal-footer">
-					<button class="btn btn-success " ng:click="save()">SAVE</button>
+					<button class="btn btn-success " ng-click="save()">SAVE</button>
 				</div>
 			</form>
 		</div>
