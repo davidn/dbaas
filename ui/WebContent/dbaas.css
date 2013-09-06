@@ -17,9 +17,8 @@ html{
 body{
     background: transparent;
     font-family: 'Lato', sans-serif;
-  padding-top: 100px;
+    padding-top: 100px;
 }
-
 
 #main{
     padding-top: 30px;
@@ -60,7 +59,6 @@ body{
     line-height: 2em;
 }
 
-
 .btn{
     border-radius: 2px;
 }
@@ -87,7 +85,6 @@ body{
     margin-top: 75px;
 }
 
-
 .add-cluster-btn{
     margin-left: 60px;
 }
@@ -103,7 +100,7 @@ body{
     left: 400px;
     overflow: visible;
     color: #6f6f6f;
-    z-index:1050;
+    z-index: 1050;
 }
 
 .input-login{
@@ -132,6 +129,11 @@ body{
 .cluster-group{
     background: #dadada;
     border-radius: 0px 0px 4px 4px;
+}
+
+.cluster-panel{
+    margin-top: 15px;
+    padding: 15px;
 }
 
 .cluster-title{
@@ -198,9 +200,14 @@ a.dropdown-toggle:hover{
     box-sizing: content-box;
 }
 
-
 .form-invalid{
-  border-color: #f00;
-  border-width: 1px;
+    border: 1px #f00;
 }
 
+.node-popup > li > a{
+    color: #ebebeb;
+    padding: 0px 30px;
+}
+.clusters-empty{
+    padding: 15px;
+}
