@@ -37,6 +37,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext as _
 from django.core.mail import send_mail
 from boto.exception import S3ResponseError
+import audit
 
 logger = getLogger(__name__)
 
@@ -175,6 +176,8 @@ class Cluster(models.Model):
     iam_key = models.CharField(max_length=255, blank=True, default="")
     iam_secret = models.CharField(max_length=255, blank=True, default="")
 
+    historyTrail = audit.AuditTrail(show_in_admin=True)
+
     def __repr__(self):
         return "Cluster(uuid={uuid}, user={user})".format(uuid=repr(self.uuid), user=repr(self.user))
 
@@ -215,7 +218,7 @@ class Cluster(models.Model):
                 }]}""" % {'iam':self.iam_arn, 'bucket':self.uuid})
                 continue
             except S3ResponseError, e:
-                if e.message == "Invalid principal in policy":
+                if i < 15 and e.message in ["Invalid principal in policy", "404 Not Found"]:
                     logger.info("Retrying S3 permission grant")
                     sleep(2)
                 else:
@@ -346,6 +349,8 @@ class LBRRegionNodeSet(models.Model):
     lbr_region = models.CharField("LBR Region", max_length=20)
     launched = models.BooleanField("Launched")
 
+    historyTrail = audit.AuditTrail(show_in_admin=True)
+
     def __unicode__(self):
         return self.dns_name
 
@@ -427,6 +432,8 @@ class Node(models.Model):
     iops = models.IntegerField("Provisioned IOPS", default=None, blank=True, null=True)
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
     tinc_private_key = models.TextField("Tinc Private Key", default=gen_private_key)
+
+    historyTrail = audit.AuditTrail(show_in_admin=True)
 
     def __repr__(self):
         optional = ""
@@ -614,6 +621,7 @@ runcmd:
 
     def do_launch(self):
         """Do the initial, fast part of launching this node."""
+        assert(self.status != Node.OVER)
         self.nid = self.cluster.next_nid()
         logger.debug("%s: Assigned NID %s", self, self.nid)
         logger.info("%s: provisioning node", self)
@@ -628,11 +636,12 @@ runcmd:
 
     def do_install(self):
         """Do slower parts of launching this node."""
+        assert(self.status != Node.OVER)
         while self.pending():
             sleep(15)
         self.update({
             'Name':'dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),
-            'username':self.cluster.user.username,
+            'username':self.cluster.user.email,
             'cluster':str(self.cluster.pk),
             'node':str(self.pk),
             'url':'https://'+Site.objects.get_current().domain+self.get_absolute_url(),

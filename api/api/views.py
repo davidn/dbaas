@@ -233,7 +233,8 @@ class NodeViewSet(mixins.ListModelMixin,
     def zabbix_history(self, node, key, count=120):
         if node.region.provider.code == 'test':
             from itertools import islice
-            return Response(data=list(islice(random_walk(), 120)), headers={"X-Data-Source", "test"}, status=status.HTTP_200_OK)
+            #return Response(data=list(islice(random_walk(),120)), headers={"X-Data-Source", "test"}, status=status.HTTP_200_OK)
+            return Response(data=list(islice(random_walk(), 120)), status=status.HTTP_200_OK)
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
         z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
         items = z.item.get(host=node.dns_name,filter={"key_":key})
