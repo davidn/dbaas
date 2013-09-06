@@ -10,6 +10,7 @@ var User;
 
 // TODO: Service to log errors server side
 // TODO: Move btnLoading to library
+// TODO: Intercept HTTP 401 to login - add error message about session expired
 
 var dbaasApp = angular.module('GenieDBaaS', ['passwordChecker','ngRoute', 'ngSanitize', 'ngResource', 'ngStorage', 'ui.select2', 'angulartics', 'angulartics.google.analytics']).config(function ($routeProvider) {
     $routeProvider.
@@ -138,26 +139,14 @@ dbaasApp.provider('apiModel', function () {
 
 
     this.$get = function ($resource, $http, $localStorage) {
-        Provider = $resource(apiEndpoint + 'providers', {}, {
-            query: {
-                method: "GET",
-                isArray: true,
-                headers: {'Authorization': 'Token ' + $localStorage.user.token}
-            }
-        });
+        Provider = $resource(apiEndpoint + 'providers');
         Cluster = $resource(apiEndpoint + 'clusters/:id/:command', {id: '@id', command: '@command'}, {
-                save: {
-                    method: "POST",
-                    headers: {'Authorization': 'Token ' + $localStorage.user.token}
-                },
                 addNodes: {
-                    method: "POST",
-                    headers: {'Authorization': 'Token ' + $localStorage.user.token}
+                    method: "POST"
                 },
                 launch: {
                     method: "POST",
-                    params: { command: 'launch_all'},
-                    headers: {'Authorization': 'Token ' + $localStorage.user.token}
+                    params: { command: 'launch_all'}
                 }
             }
         );
@@ -184,8 +173,6 @@ dbaasApp.provider('apiModel', function () {
 
 
 function MainCntl($scope, $resource, $localStorage, $http) {
-//    $http.defaults.headers.common['Authorization'] = 'Token ' + $localStorage.user.token;
-
     $scope.alerts = [];
     Registration = $resource(registrationEndpoint + 'register/:activation_code', {activation_code: '@activation_code'});
     User = $resource(authEndpoint + '/:id', {id: '@id'});
@@ -193,6 +180,9 @@ function MainCntl($scope, $resource, $localStorage, $http) {
     $scope.$storage = $localStorage.$default({
         user: {email: ""}
     });
+    if ($scope.$storage.user.token){
+        $http.defaults.headers.common['Authorization'] = 'Token ' + $scope.$storage.user.token;
+    }
 }
 
 function WelcomeCntl($scope, $location, $http) {
@@ -206,7 +196,7 @@ function WelcomeCntl($scope, $location, $http) {
     };
 
     $scope.onForgot = function () {
-        console.log($scope);
+        console.log("Add forgot view");
         // TODO - Forgot
     };
 
@@ -221,7 +211,6 @@ function WelcomeCntl($scope, $location, $http) {
             $scope.alerts = [];
             $scope.$storage.user.token = data.token;
             $http.defaults.headers.common['Authorization'] = 'Token ' + data.token;
-
             $location.path("/list");
             $scope.isLoading = false;
         }, function (err) {
@@ -290,7 +279,8 @@ function RegisterCntl($scope, $routeParams, $location) {
 
 function ListCntl($scope, $location, apiModel, $http, $localStorage) {
     if (!$localStorage.user.token){
-        $location.path("/");
+        $location.path("/")
+        return;
     }
 
     $scope.form = angular.copy($scope.user);
@@ -300,7 +290,7 @@ function ListCntl($scope, $location, apiModel, $http, $localStorage) {
     // TODO: If login token is invalid, redirect home
 
     $scope.logout = function () {
-//        $localStorage.user.token = "";
+        $localStorage.user.token = "";
         $location.path("/");
     };
 
