@@ -1,6 +1,11 @@
 "use strict";
 /*jslint node: true */
 
+// TODO: Make conditional parameters for grunt.js to package the deployments
+//var authEndpoint = "http://localhost\\:8000/api-token-auth/";
+//var registrationEndpoint = "http://localhost\\:8000/";
+//var apiEndpoint = "http://localhost\\:8000/api/";
+//var apiEndpointx = "http://localhost:8000/api/";
 var authEndpoint = "http://localhost\\:8000/api-token-auth/";
 var registrationEndpoint = "http://localhost\\:8000/";
 var apiEndpoint = "http://localhost\\:8000/api/";
@@ -290,6 +295,9 @@ function ListCntl($scope, $location, apiModel, $http, $localStorage) {
     // TODO: If login token is invalid, redirect home
 
     $scope.logout = function () {
+        // TODO Move this to a service
+        delete $http.defaults.headers.common['Authorization'];
+
         $localStorage.user.token = "";
         $location.path("/");
     };
