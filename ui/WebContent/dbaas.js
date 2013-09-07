@@ -6,10 +6,11 @@
 //var registrationEndpoint = "http://localhost\\:8000/";
 //var apiEndpoint = "http://localhost\\:8000/api/";
 //var apiEndpointx = "http://localhost:8000/api/";
-var authEndpoint = "http://localhost\\:8000/api-token-auth/";
-var registrationEndpoint = "http://localhost\\:8000/";
-var apiEndpoint = "http://localhost\\:8000/api/";
-var apiEndpointx = "http://localhost:8000/api/";
+var authEndpoint = "https://dbaas-test.geniedb.com\\:4000/api-token-auth/api-token-auth/";
+var registrationEndpoint = "https://dbaas-test.geniedb.com\\:4000/api-token-auth/";
+var apiEndpoint = "https://dbaas-test.geniedb.com\\:4000/api/";
+var apiEndpointx = "https://dbaas-test.geniedb.com:4000/api/";
+
 var Registration;
 var User;
 
