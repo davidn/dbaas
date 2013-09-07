@@ -136,8 +136,8 @@ dbaasApp.provider('apiModel', function () {
     function lookupClusterData(data) {
         data.forEach(function (cluster, i, arr) {
             lookupNodeData(i, cluster.nodes);
-//            cluster.canLaunch = cluster.nodes.maxStatus === 0;
-            cluster.canLaunch = true;
+            cluster.canLaunch = cluster.nodes.maxStatus === 0;
+//            cluster.canLaunch = true;
             cluster.label = cluster.label || cluster.dbname;
         });
         return data;
