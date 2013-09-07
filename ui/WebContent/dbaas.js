@@ -1,10 +1,16 @@
 "use strict";
 /*jslint node: true */
 
-var authEndpoint = "http://localhost\\:8000/api-token-auth/";
-var registrationEndpoint = "http://localhost\\:8000/";
-var apiEndpoint = "http://localhost\\:8000/api/";
-var apiEndpointx = "http://localhost:8000/api/";
+// TODO: Make conditional parameters for grunt.js to package the deployments
+//var authEndpoint = "http://localhost\\:8000/api-token-auth/";
+//var registrationEndpoint = "http://localhost\\:8000/";
+//var apiEndpoint = "http://localhost\\:8000/api/";
+//var apiEndpointx = "http://localhost:8000/api/";
+var authEndpoint = "https://dbaas-test.geniedb.com\\:4000/api-token-auth/api-token-auth/";
+var registrationEndpoint = "https://dbaas-test.geniedb.com\\:4000/api-token-auth/";
+var apiEndpoint = "https://dbaas-test.geniedb.com\\:4000/api/";
+var apiEndpointx = "https://dbaas-test.geniedb.com:4000/api/";
+
 var Registration;
 var User;
 
@@ -130,8 +136,8 @@ dbaasApp.provider('apiModel', function () {
     function lookupClusterData(data) {
         data.forEach(function (cluster, i, arr) {
             lookupNodeData(i, cluster.nodes);
-//            cluster.canLaunch = cluster.nodes.maxStatus === 0;
-            cluster.canLaunch = true;
+            cluster.canLaunch = cluster.nodes.maxStatus === 0;
+//            cluster.canLaunch = true;
             cluster.label = cluster.label || cluster.dbname;
         });
         return data;
@@ -290,6 +296,9 @@ function ListCntl($scope, $location, apiModel, $http, $localStorage) {
     // TODO: If login token is invalid, redirect home
 
     $scope.logout = function () {
+        // TODO Move this to a service
+        delete $http.defaults.headers.common['Authorization'];
+
         $localStorage.user.token = "";
         $location.path("/");
     };
