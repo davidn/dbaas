@@ -62,7 +62,7 @@ def ordinal(num):
         return ["st", "nd", "rd"][num % 10 - 1]
 
 @task()
-def launch_email(cluster):
+def launch_email(cluster, sendGeneralNotification=True):
     nodes = cluster.nodes.all()
     params = {
         'node_text': ''.join(node_text(node) for node in nodes),
@@ -76,30 +76,35 @@ def launch_email(cluster):
         'dbusername': cluster.dbusername,
         'dbpassword': cluster.dbpassword
     }
-    email = EmailMultiAlternatives(
-        subject=config_value('api_email','SUBJECT'),
-        body=config_value('api_email','PLAINTEXT').format(**params),
-        from_email=config_value('api_email','SENDER'),
-        to=config_value('api_email','RECIPIENTS')
-    )
-    email.attach_alternative(
-        config_value('api_email','HTML').format(**params),
-        "text/html"
-    )
-    email.send()
+    if sendGeneralNotification:
+        email = EmailMultiAlternatives(
+            subject=config_value('api_email','SUBJECT'),
+            body=config_value('api_email','PLAINTEXT').format(**params),
+            from_email=config_value('api_email','SENDER'),
+            to=config_value('api_email','RECIPIENTS')
+        )
+        email.attach_alternative(
+            config_value('api_email','HTML').format(**params),
+            "text/html"
+        )
+        email.send()
+    else:
+        cluster.user.email_user(
+            config_value('api_email','SUBJECT'),
+            config_value('api_email','PLAINTEXT').format(**params))
 
 @task()
 def launch_cluster(cluster):
     cluster.launch()
 
-def install_cluster(cluster):
+def install_cluster(cluster, sendGeneralNotification=True):
     install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)
     lbr_regions = cluster.lbr_regions.filter(launched=False)
     task = launch_cluster.si(cluster) \
         | wait_nodes.si([node for node in install_nodes]) \
         | group([install.si(node) for node in install_nodes]) \
         | group([install_region.si(lbr_region) for lbr_region in lbr_regions]) \
-        | launch_email.si(cluster)
+        | launch_email.si(cluster, sendGeneralNotification)
     return task.delay()
 
 @task()

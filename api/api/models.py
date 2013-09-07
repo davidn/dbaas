@@ -216,12 +216,13 @@ class Cluster(models.Model):
                       "Action": "s3:*",
                       "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
                 }]}""" % {'iam':self.iam_arn, 'bucket':self.uuid})
-                continue
+                break
             except S3ResponseError, e:
                 if i < 15 and e.message in ["Invalid principal in policy", "404 Not Found"]:
-                    logger.info("Retrying S3 permission grant")
+                    logger.info("Retrying S3 permission grant.  Err='%s'" % (e.message))
                     sleep(2)
                 else:
+                    logger.info("Uncaught error='%s'" % (e.message))
                     raise
 
     def terminate(self):
@@ -390,7 +391,7 @@ class LBRRegionNodeSet(models.Model):
                 if re.search('but it was not found', e.body) is None:
                     raise
                 else:
-                    logger.warning("%s: terminating dns for lbr region %s, cluster %s skipped as record not found")
+                    logger.warning("%s: terminating dns for lbr region %s, cluster %s skipped as record not found", self, self.lbr_region, self.cluster.pk)
 
 class Node(models.Model):
     """Manage an individual instance in the cloud.
@@ -753,3 +754,5 @@ def cluster_pre_delete_callback(sender, instance, using, **kwargs):
     if sender != Cluster:
         return
     instance.terminate()
+
+

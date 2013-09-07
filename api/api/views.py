@@ -190,11 +190,13 @@ class ClusterViewSet(mixins.CreateModelMixin,
 
     @action()
     def launch_all(self, request, *args, **kwargs):
+        omitNotificationText = 'test.geniedb.com'
         self.object = self.get_object()
         for node in self.object.nodes.all():
             if node.status == Node.INITIAL:
                 node.do_launch()
-        install_cluster(self.object)
+        sendGeneralNotificationEmail = self.object.dns_name[-len(omitNotificationText):] != omitNotificationText
+        install_cluster(self.object, sendGeneralNotificationEmail)
         serializer = self.get_serializer(self.object)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
