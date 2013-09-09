@@ -2,7 +2,6 @@
 // TODO: Service to log errors server side
 // TODO: Set a default flavor for provider
 // TODO: Hydrate provider to nodes
-// TODO: Intercept HTTP 401 to login - add error message about session expired
 
 angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngStorage'])
     .factory("growl", function ($rootScope) {
@@ -90,19 +89,21 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             }
         };
     }])
-    .provider('apiModel', [function () {
+    .provider('apiModel', ['dbaasConfig', function (dbaasConfig) {
         var Provider;
         var Cluster;
         var providers;
         var clusters;
 
-        function getFlavorByCode(flavors, code) {
-            return _.findWhere(flavors, {code: code});
-        }
-
         function getProviderByFlavor(flavor) {
             return _.find(providers, function (provider) {
-                return getFlavorByCode(provider.flavors, flavor);
+                return _.findWhere(provider.flavors, {code: flavor});
+            });
+        }
+
+        function getProviderByRegion(region) {
+            return _.find(providers, function (provider) {
+                return _.findWhere(provider.regions, {code: region});
             });
         }
 
@@ -118,12 +119,10 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         ];
 
         function getStatusByLabel(statusLabel) {
-            return statuses.filter(function (status) {
-                return status.label === statusLabel;
-            })[0];
+            return _.findWhere(statuses, {label: statusLabel});
         }
 
-        function lookupNodeData(clusterIndex, data) {
+        function hydrateNodeData(clusterIndex, data) {
             data.maxStatus = 0;
             data.forEach(function (node, i) {
                 node.label = node.label ? node.label : node.region ? node.region : 'Node' + i;
@@ -145,21 +144,26 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             return data;
         }
 
-        function lookupClusterData(data) {
+        function hydrateClusterData(data) {
             data.forEach(function (cluster, i) {
-                lookupNodeData(i, cluster.nodes);
+                hydrateNodeData(i, cluster.nodes);
                 cluster.canLaunch = cluster.nodes.maxStatus === 0;
                 cluster.label = cluster.label || cluster.dbname;
             });
             return data;
         }
 
-        function refreshProviderData(data) {
-            if (clusters.length > 0) {
-                lookupClusterData(clusters);
+        function hydrateProviderData(data) {
+            if (clusters && clusters.length > 0) {
+                hydrateClusterData(clusters);
             }
+            angular.forEach(dbaasConfig.quickStartFlavors, function (defaultFlavor, providerCode) {
+                var provider = _.findWhere(providers, {code:providerCode});
+                if (provider){
+                    provider.quickStartFlavor = defaultFlavor;
+                }
+            });
         }
-
 
         this.$get = function ($resource, dbaasConfig) {
 
@@ -176,21 +180,22 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             );
             return {
                 getProviders: function () {
-                    providers = providers || Provider.query({}, refreshProviderData);
+                    providers = providers || Provider.query({}, hydrateProviderData);
                     return providers;
                 },
                 getClusters: function (forceRefresh) {
                     if (forceRefresh) {
-                        clusters = Cluster.query({}, lookupClusterData);
+                        clusters = Cluster.query({}, hydrateClusterData);
                     }
                     else {
-                        clusters = clusters || Cluster.query({}, lookupClusterData);
+                        clusters = clusters || Cluster.query({}, hydrateClusterData);
                     }
                     return clusters;
                 },
                 getCluster: function () {
                     return Cluster;
-                }
+                },
+                getProviderByRegion: getProviderByRegion
             };
         };
     }]);

@@ -15,6 +15,12 @@ angular.module('GenieDBaaS.config', [])
             port: 3306
         };
 
+        // TODO: Move this to server side
+        var quickStartFlavors={
+            rs:"2",
+            az:"m1.small",
+            test:"test-small"
+        };
 
         // TODO: Only used for $resource - purge if migrated off
         var escapedUrl = serviceUrl.substr(0, 8) + serviceUrl.substr(8).replace(':', '\\:');
@@ -24,9 +30,11 @@ angular.module('GenieDBaaS.config', [])
 
             authUrl: serviceUrl + authPath,
             apiUrl: serviceUrl + apiPath,
+            quickStart: quickStartCluster,
+            quickStartFlavors: quickStartFlavors,
+
             // TODO: Only used for $resource - purge if migrated off
             authUrlEscaped: escapedUrl + authPath,
-            apiUrlEscaped: escapedUrl + apiPath,
-            quickStart: quickStartCluster
+            apiUrlEscaped: escapedUrl + apiPath
         }
     })())

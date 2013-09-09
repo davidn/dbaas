@@ -206,12 +206,13 @@ function NodeCntl($scope, $routeParams, $location, apiModel, $http, growl) {
     }
 }
 
-function getFlavorFromRegion(region) {
-    return region.slice(0, 4) === "test" ? "test-small" : region.length === 3 ? "2" : "m1.small";
-}
 
 function QuickStartCntl($scope, $location, apiModel, $http, growl, dbaasConfig) {
     $scope.providers = apiModel.getProviders();
+
+    function getFlavorFromRegion(region) {
+        return apiModel.getProviderByRegion(region).quickStartFlavor;
+    }
 
     $scope.launch = function () {
         $scope.isLoading = true;
@@ -224,6 +225,7 @@ function QuickStartCntl($scope, $location, apiModel, $http, growl, dbaasConfig) 
 
         apiModel.getCluster().save(dbaasConfig.quickStart, function (cluster) {
             growl.success({body: 'Cluster ' + cluster.label + ' created'});
+
             var nodes = [
                 {region: $scope.quickStartNode1,
                     flavor: getFlavorFromRegion($scope.quickStartNode1),
@@ -232,7 +234,7 @@ function QuickStartCntl($scope, $location, apiModel, $http, growl, dbaasConfig) 
                     flavor: getFlavorFromRegion($scope.quickStartNode2),
                     storage: 10}
             ];
-            $http.post(cluster.url, nodes).success(function (data) {
+            $http.post(cluster.url, nodes).success(function () {
                 growl.success({body: 'Quick start nodes created'});
                 $http.post(cluster.url + '/launch_all/').success(function () {
                     $location.path('/list');
