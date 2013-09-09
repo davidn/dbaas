@@ -75,7 +75,6 @@ function RegisterCntl($scope, $location, User, growl) {
 }
 
 function ListCntl($scope, $location, apiModel, $http, growl, User) {
-    console.log(User.user);
     if (!User.user.token) {
         $location.path("/");
         growl.error({body: "Session Expired"});

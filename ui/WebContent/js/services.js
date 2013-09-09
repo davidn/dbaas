@@ -17,9 +17,7 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
 
         return {
             set: function (message) {
-                var msg = message;
-                queue.push(msg);
-
+                queue.push(message);
             },
             get: function (message) {
                 return currentMessage;
@@ -55,7 +53,7 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         };
     })
     .factory("User", ['$resource', '$localStorage', '$http', 'dbaasConfig', '$location', function ($resource, $localStorage, $http, dbaasConfig, $location) {
-        var user = $localStorage.$default({user:{
+        var user = $localStorage.$default({user: {
             email: "",
             token: undefined}
         }).user;
@@ -98,17 +96,14 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         var providers;
         var clusters;
 
-
         function getFlavorByCode(flavors, code) {
-            return flavors.filter(function (obj) {
-                return obj.code === code;
-            })[ 0 ];
+            return _.findWhere(flavors, {code: code});
         }
 
         function getProviderByFlavor(flavor) {
-            return providers.filter(function (obj) {
-                return getFlavorByCode(obj.flavors, flavor);
-            })[ 0 ];
+            return _.find(providers, function (provider) {
+                return getFlavorByCode(provider.flavors, flavor);
+            });
         }
 
         var statuses = [
@@ -151,13 +146,18 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         }
 
         function lookupClusterData(data) {
-            data.forEach(function (cluster, i, arr) {
+            data.forEach(function (cluster, i) {
                 lookupNodeData(i, cluster.nodes);
                 cluster.canLaunch = cluster.nodes.maxStatus === 0;
-//            cluster.canLaunch = true;
                 cluster.label = cluster.label || cluster.dbname;
             });
             return data;
+        }
+
+        function refreshProviderData(data) {
+            if (clusters.length > 0) {
+                lookupClusterData(clusters);
+            }
         }
 
 
@@ -176,7 +176,7 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             );
             return {
                 getProviders: function () {
-                    providers = providers || Provider.query();
+                    providers = providers || Provider.query({}, refreshProviderData);
                     return providers;
                 },
                 getClusters: function (forceRefresh) {
