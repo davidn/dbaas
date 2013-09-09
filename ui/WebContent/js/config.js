@@ -2,8 +2,8 @@
 
 angular.module('GenieDBaaS.config', [])
     .constant('dbaasConfig', (function () {
-        var serviceUrl = "http://localhost:8000";
-//        var serviceUrl= "https://dbaas-test.geniedb.com:4000";
+//        var serviceUrl = "http://localhost:8000";
+        var serviceUrl= "https://dbaas-test.geniedb.com:4000";
         var authPath = "/api-token-auth/";
         var apiPath = "/api/";
         var quickStartCluster = {

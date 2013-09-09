@@ -18,7 +18,7 @@ angular.module('GenieDBaaS', ['GenieDBaaS.config', 'Utility.directives', 'GenieD
 
         function error(response) {
             if (response.status === 401) {
-                if ($location.path != '/') {
+                if ($location.$$path !== '/') {
                     $location.path('/');
                     growl.error({body: 'Session Expired'});
                 }

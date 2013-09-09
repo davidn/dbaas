@@ -64,6 +64,11 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         var Registration = $resource(dbaasConfig.authUrlEscaped + 'register/:activation_code', {activation_code: '@activation_code'});
         var User = $resource(dbaasConfig.authUrlEscaped + '/:id', {id: '@id'});
 
+        function clearToken() {
+            user.token = '';
+            delete $http.defaults.headers.common['Authorization'];
+        }
+
         return {
             user: user,
             register: function (email) {
@@ -77,14 +82,14 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             },
             login: function (email, password) {
                 user.email = email;
+                clearToken();
                 return User.save({username: email, password: password}, function (data) {
                     user.token = data.token;
                     $http.defaults.headers.common['Authorization'] = 'Token ' + data.token;
                 });
             },
             logout: function () {
-                user.token = '';
-                delete $http.defaults.headers.common['Authorization'];
+                clearToken();
                 $location.path("/");
             }
         };
