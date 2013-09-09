@@ -19,7 +19,8 @@
     "ngstorage": "latest",
     "jquery": "latest",
     "select2": "latest",
-    "toastr": "latest"
+    "toastr": "latest",
+    "underscore": "latest"
   },
   "resolutions": {
     "angular": "1.2.0-rc.2"

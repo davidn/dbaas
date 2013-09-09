@@ -1,6 +1,7 @@
 'use strict';
 // TODO: Service to log errors server side
-
+// TODO: Set a default flavor for provider
+// TODO: Hydrate provider to nodes
 // TODO: Intercept HTTP 401 to login - add error message about session expired
 
 angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngStorage'])
@@ -54,10 +55,10 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         };
     })
     .factory("User", ['$resource', '$localStorage', '$http', 'dbaasConfig', '$location', function ($resource, $localStorage, $http, dbaasConfig, $location) {
-        var user = $localStorage.$default({
+        var user = $localStorage.$default({user:{
             email: "",
-            token: undefined
-        });
+            token: undefined}
+        }).user;
 
         if (user.token) {
             $http.defaults.headers.common['Authorization'] = 'Token ' + user.token;
