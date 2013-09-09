@@ -1,9 +1,3 @@
-<div ng-controller="AlertCtrl">
-	<div ng-repeat="alert in alerts" class="alert alert-danger">
-		<button type="button" ng-click="closeAlert($index)" class="close">x</button>
-		{{alert.msg}}
-	</div>
-</div>
 <div class="box summary">
 	<div class="div-logout">
 		Welcome {{ $storage.user.email }} &nbsp;&nbsp;&nbsp;

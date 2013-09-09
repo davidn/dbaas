@@ -16,9 +16,6 @@
 				<div>
 					<button type="submit" class="btn btn-success" btn-loading="isLoading" data-loading-text="Signing Up..." ng:click="register()" >SIGN UP</button>
 				</div>
-				<div ng-controller="AlertCtrl">
-  					<div ng-repeat="alert in alerts" class="alert alert-danger"><button type="button" ng:click="closeAlert($index)" class="close">×</button>{{alert.msg}}</div>
-  				</div>
 			</div>
 			<div class="modal-footer">
 				Already have an account?

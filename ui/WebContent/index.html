@@ -12,19 +12,30 @@
 	<script src="bower_components/angulartics/src/angulartics-google-analytics.js"></script>
 	<script src="bower_components/ngstorage/ngStorage.js"></script>
 	<script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
-	<script type="text/javascript" src="bower_components/select2/select2.js"></script>
+	<script src="bower_components/select2/select2.js"></script>
 	<script src="bower_components/angular-ui-select2/src/select2.js"></script>
+
+	<script src="bower_components/toastr/toastr.js"></script>
 
 	<!--<script type="text/javascript" src="bower_components/restangular/dist/restangular.js"></script>-->
 
+	<!--//cdnjs.cloudflare.com/ajax/libs/toastr.js/1.3.1/js/toastr.min.js-->
+	<!--//cdnjs.cloudflare.com/ajax/libs/toastr.js/1.3.1/css/toastr.min.css-->
 
 	<link href="bower_components/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
 	<link href="bower_components/font-awesome/css/font-awesome.css" rel="stylesheet">
+	<link href="bower_components/toastr/toastr.css" rel="stylesheet">
 	<link rel="stylesheet" href="bower_components/select2/select2.css">
 
+	<script src="js/config.js"></script>
+	<script src="js/services.js"></script>
+	<script src="js/controllers.js"></script>
+	<script src="js/directives.js"></script>
+	<script src="js/app.js"></script>
 
 	<script src="dbaas.js"></script>
-	<link href="dbaas.css" rel="stylesheet" type="text/css"/>
+
+	<link href="css/dbaas.css" rel="stylesheet" type="text/css"/>
 	<link rel="shortcut icon" href="img/favicon.ico">
 </head>
 <body>
@@ -44,6 +55,7 @@
 
 	<div ng-view></div>
 </div>
+<div>GenieDB DBaaS v<span app-version></span></div>
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

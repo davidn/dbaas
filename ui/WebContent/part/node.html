@@ -12,15 +12,6 @@
 					</optgroup>
 				</select>
 			</div>
-			<div ng-controller="AlertCtrl">
-				<div ng-repeat="alert in alerts">
-					<div class="alert alert-{{alert.type}}">
-						<button type="button" ng:click="closeAlert($index)" class="close">x</button>
-						{{alert.msg}}
-					</div>
-				</div>
-			</div>
-
 		</div>
 		<div class="modal-footer">
 			<button class="btn btn-success" btn-loading="isLoading" data-loading-text="Adding..." ng-click="save()">SAVE</button>

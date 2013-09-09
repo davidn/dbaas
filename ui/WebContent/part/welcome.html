@@ -1,28 +1,22 @@
 <div id="register-div" class="modal-dialog login">
 	<div class="modal-content login">
-		<form name="loginForm" novalidate class="form-login">
+		<form name="loginForm" ng novalidate class="form-login">
 			<div class="modal-header">Account Login</div>
 			<div class="modal-body">
 				<p>
-					<input class="input-login" type="email" name="email" required ng-model="form.email" placeholder="Email" ng-class="{'form-invalid': showValidationMessages && !!loginForm.$error.email}">
+					<input class="input-login" type="email" name="email" required ng-model="form.email" placeholder="Email" ng-class="{'form-invalid': showValidationMessages && loginForm.email.$invalid}">
 				</p>
 				<p>
-					<input class="input-login" type="password" name="passwd" required ng-model="form.password" placeholder="Password" ng-class="{'form-invalid': showValidationMessages && !loginForm.passwd.$valid}">
+					<input class="input-login" type="password" name="passwd" required ng-model="form.password" placeholder="Password" ng-class="{'form-invalid': showValidationMessages && loginForm.passwd.$invalid}">
 				</p>
 				<div>
-					<button class="btn btn-success" ng:click="onLogin()">LOGIN</button>
-					<button class="btn btn-link" ng:click="onForgot()">Forgot Password?</button>
+					<button class="btn btn-success" ng-click="onLogin()">LOGIN</button>
+					<button class="btn btn-link" ng-click="onForgot()">Forgot Password?</button>
 				</div>
 				<br/>
-				<div ng-controller="AlertCtrl">
-					<div ng-repeat="alert in alerts" class="alert alert-danger">
-						<button type="button" ng:click="closeAlert($index)" class="close">x</button>
-						{{alert.msg}}
-					</div>
-				</div>
 			</div>
 			<div class="modal-footer">
-				<button class="btn btn-primary" ng:click="goRegister()">CREATE ACCOUNT</button>
+				<button class="btn btn-primary" ng-click="goRegister()">CREATE ACCOUNT</button>
 			</div>
 		</form>
 	</div>
