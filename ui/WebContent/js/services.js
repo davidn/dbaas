@@ -59,7 +59,6 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             token: undefined
         });
 
-        console.log(user);
         if (user.token) {
             $http.defaults.headers.common['Authorization'] = 'Token ' + user.token;
         }

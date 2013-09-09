@@ -97,7 +97,7 @@ body{
 .div-logout{
     position: absolute;
     top: 50px;
-    left: 400px;
+    left: 40%;
     overflow: visible;
     color: #6f6f6f;
     z-index: 1050;
@@ -210,4 +210,9 @@ a.dropdown-toggle:hover{
 }
 .clusters-empty{
     padding: 15px;
+}
+.version-tag{
+    text-align: right;
+    font-size: 8pt;
+    color: #aaa;
 }

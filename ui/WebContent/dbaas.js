@@ -2,7 +2,7 @@
 /*jslint node: true */
 
 function MainCntl(User) {
-  // Inject User to force initialization
+    // Inject User to force initialization
 }
 
 function WelcomeCntl($scope, $location, User, growl) {
@@ -31,13 +31,13 @@ function WelcomeCntl($scope, $location, User, growl) {
         User.login($scope.form.email, $scope.form.password).$then(function (data) {
             $location.path("/list");
         }, function (err) {
-                $scope.isLoading = false;
-                if (err && err.data && err.data.non_field_errors && err.data.non_field_errors[0]) {
-                    growl.error({body:err.data.non_field_errors[0]});
-                } else {
-                    growl.error({body:'Login Failed'});
-                }
-            });
+            $scope.isLoading = false;
+            if (err && err.data && err.data.non_field_errors && err.data.non_field_errors[0]) {
+                growl.error({body: err.data.non_field_errors[0]});
+            } else {
+                growl.error({body: 'Login Failed'});
+            }
+        });
     };
 }
 
@@ -60,9 +60,9 @@ function RegisterCntl($scope, $location, User, growl) {
         }).error(function (err) {
                 $scope.isLoading = false;
                 if (err && err.data && err.data.non_field_errors && err.data.non_field_errors[0]) {
-                    growl.error({body:err.data.non_field_errors[0]});
+                    growl.error({body: err.data.non_field_errors[0]});
                 } else {
-                    growl.error({body:'Registration Failed'});
+                    growl.error({body: 'Registration Failed'});
                 }
             });
     };
@@ -72,11 +72,12 @@ function RegisterCntl($scope, $location, User, growl) {
     };
 }
 
-function ListCntl($scope, $location, apiModel, $http, $localStorage, growl, User) {
+function ListCntl($scope, $location, apiModel, $http, growl, User) {
     if (!User.user.token) {
         $location.path("/")
         return;
     }
+    $scope.user = User.user;
 
     $scope.form = angular.copy($scope.user);
     $scope.providers = apiModel.getProviders();
@@ -103,9 +104,13 @@ function ListCntl($scope, $location, apiModel, $http, $localStorage, growl, User
     };
 
     $scope.deleteCluster = function (cluster) {
+        cluster.isDeleting = true;
         $http.delete(cluster.url).success(function (data) {
             $scope.refresh();
-        }).error(handleError);
+        }).error(function (err) {
+                cluster.isDeleting = false;
+                handleError(err);
+            });
     };
 
     $scope.deleteNode = function (node) {
@@ -116,11 +121,11 @@ function ListCntl($scope, $location, apiModel, $http, $localStorage, growl, User
     function handleError(err) {
         $scope.isLoading = false;
         if (err && err.data && err.data.detail) {
-            growl.error({body:err.data.detail});
+            growl.error({body: err.data.detail});
         } else if (err && err.data && err.data.non_field_errors && err.data.non_field_errors[0]) {
-            growl.error({body:err.data.non_field_errors[0]});
+            growl.error({body: err.data.non_field_errors[0]});
         } else {
-            growl.error({body:"Unable to Save"});
+            growl.error({body: "Unable to Save"});
         }
     }
 }
@@ -151,11 +156,11 @@ function ClusterCntl($scope, $location, apiModel, growl) {
     function handleError(err) {
         $scope.isLoading = false;
         if (err && err.data && err.data.detail) {
-            growl.error({body:err.data.detail});
+            growl.error({body: err.data.detail});
         } else if (err && err.data && err.data.non_field_errors && err.data.non_field_errors[0]) {
-            growl.error({body:err.data.non_field_errors[0]});
+            growl.error({body: err.data.non_field_errors[0]});
         } else {
-            growl.error({body:'Unable to save'});
+            growl.error({body: 'Unable to save'});
         }
     }
 }
@@ -183,14 +188,13 @@ function NodeCntl($scope, $routeParams, $location, apiModel, $http) {
     };
 
     function handleError(err) {
-        console.log(err);
         $scope.isLoading = false;
         if (err && err.detail) {
-            growl.error({body:err.detail});
+            growl.error({body: err.detail});
         } else if (err && err.non_field_errors && err.non_field_errors[0]) {
-            growl.error({body:err.data.non_field_errors[0]});
+            growl.error({body: err.data.non_field_errors[0]});
         } else {
-            growl.error({body:"Unable to save"});
+            growl.error({body: "Unable to save"});
         }
     }
 }
@@ -238,11 +242,11 @@ function QuickStartCntl($scope, $location, apiModel, $http, growl) {
     function handleError(err) {
         $scope.isLoading = false;
         if (err && err.data && err.data.detail) {
-            growl.error({body:  err.data.detail});
+            growl.error({body: err.data.detail});
         } else if (err && err.data && err.data.non_field_errors && err.data.non_field_errors[0]) {
-            growl.error({body:  err.data.non_field_errors[0]});
+            growl.error({body: err.data.non_field_errors[0]});
         } else {
-            growl.error({body:  'Unable to save'});
+            growl.error({body: 'Unable to save'});
         }
     }
 }
