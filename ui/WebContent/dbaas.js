@@ -100,7 +100,9 @@ function ListCntl($scope, $location, apiModel, $http, growl, User) {
     };
 
     $scope.refresh = function () {
-        $scope.clusters = apiModel.getClusters(true);
+        apiModel.getClusters(true).$then(function (data) {
+            $scope.clusters = data.resource;
+        });
     };
 
     $scope.deleteCluster = function (cluster) {
