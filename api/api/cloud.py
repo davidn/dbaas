@@ -7,29 +7,39 @@ import novaclient.v1_1
 
 logger = getLogger(__name__)
 
+
 class Cloud(object):
     def __init__(self, region):
         self.region = region
+
     def launch(self, node):
         pass
+
     def pending(self, node):
         pass
+
     def shutting_down(self, node):
         pass
+
     def update(self, node, tags={}):
         pass
+
     def terminate(self, node):
         pass
+
     def pause(self, node):
         pass
+
     def resume(self, node):
         pass
+
 
 class EC2(Cloud):
     @property
     def ec2(self):
         if not hasattr(self, '_ec2'):
-            self._ec2 = boto.ec2.get_region(self.region.code).connect(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            self._ec2 = boto.ec2.get_region(self.region.code).connect(aws_access_key_id=settings.AWS_ACCESS_KEY,
+                                                                      aws_secret_access_key=settings.AWS_SECRET_KEY)
         return self._ec2
 
     def __getstate__(self):
@@ -57,7 +67,7 @@ class EC2(Cloud):
         bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
         bdm['/dev/sda1'] = dev_sda1
         logger.debug("%s: Assigned NID %s", node, node.nid)
-        sg = self.ec2.create_security_group(str(node),'Security group for '+str(node))
+        sg = self.ec2.create_security_group(str(node), 'Security group for ' + str(node))
         node.security_group = sg.id
         self.ec2.authorize_security_group(
             group_id=sg.id,
@@ -79,7 +89,7 @@ class EC2(Cloud):
                 instance_type=node.flavor.code,
                 block_device_map=bdm,
                 security_groups=sgs,
-                user_data ='#include\nhttps://'+Site.objects.get_current().domain+node.get_absolute_url()+'cloud_config/\n',
+                user_data='#include\nhttps://' + Site.objects.get_current().domain + node.get_absolute_url() + 'cloud_config/\n',
             )
         except:
             try:
@@ -102,7 +112,7 @@ class EC2(Cloud):
         instance = self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0]
         node.ip = instance.ip_address
         node.save()
-        for k,v in tags.items():
+        for k, v in tags.items():
             instance.add_tag(k, v)
 
     def terminate(self, node):
@@ -121,16 +131,17 @@ class EC2(Cloud):
     def resume(self, node):
         self.ec2.start_instances([node.instance_id])
 
+
 class Openstack(Cloud):
     @property
     def nova(self):
         if not hasattr(self, "_nova"):
             self._nova = novaclient.v1_1.client.Client(self.USER,
-                self.PASS,
-                self.TENANT,
-                self.AUTH_URL,
-                service_type="compute",
-                region_name=self.region.code)
+                                                       self.PASS,
+                                                       self.TENANT,
+                                                       self.AUTH_URL,
+                                                       service_type="compute",
+                                                       region_name=self.region.code)
         return self._nova
 
     def __getstate__(self):
@@ -143,18 +154,18 @@ class Openstack(Cloud):
 
     def launch(self, node):
         server = self.nova.servers.create(
-            name= node.dns_name,
+            name=node.dns_name,
             image=self.region.image,
             flavor=node.flavor.code,
             key_name=self.region.key_name,
             availability_zone=self.region.code,
             files={
-                '/var/lib/cloud/seed/nocloud-net/user-data':'#include\nhttps://'+Site.objects.get_current().domain+node.get_absolute_url()+'cloud_config/\n',
-                '/var/lib/cloud/seed/nocloud-net/meta-data':'instance-id: iid-local01',
+                '/var/lib/cloud/seed/nocloud-net/user-data': '#include\nhttps://' + Site.objects.get_current().domain + node.get_absolute_url() + 'cloud_config/\n',
+                '/var/lib/cloud/seed/nocloud-net/meta-data': 'instance-id: iid-local01',
             },
         )
         node.instance_id = server.id
-        node.status=node.PROVISIONING
+        node.status = node.PROVISIONING
 
     def pending(self, node):
         return self.nova.servers.get(node.instance_id).status == u'BUILD'
@@ -178,6 +189,7 @@ class Openstack(Cloud):
 
     def resume(self, node):
         self.nova.servers.resume(node.instance_id)
+
 
 class Rackspace(Openstack):
     USER = settings.RACKSPACE_USER

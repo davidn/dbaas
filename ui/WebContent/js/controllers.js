@@ -228,9 +228,11 @@ function QuickStartCntl($scope, $location, apiModel, $http, growl, dbaasConfig) 
 
             var nodes = [
                 {region: $scope.quickStartNode1,
+                    label: "Quick Start Node 1",
                     flavor: getFlavorFromRegion($scope.quickStartNode1),
                     storage: 10},
                 {region: $scope.quickStartNode2,
+                    label: "Quick Start Node 2",
                     flavor: getFlavorFromRegion($scope.quickStartNode2),
                     storage: 10}
             ];
