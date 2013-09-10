@@ -56,17 +56,7 @@ class EC2(Cloud):
         else:
             return 'io1'
 
-    def launch(self, node):
-        # Elastic Block Storage
-        dev_sda1 = boto.ec2.blockdevicemapping.BlockDeviceType(
-            iops=node.iops,
-            volume_type=self.null_or_io1(node.iops),
-            delete_on_termination=True
-        )
-        dev_sda1.size = node.storage
-        bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
-        bdm['/dev/sda1'] = dev_sda1
-        logger.debug("%s: Assigned NID %s", node, node.nid)
+    def _create_security_group(self, node):
         sg = self.ec2.create_security_group(str(node), 'Security group for ' + str(node))
         node.security_group = sg.id
         self.ec2.authorize_security_group(
@@ -77,6 +67,22 @@ class EC2(Cloud):
             to_port=node.cluster.port)
         logger.debug("%s: Created Security Group %s (named %s) with port %s open", node, sg.id, sg.name, node.cluster.port)
         node.save()
+        return sg
+
+    def _create_block_device_map(self, node):
+        dev_sda1 = boto.ec2.blockdevicemapping.BlockDeviceType(
+            iops=node.iops,
+            volume_type=self.null_or_io1(node.iops),
+            delete_on_termination=True
+        )
+        dev_sda1.size = node.storage
+        bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
+        bdm['/dev/sda1'] = dev_sda1
+        return bdm
+
+    def launch(self, node):
+        logger.debug("%s: Assigned NID %s", node, node.nid)
+        sg = self._create_security_group(node)
         # EC2 Instance
         if self.region.security_group == "":
             sgs = [sg.name]
@@ -87,14 +93,17 @@ class EC2(Cloud):
                 self.region.image,
                 key_name=self.region.key_name,
                 instance_type=node.flavor.code,
-                block_device_map=bdm,
+                block_device_map=self._create_block_device_map(node),
                 security_groups=sgs,
                 user_data='#include\nhttps://' + Site.objects.get_current().domain + node.get_absolute_url() + 'cloud_config/\n',
             )
-        except:
+        except Exception as ex:
+            logger.error("run_instances failed, deleting security group. Node: %s   Error:%s", node, ex.message)
+
             try:
                 self.ec2.delete_security_group(group_id=node.security_group)
-            except:
+            except Exception as e:
+                logger.error("delete_security_group failed, Node:%s   Error:%s", node, e.message)
                 pass
             raise
         node.instance_id = res.instances[0].id
