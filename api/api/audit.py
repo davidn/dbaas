@@ -177,6 +177,7 @@ def create_audit_model(cls, **kwargs):
                 rel = copy.copy(field.rel)
                 rel.related_name = '_audit_' + field.related_query_name()
                 attrs[field.name].rel = rel
+                attrs[field.name].rel.on_delete=models.DO_NOTHING
 
     for track_field in _track_fields(kwargs['track_fields']):
         if track_field['name'] in attrs:
