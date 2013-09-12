@@ -42,6 +42,7 @@ class EC2(Cloud):
                                                                       aws_secret_access_key=settings.AWS_SECRET_KEY)
         return self._ec2
 
+
     def __getstate__(self):
         if hasattr(self, '_ec2'):
             odict = self.__dict__.copy()
@@ -59,12 +60,17 @@ class EC2(Cloud):
     def _create_security_group(self, node):
         sg = self.ec2.create_security_group(str(node), 'Security group for ' + str(node))
         node.security_group = sg.id
-        self.ec2.authorize_security_group(
-            group_id=sg.id,
-            ip_protocol='tcp',
-            cidr_ip='0.0.0.0/0',
-            from_port=node.cluster.port,
-            to_port=node.cluster.port)
+
+        def ec2_authorize_security_group():
+            self.ec2.authorize_security_group(
+                group_id=sg.id,
+                ip_protocol='tcp',
+                cidr_ip='0.0.0.0/0',
+                from_port=node.cluster.port,
+                to_port=node.cluster.port)
+            return True
+
+        _retryEC2(ec2_authorize_security_group)
         logger.debug("%s: Created Security Group %s (named %s) with port %s open", node, sg.id, sg.name, node.cluster.port)
         node.save()
         return sg
@@ -88,8 +94,9 @@ class EC2(Cloud):
             sgs = [sg.name]
         else:
             sgs = [sg.name, self.region.security_group]
-        try:
-            res = self.ec2.run_instances(
+
+        def ec2_run_instances():
+            return self.ec2.run_instances(
                 self.region.image,
                 key_name=self.region.key_name,
                 instance_type=node.flavor.code,
@@ -97,15 +104,20 @@ class EC2(Cloud):
                 security_groups=sgs,
                 user_data='#include\nhttps://' + Site.objects.get_current().domain + node.get_absolute_url() + 'cloud_config/\n',
             )
-        except Exception as ex:
-            logger.error("run_instances failed, deleting security group. Node: %s   Error:%s", node, ex.message)
 
-            try:
-                self.ec2.delete_security_group(group_id=node.security_group)
-            except Exception as e:
-                logger.error("delete_security_group failed, Node:%s   Error:%s", node, e.message)
-                pass
-            raise
+        res = _retryEC2(ec2_run_instances)
+        if not res:
+            logger.error("run_instances failed, deleting security group. Node: %s", node)
+
+            def ec2_delete_security():
+                return self.ec2.delete_security_group(group_id=node.security_group)
+
+            res = _retryEC2(ec2_delete_security)
+            if not res:
+                logger.error("delete_security_group failed, Node:%s", node)
+                #TODO Better manage failures
+            raise Exception("ec2_run_instances failed")
+
         node.instance_id = res.instances[0].id
         logger.debug("%s: Reservation %s launched. Instance id %s", node, res.id, node.instance_id)
         node.status = node.PROVISIONING
@@ -139,6 +151,24 @@ class EC2(Cloud):
 
     def resume(self, node):
         self.ec2.start_instances([node.instance_id])
+
+
+def _retryEC2(func, initialDelay=50, maxRetries=12):
+    delay = initialDelay
+    for retry in range(maxRetries):
+        try:
+            result = func()
+            if result:
+                break
+            sleep(delay / 1000)
+        except:
+            #Logging for this can be captured from Boto
+            pass
+        delay *= 2
+    else:
+        logger.error("Giving up on EC2 after %s attempts", maxRetries)
+
+    return result
 
 
 class Openstack(Cloud):
