@@ -26,6 +26,7 @@
 			<tr>
 				<th></th>
 				<th>Name</th>
+				<th>Region</th>
 				<th>Provider</th>
 				<th>Instance Type</th>
 				<th>Status</th>
@@ -38,6 +39,7 @@
 			<tr ng-repeat="node in cluster.nodes">
 				<td ng-class="{row0: $first}" class="node-status-marker"><i class="icon-circle {{node.statusClass}}"></i></td>
 				<td ng-class="{row0: $first}">{{node.label}}</td>
+				<td ng-class="{row0: $first}">{{node.region}}</td>
 				<td ng-class="{row0: $first}">{{node.provider.name}}</td>
 				<td ng-class="{row0: $first}">{{node.flavor}}</td>
 				<td ng-class="{row0: $first}" class="node-status {{node.statusClass}}">{{node.status}}</td>

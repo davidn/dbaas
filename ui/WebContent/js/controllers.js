@@ -74,7 +74,8 @@ function RegisterCntl($scope, $location, User, growl) {
     };
 }
 
-function ListCntl($scope, $location, apiModel, $http, growl, User) {
+function ListCntl($scope, $location, apiModel, $http, growl, User, $dialog) {
+//    TODO Disable UI while processing update on cluster
     if (!User.user.token) {
         $location.path("/");
         growl.error({body: "Session Expired"});
@@ -112,12 +113,29 @@ function ListCntl($scope, $location, apiModel, $http, growl, User) {
 
     $scope.deleteCluster = function (cluster) {
         cluster.isDeleting = true;
-        $http.delete(cluster.url).success(function (data) {
-            $scope.refresh();
-        }).error(function (err) {
+        var title = 'Confirm';
+        var msg = 'Are you sure you want to delete cluster ' + cluster.label + '?';
+        var btns = [
+            {result: 'cancel', label: 'Cancel'},
+            {result: 'ok', label: 'Delete', cssClass: 'btn-danger'}
+        ];
+
+        $dialog.messageBox(title, msg, btns).open().then(function (result) {
+            if (result === "ok") {
+                $http.delete(cluster.url).success(function (data) {
+                    $scope.refresh();
+                    growl.success({body: "Cluster " + cluster.label + " deleted"});
+                }).error(function (err) {
+                        cluster.isDeleting = false;
+                        handleError(err);
+                    })
+            }
+            else {
                 cluster.isDeleting = false;
-                handleError(err);
-            });
+            }
+
+
+        });
     };
 
     $scope.deleteNode = function (node) {
