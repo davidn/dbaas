@@ -219,7 +219,7 @@ class Cluster(models.Model):
                 }]}""" % {'iam':self.iam_arn, 'bucket':self.uuid})
                 break
             except S3ResponseError, e:
-                if i < 15 and e.message in ["Invalid principal in policy", "404 Not Found"]:
+                if i < 15 and e.message in ["Invalid principal in policy", "The specified bucket does not exist", "404 Not Found"]:
                     logger.info("Retrying S3 permission grant.  Err='%s'" % (e.message))
                     sleep(2)
                 else:
@@ -648,7 +648,7 @@ runcmd:
             return
         zabbixHostGroup = hostGroups[0]
         try:
-            z.host.create(host=hostName, groups={"groupid":zabbixHostGroup["groupid"]}, name=self.visible_name(self.cluster.label),
+            z.host.create(host=hostName, groups=[{"groupid":zabbixHostGroup["groupid"]}], name=self.visible_name(self.cluster.label),
                 interfaces={"type":'1', "main":'1', "useip":'1', "ip":self.ip, "dns":hostName, "port":"10050"})
             logger.info("Created Zabbix Host %s" % (hostName))
         except:
