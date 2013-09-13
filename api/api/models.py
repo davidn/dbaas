@@ -218,12 +218,12 @@ class Cluster(models.Model):
                       "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
                 }]}""" % {'iam':self.iam_arn, 'bucket':self.uuid})
                 break
-            except S3ResponseError, e:
-                if i < 15 and e.message in ["Invalid principal in policy", "The specified bucket does not exist", "404 Not Found"]:
+            except S3ResponseError as e:
+                if i < 15:
                     logger.info("Retrying S3 permission grant.  Err='%s'" % (e.message))
                     sleep(2)
                 else:
-                    logger.info("Uncaught error='%s'" % (e.message))
+                    logger.info("Retry limit exceeded, error='%s'" % (e.message))
                     raise
 
     def terminate(self):
