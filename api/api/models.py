@@ -37,6 +37,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext as _
 from django.core.mail import send_mail
 from boto.exception import S3ResponseError
+from pyzabbix import ZabbixAPI
 import audit
 
 logger = getLogger(__name__)
@@ -478,6 +479,13 @@ class Node(models.Model):
         return settings.NODE_DNS_TEMPLATE.format(cluster=self.cluster.pk, node=self.nid)
 
     @property
+    def customerName(self):
+        return self.cluster.user.email
+
+    def visible_name(self, labelText):
+        return "{customerName}-{label}-{node}".format(customerName=self.customerName, label=labelText, node=self.nid)
+
+    @property
     def public_key(self):
         return RSA.importKey(self.tinc_private_key).publickey().exportKey()
 
@@ -620,6 +628,57 @@ runcmd:
            set_backup_url='https://'+Site.objects.get_current().domain+reverse('node-set-backups', args=[self.cluster.pk, self.pk]),
     )
 
+    def addToHostGroup(self):
+        hostName = self.dns_name
+        logger.debug("%s.addToHostGroup: using customerName='%s', hostName='%s'" % (str(self), self.customerName, hostName))
+        logger.debug("%s: visibleName='%s', ip='%s', label='%s'" % (str(self), self.visible_name(self.cluster.label), self.ip, self.cluster.label))
+        # Be sure there is a HostGroup for the customerName so we can add a hostname to it
+        # and add a hostname for the Node just launched.
+        z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
+        z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
+        hostGroups = z.hostgroup.getobjects(name=self.customerName)
+        if not hostGroups:
+            try:
+                z.hostgroup.create(name=self.customerName)
+                logger.info("Created Zabbix HostGroup %s" % (self.customerName))
+                hostGroups = z.hostgroup.getobjects(name=self.customerName)
+            except:
+                logger.warning("Failed to create Zabbix HostGroup %s" % (self.customerName))
+        if not hostGroups:
+            return
+        zabbixHostGroup = hostGroups[0]
+        try:
+            z.host.create(host=hostName, groups={"groupid":zabbixHostGroup["groupid"]}, name=self.visible_name(self.cluster.label),
+                interfaces={"type":'1', "main":'1', "useip":'1', "ip":self.ip, "dns":hostName, "port":"10050"})
+            logger.info("Created Zabbix Host %s" % (hostName))
+        except:
+            logger.warning("Failed to create Zabbix Host %s" % (hostName))
+
+    def removeFromHostGroup(self):
+        hostName = self.dns_name
+        z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
+        z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
+        # Find the Zabbix HostGroup and Host IDs
+        # then delete the Host node,
+        # and if the HostGroup is now empty, remove it too.
+        hostGroups = z.hostgroup.getobjects(name=self.customerName)
+        if not hostGroups:
+            return
+        zabbixHostGroup = hostGroups[0]
+        hosts = z.host.get(groupids=zabbixHostGroup["groupid"], output='extend')
+        for zabbixHost in hosts:
+            if zabbixHost['host'] == hostName:
+                logger.info("Zabbix Host %s being removed." % (hostName))
+                z.host.delete(hostid=zabbixHost['hostid'])
+                hosts = z.host.get(groupids=zabbixHostGroup["groupid"], output='extend')
+                break
+        if not hosts:
+            logger.info("Zabbix HostGroup %s being removed." % (self.customerName))
+            try:
+                z.hostgroup.delete(zabbixHostGroup["groupid"])
+            except:
+                logger.warning("Failed to delete Zabbix HostGroup %s" % (self.customerName))
+
     def do_launch(self):
         """Do the initial, fast part of launching this node."""
         assert(self.status != Node.OVER)
@@ -660,6 +719,7 @@ runcmd:
             rrs.commit()
         self.status = self.RUNNING
         self.save()
+        self.addToHostGroup()
         #... wait until node has fetched config and installed and tests run...
         # self.status = self.RUNNING
         # self.save()
@@ -708,6 +768,7 @@ runcmd:
 
     def on_terminate(self):
         """Shutdown the node and remove DNS entries."""
+        self.removeFromHostGroup()
         if self.status in (self.PROVISIONING, self.INSTALLING_CF, self.RUNNING, self.PAUSED, self.ERROR):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
             if self.region.provider.code != 'test':
