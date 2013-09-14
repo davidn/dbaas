@@ -155,25 +155,20 @@ function ListCntl($scope, $location, apiModel, $http, growl, User, $dialog) {
     }
 }
 
-function ClusterCntl($scope, $location, apiModel, growl) {
+function ClusterCntl($scope, $location, apiModel, growl, dbaasConfig) {
     $scope.providers = apiModel.getProviders();
-    $scope.clusters = apiModel.getClusters();
-    // Get User Info
+
+    $scope.cluster = angular.copy(dbaasConfig.quickStart);
 
     $scope.save = function () {
         $scope.isLoading = true;
-
-        apiModel.getCluster().save(
-            {label: "Quick Start Cluster",
-                dbname: "quickstart",
-                dbusername: "appuser",
-                backup_schedule: "0 3,15 * * *",
-                backup_count: "14",
-                dbpassword: generateKey(10),
-                port: 3306}, function () {
-                $location.path("/list");
-            }, handleError);
+        console.log($scope.cluster);
+        apiModel.Cluster.save($scope.cluster, function () {
+            growl.success({body: "Cluster " + $scope.cluster.label + " created"})
+            $location.path("/list");
+        }, handleError);
     };
+
     $scope.cancel = function () {
         $location.path("/list");
     };
@@ -190,20 +185,20 @@ function ClusterCntl($scope, $location, apiModel, growl) {
     }
 }
 
-function NodeCntl($scope, $routeParams, $location, apiModel, $http, growl) {
+function NodeCntl($scope, $routeParams, $location, apiModel, $http, growl, dbaasConfig) {
     $scope.providers = apiModel.getProviders();
-    $scope.clusters = apiModel.getClusters();
-    // Get User Info
+    $scope.regions = apiModel.regions;
 
     $scope.save = function () {
         $scope.isLoading = true;
 
         var nodes = [
-            {region: $scope.quickStartNode1,
-                flavor: getFlavorFromRegion($scope.quickStartNode1),
+            {region: $scope.region.code,
+                flavor: $scope.region.provider.quickStartFlavor,
                 storage: 10}
         ];
-        $http.post(apiEndpointx + "clusters/" + $routeParams.clusterid, nodes).success(function (data) {
+        $http.post(dbaasConfig.apiUrl + "clusters/" + $routeParams.clusterid, nodes).success(function (data) {
+            growl.success({body: "Node added in region " + $scope.region.name})
             $location.path('/list');
         }).error(handleError);
     };
@@ -228,10 +223,6 @@ function NodeCntl($scope, $routeParams, $location, apiModel, $http, growl) {
 function QuickStartCntl($scope, $location, apiModel, $http, growl, dbaasConfig) {
     $scope.providers = apiModel.getProviders();
 
-    function getFlavorFromRegion(region) {
-        return apiModel.getProviderByRegion(region).quickStartFlavor;
-    }
-
     $scope.launch = function () {
         $scope.isLoading = true;
 
@@ -241,17 +232,17 @@ function QuickStartCntl($scope, $location, apiModel, $http, growl, dbaasConfig) 
 
         dbaasConfig.quickStart.dbpassword = generateKey(10);
 
-        apiModel.getCluster().save(dbaasConfig.quickStart, function (cluster) {
+        apiModel.Cluster.save(dbaasConfig.quickStart, function (cluster) {
             growl.success({body: 'Cluster ' + cluster.label + ' created'});
 
             var nodes = [
-                {region: $scope.quickStartNode1,
+                {region: $scope.region1.code,
                     label: "Quick Start Node 1",
-                    flavor: getFlavorFromRegion($scope.quickStartNode1),
+                    flavor: $scope.region1.provider.quickStartFlavor,
                     storage: 10},
-                {region: $scope.quickStartNode2,
+                {region: $scope.region2,
                     label: "Quick Start Node 2",
-                    flavor: getFlavorFromRegion($scope.quickStartNode2),
+                    flavor: $scope.region2.provider.quickStartFlavor,
                     storage: 10}
             ];
             $http.post(cluster.url, nodes).success(function () {

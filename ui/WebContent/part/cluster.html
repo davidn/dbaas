@@ -14,7 +14,7 @@
 					</label>
 
 					<div class="controls">
-						<input id="identifier" name="identifier" size="30" type="text"/>
+						<input id="identifier" ng-model="cluster.label" size="30" type="text"/>
 					</div>
 				</div>
 				<div class="control-group">
@@ -23,7 +23,7 @@
 					</label>
 
 					<div class="controls">
-						<input id="master_username" name="master_username" size="30" type="text"/>
+						<input id="master_username" ng-model="cluster.dbusername" size="30" type="text"/>
 					</div>
 				</div>
 				<div class="control-group">
@@ -31,7 +31,7 @@
 						<a tabindex="-1" rel="tooltip" title="Please choose a secure password" class="question"><i class="icon-info-sign"></i></a></label>
 
 					<div class="controls">
-						<input id="master_password" name="master_password" size="30" type="password"/>
+						<input id="master_password" ng-model="cluster.dbpassword" size="30" type="password"/>
 					</div>
 				</div>
 
@@ -39,7 +39,7 @@
 					<label class="control-label" for="master_password"> Master Password Confirm </label>
 
 					<div class="controls">
-						<input id="master_password_confirm" name="master_password_confirm" size="30" type="password"/>
+						<input id="master_password_confirm" ng-model="cluster.dbpassword_confirm" size="30" type="password"/>
 					</div>
 				</div>
 
@@ -49,7 +49,7 @@
 					</label>
 
 					<div class="controls">
-						<input id="db_name" name="db_name" size="30" type="text"/>
+						<input id="db_name" ng-model="cluster.dbname" size="30" type="text"/>
 					</div>
 				</div>
 
@@ -59,7 +59,7 @@
 					</label>
 
 					<div class="controls">
-						<input id="db_port" name="db_port" size="30" type="text" value="3306"/>
+						<input id="db_port" ng-model="cluster.port" size="30" type="text" value="3306"/>
 					</div>
 				</div>
 			</div>

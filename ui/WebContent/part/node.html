@@ -3,14 +3,10 @@
 		<div class="modal-header">
 			<h3>Add Node</h3>
 		</div>
-		<div class="modal-body" style="max-height:80%">
+		<div class="modal-body">
 			<div class="form-group">
-				<label> Node 1 Region</label>
-				<select ui-select2 ng-model="quickStartNode1" data-placeholder="Pick a region" style="width: 80%">
-					<optgroup ng-repeat="provider in providers" label="{{provider.name}}">
-						<option ng-repeat="region in provider.regions" value="{{region.code}}">{{region.name}}</option>
-					</optgroup>
-				</select>
+				<label> Node Region</label>
+				<select ui-select2 ng-model="region" data-placeholder="Pick a region"  ng-options="region as region.name group by region.provider.name for region in regions"  style="width: 80%"></select>
 			</div>
 		</div>
 		<div class="modal-footer">

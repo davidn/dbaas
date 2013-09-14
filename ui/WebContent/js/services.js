@@ -99,17 +99,11 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         var Cluster;
         var providers;
         var clusters;
+        var regions = [];
+        var flavors = [];
 
         function getProviderByFlavor(flavor) {
-            return _.find(providers, function (provider) {
-                return _.findWhere(provider.flavors, {code: flavor});
-            });
-        }
-
-        function getProviderByRegion(region) {
-            return _.find(providers, function (provider) {
-                return _.findWhere(provider.regions, {code: region});
-            });
+            return _.findWhere(flavors, {code: flavor}).provider;
         }
 
         var statuses = [
@@ -159,15 +153,29 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         }
 
         function hydrateProviderData(data) {
-            if (clusters && clusters.length > 0) {
-                hydrateClusterData(clusters);
-            }
             angular.forEach(dbaasConfig.quickStartFlavors, function (defaultFlavor, providerCode) {
-                var provider = _.findWhere(providers, {code:providerCode});
-                if (provider){
+                var provider = _.findWhere(providers, {code: providerCode});
+                if (provider) {
                     provider.quickStartFlavor = defaultFlavor;
                 }
             });
+            regions.length = 0;
+            flavors.length = 0;
+            providers.forEach(function (provider) {
+                provider.regions.forEach(function (region) {
+                    region.provider = provider;
+                });
+                provider.flavors.forEach(function (flavor) {
+                    flavor.provider = provider;
+                });
+                regions.push.apply(regions, provider.regions);
+                flavors.push.apply(flavors, provider.flavors);
+            });
+
+            if (clusters && clusters.length > 0) {
+                hydrateClusterData(clusters);
+            }
+
         }
 
         this.$get = function ($resource, dbaasConfig) {
@@ -197,10 +205,9 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
                     }
                     return clusters;
                 },
-                getCluster: function () {
-                    return Cluster;
-                },
-                getProviderByRegion: getProviderByRegion
+                Cluster: Cluster,
+                flavors: flavors,
+                regions: regions
             };
         };
     }]);

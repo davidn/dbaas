@@ -15,9 +15,9 @@
 			<span class="panel-title cluster-title">{{cluster.label}}</span>
 
 			<div class=" pull-right">
-				<button ng-if="cluster.canLaunch" class="btn add-node btn-success btn-small" ng-click="addNode({{cluster}})">ADD NODE</button>
-				<button ng-if="cluster.canLaunch" class="btn launch-cluster btn-success btn-small" ng-click="launchCluster({{cluster}})" data-loading-text="Launching...">LAUNCH</button>
-				<button class="btn delete-cluster btn-danger btn-small" ng-click="deleteCluster({{cluster}})" data-loading-text="Deleting...">DELETE</button>
+				<button ng-if="cluster.canLaunch" class="btn add-node btn-success btn-small" ng-click="addNode(cluster)">ADD NODE</button>
+				<button ng-if="cluster.canLaunch" class="btn launch-cluster btn-success btn-small" ng-click="launchCluster(cluster)" data-loading-text="Launching...">LAUNCH</button>
+				<button class="btn delete-cluster btn-danger btn-small" ng-click="deleteCluster(cluster)" data-loading-text="Deleting...">DELETE</button>
 			</div>
 		</div>
 
