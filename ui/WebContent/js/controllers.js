@@ -222,6 +222,7 @@ function NodeCntl($scope, $routeParams, $location, apiModel, $http, growl, dbaas
 
 function QuickStartCntl($scope, $location, apiModel, $http, growl, dbaasConfig) {
     $scope.providers = apiModel.getProviders();
+    $scope.regions = apiModel.regions;
 
     $scope.launch = function () {
         $scope.isLoading = true;
