@@ -1,5 +1,5 @@
 angular.module("messageBox", []).run(["$templateCache", function ($templateCache) {
-        $templateCache.put("template/dialog/message.html",
+        $templateCache.put("templates/messageBox/messageBox.html",
             "<div class=\"modal-dialog login\"><div class=\"modal-content login\"><form class=\"form-login\"><div class=\"modal-header login\">\n" +
                 "	<h3>{{ title }}</h3>\n" +
                 "</div>\n" +

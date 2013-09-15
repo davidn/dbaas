@@ -120,7 +120,7 @@ function ListCntl($scope, $location, apiModel, $http, growl, User, messageBox) {
             {result: 'ok', label: 'Delete', cssClass: 'btn-danger'}
         ];
 
-        messageBox.open(title, msg, btns).open().then(function (result) {
+        messageBox.open(title, msg, btns).result.then(function (result) {
             if (result === "ok") {
                 $http.delete(cluster.url).success(function (data) {
                     $scope.refresh();
