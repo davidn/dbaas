@@ -1,4 +1,4 @@
-from .models import Node, Cluster, Provider, Region, Flavor
+from .models import Node, Cluster, Provider, Region, Flavor, User
 from django.contrib import admin
 
 
@@ -28,3 +28,4 @@ class ProviderAdmin(admin.ModelAdmin):
 admin.site.register(Cluster, ClusterAdmin)
 admin.site.register(Node)
 admin.site.register(Provider, ProviderAdmin)
+admin.site.register(User)
