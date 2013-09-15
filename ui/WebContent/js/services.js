@@ -3,7 +3,7 @@
 // TODO: Set a default flavor for provider
 // TODO: Hydrate provider to nodes
 
-angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngStorage'])
+angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngStorage', 'ng'])
     .factory("growl", function ($rootScope) {
         var queue = [], currentMessage = {};
 
@@ -94,7 +94,7 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             }
         };
     }])
-    .provider('apiModel', ['dbaasConfig', function (dbaasConfig) {
+    .factory('apiModel', ['dbaasConfig', '$http', '$resource', function (dbaasConfig, $http, $resource) {
         var Provider;
         var Cluster;
         var providers;
@@ -102,8 +102,9 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         var regions = [];
         var flavors = [];
 
-        function getProviderByFlavor(flavor) {
-            return _.findWhere(flavors, {code: flavor}).provider;
+        function getProviderByFlavor(flavorCode) {
+            var flavor = _.findWhere(flavors, {code: flavorCode});
+            return flavor && flavor.provider;
         }
 
         var statuses = [
@@ -130,15 +131,10 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
                 node.statusClass = 'node-status-' + status.code;
                 data.maxStatus = Math.max(status.index, data.maxStatus);
                 node.id = "node-" + clusterIndex + "-" + node.nid;
-//        api_call('GET', node.url + 'stats/', {}, function (data) {
-//            node.cpu = data.cpu;
-//            node.riops = data.riops;
-//            node.wiops = data.wiops;
-//            $('#'+node.id+"-cpu").sparkline(node.cpu, {width:"100px"});
-//            $('#'+node.id+"-iops").sparkline(node.riops, {width:"100px", lineColor:"#0F0"});
-//            $('#'+node.id+"-iops").sparkline(node.wiops, {width:"100px", lineColor:"#F00", composite:true});
-//            $.sparkline_display_visible();
-//            }, generic_error);
+                $http.get(node.url + '/stats/').success(function (data) {
+                    node.cpu = data.cpu;
+                    node.iops = {read: data.riops, write: data.wiops};
+                });
             });
             return data;
         }
@@ -178,36 +174,36 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
 
         }
 
-        this.$get = function ($resource, dbaasConfig) {
 
-            Provider = $resource(dbaasConfig.apiUrlEscaped + 'providers');
-            Cluster = $resource(dbaasConfig.apiUrlEscaped + 'clusters/:id/:command', {id: '@id', command: '@command'}, {
-                    addNodes: {
-                        method: "POST"
-                    },
-                    launch: {
-                        method: "POST",
-                        params: { command: 'launch_all'}
-                    }
+        Provider = $resource(dbaasConfig.apiUrlEscaped + 'providers');
+        Cluster = $resource(dbaasConfig.apiUrlEscaped + 'clusters/:id/:command', {id: '@id', command: '@command'}, {
+                addNodes: {
+                    method: "POST"
+                },
+                launch: {
+                    method: "POST",
+                    params: { command: 'launch_all'}
                 }
-            );
-            return {
-                getProviders: function () {
-                    providers = providers || Provider.query({}, hydrateProviderData);
-                    return providers;
-                },
-                getClusters: function (forceRefresh) {
-                    if (forceRefresh) {
-                        clusters = Cluster.query({}, hydrateClusterData);
-                    }
-                    else {
-                        clusters = clusters || Cluster.query({}, hydrateClusterData);
-                    }
-                    return clusters;
-                },
-                Cluster: Cluster,
-                flavors: flavors,
-                regions: regions
-            };
+            }
+        );
+
+        return {
+            getProviders: function () {
+                providers = providers || Provider.query({}, hydrateProviderData);
+                return providers;
+            },
+            getClusters: function (forceRefresh) {
+                if (forceRefresh) {
+                    clusters = Cluster.query({}, hydrateClusterData);
+                }
+                else {
+                    clusters = clusters || Cluster.query({}, hydrateClusterData);
+                }
+                return clusters;
+            },
+            Cluster: Cluster,
+            flavors: flavors,
+            regions: regions
         };
+
     }]);

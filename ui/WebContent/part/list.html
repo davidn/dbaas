@@ -43,8 +43,8 @@
 				<td ng-class="{row0: $first}">{{node.provider.name}}</td>
 				<td ng-class="{row0: $first}">{{node.flavor}}</td>
 				<td ng-class="{row0: $first}" class="node-status {{node.statusClass}}">{{node.status}}</td>
-				<td ng-class="{row0: $first}"><span id="{{node.id}}-cpu">Loading...</span></td>
-				<td ng-class="{row0: $first}"><span id="{{node.id}}-iops">Loading...</span></td>
+				<td ng-class="{row0: $first}"><span jq-sparkline ng-model="node.cpu" opts='{"width":150}'>Loading...</span></td>
+				<td ng-class="{row0: $first}"><span jq-sparkline ng-model="node.iops" composite="true" opts='[{"width":150,"lineColor":"#0F0"},{"width":150,"lineColor":"#F00"}]' >Loading...</span></td>
 				<td ng-class="{row0: $first}">
 					<div class="btn-group">
 						<a class="dropdown-toggle" data-hover="dropdown" data-toggle="dropdown"> <i class="icon-reorder"></i> </a>

@@ -32,5 +32,8 @@ angular.module('GenieDBaaS', ['GenieDBaaS.config', 'Utility.directives', 'GenieD
     }];
 
     $httpProvider.responseInterceptors.push(interceptor);
+
+    $.fn.sparkline.defaults.common.lineColor = '#8e8e8e';
+    $.fn.sparkline.defaults.common.fillColor = undefined;
 });
 
