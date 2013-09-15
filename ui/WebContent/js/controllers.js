@@ -74,7 +74,7 @@ function RegisterCntl($scope, $location, User, growl) {
     };
 }
 
-function ListCntl($scope, $location, apiModel, $http, growl, User, $dialog) {
+function ListCntl($scope, $location, apiModel, $http, growl, User, messageBox) {
 //    TODO Disable UI while processing update on cluster
     if (!User.user.token) {
         $location.path("/");
@@ -120,7 +120,7 @@ function ListCntl($scope, $location, apiModel, $http, growl, User, $dialog) {
             {result: 'ok', label: 'Delete', cssClass: 'btn-danger'}
         ];
 
-        $dialog.messageBox(title, msg, btns).open().then(function (result) {
+        messageBox.open(title, msg, btns).open().then(function (result) {
             if (result === "ok") {
                 $http.delete(cluster.url).success(function (data) {
                     $scope.refresh();

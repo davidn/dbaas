@@ -54,12 +54,9 @@
 				</div>
 
 				<div class="control-group">
-					<label class="control-label" for="db_port">Database Port
-						<a tabindex="-1" rel="tooltip" title="Using a non-standard port (3306) is recommended"><i class="icon-info-sign"></i></a>
-					</label>
-
+					<label class="control-label" for="db_port">Database Port</label>
 					<div class="controls">
-						<input id="db_port" ng-model="cluster.port" size="30" type="text" value="3306"/>
+						<input id="db_port" ng-model="cluster.port" size="30" type="text" value="3306" tooltip="Using a non-standard port (3306) is recommended" tooltip-trigger="focus" tooltip-placement="right"/>
 					</div>
 				</div>
 			</div>

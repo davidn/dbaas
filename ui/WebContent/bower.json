@@ -20,7 +20,8 @@
     "jquery": "latest",
     "select2": "latest",
     "toastr": "latest",
-    "underscore": "latest"
+    "underscore": "latest",
+    "sparkline": "latest"
   },
   "resolutions": {
     "angular": "1.2.0-rc.2"

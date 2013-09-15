@@ -1,4 +1,4 @@
-angular.module('GenieDBaaS', ['GenieDBaaS.config', 'Utility.directives', 'GenieDBaaS.services', 'ngRoute', 'ngSanitize', 'ngResource', 'ngStorage', 'ui.select2', 'ui.bootstrap', 'angulartics', 'angulartics.google.analytics', "template/dialog/message.html"]).config(function ($routeProvider, $httpProvider) {
+angular.module('GenieDBaaS', ['GenieDBaaS.config', 'Utility.directives', 'GenieDBaaS.services', 'ngRoute', 'ngSanitize', 'ngResource', 'ngStorage', 'ui.select2', 'ui.bootstrap', 'angulartics', 'angulartics.google.analytics', "messageBox"]).config(function ($routeProvider, $httpProvider) {
     $routeProvider.
         when("/", {templateUrl: 'part/welcome.html', controller: WelcomeCntl}).
         when("/list", {templateUrl: 'part/list.html', controller: ListCntl}).
