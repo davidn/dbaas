@@ -8,9 +8,9 @@ There are several aspects to the API, each with their own class (a viewset):
 
 * Listing :py:class:`User`
 
-* Listing, creating, launching and deleteing :py:class:`~api.models.Cluster`.
+* Listing, creating, launching and deleting :py:class:`~api.models.Cluster`.
 
-* Listing, creating, pausing, resuming, viewing stats of, viewing backups of and deleteing :py:class:`~api.models.Node`.
+* Listing, creating, pausing, resuming, viewing stats of, viewing backups of and deleting :py:class:`~api.models.Node`.
 
 """
 
@@ -28,8 +28,10 @@ from rest_framework.decorators import action, link, api_view, permission_classes
 from django.http.response import HttpResponse
 from pyzabbix import ZabbixAPI
 
+
 class Owner(permissions.BasePermission):
     """Allows a user access to Clusters and Nodes she owns."""
+
     def has_object_permission(self, request, view, obj):
         if isinstance(obj, Cluster):
             return obj.user == request.user
@@ -40,41 +42,47 @@ class Owner(permissions.BasePermission):
     def has_permission(self, request, view):
         return not request.user.is_anonymous()
 
+
 class IsOwnerOrAdminUser(permissions.IsAdminUser):
     """Allows owners or admins access, and allows anyone create access."""
+
     def has_object_permission(self, request, view, obj):
         if obj == request.user:
             return True
-        return super(IsOwnerOrAdminUser, self).has_object_permission(request,view,obj)
+        return super(IsOwnerOrAdminUser, self).has_object_permission(request, view, obj)
+
 
 class ProviderViewSet(mixins.ListModelMixin,
-            mixins.RetrieveModelMixin,
-            viewsets.GenericViewSet):
+                      mixins.RetrieveModelMixin,
+                      viewsets.GenericViewSet):
     """List and retrieve :py:class:`~api.Provider`."""
     serializer_class = ProviderSerializer
     queryset = Provider.objects.filter(enabled=True)
     permission_classes = (permissions.IsAuthenticated,)
 
+
 class RegionViewSet(mixins.ListModelMixin,
-            mixins.RetrieveModelMixin,
-            viewsets.GenericViewSet):
+                    mixins.RetrieveModelMixin,
+                    viewsets.GenericViewSet):
     """List and retrieve :py:class:`~api.Region`."""
     serializer_class = RegionSerializer
     queryset = Region.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
 
+
 class FlavorViewSet(mixins.ListModelMixin,
-            mixins.RetrieveModelMixin,
-            viewsets.GenericViewSet):
+                    mixins.RetrieveModelMixin,
+                    viewsets.GenericViewSet):
     """List and retrieve :py:class:`~api.Flavor`."""
     serializer_class = FlavorSerializer
     queryset = Flavor.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
 
+
 class UserViewSet(mixins.ListModelMixin,
-            mixins.RetrieveModelMixin,
-            mixins.UpdateModelMixin,
-            viewsets.GenericViewSet):
+                  mixins.RetrieveModelMixin,
+                  mixins.UpdateModelMixin,
+                  viewsets.GenericViewSet):
     """List, retrieve update and create :py:class:`~api.Region`."""
     model = get_user_model()
     serializer_class = UserSerializer
@@ -85,6 +93,7 @@ class UserViewSet(mixins.ListModelMixin,
             return get_user_model().objects.all()
         return get_user_model().objects.filter(pk=self.request.user.pk)
 
+
 @api_view(('GET',))
 @permission_classes((permissions.IsAuthenticated,))
 def identity(request):
@@ -93,6 +102,7 @@ def identity(request):
         return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
     serializer = UserSerializer(request.user)
     return Response(serializer.data)
+
 
 @api_view(('POST',))
 @permission_classes((permissions.IsAuthenticated,))
@@ -103,11 +113,12 @@ def upgrade(request):
     serializer = UserSerializer(request.user)
     return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
+
 class ClusterViewSet(mixins.CreateModelMixin,
-            mixins.ListModelMixin,
-            mixins.RetrieveModelMixin,
-            mixins.DestroyModelMixin,
-            viewsets.GenericViewSet):
+                     mixins.ListModelMixin,
+                     mixins.RetrieveModelMixin,
+                     mixins.DestroyModelMixin,
+                     viewsets.GenericViewSet):
     model = Cluster
     serializer_class = ClusterSerializer
     permission_classes = (Owner,)
@@ -116,20 +127,20 @@ class ClusterViewSet(mixins.CreateModelMixin,
         return Cluster.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        if isinstance(request.DATA,list):
+        if isinstance(request.DATA, list):
             data = []
-            n=len(request.DATA)
+            n = len(request.DATA)
             for d in request.DATA:
                 new_d = d.copy()
-                new_d["user"] = reverse('user-detail',args=(request.user.pk,))
+                new_d["user"] = reverse('user-detail', args=(request.user.pk,))
                 data.append(new_d)
         else:
             data = request.DATA.copy()
-            data["user"] = reverse('user-detail',args=(request.user.pk,))
-            n=1
+            data["user"] = reverse('user-detail', args=(request.user.pk,))
+            n = 1
 
         if not request.user.is_paid and request.user.clusters.count() + n > 1:
-            return Response({'non_field_errors':['Free users cannot create more than one cluster']},status=status.HTTP_403_FORBIDDEN)
+            return Response({'non_field_errors': ['Free users cannot create more than one cluster']}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = self.get_serializer(data=data, files=request.FILES)
 
@@ -145,7 +156,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
 
     def add(self, request, *args, **kwargs):
         self.object = self.get_object()
-        if isinstance(request.DATA,list):
+        if isinstance(request.DATA, list):
             data = []
             n = len(request.DATA)
             for d in request.DATA:
@@ -158,7 +169,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
             n = 1
 
         if not request.user.is_paid and self.object.nodes.count() + n > 2:
-            return Response({'non_field_errors':['Free users cannot create more than two nodes']},status=status.HTTP_403_FORBIDDEN)
+            return Response({'non_field_errors': ['Free users cannot create more than two nodes']}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = NodeSerializer(data=data, files=request.FILES, context={
             'request': self.request,
@@ -166,8 +177,10 @@ class ClusterViewSet(mixins.CreateModelMixin,
             'view': self
         })
 
-        if not request.user.is_paid and (isinstance(serializer.object, list) and any(not serializer.object.flavor.free_allowed for n in serializer.object)) or (isinstance(serializer.object, Node) and not serializer.object.flavor.free_allowed):
-            return Response({'non_field_errors':['Free users cannot create this flavor node']},status=status.HTTP_403_FORBIDDEN)
+        if not request.user.is_paid and (
+            isinstance(serializer.object, list) and any(not serializer.object.flavor.free_allowed for n in serializer.object)) or (
+            isinstance(serializer.object, Node) and not serializer.object.flavor.free_allowed):
+            return Response({'non_field_errors': ['Free users cannot create this flavor node']}, status=status.HTTP_403_FORBIDDEN)
 
         if serializer.is_valid():
             if isinstance(serializer.object, list):
@@ -201,16 +214,19 @@ class ClusterViewSet(mixins.CreateModelMixin,
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
 
+
 def random_walk(initial_value=0, min_value=0, max_value=100, step=2):
     import random
+
     while True:
         yield initial_value
-        initial_value = random.choice((max(min_value, initial_value-step),min(max_value, initial_value+step)))
+        initial_value = random.choice((max(min_value, initial_value - step), min(max_value, initial_value + step)))
+
 
 class NodeViewSet(mixins.ListModelMixin,
-            mixins.RetrieveModelMixin,
-            mixins.DestroyModelMixin,
-            viewsets.GenericViewSet):
+                  mixins.RetrieveModelMixin,
+                  mixins.DestroyModelMixin,
+                  viewsets.GenericViewSet):
     model = Node
     serializer_class = NodeSerializer
     permission_classes = (Owner,)
@@ -239,50 +255,51 @@ class NodeViewSet(mixins.ListModelMixin,
             return Response(data=list(islice(random_walk(), 120)), status=status.HTTP_200_OK)
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
         z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
-        items = z.item.get(host=node.dns_name,filter={"key_":key})
+        items = z.item.get(host=node.dns_name, filter={"key_": key})
         if len(items) == 0:
             history = []
         else:
             history = [
                 float(h['value']) for h in
-                z.history.get(itemids=items[0]['itemid'],limit=count,output="extend",history=0)
+                z.history.get(itemids=items[0]['itemid'], limit=count, output="extend", history=0)
             ]
         return Response(data=history, status=status.HTTP_200_OK)
 
     @link()
     def cpu(self, request, *args, **kwargs):
         self.object = self.get_object()
-        return self.zabbix_history(self.object,"system.cpu.util[]")
+        return self.zabbix_history(self.object, "system.cpu.util[]")
 
     @link()
     def wiops(self, request, *args, **kwargs):
         self.object = self.get_object()
-        return self.zabbix_history(self.object,"vfs.dev.write[,ops,]")
+        return self.zabbix_history(self.object, "vfs.dev.write[,ops,]")
 
     @link()
     def riops(self, request, *args, **kwargs):
         self.object = self.get_object()
-        return self.zabbix_history(self.object,"vfs.dev.read[,ops,]")
+        return self.zabbix_history(self.object, "vfs.dev.read[,ops,]")
 
     @link()
     def stats(self, request, *args, **kwargs):
         self.object = self.get_object()
         if self.object.region.provider.code == 'test':
             from itertools import islice
+
             return Response(data={
-                    "cpu":list(islice(random_walk(),120)),
-                    "wiops":list(islice(random_walk(),120)),
-                    "riops":list(islice(random_walk(),120))},
-                headers={"X-Data-Source": "test"}, status=status.HTTP_200_OK)
+                "cpu": list(islice(random_walk(), 120)),
+                "wiops": list(islice(random_walk(), 120)),
+                "riops": list(islice(random_walk(), 120))},
+                            headers={"X-Data-Source": "test"}, status=status.HTTP_200_OK)
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
         z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
         res = {}
-        for key, key_name in (("system.cpu.util[]","cpu"),("vfs.dev.write[,ops,]","wiops"),("vfs.dev.read[,ops,]","riops")):
-            items = z.item.get(host=self.object.dns_name,filter={"key_":key})
+        for key, key_name in (("system.cpu.util[]", "cpu"), ("vfs.dev.write[,ops,]", "wiops"), ("vfs.dev.read[,ops,]", "riops")):
+            items = z.item.get(host=self.object.dns_name, filter={"key_": key})
             if len(items) != 0:
                 res[key_name] = [
                     float(h['value']) for h in
-                    z.history.get(itemids=items[0]['itemid'],limit=120,output="extend",history=0)
+                    z.history.get(itemids=items[0]['itemid'], limit=120, output="extend", history=0)
                 ]
         return Response(data=res, status=status.HTTP_200_OK)
 
@@ -295,7 +312,7 @@ class NodeViewSet(mixins.ListModelMixin,
     @action(permission_classes=[permissions.AllowAny])
     def set_backups(self, request, *args, **kwargs):
         self.object = self.get_object() # The NODE object
-        if isinstance(request.DATA,list):
+        if isinstance(request.DATA, list):
             data = []
             for d in request.DATA:
                 new_d = d.copy()

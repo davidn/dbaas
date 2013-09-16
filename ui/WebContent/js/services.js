@@ -61,7 +61,7 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             $http.defaults.headers.common['Authorization'] = 'Token ' + user.token;
         }
 
-        var Registration = $resource(dbaasConfig.authUrlEscaped + 'register/:activation_code', {activation_code: '@activation_code'});
+        var Registration = $resource(dbaasConfig.registerUrlEscaped + ':activation_code', {activation_code: '@activation_code'});
         var User = $resource(dbaasConfig.authUrlEscaped + '/:id', {id: '@id'});
 
         function clearToken() {

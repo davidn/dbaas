@@ -1,36 +1,50 @@
 # Create your views here.
+from logging import getLogger
+
 from django.conf import settings
 from django.contrib.sites.models import Site, RequestSite
 from registration import signals
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 from rest_framework import status, permissions
+from django.db import IntegrityError
 from .models import RegistrationProfile
 from .serializers import RegistrationSerializer
 
+
+logger = getLogger(__name__)
+
+
 class RegistrationView(GenericViewSet):
-    permission_classes= (permissions.AllowAny,)
+    permission_classes = (permissions.AllowAny,)
     serializer_class = RegistrationSerializer
     model = RegistrationProfile
-    lookup_field='activation_key'
+    lookup_field = 'activation_key'
+
     def create(self, request, *args, **kwargs):
+        logger.info("create")
         if not self.registration_allowed(request):
             return Response(status=status.HTTP_403_FORBIDDEN)
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
+        logger.info("Serializer Done")
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
             self.register(request, request.DATA)
             return Response(status=status.HTTP_201_CREATED)
+        except IntegrityError as e:
+            return Response("Email already registered", status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, *args, **kwargs):
+        logger.info("retrieve")
         self.object = self.get_object()
         serializer = self.get_serializer(self.object)
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
+        logger.info("update")
         activated_user = RegistrationProfile.objects.activate_user(kwargs["activation_key"])
         if activated_user:
             if request.DATA.has_key('password'):
@@ -39,12 +53,12 @@ class RegistrationView(GenericViewSet):
             signals.user_activated.send(sender=self.__class__,
                                         user=activated_user,
                                         request=request)
-            return Response(status=status.HTTP_202_ACCEPTED, headers={"Location":activated_user.get_absolute_url()})
+            return Response(status=status.HTTP_202_ACCEPTED, headers={"Location": activated_user.get_absolute_url()})
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     def register(self, request, data):
         """
-        Given an email address and password, register a new
+        Given an email address, register a new
         user account, which will initially be inactive.
 
         Along with the new ``User`` object, a new
@@ -66,12 +80,14 @@ class RegistrationView(GenericViewSet):
         class of this backend as the sender.
 
         """
+        logger.info("register")
         email, password = data['email'], data.get('password', None)
         if Site._meta.installed:
             site = Site.objects.get_current()
         else:
             site = RequestSite(request)
-        new_user = RegistrationProfile.objects.create_inactive_user(email, password, site, getattr(settings,'SEND_REGISTRATION_EMAIL',True))
+        new_user = RegistrationProfile.objects.create_inactive_user(email, password, site,
+                                                                    getattr(settings, 'SEND_REGISTRATION_EMAIL', True))
         signals.user_registered.send(sender=self.__class__,
                                      user=new_user,
                                      request=request)

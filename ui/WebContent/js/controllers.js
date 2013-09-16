@@ -57,16 +57,16 @@ function RegisterCntl($scope, $location, User, growl) {
 
     $scope.register = function () {
         $scope.isLoading = true;
-        User.register($scope.email).success(function () {
+        User.register($scope.form.email).$then(function () {
             $location.path("/thankyou");
-        }).error(function (err) {
-                $scope.isLoading = false;
-                if (err && err.data && err.data.non_field_errors && err.data.non_field_errors[0]) {
-                    growl.error({body: err.data.non_field_errors[0]});
-                } else {
-                    growl.error({body: 'Registration Failed'});
-                }
-            });
+        }, function (err) {
+            $scope.isLoading = false;
+            if (err && err.data ) {
+                growl.error({body: err.data});
+            } else {
+                growl.error({body: 'Registration Failed'});
+            }
+        });
     };
     $scope.cancel = function () {
         User.user.email = $scope.form.email;
@@ -162,7 +162,6 @@ function ClusterCntl($scope, $location, apiModel, growl, dbaasConfig) {
 
     $scope.save = function () {
         $scope.isLoading = true;
-        console.log($scope.cluster);
         apiModel.Cluster.save($scope.cluster, function () {
             growl.success({body: "Cluster " + $scope.cluster.label + " created"})
             $location.path("/list");

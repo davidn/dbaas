@@ -3,9 +3,9 @@ import hashlib
 from registration.models import User, RegistrationProfile as BaseRegistrationProfile, RegistrationManager as BaseRegistrationManager
 from django.db import transaction
 
+
 class RegistrationManager(BaseRegistrationManager):
-    def create_inactive_user(self, email, password,
-                             site, send_email=True):
+    def create_inactive_user(self, email, password, site, send_email=True):
         """
         Create a new, inactive ``User``, generate a
         ``RegistrationProfile`` and email its activation key to the
@@ -25,6 +25,7 @@ class RegistrationManager(BaseRegistrationManager):
             registration_profile.send_activation_email(site)
 
         return new_user
+
     create_inactive_user = transaction.commit_on_success(create_inactive_user)
 
     def create_profile(self, user):
@@ -41,11 +42,12 @@ class RegistrationManager(BaseRegistrationManager):
         username = user.email
         if isinstance(username, unicode):
             username = username.encode('utf-8')
-        activation_key = hashlib.sha1(salt+username).hexdigest()
-        return self.create(user=user,
-                           activation_key=activation_key)
+        activation_key = hashlib.sha1(salt + username).hexdigest()
+        return self.create(user=user, activation_key=activation_key)
+
 
 class RegistrationProfile(BaseRegistrationProfile):
     objects = RegistrationManager()
+
     class Meta:
         proxy = True
