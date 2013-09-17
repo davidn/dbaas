@@ -4,10 +4,10 @@
 		<div class="modal-content login">
 			<div class="modal-header">Welcome to Genie DBaaS</div>
 			<div class="modal-body">
-				<div id="looking" ng-hide="email">
+				<div ng-hide="email">
 					<div ng-bind-html="statusText"></div>
 				</div>
-				<div id="confirmed" ng-hide="!email">
+				<div ng-hide="!email">
 					<p>
 						Thanks for registering
 						<b>{{ email }}</b>. Set your account password to continue setting up your free distributed database. </p>
@@ -16,7 +16,7 @@
 					</p>
 					<p>
 						<input type="password" class="input-login" ng-model="verifyPassword" placeholder="Verify Password" pw-check="pw1" required ng-class="{'form-invalid': showValidationMessages && !activateForm.passwd.$valid}"/>
-						<span ng-show="activateForm.verifyPassword.$error.pwmatch">Passwords don't match.</span>
+						<span ng-show="verifyPassword.$error.pwmatch">Passwords don't match.</span>
 					</p>
 				</div>
 			</div>

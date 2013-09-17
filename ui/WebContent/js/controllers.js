@@ -57,11 +57,13 @@ function ActivationCntl($scope, $location, $routeParams, User, growl) {
     $scope.activate = function () {
         User.activate($routeParams.activationHash, $scope.password).$then(function (response) {
             growl.success({body: 'Account activated!'});
-            $location.path("/quickstart");
+            User.login($scope.email,$scope.password).$then(function (){
+                $location.path("/quickstart");
+            });
         }, function (err) {
             console.log(err);
             growl.error({body: 'Unable to activate account'});
-        })
+        });
     }
 }
 
