@@ -55,7 +55,7 @@ function ActivationCntl($scope, $location, $routeParams, User, growl) {
     });
 
     $scope.activate = function () {
-        User.activate($routeParams.activationHash, $scope.password).$then(function (response){
+        User.activate($routeParams.activationHash, $scope.password).$then(function (response) {
             growl.success({body: 'Account activated!'});
             $location.path("/quickstart");
         }, function (err) {
@@ -110,6 +110,12 @@ function ListCntl($scope, $location, apiModel, $http, growl, User, messageBox) {
 
     $scope.addCluster = function () {
         $location.path("/cluster");
+    };
+
+    $scope.launchCluster = function (cluster) {
+        $http.post(cluster.url + '/launch_all/').success(function () {
+            $scope.refresh();
+        }).error(handleError);
     };
 
     $scope.addNode = function (cluster) {
