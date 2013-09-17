@@ -43,9 +43,26 @@ function WelcomeCntl($scope, $location, User, growl) {
     };
 }
 
-function ActivationCntl($scope, $routeParams) {
-    $scope.hash = $routeParams.activationHash;
-    //TODO: Get User Info
+function ActivationCntl($scope, $location, $routeParams, User, growl) {
+    $scope.statusText = "Looking up activation details...<i class='icon-refresh icon-spin'></i>";
+
+    User.checkActivation($routeParams.activationHash).$then(function (response) {
+        $scope.email = response.data.email;
+    }, function (err) {
+        $scope.statusText = "Activation code is not valid";
+        console.log(err);
+        growl.error({body: 'Activation code is not valid'});
+    });
+
+    $scope.activate = function () {
+        User.activate($routeParams.activationHash, $scope.password).$then(function (response){
+            growl.success({body: 'Account activated!'});
+            $location.path("/quickstart");
+        }, function (err) {
+            console.log(err);
+            growl.error({body: 'Unable to activate account'});
+        })
+    }
 }
 
 function ThanksCntl() {
@@ -61,7 +78,7 @@ function RegisterCntl($scope, $location, User, growl) {
             $location.path("/thankyou");
         }, function (err) {
             $scope.isLoading = false;
-            if (err && err.data ) {
+            if (err && err.data) {
                 growl.error({body: err.data});
             } else {
                 growl.error({body: 'Registration Failed'});

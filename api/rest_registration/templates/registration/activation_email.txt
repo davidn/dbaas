@@ -1,1 +1,7 @@
-{{activation_key}}
+Welcome to GenieDB DBaaS!
+
+Please click here to validate your account
+
+http://dbaas-test.geniedb.com/#activate/{{activation_key}}
+
+

@@ -22,7 +22,6 @@ class RegistrationView(GenericViewSet):
     lookup_field = 'activation_key'
 
     def create(self, request, *args, **kwargs):
-        logger.info("create")
         if not self.registration_allowed(request):
             return Response(status=status.HTTP_403_FORBIDDEN)
         serializer = self.get_serializer(data=request.DATA, files=request.FILES)
@@ -33,18 +32,17 @@ class RegistrationView(GenericViewSet):
             self.register(request, request.DATA)
             return Response(status=status.HTTP_201_CREATED)
         except IntegrityError as e:
-            return Response("Email already registered", status=status.HTTP_400_BAD_REQUEST)
-        except:
+            return Response("That email address already has an account", status=status.HTTP_400_BAD_REQUEST)
+        except Exception as foo:
+            logger.error("Exception on create:", foo)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, *args, **kwargs):
-        logger.info("retrieve")
         self.object = self.get_object()
         serializer = self.get_serializer(self.object)
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
-        logger.info("update")
         activated_user = RegistrationProfile.objects.activate_user(kwargs["activation_key"])
         if activated_user:
             if request.DATA.has_key('password'):
@@ -80,7 +78,6 @@ class RegistrationView(GenericViewSet):
         class of this backend as the sender.
 
         """
-        logger.info("register")
         email, password = data['email'], data.get('password', None)
         if Site._meta.installed:
             site = Site.objects.get_current()
