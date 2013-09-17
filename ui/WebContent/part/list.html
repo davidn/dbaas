@@ -5,7 +5,8 @@
 	</div>
 	<div class="modal-header">Cluster Summary
 		<button class="btn btn-primary add-cluster-btn" ng-click="addCluster()"><i class="icon-plus"></i> ADD CLUSTER</button>
-		<button class="btn btn-primary" ng-click="refresh()" id="refresh" ng-class="{disabled: isRefreshing}"><i class="icon-refresh" ng-class="{'icon-spin': isRefreshing}"></i></button>
+		<button class="btn btn-primary" ng-click="refresh()" id="refresh" ng-class="{disabled: isRefreshing}">
+			<i class="icon-refresh" ng-class="{'icon-spin': isRefreshing}"></i></button>
 		<button type="submit" class="btn btn-primary pull-right disabled"><i class="icon-bar-chart"></i> CLUSTER STATS</button>
 	</div>
 </div>
@@ -30,8 +31,8 @@
 				<th>Provider</th>
 				<th>Instance Type</th>
 				<th>Status</th>
-				<th>CPU</th>
-				<th>IOPS</th>
+				<th ng-if="cluster.hasRunning">CPU</th>
+				<th ng-if="cluster.hasRunning">IOPS</th>
 				<th></th>
 			</tr>
 			</thead>
@@ -43,8 +44,11 @@
 				<td ng-class="{row0: $first}">{{node.provider.name}}</td>
 				<td ng-class="{row0: $first}">{{node.flavor}}</td>
 				<td ng-class="{row0: $first}" class="node-status {{node.statusClass}}">{{node.status}}</td>
-				<td ng-class="{row0: $first}"><span jq-sparkline ng-model="node.cpu" opts='{"width":150}'>Loading...</span></td>
-				<td ng-class="{row0: $first}"><span jq-sparkline ng-model="node.iops" composite="true" opts='[{"width":150,"lineColor":"#0F0"},{"width":150,"lineColor":"#F00"}]' >Loading...</span></td>
+				<td ng-if="cluster.hasRunning" ng-class="{row0: $first}" class="list-sparkline">
+					<span ng-if="node.isRunning" jq-sparkline ng-model="node.cpu" opts='{"width":150}'>Loading...</span></td>
+				<td ng-if="cluster.hasRunning" ng-class="{row0: $first}" class="list-sparkline">
+					<span ng-if="node.isRunning" jq-sparkline ng-model="node.iops" composite="true" opts='[{"width":150,"lineColor":"#0F0"},{"width":150,"lineColor":"#F00"}]'>Loading...</span>
+				</td>
 				<td ng-class="{row0: $first}">
 					<div class="btn-group">
 						<a class="dropdown-toggle" data-hover="dropdown" data-toggle="dropdown"> <i class="icon-reorder"></i> </a>
@@ -78,7 +82,7 @@
 	</div>
 	<p ng-if="clusters.$resolved && clusters.length < 1" class="lead clusters-empty">You don't have any clusters yet. Use our
 		<button class="btn btn-success" rel="tooltip" title="Creates 2 node cluster for easy testing of GenieDB on Amazon EC2" ng-click="quickStart()">QUICK START</button>
-		which builds a cluster with two small Amazon EC2 or Rackspace nodes.
+																					 which builds a cluster with two small Amazon EC2 or Rackspace nodes.
 	</p>
 	<p ng-if="!clusters.$resolved" class="lead clusters-empty">Loading... </p>
 </div>

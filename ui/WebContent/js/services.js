@@ -52,24 +52,25 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         };
     })
     .factory("User", ['$resource', '$localStorage', '$http', 'dbaasConfig', '$location', function ($resource, $localStorage, $http, dbaasConfig, $location) {
-        var user = $localStorage.$default({user: {
-            email: "",
-            token: undefined}
-        }).user;
+        var Registration = $resource(dbaasConfig.registerUrlEscaped + ':activation_code', {activation_code: '@activation_code'}, {
+            activate: {method: 'PUT'}
+        });
+        var User = $resource(dbaasConfig.authUrlEscaped + '/:id', {id: '@id'});
+
+        var user = $localStorage.$default({user: {email: "", token: undefined}}).user;
 
         if (user.token) {
             $http.defaults.headers.common['Authorization'] = 'Token ' + user.token;
         }
 
-        var Registration = $resource(dbaasConfig.registerUrlEscaped + ':activation_code', {activation_code: '@activation_code'}, {
-            activate: {method:'PUT'}
-        });
-
-        var User = $resource(dbaasConfig.authUrlEscaped + '/:id', {id: '@id'});
-
         function clearToken() {
             user.token = '';
             delete $http.defaults.headers.common['Authorization'];
+            updateUserStorage();
+        }
+
+        function updateUserStorage() {
+            $localStorage.user = user;
         }
 
         return {
@@ -78,17 +79,18 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
                 return Registration.save({email: email});
             },
             checkActivation: function (activationCode) {
-                return Registration.get({activation_code:activationCode});
+                return Registration.get({activation_code: activationCode});
 
             },
             activate: function (activationCode, password) {
-                return Registration.activate({activation_code: activationCode},{password: password});
+                return Registration.activate({activation_code: activationCode}, {password: password});
             },
             login: function (email, password) {
                 user.email = email;
                 clearToken();
                 return User.save({username: email, password: password}, function (data) {
                     user.token = data.token;
+                    updateUserStorage();
                     $http.defaults.headers.common['Authorization'] = 'Token ' + data.token;
                 });
             },
@@ -128,15 +130,18 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
 
         function hydrateNodeData(clusterIndex, data) {
             data.maxStatus = 0;
+            data.hasRunning = false;
             data.forEach(function (node, i) {
                 node.label = node.label ? node.label : node.region ? node.region : 'Node' + i;
                 node.provider = getProviderByFlavor(node.flavor);
                 var status = getStatusByLabel(node.status);
                 node.statusClass = 'node-status-' + status.code;
                 data.maxStatus = Math.max(status.index, data.maxStatus);
+                node.isRunning = status.index == 3;
+                data.hasRunning = data.hasRunning || node.isRunning;
                 node.id = "node-" + clusterIndex + "-" + node.nid;
                 $http.get(node.url + '/stats/').success(function (data) {
-                    node.cpu = data.cpu;
+                    node.cpu = data.cpu ? data.cpu : [0];
                     node.iops = {read: data.riops, write: data.wiops};
                 });
             });
@@ -147,6 +152,7 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             data.forEach(function (cluster, i) {
                 hydrateNodeData(i, cluster.nodes);
                 cluster.canLaunch = cluster.nodes.maxStatus === 0;
+                cluster.hasRunning = cluster.nodes.hasRunning;
                 cluster.label = cluster.label || cluster.dbname;
             });
             return data;

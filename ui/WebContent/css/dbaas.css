@@ -224,3 +224,7 @@ a.dropdown-toggle:hover{
     font-size: 8pt;
     color: #aaa;
 }
+
+.list-sparkline{
+    width:180px;
+}
