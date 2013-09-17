@@ -265,7 +265,7 @@ function QuickStartCntl($scope, $location, apiModel, $http, growl, dbaasConfig) 
                     label: "Quick Start Node 1",
                     flavor: $scope.region1.provider.quickStartFlavor,
                     storage: 10},
-                {region: $scope.region2,
+                {region: $scope.region2.code,
                     label: "Quick Start Node 2",
                     flavor: $scope.region2.provider.quickStartFlavor,
                     storage: 10}
