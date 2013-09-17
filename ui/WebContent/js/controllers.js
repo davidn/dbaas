@@ -180,7 +180,7 @@ function ListCntl($scope, $location, apiModel, $http, growl, User, messageBox) {
     }
 }
 
-function ClusterCntl($scope, $location, apiModel, growl, dbaasConfig) {
+function ClusterCntl($scope, $location, $document, apiModel, growl, dbaasConfig) {
     $scope.providers = apiModel.getProviders();
 
     $scope.cluster = angular.copy(dbaasConfig.quickStart);
@@ -196,6 +196,13 @@ function ClusterCntl($scope, $location, apiModel, growl, dbaasConfig) {
     $scope.cancel = function () {
         $location.path("/list");
     };
+
+//    $document.bind('keydown', function (evt) {
+//        console.log(evt);
+//        if (evt.which === 27) {
+//
+//        }
+//    });
 
     function handleError(err) {
         $scope.isLoading = false;
@@ -278,6 +285,10 @@ function QuickStartCntl($scope, $location, apiModel, $http, growl, dbaasConfig) 
             }).error(handleError);
         }, handleError);
     };
+
+    $scope.cancel = function (){
+        $location.path('/list');
+    }
 
     function handleError(err) {
         $scope.isLoading = false;
