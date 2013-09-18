@@ -30,7 +30,7 @@
       "provider": 1,
       "code": "us-west-1",
       "name": "EC2 US West (Northern California)",
-      "image": "ami-58664d1d",
+      "image": "ami-06c8fd43",
       "lbr_region": "us-west-1",
       "key_name": "dbaas",
       "security_group": "dbaas"
@@ -43,7 +43,7 @@
       "provider": 1,
       "code": "us-west-2",
       "name": "EC2 US West (Oregon)",
-      "image": "ami-b3e57783",
+      "image": "ami-8ca13ebc",
       "lbr_region": "us-west-2",
       "key_name": "dbaas",
       "security_group": "dbaas"
@@ -56,7 +56,7 @@
       "provider": 1,
       "code": "us-east-1",
       "name": "EC2 US East (Northern Virginia)",
-      "image": "ami-cdb0c8a4",
+      "image": "ami-b58ec5dc",
       "lbr_region": "us-east-1",
       "key_name": "dbaas",
       "security_group": "dbaas"
@@ -69,7 +69,7 @@
       "provider": 1,
       "code": "eu-west-1",
       "name": "EC2 EU (Ireland)",
-      "image": "ami-a1f8e6d5",
+      "image": "ami-bed93dc9",
       "lbr_region": "eu-west-1",
       "key_name": "dbaas",
       "security_group": "dbaas"
@@ -82,7 +82,7 @@
       "provider": 1,
       "code": "ap-northeast-1",
       "name": "EC2 Asia Pacific (Tokyo)",
-      "image": "ami-c16bfdc0",
+      "image": "ami-3720bc36",
       "lbr_region": "ap-northeast-1",
       "key_name": "dbaas",
       "security_group": "dbaas"
@@ -95,7 +95,7 @@
       "provider": 1,
       "code": "ap-southeast-1",
       "name": "EC2 Asia Pacific (Singapore)",
-      "image": "ami-7a0f4728",
+      "image": "ami-8acd86d8",
       "lbr_region": "ap-southeast-1",
       "key_name": "dbaas",
       "security_group": "dbaas"
@@ -108,7 +108,7 @@
       "provider": 1,
       "code": "ap-southeast-2",
       "name": "EC2 Asia Pacific (Sydney)",
-      "image": "ami-1d851727",
+      "image": "ami-59ac3163",
       "lbr_region": "ap-southeast-2",
       "key_name": "dbaas",
       "security_group": "dbaas"
@@ -121,7 +121,7 @@
       "provider": 1,
       "code": "sa-east-1",
       "name": "EC2 South America (Sao Paulo)",
-      "image": "ami-6fdb7f72",
+      "image": "ami-15852208",
       "lbr_region": "sa-east-1",
       "key_name": "dbaas",
       "security_group": "dbaas"
