@@ -255,5 +255,16 @@ input.form-control{
 }
 
 .modal-header .modal-close-button{
-  margin-top: 1px;
+    margin-top: 1px;
+}
+
+.two-column-form-left{
+    border-right: 1px solid #c1c1c1;
+    padding-right: 30px;
+    padding-left: 30px;
+}
+
+.two-column-form-right{
+    padding-left: 30px;
+    padding-right: 30px;
 }
