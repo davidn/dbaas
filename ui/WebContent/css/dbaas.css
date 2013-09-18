@@ -40,11 +40,11 @@ body{
 
 .modal-header{
     background-color: #39559f;
-    font-size: 16pt;
+    font-size: 15pt;
     color: #99b1f3;
     padding-left: 20px;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding-top: 15px;
+    padding-bottom: 15px;
     border-radius: 2px 2px 0px 0px;
 }
 
@@ -226,5 +226,34 @@ a.dropdown-toggle:hover{
 }
 
 .list-sparkline{
-    width:180px;
+    width: 180px;
+}
+
+.help-block{
+    font-style: italic;
+    color: #a4a4a4;
+    font-size: 9pt;
+}
+
+label{
+    color: #707070;
+    font-weight: normal;
+}
+
+input.form-control{
+    width: 100%;
+    height: 40px;
+    margin-bottom: 5px;
+    background-color: #ebebeb;
+    border-radius: 2px;
+    border-width: 0;
+    padding-left: 15px;
+}
+
+.cluster-dialog{
+    width: 350px
+}
+
+.modal-header .modal-close-button{
+  margin-top: 1px;
 }

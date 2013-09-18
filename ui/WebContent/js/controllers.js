@@ -57,7 +57,7 @@ function ActivationCntl($scope, $location, $routeParams, User, growl) {
     $scope.activate = function () {
         User.activate($routeParams.activationHash, $scope.password).$then(function (response) {
             growl.success({body: 'Account activated!'});
-            User.login($scope.email,$scope.password).$then(function (){
+            User.login($scope.email, $scope.password).$then(function () {
                 $location.path("/quickstart");
             });
         }, function (err) {
@@ -93,7 +93,7 @@ function RegisterCntl($scope, $location, User, growl) {
     };
 }
 
-function ListCntl($scope, $location, apiModel, $http, growl, User, messageBox) {
+function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, growl, User, messageBox) {
 //    TODO Disable UI while processing update on cluster
     if (!User.user.token) {
         $location.path("/");
@@ -104,7 +104,7 @@ function ListCntl($scope, $location, apiModel, $http, growl, User, messageBox) {
 
     $scope.form = angular.copy($scope.user);
     $scope.providers = apiModel.getProviders();
-    $scope.clusters = apiModel.getClusters(true);
+
 
     $scope.logout = function () {
         User.logout();
@@ -133,8 +133,13 @@ function ListCntl($scope, $location, apiModel, $http, growl, User, messageBox) {
         apiModel.getClusters(true).$then(function (data) {
             $scope.clusters = data.resource;
             $scope.isRefreshing = false;
+            if ($scope.clusters && $scope.clusters.length > 0 && !$scope.clusters[0].hasRunning){
+                $timeout($scope.refresh, dbaasConfig.defaultRefresh);
+            }
         });
     };
+
+    $scope.refresh();
 
     $scope.deleteCluster = function (cluster) {
         cluster.isDeleting = true;
@@ -286,7 +291,7 @@ function QuickStartCntl($scope, $location, apiModel, $http, growl, dbaasConfig) 
         }, handleError);
     };
 
-    $scope.cancel = function (){
+    $scope.cancel = function () {
         $location.path('/list');
     }
 

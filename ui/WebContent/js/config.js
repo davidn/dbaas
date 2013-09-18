@@ -7,6 +7,7 @@ angular.module('GenieDBaaS.config', [])
         var serviceUrl= "https://dbaas-test.geniedb.com:4000";
 
 
+        var defaultRefresh = 15000;
 
         var authPath = "/api-token-auth/";
         var apiPath = "/api/";
@@ -33,6 +34,7 @@ angular.module('GenieDBaaS.config', [])
 
         return {
             version: versionTag,
+            defaultRefresh: defaultRefresh,
 
             authUrl: serviceUrl + authPath,
             apiUrl: serviceUrl + apiPath,
