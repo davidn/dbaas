@@ -128,13 +128,15 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
         $location.path("/quickstart");
     };
 
+    var refreshTimeout;
+
     $scope.refresh = function () {
         $scope.isRefreshing = true;
         apiModel.getClusters(true).$then(function (data) {
             $scope.clusters = data.resource;
             $scope.isRefreshing = false;
             if ($scope.clusters && $scope.clusters.length > 0 && !$scope.clusters[0].hasRunning){
-                $timeout($scope.refresh, dbaasConfig.defaultRefresh);
+                refreshTimeout = $timeout($scope.refresh, dbaasConfig.defaultRefresh);
             }
         });
     };
@@ -183,6 +185,10 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
             growl.error({body: "Unable to Save"});
         }
     }
+
+    $scope.$on('$destroy', function() {
+        $timeout.cancel(refreshTimeout);
+    });
 }
 
 function ClusterCntl($scope, $location, $document, apiModel, growl, dbaasConfig) {
