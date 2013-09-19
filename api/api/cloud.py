@@ -322,7 +322,6 @@ class ProfitBrick(Cloud):
         return dcExists
 
     def update(self, node, tags=None):
-        print("PB.update: upon entry, tags=%s" % (str(tags)))
         updateProperties = ['serverName', 'cores', 'ram', 'bootFromImageId', 'availabilityZone', 'bootFromStorageId', 'osType']
         if tags is None:
             tags = {}
@@ -331,12 +330,10 @@ class ProfitBrick(Cloud):
                 del tags[k]
         if tags:
             tags['serverId'] = node.instance_id
-            print("PB.update: tags=%s" % (str(tags)))
+            logger.debug("PB.update: tags=%s" % (str(tags)))
             self.pb.updateServer(tags)
         s = self.pb.getServer(node.instance_id)
-        print("PB.update: s=%s" % (str(s)))
         node.ip = s.ips[0]
-        print("PB.update: ip=%s, ips=%s" % (str(node.ip), str(s.ips)))
         node.save()
 
     def terminate(self, node):
