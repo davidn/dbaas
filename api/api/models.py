@@ -26,7 +26,7 @@ from logging import getLogger
 from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception
 from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
-from .cloud import EC2, Rackspace, Cloud
+from .cloud import EC2, Rackspace, ProfitBrick, Cloud
 import config
 import MySQLdb
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -309,6 +309,8 @@ class Region(models.Model):
                 self._connection = EC2(self)
             elif self.provider.code == "rs":
                 self._connection = Rackspace(self)
+            elif self.provider.code == "pb":
+                self._connection = ProfitBrick(self)
             elif self.provider.code == "test":
                 self._connection = Cloud(self)
             else:

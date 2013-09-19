@@ -77,7 +77,7 @@
       "provider": 1,
       "code": "us-west-1",
       "name": "EC2 US West (Northern California)",
-      "image": "ami-e26c46a7",
+      "image": "ami-06c8fd43",
       "lbr_region": "us-west-1",
       "key_name": "dbaas",
       "security_group": "dbaas",
@@ -92,7 +92,7 @@
       "provider": 1,
       "code": "us-west-2",
       "name": "EC2 US West (Oregon)",
-      "image": "ami-7a46db4a",
+      "image": "ami-8ca13ebc",
       "lbr_region": "us-west-2",
       "key_name": "dbaas",
       "security_group": "dbaas",
@@ -107,7 +107,7 @@
       "provider": 1,
       "code": "us-east-1",
       "name": "EC2 US East (Northern Virginia)",
-      "image": "ami-2d094944",
+      "image": "ami-b58ec5dc",
       "lbr_region": "us-east-1",
       "key_name": "dbaas",
       "security_group": "dbaas",
@@ -122,7 +122,7 @@
       "provider": 1,
       "code": "eu-west-1",
       "name": "EC2 EU (Ireland)",
-      "image": "ami-c3f4ecb7",
+      "image": "ami-bed93dc9",
       "lbr_region": "eu-west-1",
       "key_name": "dbaas",
       "security_group": "dbaas",
@@ -137,7 +137,7 @@
       "provider": 1,
       "code": "ap-northeast-1",
       "name": "EC2 Asia Pacific (Tokyo)",
-      "image": "ami-5f2dbd5e",
+      "image": "ami-3720bc36",
       "lbr_region": "ap-northeast-1",
       "key_name": "dbaas",
       "security_group": "dbaas",
@@ -152,7 +152,7 @@
       "provider": 1,
       "code": "ap-southeast-1",
       "name": "EC2 Asia Pacific (Singapore)",
-      "image": "ami-4ecd851c",
+      "image": "ami-8acd86d8",
       "lbr_region": "ap-southeast-1",
       "key_name": "dbaas",
       "security_group": "dbaas",
@@ -167,7 +167,7 @@
       "provider": 1,
       "code": "ap-southeast-2",
       "name": "EC2 Asia Pacific (Sydney)",
-      "image": "ami-b564f68f",
+      "image": "ami-59ac3163",
       "lbr_region": "ap-southeast-2",
       "key_name": "dbaas",
       "security_group": "dbaas",
@@ -182,7 +182,7 @@
       "provider": 1,
       "code": "sa-east-1",
       "name": "EC2 South America (Sao Paulo)",
-      "image": "ami-5140e44c",
+      "image": "ami-15852208",
       "lbr_region": "sa-east-1",
       "key_name": "dbaas",
       "security_group": "dbaas",
@@ -692,50 +692,6 @@
       "ram": 8192,
       "cpus": 4,
       "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 28,
-    "fields": {
-      "provider": 4,
-      "code": "hp",
-      "name": "Unspecified HP Cloud",
-      "ram": 1,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 29,
-    "fields": {
-      "provider": 5,
-      "code": "layeredtech",
-      "name": "Unspecified LayeredTech",
-      "ram": 1,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 30,
-    "fields": {
-      "provider": 6,
-      "code": "datapipe",
-      "name": "Unspecified DataPipe",
-      "ram": 1,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 31,
-    "fields": {
-      "provider": 7,
-      "code": "gce",
-      "name": "Unspecified Google Compute Engine",
-      "ram": 1,
-      "cpus": 1
     }
   },
   {
