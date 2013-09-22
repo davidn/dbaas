@@ -76,13 +76,15 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         return {
             user: user,
             register: function (email) {
+                clearToken();
                 return Registration.save({email: email});
             },
             checkActivation: function (activationCode) {
+                clearToken();
                 return Registration.get({activation_code: activationCode});
-
             },
             activate: function (activationCode, password) {
+                clearToken();
                 return Registration.activate({activation_code: activationCode}, {password: password});
             },
             login: function (email, password) {
