@@ -63,6 +63,14 @@
     }
   },
   {
+    "model": "api.provider",
+    "pk": 8,
+    "fields": {
+      "name": "ProfitBrick",
+      "code": "pb"
+    }
+  },
+  {
     "model": "api.region",
     "pk": 1,
     "fields": {
@@ -326,6 +334,36 @@
       "name": "Unspecified Google Compute Engine",
       "image": "xxx",
       "lbr_region": "test",
+      "key_name": "dbaas",
+      "security_group": "",
+      "latitude": 0,
+      "longitude": 0
+    }
+  },
+ {
+    "model": "api.region",
+    "pk": 19,
+    "fields": {
+      "provider": 8,
+      "code": "NORTH_AMERICA",
+      "name": "Las Vegas, NV, USA",
+	  "image": "image_id1",
+	  "lbr_region": "us-west-1",
+      "key_name": "dbaas",
+      "security_group": "",
+      "latitude": 0,
+      "longitude": 0
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 20,
+    "fields": {
+      "provider": 8,
+      "code": "EUROPE",
+      "name": "Germany",
+	  "image": "image_id2",
+	  "lbr_region": "eu-west-1",
       "key_name": "dbaas",
       "security_group": "",
       "latitude": 0,
@@ -702,45 +740,12 @@
   },
   {
     "model": "api.flavor",
-    "pk": 28,
+    "pk": 32,
     "fields": {
-      "provider": 4,
-      "code": "hp",
-      "name": "Unspecified HP Cloud",
-      "ram": 1,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 29,
-    "fields": {
-      "provider": 5,
-      "code": "layeredtech",
-      "name": "Unspecified LayeredTech",
-      "ram": 1,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 30,
-    "fields": {
-      "provider": 6,
-      "code": "datapipe",
-      "name": "Unspecified DataPipe",
-      "ram": 1,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 31,
-    "fields": {
-      "provider": 7,
-      "code": "gce",
-      "name": "Unspecified Google Compute Engine",
-      "ram": 1,
+      "provider": 8,
+      "code": "pb.small",
+      "name": "pb.small",
+      "ram": 256,
       "cpus": 1
     }
   }
