@@ -2,7 +2,12 @@ from logging import getLogger
 from time import sleep
 from django.conf import settings
 from django.contrib.sites.models import Site
-import pb.client
+
+try:
+    import pb.client
+except:
+    pass
+
 import boto.ec2
 import novaclient.v1_1
 
