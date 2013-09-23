@@ -96,6 +96,11 @@ class EC2(Cloud):
         else:
             sgs = [sg.name, self.region.security_group]
 
+        def remove_trail_slash(s):
+            if s.endswith('/'):
+                s = s[:-1]
+            return s
+
         def ec2_run_instances():
             return self.ec2.run_instances(
                 self.region.image,
@@ -103,7 +108,8 @@ class EC2(Cloud):
                 instance_type=node.flavor.code,
                 block_device_map=self._create_block_device_map(node),
                 security_groups=sgs,
-                user_data='#include\nhttps://' + Site.objects.get_current().domain + node.get_absolute_url() + 'cloud_config/\n',
+                user_data='#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(
+                    node.get_absolute_url()) + '/cloud_config/\n',
             )
 
         res = _retryEC2(ec2_run_instances)
@@ -237,6 +243,7 @@ class Rackspace(Openstack):
     TENANT = settings.RACKSPACE_TENANT
     AUTH_URL = settings.RACKSPACE_AUTH_URL
 
+
 class ProfitBrick(Cloud):
     USER = settings.PROFITBRICK_USER
     PASS = settings.PROFITBRICK_PASS
@@ -291,8 +298,8 @@ class ProfitBrick(Cloud):
         createStorageRequest = {
             'size': node.storage,
             'dataCenterId': dcId,
-            'storageName': str(node) }
-#            'mountImageId': }
+            'storageName': str(node)}
+        #            'mountImageId': }
         stgId = self.pb.createStorage(createStorageRequest).storageId
         res = _PBwait4avail(stgId, self.pb.getStorage)
         if not res:
@@ -354,12 +361,13 @@ class ProfitBrick(Cloud):
         while node.shutting_down():
             sleep(15)
 
-    #def pause(self, node):
-    #    # Note: this command halts, doesn't suspend, the server
-    #    self.pb.stopServer(node.instance_id)
+            #def pause(self, node):
+            #    # Note: this command halts, doesn't suspend, the server
+            #    self.pb.stopServer(node.instance_id)
 
-    #def resume(self, node):
-    #    self.pb.startServer(node.instance_id)
+            #def resume(self, node):
+            #    self.pb.startServer(node.instance_id)
+
 
 def _PBwait4avail(objid, getfunc, objField='provisioningState', targetValues=['AVAILABLE'], initialDelay=50, maxRetries=12):
     result = None
