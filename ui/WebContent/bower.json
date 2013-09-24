@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "dependencies": {
     "angular": "latest",
-    "angular-mocks": "latest",
     "angular-resource-unstable": "latest",
     "angular-route": "latest",
     "angular-sanitize": "latest",
