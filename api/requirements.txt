@@ -11,3 +11,4 @@ pyzabbix
 MySQL-python
 django-registration
 python-dateutil
+suds
