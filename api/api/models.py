@@ -638,6 +638,10 @@ runcmd:
         # and add a hostname for the Node just launched.
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
         z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
+        tid = None
+        gdbTemplates = z.template.getobjects(host='Template App GenieDB V2 Monitoring')
+        if gdbTemplates:
+            tid = gdbTemplates[0]['templateid']
         hostGroups = z.hostgroup.getobjects(name=self.customerName)
         if not hostGroups:
             try:
@@ -650,8 +654,13 @@ runcmd:
             return
         zabbixHostGroup = hostGroups[0]
         try:
-            z.host.create(host=hostName, groups=[{"groupid":zabbixHostGroup["groupid"]}], name=self.visible_name(self.cluster.label),
-                interfaces={"type":'1', "main":'1', "useip":'1', "ip":self.ip, "dns":hostName, "port":"10050"})
+            if tid is not None:
+                z.host.create(host=hostName, groups=[{"groupid":zabbixHostGroup["groupid"]}], name=self.visible_name(self.cluster.label),
+                    interfaces={"type":'1', "main":'1', "useip":'1', "ip":self.ip, "dns":hostName, "port":"10050"},
+                    templates={"templateid":tid})
+            else:
+                z.host.create(host=hostName, groups=[{"groupid":zabbixHostGroup["groupid"]}], name=self.visible_name(self.cluster.label),
+                    interfaces={"type":'1', "main":'1', "useip":'1', "ip":self.ip, "dns":hostName, "port":"10050"})
             logger.info("Created Zabbix Host %s" % (hostName))
         except:
             logger.warning("Failed to create Zabbix Host %s" % (hostName))
