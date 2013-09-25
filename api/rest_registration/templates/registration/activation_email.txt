@@ -1,7 +1,21 @@
-Welcome to GenieDB DBaaS!
+Welcome to GenieDB DBaaS platform.  We're excited that you've signed up.
+
+Whether you did for 100% availability, Multi-Datacenter, Master-Master Replication or our native MySQL support we're glad you are here.
 
 Please click here to validate your account
 
-http://dbaas-test.geniedb.com/#activate/{{activation_key}}
+ {{site}}/#activate/{{activation_key}}
 
+
+If you have questions, feel free to reach us at:
+
+    support@geniedb.com
+
+---------
+
+www.geniedb.com
+
+---------
+
+This is a one-time email. To get the latest on GenieDB news you should follow us on Twitter at: http://twitter.com/geniedb
 

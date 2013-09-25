@@ -1,5 +1,6 @@
 import random
 import hashlib
+from django.conf import settings
 from registration.models import User, RegistrationProfile as BaseRegistrationProfile, RegistrationManager as BaseRegistrationManager
 from django.db import transaction
 
@@ -51,3 +52,24 @@ class RegistrationProfile(BaseRegistrationProfile):
 
     class Meta:
         proxy = True
+
+    def send_activation_email(self, site, profile):
+        """Send the activation mail"""
+        from django.core.mail import EmailMultiAlternatives
+        from django.template.loader import render_to_string
+
+        ctx_dict = {'activation_key': self.activation_key,
+                    'expiration_days': settings.ACCOUNT_ACTIVATION_DAYS,
+                    'site': site,
+                    'email': profile.user.email}
+
+        subject = render_to_string('registration/activation_email_subject.txt', ctx_dict)
+        # Email subject *must not* contain newlines
+        subject = ''.join(subject.splitlines())
+
+        message_text = render_to_string('registration/activation_email.txt', ctx_dict)
+        message_html = render_to_string('registration/activation_email.html', ctx_dict)
+
+        msg = EmailMultiAlternatives(subject, message_text, settings.DEFAULT_FROM_EMAIL, [self.user.email])
+        msg.attach_alternative(message_html, "text/html")
+        msg.send()
