@@ -24,7 +24,7 @@ angular.module('GenieDBaaS.config', [])
 
         // TODO: Move this to server side
         var quickStartFlavors={
-            rs:"2",
+            rs:"3",
             az:"m1.small",
             test:"test-small"
         };

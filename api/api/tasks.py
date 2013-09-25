@@ -15,9 +15,10 @@ from django.contrib.auth import get_user_model
 
 logger = getLogger(__name__)
 
+
 @task()
 def install(node):
-    for i in xrange(10,0,-1):
+    for i in xrange(10, 0, -1):
         try:
             return node.do_install()
         except:
@@ -29,37 +30,43 @@ def install(node):
                 logger.info("Retrying cloudfabric install")
                 sleep(15)
 
+
 @task()
 def install_region(region):
     region.do_launch()
+
 
 @task()
 def wait_nodes(nodes):
     for node in nodes:
         while node.pending():
-            sleep (15)
+            sleep(15)
+
 
 def node_text(node):
-    return config_value('api_email','PLAINTEXT_PER_NODE').format(
-       nid = node.nid,
-       region = node.region.name,
-       node_dns = node.dns_name,
-       node_ip = node.ip
+    return config_value('api_email', 'PLAINTEXT_PER_NODE').format(
+        nid=node.nid,
+        region=node.region.name,
+        node_dns=node.dns_name,
+        node_ip=node.ip
     )
 
+
 def node_html(node):
-    return config_value('api_email','HTML_PER_NODE').format(
-       nid = node.nid,
-       region = node.region.name,
-       node_dns = node.dns_name,
-       node_ip = node.ip
+    return config_value('api_email', 'HTML_PER_NODE').format(
+        nid=node.nid,
+        region=node.region.name,
+        node_dns=node.dns_name,
+        node_ip=node.ip
     )
+
 
 def ordinal(num):
     if 4 <= num <= 20 or 24 <= num <= 30:
         return "th"
     else:
         return ["st", "nd", "rd"][num % 10 - 1]
+
 
 @task()
 def launch_email(cluster, sendGeneralNotification=True):
@@ -78,34 +85,37 @@ def launch_email(cluster, sendGeneralNotification=True):
     }
     if sendGeneralNotification:
         email = EmailMultiAlternatives(
-            subject=config_value('api_email','SUBJECT'),
-            body=config_value('api_email','PLAINTEXT').format(**params),
-            from_email=config_value('api_email','SENDER'),
-            to=config_value('api_email','RECIPIENTS')
+            subject=config_value('api_email', 'SUBJECT'),
+            body=config_value('api_email', 'PLAINTEXT').format(**params),
+            from_email=config_value('api_email', 'SENDER'),
+            to=config_value('api_email', 'RECIPIENTS')
         )
         email.attach_alternative(
-            config_value('api_email','HTML').format(**params),
+            config_value('api_email', 'HTML').format(**params),
             "text/html"
         )
         email.send()
     else:
         cluster.user.email_user(
-            config_value('api_email','SUBJECT'),
-            config_value('api_email','PLAINTEXT').format(**params))
+            config_value('api_email', 'SUBJECT'),
+            config_value('api_email', 'PLAINTEXT').format(**params))
+
 
 @task()
 def launch_cluster(cluster):
     cluster.launch()
 
+
 def install_cluster(cluster, sendGeneralNotification=True):
     install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)
     lbr_regions = cluster.lbr_regions.filter(launched=False)
     task = launch_cluster.si(cluster) \
-        | wait_nodes.si([node for node in install_nodes]) \
-        | group([install.si(node) for node in install_nodes]) \
-        | group([install_region.si(lbr_region) for lbr_region in lbr_regions]) \
-        | launch_email.si(cluster, sendGeneralNotification)
+           | wait_nodes.si([node for node in install_nodes]) \
+           | group([install.si(node) for node in install_nodes]) \
+           | group([install_region.si(lbr_region) for lbr_region in lbr_regions]) \
+           | launch_email.si(cluster, sendGeneralNotification)
     return task.delay()
+
 
 @task()
 def send_reminder(user, reminder):
@@ -123,9 +133,10 @@ def send_reminder(user, reminder):
     )
     email.send()
 
+
 @receiver(models.signals.post_save, sender=get_user_model())
 def schedule_reminders(sender, instance, created, using, update_fields, **kwargs):
     if sender != get_user_model():
         return
-    for reminder in getattr(settings,'REMINDERS',()):
+    for reminder in getattr(settings, 'REMINDERS', ()):
         send_reminder.apply_async((instance, reminder), eta=reminder['ETA'])
