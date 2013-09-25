@@ -42,7 +42,7 @@
 				<td ng-class="{row0: $first}">{{node.label}}</td>
 				<td ng-class="{row0: $first}">{{node.region}}</td>
 				<td ng-class="{row0: $first}">{{node.provider.name}}</td>
-				<td ng-class="{row0: $first}">{{node.flavor}}</td>
+				<td ng-class="{row0: $first}">{{node.$flavor.name}}</td>
 				<td ng-class="{row0: $first}" class="node-status {{node.statusClass}}">{{node.status}}</td>
 				<td ng-if="cluster.hasRunning" ng-class="{row0: $first}" class="list-sparkline">
 					<span ng-if="node.isRunning" jq-sparkline ng-model="node.cpu" opts='{"width":150}'>Loading...</span></td>

@@ -135,7 +135,8 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             data.hasRunning = false;
             data.forEach(function (node, i) {
                 node.label = node.label ? node.label : node.region ? node.region : 'Node' + i;
-                node.provider = getProviderByFlavor(node.flavor);
+                node.$flavor = _.findWhere(flavors, {code: node.flavor});
+                node.provider = node.$flavor && node.$flavor.provider;
                 var status = getStatusByLabel(node.status);
                 node.statusClass = 'node-status-' + status.code;
                 data.maxStatus = Math.max(status.index, data.maxStatus);
