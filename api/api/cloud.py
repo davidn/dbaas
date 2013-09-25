@@ -14,6 +14,12 @@ import novaclient.v1_1
 logger = getLogger(__name__)
 
 
+def remove_trail_slash(s):
+    if s.endswith('/'):
+        s = s[:-1]
+    return s
+
+
 class Cloud(object):
     def __init__(self, region):
         self.region = region
@@ -47,7 +53,6 @@ class EC2(Cloud):
             self._ec2 = boto.ec2.get_region(self.region.code).connect(aws_access_key_id=settings.AWS_ACCESS_KEY,
                                                                       aws_secret_access_key=settings.AWS_SECRET_KEY)
         return self._ec2
-
 
     def __getstate__(self):
         if hasattr(self, '_ec2'):
@@ -101,10 +106,6 @@ class EC2(Cloud):
         else:
             sgs = [sg.name, self.region.security_group]
 
-        def remove_trail_slash(s):
-            if s.endswith('/'):
-                s = s[:-1]
-            return s
 
         def ec2_run_instances():
             return self.ec2.run_instances(
@@ -211,7 +212,7 @@ class Openstack(Cloud):
             key_name=self.region.key_name,
             availability_zone=self.region.code,
             files={
-                '/var/lib/cloud/seed/nocloud-net/user-data': '#include\nhttps://' + Site.objects.get_current().domain + node.get_absolute_url() + 'cloud_config/\n',
+                '/var/lib/cloud/seed/nocloud-net/user-data': '#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(node.get_absolute_url()) + '/cloud_config/\n',
                 '/var/lib/cloud/seed/nocloud-net/meta-data': 'instance-id: iid-local01',
             },
         )
