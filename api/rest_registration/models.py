@@ -53,15 +53,14 @@ class RegistrationProfile(BaseRegistrationProfile):
     class Meta:
         proxy = True
 
-    def send_activation_email(self, site, profile):
+    def send_activation_email(self, site):
         """Send the activation mail"""
         from django.core.mail import EmailMultiAlternatives
         from django.template.loader import render_to_string
 
         ctx_dict = {'activation_key': self.activation_key,
                     'expiration_days': settings.ACCOUNT_ACTIVATION_DAYS,
-                    'site': site,
-                    'email': profile.user.email}
+                    'site': site}
 
         subject = render_to_string('registration/activation_email_subject.txt', ctx_dict)
         # Email subject *must not* contain newlines
