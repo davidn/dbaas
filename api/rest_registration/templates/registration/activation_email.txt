@@ -4,7 +4,7 @@ Whether you did for 100% availability, Multi-Datacenter, Master-Master Replicati
 
 Please click here to validate your account
 
- {{site}}/#activate/{{activation_key}}
+ https://{{site}}/#activate/{{activation_key}}
 
 
 If you have questions, feel free to reach us at:
