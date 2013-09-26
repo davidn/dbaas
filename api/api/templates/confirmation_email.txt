@@ -1,0 +1,50 @@
+
+Hi {username},
+
+Thanks for visiting our website and signing up to test our exciting GenieDB DBaaS offering.  You're now set to begin your free trial.  We've created a two node replicating cluster environment for your use, deployed on two small instances distributed across XX and YY datacenters. While this basic test environment will allow you to see all the GenieDB functionality, it's not intended for demonstrating performance under load.  Once you're satisfied GenieDB's feature set will meet your requirements, we are happy to setup a high performance cluster for additional testing, as needed.  The connectivity details can be found below. Here are a couple tips to help you get started:
+
+1. There is a default database '{db}' created.
+2. To create any table that you want replicated, you should add
+   'ENGINE=GenieDB' to the end of the SQL statement.  For example:
+      CREATE TABLE {db}.foo(a INT PRIMARY KEY, b INT) ENGINE=GenieDB;
+3. To create any non-replicated table, you can use ENGINE=MyISAM or ENGINE=InnoDB.
+4. You should host your application servers close to the regions you chose.
+5. The cluster domain name
+   {cluster_dns}
+   will automatically find the nearest database node.
+6. The nodes can be directly accessed using the node information listed below.
+
+
+This cluster will be available for your use until {trial_end:%d}{ord}{trial_end:%B}, at which point we can discuss the results of your trial and how best to proceed.  Please do not hesitate to contact us with any questions or concerns.  We are happy to help guide your testing or answer any questions you may have regarding distributed system architecture.
+
+
+Cluster Details
+---------------
+
+Cluster Domain Name: {cluster_dns}
+Port: {port}
+
+Database: {db}
+
+Username: {dbusername}
+Password: {dbpassword}
+
+
+Node Details
+---------------
+{node_text}
+
+
+
+If you have questions, feel free to reach us at:
+
+    support@geniedb.com
+
+---------
+
+www.geniedb.com
+
+---------
+
+This is a one-time email. To get the latest on GenieDB news you should follow us on Twitter at: http://twitter.com/geniedb
+
