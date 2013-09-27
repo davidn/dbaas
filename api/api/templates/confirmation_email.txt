@@ -15,7 +15,7 @@ Thanks for visiting our website and signing up to test our exciting GenieDB DBaa
 6. The nodes can be directly accessed using the node information listed below.
 
 
-This cluster will be available for your use until {{trial_end:%d}}{{ord}} {{trial_end:%B}}, at which point we can discuss the results of your trial and how best to proceed.  Please do not hesitate to contact us with any questions or concerns.  We are happy to help guide your testing or answer any questions you may have regarding distributed system architecture.
+This cluster will be available for your use until {{trial_end|date:"F jS"}}, at which point we can discuss the results of your trial and how best to proceed.  Please do not hesitate to contact us with any questions or concerns.  We are happy to help guide your testing or answer any questions you may have regarding distributed system architecture.
 
 
 Cluster Details

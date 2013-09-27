@@ -42,14 +42,6 @@ def wait_nodes(nodes):
         while node.pending():
             sleep(15)
 
-
-def ordinal(num):
-    if 4 <= num <= 20 or 24 <= num <= 30:
-        return "th"
-    else:
-        return ["st", "nd", "rd"][num % 10 - 1]
-
-
 @task()
 def launch_email(cluster, sendGeneralNotification=True):
     nodes = cluster.nodes.all()
@@ -58,7 +50,6 @@ def launch_email(cluster, sendGeneralNotification=True):
         'username': str(cluster.user),
         'cluster_dns': cluster.dns_name,
         'trial_end': datetime.date.today() + settings.TRIAL_LENGTH,
-        'ord': ordinal((datetime.date.today() + settings.TRIAL_LENGTH).day),
         'port': cluster.port,
         'db': cluster.dbname,
         'dbusername': cluster.dbusername,
