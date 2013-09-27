@@ -152,20 +152,20 @@
 				<table cellpadding="2" cellspacing="2" border="0">
 					{% for node in nodes %}
 						<tr>
-							<td><strong>Node {{ nid }}</strong></td>
+							<td><strong>Node {{ node.nid }}</strong></td>
 							<td></td>
 						</tr>
 						<tr>
 							<td>Location</td>
-							<td><strong>{{ region }}</strong></td>
+							<td><strong>{{ node.region.name }}</strong></td>
 						</tr>
 						<tr>
 							<td>DNS</td>
-							<td><strong>{{ node_dns }}</strong></td>
+							<td><strong>{{ node.node_dns }}</strong></td>
 						</tr>
 						<tr>
 							<td>IP</td>
-							<td><strong>{{ node_ip }}</strong></td>
+							<td><strong>{{ node.node_ip }}</strong></td>
 						</tr>
 						<tr>
 							<td>&nbsp;</td>

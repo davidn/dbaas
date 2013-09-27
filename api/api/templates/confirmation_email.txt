@@ -33,10 +33,10 @@ Password: {{dbpassword}}
 Node Details
 ---------------
 {% for node in nodes %}
-Node {{nid}}
-Location: {{region}}
-DNS: {{node_dns}}
-IP: {{node_ip}}
+Node {{node.nid}}
+Location: {{node.region.name}}
+DNS: {{node.node_dns}}
+IP: {{node.node_ip}}
 
 {% endfor %}
 
