@@ -81,24 +81,23 @@ def launch_email(cluster, sendGeneralNotification=True):
         'port': cluster.port,
         'db': cluster.dbname,
         'dbusername': cluster.dbusername,
-        'dbpassword': cluster.dbpassword
+        'dbpassword': cluster.dbpassword,
+        'regions': ' and '.join(node.region.name for node in nodes)
     }
-    if sendGeneralNotification:
-        email = EmailMultiAlternatives(
-            subject=config_value('api_email', 'SUBJECT'),
-            body=config_value('api_email', 'PLAINTEXT').format(**params),
-            from_email=config_value('api_email', 'SENDER'),
-            to=config_value('api_email', 'RECIPIENTS')
-        )
-        email.attach_alternative(
-            config_value('api_email', 'HTML').format(**params),
-            "text/html"
-        )
-        email.send()
-    else:
-        cluster.user.email_user(
-            config_value('api_email', 'SUBJECT'),
-            config_value('api_email', 'PLAINTEXT').format(**params))
+
+    recipient = cluster.user.email if not sendGeneralNotification else config_value('api_email', 'RECIPIENTS')
+
+    email = EmailMultiAlternatives(
+        subject=config_value('api_email', 'SUBJECT'),
+        body=config_value('api_email', 'PLAINTEXT').format(**params),
+        from_email=config_value('api_email', 'SENDER'),
+        to=recipient
+    )
+    email.attach_alternative(
+        config_value('api_email', 'HTML').format(**params),
+        "text/html"
+    )
+    email.send()
 
 
 @task()

@@ -208,7 +208,9 @@ class ClusterViewSet(mixins.CreateModelMixin,
         for node in self.object.nodes.all():
             if node.status == Node.INITIAL:
                 node.do_launch()
-        sendGeneralNotificationEmail = self.object.dns_name[-len(omitNotificationText):] != omitNotificationText
+
+        sendGeneralNotificationEmail = not self.object.dns_name.endsWith(omitNotificationText)
+
         install_cluster(self.object, sendGeneralNotificationEmail)
         serializer = self.get_serializer(self.object)
         headers = self.get_success_headers(serializer.data)
