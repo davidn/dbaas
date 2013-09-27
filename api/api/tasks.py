@@ -85,7 +85,7 @@ def launch_email(cluster, sendGeneralNotification=True):
         'regions': ' and '.join(node.region.name for node in nodes)
     }
 
-    recipient = cluster.user.email if not sendGeneralNotification else config_value('api_email', 'RECIPIENTS')
+    recipient = [cluster.user.email] if not sendGeneralNotification else config_value('api_email', 'RECIPIENTS')
 
     email = EmailMultiAlternatives(
         subject=config_value('api_email', 'SUBJECT'),
