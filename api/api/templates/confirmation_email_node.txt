@@ -1,5 +1,0 @@
-
-Node {nid}
-Location: {region}
-DNS: {node_dns}
-IP: {node_ip}

@@ -43,24 +43,6 @@ def wait_nodes(nodes):
             sleep(15)
 
 
-def node_text(node):
-    return config_value('api_email', 'PLAINTEXT_PER_NODE').format(
-        nid=node.nid,
-        region=node.region.name,
-        node_dns=node.dns_name,
-        node_ip=node.ip
-    )
-
-
-def node_html(node):
-    return config_value('api_email', 'HTML_PER_NODE').format(
-        nid=node.nid,
-        region=node.region.name,
-        node_dns=node.dns_name,
-        node_ip=node.ip
-    )
-
-
 def ordinal(num):
     if 4 <= num <= 20 or 24 <= num <= 30:
         return "th"
@@ -71,9 +53,8 @@ def ordinal(num):
 @task()
 def launch_email(cluster, sendGeneralNotification=True):
     nodes = cluster.nodes.all()
-    params = {
-        'node_text': ''.join(node_text(node) for node in nodes),
-        'node_html': ''.join(node_html(node) for node in nodes),
+    ctx_dict = {
+        'nodes': nodes,
         'username': str(cluster.user),
         'cluster_dns': cluster.dns_name,
         'trial_end': datetime.date.today() + settings.TRIAL_LENGTH,
@@ -85,19 +66,21 @@ def launch_email(cluster, sendGeneralNotification=True):
         'regions': ' and '.join(node.region.name for node in nodes)
     }
 
+    from django.core.mail import EmailMultiAlternatives
+    from django.template.loader import render_to_string
+
+    subject = render_to_string('confirmation_email_subject.txt', ctx_dict)
+    # Email subject *must not* contain newlines
+    subject = ''.join(subject.splitlines())
+
+    message_text = render_to_string('confirmation_email.txt', ctx_dict)
+    message_html = render_to_string('confirmation_email.html', ctx_dict)
+
     recipient = [cluster.user.email] if not sendGeneralNotification else config_value('api_email', 'RECIPIENTS')
 
-    email = EmailMultiAlternatives(
-        subject=config_value('api_email', 'SUBJECT'),
-        body=config_value('api_email', 'PLAINTEXT').format(**params),
-        from_email=config_value('api_email', 'SENDER'),
-        to=recipient
-    )
-    email.attach_alternative(
-        config_value('api_email', 'HTML').format(**params),
-        "text/html"
-    )
-    email.send()
+    msg = EmailMultiAlternatives(subject, message_text, settings.DEFAULT_FROM_EMAIL, recipient)
+    msg.attach_alternative(message_html, "text/html")
+    msg.send()
 
 
 @task()
