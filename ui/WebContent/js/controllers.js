@@ -131,6 +131,7 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
     var refreshTimeout;
 
     $scope.refresh = function () {
+        $timeout.cancel(refreshTimeout);
         $scope.isRefreshing = true;
         apiModel.getClusters(true).$then(function (data) {
             $scope.clusters = data.resource;
@@ -207,13 +208,6 @@ function ClusterCntl($scope, $location, $document, apiModel, growl, dbaasConfig)
     $scope.cancel = function () {
         $location.path("/list");
     };
-
-//    $document.bind('keydown', function (evt) {
-//        console.log(evt);
-//        if (evt.which === 27) {
-//
-//        }
-//    });
 
     function handleError(err) {
         $scope.isLoading = false;

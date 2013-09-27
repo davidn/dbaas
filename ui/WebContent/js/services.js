@@ -142,11 +142,12 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
                 data.maxStatus = Math.max(status.index, data.maxStatus);
                 node.isRunning = status.index == 3;
                 data.hasRunning = data.hasRunning || node.isRunning;
-                node.id = "node-" + clusterIndex + "-" + node.nid;
-                $http.get(node.url + '/stats/').success(function (data) {
-                    node.cpu = data.cpu ? data.cpu : [0];
-                    node.iops = {read: data.riops, write: data.wiops};
-                });
+                if (node.isRunning) {
+                    $http.get(node.url + '/stats/').success(function (data) {
+                        node.cpu = data.cpu ? data.cpu : [0];
+                        node.iops = {read: data.riops, write: data.wiops};
+                    });
+                }
             });
             return data;
         }
