@@ -178,8 +178,8 @@ class ClusterViewSet(mixins.CreateModelMixin,
         })
 
         if not request.user.is_paid and (
-            isinstance(serializer.object, list) and any(not serializer.object.flavor.free_allowed for n in serializer.object)) or (
-            isinstance(serializer.object, Node) and not serializer.object.flavor.free_allowed):
+                isinstance(serializer.object, list) and any(not serializer.object.flavor.free_allowed for n in serializer.object)) or (
+                isinstance(serializer.object, Node) and not serializer.object.flavor.free_allowed):
             return Response({'non_field_errors': ['Free users cannot create this flavor node']}, status=status.HTTP_403_FORBIDDEN)
 
         if serializer.is_valid():
@@ -209,7 +209,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
             if node.status == Node.INITIAL:
                 node.do_launch()
 
-        sendGeneralNotificationEmail = not self.object.dns_name.endsWith(omitNotificationText)
+        sendGeneralNotificationEmail = self.object.dns_name[-len(omitNotificationText):] != omitNotificationText
 
         install_cluster(self.object, sendGeneralNotificationEmail)
         serializer = self.get_serializer(self.object)
