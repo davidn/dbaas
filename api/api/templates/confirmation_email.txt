@@ -8,7 +8,7 @@ Thanks for visiting our website and signing up to test our exciting GenieDB DBaa
    'ENGINE=GenieDB' to the end of the SQL statement.  For example:
       CREATE TABLE {{db}}.foo(a INT PRIMARY KEY, b INT) ENGINE=GenieDB;
 3. To create any non-replicated table, you can use ENGINE=MyISAM or ENGINE=InnoDB.
-4. You should host your application servers close to the regions you chose.
+4. For optimal performance you should host your application servers in the regions you chose.
 5. The cluster domain name
    {{cluster_dns}}
    will automatically find the nearest database node.
