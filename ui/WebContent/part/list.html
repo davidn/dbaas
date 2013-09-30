@@ -47,7 +47,7 @@
 	<div class="panel cluster-panel" ng-repeat="cluster in clusters">
 		<div class="panel-heading cluster-heading">
 			<span class="panel-title cluster-title">{{cluster.label}}</span>
-			<a popover-placement="bottom" popover-template="cluster-detail.html" class="btn btn-xs info-popover"><i class="icon-info-sign"></i></a>
+			<a popover-placement="bottom" popover-template="cluster-detail.html" class="btn info-popover"><i class="icon-info-sign"></i></a>
 			<div class=" pull-right">
 				<button ng-if="cluster.canLaunch" class="btn add-node btn-success btn-small" ng-click="addNode(cluster)">ADD NODE</button>
 				<button ng-if="cluster.canLaunch" class="btn launch-cluster btn-success btn-small" ng-click="launchCluster(cluster)" data-loading-text="Launching...">LAUNCH</button>
