@@ -268,3 +268,26 @@ input.form-control{
     padding-left: 30px;
     padding-right: 30px;
 }
+
+.list-popover{
+    max-width: 750px;
+}
+
+.popover{
+    background-color: #404040;
+    color: #fff;
+}
+
+.popover.bottom .arrow:after{
+    border-bottom-color: #404040;
+}
+
+.info-popover{
+    color: #999;
+}
+
+.info-popover-label{
+    color: #999;
+    /*width: 420px;*/
+    white-space: nowrap;
+}

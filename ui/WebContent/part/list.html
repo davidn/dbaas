@@ -1,25 +1,33 @@
 <script id="cluster-detail.html" type="text/ng-template">
-	<div style="width: 1000px">
-		<div class="form-group">
-		<label> DNS </label>
-		<input class="input-login form-control-static" ng-model="cluster.dns_name"/>
+	<div class="row">
+	  <div class="col-lg-1 info-popover-label">DNS</div>
+	  <div class="col-lg-11">{{cluster.dns_name}}</div>
 	</div>
-	<div class="form-group">
-		<label> Port</label>
-		<input class="form-control-static" ng-model="cluster.port"/>
+	<div class="row">
+	  <div class="col-lg-1 info-popover-label">Port</div>
+	  <div class="col-lg-11">{{cluster.port}}</div>
 	</div>
-	<div class="form-group">
-		<label> Username </label>
-		<input class="form-control-static" ng-model="cluster.dbusername"/>
+	<div class="row">
+	  <div class="col-lg-1 info-popover-label">User</div>
+	  <div class="col-lg-11">{{cluster.dbusername}}</div>
 	</div>
-	<div class="form-group">
-		<label> Password </label>
-		<input class="form-control-static" ng-model="cluster.dbpassword"/>
+	<div class="row">
+	  <div class="col-lg-1 info-popover-label">Pass</div>
+	  <div class="col-lg-11">{{cluster.dbpassword}}</div>
 	</div>
-	<div class="form-group">
-		<label> Database </label>
-		<input class="form-control-static" ng-model="cluster.dbname"/>
+	<div class="row">
+	  <div class="col-lg-1 info-popover-label">DB</div>
+	  <div class="col-lg-11">{{cluster.dbname}}</div>
 	</div>
+</script>
+<script id="node-detail.html" type="text/ng-template">
+	<div class="row">
+	  <div class="col-lg-1 info-popover-label">DNS</div>
+	  <div class="col-lg-11">{{node.dns_name}}</div>
+	</div>
+	<div class="row">
+	  <div class="col-lg-1 info-popover-label">IP</div>
+	  <div class="col-lg-11">{{node.ip}}</div>
 	</div>
 </script>
 
@@ -39,8 +47,7 @@
 	<div class="panel cluster-panel" ng-repeat="cluster in clusters">
 		<div class="panel-heading cluster-heading">
 			<span class="panel-title cluster-title">{{cluster.label}}</span>
-			<button popover-placement="right" popover-template="cluster-detail.html" ><i class="icon-info-sign"></i></button>
-
+			<a popover-placement="bottom" popover-template="cluster-detail.html" class="btn btn-xs info-popover"><i class="icon-info-sign"></i></a>
 			<div class=" pull-right">
 				<button ng-if="cluster.canLaunch" class="btn add-node btn-success btn-small" ng-click="addNode(cluster)">ADD NODE</button>
 				<button ng-if="cluster.canLaunch" class="btn launch-cluster btn-success btn-small" ng-click="launchCluster(cluster)" data-loading-text="Launching...">LAUNCH</button>
@@ -64,8 +71,10 @@
 			<tbody>
 			<tr ng-repeat="node in cluster.nodes">
 				<td ng-class="{row0: $first}" class="node-status-marker"><i class="icon-circle {{node.statusClass}}"></i></td>
-				<td ng-class="{row0: $first}">{{node.label}}</td>
-				<td ng-class="{row0: $first}">{{node.region}}</td>
+				<td ng-class="{row0: $first}">{{node.label}}
+					<a popover-placement="bottom" popover-template="node-detail.html" class="btn btn-xs info-popover"><i class="icon-info-sign"></i></a>
+				</td>
+				<td ng-class="{row0: $first}">{{node.$region.name}}</td>
 				<td ng-class="{row0: $first}">{{node.provider.name}}</td>
 				<td ng-class="{row0: $first}">{{node.$flavor.name}}</td>
 				<td ng-class="{row0: $first}" class="node-status {{node.statusClass}}">{{node.status}}</td>

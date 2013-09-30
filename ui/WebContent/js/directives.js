@@ -99,7 +99,7 @@ angular.module('Utility.directives', ['GenieDBaaS.config'])
     // TODO: Remove when PR rolled into Bootstrap-UI
     .run(["$templateCache", function ($templateCache) {
         $templateCache.put("template/popover/popover-template.html",
-            "<div class=\"popover {{placement}}\" ng-class=\"{ in: isOpen(), fade: animation() }\">" +
+            "<div class=\"popover list-popover {{placement}}\" ng-class=\"{ in: isOpen(), fade: animation() }\">" +
                 "  <div class=\"arrow\"><\/div>" +
                 "  <div class=\"popover-inner\">" +
                 "      <h3 class=\"popover-title\" ng-bind=\"title\" ng-show=\"title\"><\/h3>" +
@@ -124,7 +124,6 @@ angular.module('Utility.directives', ['GenieDBaaS.config'])
                         templateScope = aScope;
                     }
                 });
-console.log(template);
                 iElement.find('div.popover-content').html($compile(template)(templateScope));
             }
         };
