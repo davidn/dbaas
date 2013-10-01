@@ -86,7 +86,7 @@ class UserViewSet(mixins.ListModelMixin,
     """List, retrieve update and create :py:class:`~api.Region`."""
     model = get_user_model()
     serializer_class = UserSerializer
-    permission_classes = (IsOwnerOrAdminUser,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
         if self.request.user and self.request.user.is_staff:
@@ -109,7 +109,7 @@ def identity(request):
 def upgrade(request):
     if not request.user:
         return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
-    mail_admins("User want's to upgrade", "User %s wants to upgrade" % request.user)
+    mail_admins("User wants to upgrade", "User %s wants to upgrade" % request.user)
     serializer = UserSerializer(request.user)
     return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 

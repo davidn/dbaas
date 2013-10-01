@@ -8,6 +8,10 @@
 				<label> Node Region</label>
 				<select ui-select2 ng-model="region" data-placeholder="Pick a region"  ng-options="region as region.name group by region.provider.name for region in regions"  style="width: 80%"></select>
 			</div>
+			<div class="form-group" ng-if="user.isPaid">
+				<label> Node Type</label>
+				<select ui-select2 ng-model="flavor" ng-disabled="!region" data-placeholder="Pick a type"  ng-options="flavor as flavor.name for flavor in region.provider.flavors"  style="width: 80%"></select>
+			</div>
 		</div>
 		<div class="modal-footer">
 			<button class="btn btn-success" btn-loading="isLoading" data-loading-text="Adding..." ng-click="save()">SAVE</button>

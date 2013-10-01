@@ -221,9 +221,10 @@ function ClusterCntl($scope, $location, $document, apiModel, growl, dbaasConfig)
     }
 }
 
-function NodeCntl($scope, $routeParams, $location, apiModel, $http, growl, dbaasConfig) {
+function NodeCntl($scope, $routeParams, $location, apiModel, $http, growl, dbaasConfig, User) {
     $scope.providers = apiModel.getProviders();
     $scope.regions = apiModel.regions;
+    $scope.isPaid = User.user.isPaid;
 
     $scope.save = function () {
         $scope.isLoading = true;
@@ -233,6 +234,7 @@ function NodeCntl($scope, $routeParams, $location, apiModel, $http, growl, dbaas
                 flavor: $scope.region.provider.quickStartFlavor,
                 storage: 10}
         ];
+        // TODO Move to service call
         $http.post(dbaasConfig.apiUrl + "clusters/" + $routeParams.clusterid, nodes).success(function (data) {
             growl.success({body: "Node added in region " + $scope.region.name})
             $location.path('/list');

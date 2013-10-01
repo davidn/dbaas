@@ -1,7 +1,6 @@
 'use strict';
 // TODO: Service to log errors server side
-// TODO: Set a default flavor for provider
-// TODO: Hydrate provider to nodes
+// TODO: Change authenticator to provide user record along with token
 
 angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngStorage', 'ng'])
     .factory("growl", function ($rootScope) {
@@ -55,9 +54,12 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         var Registration = $resource(dbaasConfig.registerUrlEscaped + ':activation_code', {activation_code: '@activation_code'}, {
             activate: {method: 'PUT'}
         });
-        var User = $resource(dbaasConfig.authUrlEscaped + '/:id', {id: '@id'});
+        var Token = $resource(dbaasConfig.authUrlEscaped + '/:id', {id: '@id'});
+        var User = $resource(dbaasConfig.apiUrlEscaped + 'users', {}, {
+            'identity': { method: 'GET', isArray: true }
+        });
 
-        var user = $localStorage.$default({user: {email: "", token: undefined}}).user;
+        var user = $localStorage.$default({user: {email: "", isPaid: false, token: undefined}}).user;
 
         if (user.token) {
             $http.defaults.headers.common['Authorization'] = 'Token ' + user.token;
@@ -69,8 +71,19 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             updateUserStorage();
         }
 
+        function setToken(token) {
+            user.token = token;
+            updateUserStorage();
+            $http.defaults.headers.common['Authorization'] = 'Token ' + token;
+        }
+
         function updateUserStorage() {
             $localStorage.user = user;
+        }
+
+        function setUser(aUser) {
+            user.isPaid = aUser.is_paid;
+            updateUserStorage();
         }
 
         return {
@@ -90,10 +103,11 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             login: function (email, password) {
                 user.email = email;
                 clearToken();
-                return User.save({username: email, password: password}, function (data) {
-                    user.token = data.token;
-                    updateUserStorage();
-                    $http.defaults.headers.common['Authorization'] = 'Token ' + data.token;
+                return Token.save({username: email, password: password}, function (data) {
+                    setToken(data.token);
+                    User.identity({}, function (data) {
+                        setUser(_.findWhere(data, {email: email}));
+                    });
                 });
             },
             logout: function () {
