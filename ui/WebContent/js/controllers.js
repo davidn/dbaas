@@ -238,12 +238,12 @@ function NodeCntl($scope, $routeParams, $location, apiModel, $http, growl, dbaas
 
         if (User.user.isPaid) {
             flavor = node.flavor;
-        }
-        if (flavor.provider !== node.region.provider) {
-            growl.error({body: "You must choose a valid provider for " + node.region.name});
+            if (flavor.provider !== node.region.provider) {
+                growl.error({body: "You must choose a valid provider for " + node.region.name});
 
-            $scope.isLoading = false;
-            return;
+                $scope.isLoading = false;
+                return;
+            }
         }
 
         var nodes = [
