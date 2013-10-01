@@ -136,7 +136,7 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
         apiModel.getClusters(true).$then(function (data) {
             $scope.clusters = data.resource;
             $scope.isRefreshing = false;
-            if ($scope.clusters && $scope.clusters.length > 0 && !$scope.clusters[0].hasRunning){
+            if ($scope.clusters && $scope.clusters.length > 0 && !$scope.clusters[0].hasRunning) {
                 refreshTimeout = $timeout($scope.refresh, dbaasConfig.defaultRefresh);
             }
         });
@@ -187,7 +187,7 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
         }
     }
 
-    $scope.$on('$destroy', function() {
+    $scope.$on('$destroy', function () {
         $timeout.cancel(refreshTimeout);
     });
 }
@@ -223,20 +223,37 @@ function ClusterCntl($scope, $location, $document, apiModel, growl, dbaasConfig)
 
 function NodeCntl($scope, $routeParams, $location, apiModel, $http, growl, dbaasConfig, User) {
     $scope.providers = apiModel.getProviders();
+
+    // TODO: Set defaults
+//        $scope.node = {region: apiModel.regions[0], flavor: apiModel.regions[0].provider.flavor[0], size:10};
+    $scope.node = {size: 10};
     $scope.regions = apiModel.regions;
-    $scope.isPaid = User.user.isPaid;
+    $scope.user = User.user;
 
     $scope.save = function () {
         $scope.isLoading = true;
+        var node = $scope.node;
+
+        var flavor = node.region.provider.quickStartFlavor;
+
+        if (User.user.isPaid) {
+            flavor = node.flavor;
+        }
+        if (flavor.provider !== node.region.provider) {
+            growl.error({body: "You must choose a valid provider for " + node.region.name});
+
+            $scope.isLoading = false;
+            return;
+        }
 
         var nodes = [
-            {region: $scope.region.code,
-                flavor: $scope.region.provider.quickStartFlavor,
-                storage: 10}
+            {region: node.region.code,
+                flavor: flavor.code,
+                storage: node.size}
         ];
         // TODO Move to service call
         $http.post(dbaasConfig.apiUrl + "clusters/" + $routeParams.clusterid, nodes).success(function (data) {
-            growl.success({body: "Node added in region " + $scope.region.name})
+            growl.success({body: "Node added in region " + node.region.name})
             $location.path('/list');
         }).error(handleError);
     };

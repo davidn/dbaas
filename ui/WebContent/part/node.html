@@ -5,12 +5,17 @@
 		</div>
 		<div class="modal-body">
 			<div class="form-group">
-				<label> Node Region</label>
-				<select ui-select2 ng-model="region" data-placeholder="Pick a region"  ng-options="region as region.name group by region.provider.name for region in regions"  style="width: 80%"></select>
+				<label style="width: 20%"> Node Region</label>
+				<select ui-select2 ng-model="node.region" data-placeholder="Pick a region" ng-options="region as region.name group by region.provider.name for region in regions" style="width: 70%"></select>
 			</div>
 			<div class="form-group" ng-if="user.isPaid">
-				<label> Node Type</label>
-				<select ui-select2 ng-model="flavor" ng-disabled="!region" data-placeholder="Pick a type"  ng-options="flavor as flavor.name for flavor in region.provider.flavors"  style="width: 80%"></select>
+				<label style="width: 20%"> Node Type</label>
+				<select ui-select2 ng-model="node.flavor" ng-disabled="!node.region" data-placeholder="Pick a type" ng-options="flavor as flavor.name for flavor in node.region.provider.flavors" style="width: 70%"></select>
+			</div>
+			<div class="form-group" ng-if="user.isPaid">
+				<label style="width: 20%"> Node Size</label>
+				<input type = "number" min="10" max="2048" ng-model="node.size" required />
+				<label> GB</label>
 			</div>
 		</div>
 		<div class="modal-footer">
