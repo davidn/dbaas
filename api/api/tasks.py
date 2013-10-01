@@ -12,6 +12,7 @@ from livesettings import config_value
 from django.dispatch.dispatcher import receiver
 from django.db import models
 from django.contrib.auth import get_user_model
+from pyzabbix import ZabbixAPI
 
 logger = getLogger(__name__)
 
@@ -56,6 +57,36 @@ def launch_email(cluster, sendGeneralNotification=True):
         'dbpassword': cluster.dbpassword,
         'regions': ' and '.join(node.region.name for node in nodes)
     }
+
+    # Before we send out the email notification, ensure that the Zabbix
+    # registration has completed.
+    z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
+    z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
+    for node in nodes:
+        hostName = node.dns_name
+        for i in xrange(50):
+            hostGroups = z.hostgroup.getobjects(name=node.customerName)
+            if hostGroups:
+                break
+            sleep(3)
+        if hostGroups:
+            zabbixHostGroup = hostGroups[0]
+            foundNode = False
+            for i in xrange(30):
+                znodes = z.host.get(groupids=[zabbixHostGroup["groupid"]], output='extend')
+                for znode in znodes:
+                    if znode['host'] == hostName:
+                        foundNode = True
+                        break
+                if foundNode:
+                    break
+                sleep(1)
+            if not foundNode:
+                logger.warning("Host %s in HostGroup %s can't be found before sending email notification." % (hostName, node.customerName))
+        else:
+            logger.warning("HostGroup %s can't be found before sending email notification." % (node.customerName))
+
+    # Send the email Notification.
 
     from django.core.mail import EmailMultiAlternatives
     from django.template.loader import render_to_string
