@@ -58,36 +58,30 @@ def launch_email(cluster, sendGeneralNotification=True):
         'regions': ' and '.join(node.region.name for node in nodes)
     }
 
-    # Before we send out the email notification, ensure that the Zabbix
-    # registration has completed.
+    # Before we send out the email notification, ensure that Zabbix
+    # can interract with the host.
     z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
     z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
     for node in nodes:
         hostName = node.dns_name
-        for i in xrange(50):
-            hostGroups = z.hostgroup.getobjects(name=node.customerName)
-            if hostGroups:
-                break
-            sleep(3)
-        if hostGroups:
-            zabbixHostGroup = hostGroups[0]
-            foundNode = False
-            for i in xrange(30):
-                znodes = z.host.get(groupids=[zabbixHostGroup["groupid"]], output='extend')
-                for znode in znodes:
-                    if znode['host'] == hostName:
-                        foundNode = True
-                        break
-                if foundNode:
+        key = "system.cpu.util[]"
+        if node.region.provider.code != 'test':
+            nodeIsReady = False
+            for i in xrange(50):
+                try:
+                    items = z.item.get(host=hostName, filter={"key_": key})
+                except:
+                    logger.warning("Exception thrown trying to validate Zabbix registration for Host %s." % (hostName,))
                     break
-                sleep(1)
-            if not foundNode:
-                logger.warning("Host %s in HostGroup %s can't be found before sending email notification." % (hostName, node.customerName))
-        else:
-            logger.warning("HostGroup %s can't be found before sending email notification." % (node.customerName))
+                if items:
+                    nodeIsReady = True
+                    break
+                logger.info("Trying to validate Zabbix registration for Host %s." % (hostName,))
+                sleep(5)
+            if not nodeIsReady:
+                logger.warning("Unable to confirm that Host %s is executing before sending email notification." % (hostName,))
 
     # Send the email Notification.
-
     from django.core.mail import EmailMultiAlternatives
     from django.template.loader import render_to_string
 
