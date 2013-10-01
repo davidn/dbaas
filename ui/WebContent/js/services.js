@@ -181,7 +181,7 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             angular.forEach(dbaasConfig.quickStartFlavors, function (defaultFlavor, providerCode) {
                 var provider = _.findWhere(providers, {code: providerCode});
                 if (provider) {
-                    provider.quickStartFlavor = defaultFlavor;
+                    provider.quickStartFlavor = _.findWhere(provider.flavors, {code:defaultFlavor});
                 }
             });
             regions.length = 0;

@@ -294,11 +294,11 @@ function QuickStartCntl($scope, $location, apiModel, $http, growl, dbaasConfig) 
             var nodes = [
                 {region: $scope.region1.code,
                     label: "Quick Start Node 1",
-                    flavor: $scope.region1.provider.quickStartFlavor,
+                    flavor: $scope.region1.provider.quickStartFlavor.code,
                     storage: 10},
                 {region: $scope.region2.code,
                     label: "Quick Start Node 2",
-                    flavor: $scope.region2.provider.quickStartFlavor,
+                    flavor: $scope.region2.provider.quickStartFlavor.code,
                     storage: 10}
             ];
             $http.post(cluster.url, nodes).success(function () {
