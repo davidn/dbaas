@@ -273,6 +273,10 @@ input.form-control{
     max-width: 750px;
 }
 
+.messagebox-container{
+    max-width: 350px;
+}
+
 .popover{
     background-color: #5c5c5c;
     color: #d7d7d7;

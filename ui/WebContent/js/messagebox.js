@@ -1,13 +1,13 @@
 angular.module("messageBox", []).run(["$templateCache", function ($templateCache) {
         $templateCache.put("templates/messageBox/messageBox.html",
-            "<div class=\"modal-dialog login\"><div class=\"modal-content login\"><form class=\"form-login\"><div class=\"modal-header login\">\n" +
-                "	<h3>{{ title }}</h3>\n" +
+            "<div class=\"modal-dialog messagebox-container\"><div class=\"modal-content \"><div class=\"modal-header \">\n" +
+                "{{ title }}\n" +
                 "</div>\n" +
                 "<div class=\"modal-body\" ng-bind-html=\"message\">\n" +
                 "</div>\n" +
                 "<div class=\"modal-footer\">\n" +
                 "	<button ng-repeat=\"btn in buttons\" ng-click=\"close(btn.result)\" class=\"btn\" ng-class=\"btn.cssClass\">{{ btn.label }}</button>\n" +
-                "</div></div></form></div>\n" +
+                "</div></div></div>\n" +
                 "");
     }])
     .controller('MessageBoxController', ['$scope', '$modalInstance', 'model', function ($scope, $modalInstance, model) {
