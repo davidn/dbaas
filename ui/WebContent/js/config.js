@@ -22,11 +22,17 @@ angular.module('GenieDBaaS.config', [])
         };
 
 
-        // TODO: Move this to server side
+        // TODO: Move quickStartFlavors to server side
         var quickStartFlavors={
             rs:"3",
             az:"m1.small",
             test:"test-small"
+        };
+        // TODO: Move launchTimes to server side
+        var launchTimes={
+            rs:5,
+            az:3,
+            test:1
         };
 
         // TODO: Only used for $resource - purge if migrated off
@@ -40,6 +46,7 @@ angular.module('GenieDBaaS.config', [])
             apiUrl: serviceUrl + apiPath,
             quickStart: quickStartCluster,
             quickStartFlavors: quickStartFlavors,
+            launchTimes: launchTimes,
 
             // TODO: Only used for $resource - purge if migrated off
             authUrlEscaped: escapedUrl + authPath,

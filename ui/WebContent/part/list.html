@@ -34,7 +34,6 @@
 	  <div class="col-lg-11">{{node.storage}} GB</div>
 	</div>
 </script>
-
 <div class="box summary">
 	<div class="div-logout">
 		Welcome {{ user.email }} &nbsp;&nbsp;&nbsp;
@@ -54,7 +53,7 @@
 			<a popover-placement="bottom" popover-template="cluster-detail.html" class="btn info-popover"><i class="icon-info-sign"></i></a>
 			<div class=" pull-right">
 				<button ng-if="cluster.canLaunch" class="btn add-node btn-success btn-small" ng-click="addNode(cluster)">ADD NODE</button>
-				<button ng-if="cluster.canLaunch" class="btn launch-cluster btn-success btn-small" ng-click="launchCluster(cluster)" data-loading-text="Launching...">LAUNCH</button>
+				<button ng-if="cluster.canLaunch" class="btn launch-cluster btn-success btn-small" ng-disabled="cluster.isLaunching" ng-click="launchCluster(cluster)" data-loading-text="Launching...">LAUNCH</button>
 				<button class="btn delete-cluster btn-danger btn-small" ng-click="deleteCluster(cluster)" data-loading-text="Deleting...">DELETE</button>
 			</div>
 		</div>

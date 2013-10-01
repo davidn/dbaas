@@ -115,6 +115,22 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
     };
 
     $scope.launchCluster = function (cluster) {
+        cluster.isLaunching = true;
+
+        var title = 'Launching Cluster';
+        var providers = _.uniq(_.pluck(cluster.nodes, 'provider'));
+        var launchTime = _.max(providers, function (provider) {
+            return provider.launchTime;
+        }).launchTime;
+        console.log(providers);
+        console.log(launchTime);
+        var msg = 'We are now spinning up the cluster you requested.  You will receive an email when the cluster is available.  <br /><br />In general ' + _.pluck(providers, 'name').join(' and ') + ' take' + (providers.length > 1 ? '' : 's') + ' about ' + launchTime + ' minutes to provision and launch their nodes.';
+        var btns = [
+            {result: 'ok', label: 'Ok', cssClass: 'btn-success'}
+        ];
+
+        messageBox.open(title, msg, btns);
+
         $http.post(cluster.url + '/launch_all/').success(function () {
             $scope.refresh();
         }).error(handleError);
@@ -147,7 +163,7 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
     $scope.deleteCluster = function (cluster) {
         cluster.isDeleting = true;
         var title = 'Confirm';
-        var msg = 'Are you sure you want to delete cluster ' + cluster.label + '?';
+        var msg = 'Are you sure you want to delete cluster <strong>' + cluster.label + '</strong>?';
         var btns = [
             {result: 'cancel', label: 'Cancel'},
             {result: 'ok', label: 'Delete', cssClass: 'btn-danger'}
@@ -166,8 +182,6 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
             else {
                 cluster.isDeleting = false;
             }
-
-
         });
     };
 
