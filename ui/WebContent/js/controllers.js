@@ -114,6 +114,27 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
         $location.path("/cluster");
     };
 
+    $scope.quickStart = function () {
+        $location.path("/quickstart");
+    };
+
+
+    var refreshTimeout;
+
+    $scope.refresh = function () {
+        $timeout.cancel(refreshTimeout);
+        $scope.isRefreshing = true;
+        apiModel.getClusters(true).$then(function (data) {
+            $scope.clusters = data.resource;
+            $scope.isRefreshing = false;
+            if ($scope.clusters && $scope.clusters.length > 0 && !$scope.clusters[0].hasRunning) {
+                refreshTimeout = $timeout($scope.refresh, dbaasConfig.defaultRefresh);
+            }
+        });
+    };
+
+    $scope.refresh();
+
     $scope.launchCluster = function (cluster) {
         cluster.isLaunching = true;
 
@@ -139,26 +160,6 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
     $scope.addNode = function (cluster) {
         $location.path("/cluster/" + cluster.url.slice(-36) + "/node");
     }
-
-    $scope.quickStart = function () {
-        $location.path("/quickstart");
-    };
-
-    var refreshTimeout;
-
-    $scope.refresh = function () {
-        $timeout.cancel(refreshTimeout);
-        $scope.isRefreshing = true;
-        apiModel.getClusters(true).$then(function (data) {
-            $scope.clusters = data.resource;
-            $scope.isRefreshing = false;
-            if ($scope.clusters && $scope.clusters.length > 0 && !$scope.clusters[0].hasRunning) {
-                refreshTimeout = $timeout($scope.refresh, dbaasConfig.defaultRefresh);
-            }
-        });
-    };
-
-    $scope.refresh();
 
     $scope.deleteCluster = function (cluster) {
         cluster.isDeleting = true;
@@ -190,6 +191,7 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
             $scope.refresh();
         }).error(handleError);
     };
+
     function handleError(err) {
         $scope.isLoading = false;
         if (err && err.data && err.data.detail) {
