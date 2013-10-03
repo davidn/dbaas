@@ -31,15 +31,12 @@
 	</div>
 </script>
 <div class="box summary">
-	<div class="div-logout">
-		Welcome {{ user.email }} &nbsp;&nbsp;&nbsp;
-		<button class="btn btn-primary btn-sm" ng-click="logout()">LOGOUT</button>
-	</div>
 	<div class="modal-header">Cluster Summary
 		<button class="btn btn-primary add-cluster-btn" ng-click="addCluster()"><i class="icon-plus"></i> ADD CLUSTER</button>
 		<button class="btn btn-primary" ng-click="refresh()" id="refresh" ng-class="{disabled: isRefreshing}">
 			<i class="icon-refresh" ng-class="{'icon-spin': isRefreshing}"></i></button>
 		<button type="submit" class="btn btn-primary pull-right disabled"><i class="icon-bar-chart"></i> CLUSTER STATS</button>
+		<a download="cluster.crt" ng-href="{{ cluster.cert }}">Cert</a>
 	</div>
 </div>
 <div class="panel container cluster-group">

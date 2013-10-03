@@ -7,6 +7,14 @@ function MainCntl(User) {
     // Inject User to force initialization
 }
 
+function NavigationCtlr($scope, User) {
+    $scope.user = User.user;
+
+    $scope.logout = function () {
+        User.logout();
+    };
+}
+
 function WelcomeCntl($scope, $location, User, growl) {
     $scope.form = angular.copy(User.user);
     $scope.showValidationMessages = false;
@@ -95,20 +103,14 @@ function RegisterCntl($scope, $location, User, growl) {
 
 function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, growl, User, messageBox) {
 //    TODO Disable UI while processing update on cluster
+    // TODO: Add service to route onChange to confirm token existence
     if (!User.user.token) {
         $location.path("/");
         growl.error({body: "Session Expired"});
         return;
     }
-    $scope.user = User.user;
-
-    $scope.form = angular.copy($scope.user);
     $scope.providers = apiModel.getProviders();
 
-
-    $scope.logout = function () {
-        User.logout();
-    };
 
     $scope.addCluster = function () {
         $location.path("/cluster");
@@ -117,7 +119,6 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
     $scope.quickStart = function () {
         $location.path("/quickstart");
     };
-
 
     var refreshTimeout;
 
@@ -140,7 +141,7 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
 
         var title = 'Launching Cluster';
         var providers = _.uniq(_.pluck(cluster.nodes, 'provider'));
-        var launchTime = _.max(providers, function (provider) {
+        var launchTime = _.max(providers,function (provider) {
             return provider.launchTime;
         }).launchTime;
         console.log(providers);
@@ -156,12 +157,12 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
             $scope.refresh();
         }).error(handleError);
     };
-
-    $scope.addNode = function (cluster) {
+    $scope.deleteCluster = function (cluster) {
+//    $scope.addNode = function (cluster) {
         $location.path("/cluster/" + cluster.url.slice(-36) + "/node");
     }
 
-    $scope.deleteCluster = function (cluster) {
+    $scope.xdeleteCluster = function (cluster) {
         cluster.isDeleting = true;
         var title = 'Confirm';
         var msg = 'Are you sure you want to delete cluster <strong>' + cluster.label + '</strong>?';
@@ -245,6 +246,10 @@ function NodeCntl($scope, $routeParams, $location, apiModel, $http, growl, dbaas
     $scope.node = {size: 10};
     $scope.regions = apiModel.regions;
     $scope.user = User.user;
+
+    $scope.updateFlavor = function () {
+        $scope.node.flavor = $scope.node.region.provider.quickStartFlavor;
+    }
 
     $scope.save = function () {
         $scope.isLoading = true;

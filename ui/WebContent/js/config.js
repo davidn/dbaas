@@ -2,7 +2,7 @@
 angular.module('GenieDBaaS.config', [])
     .constant('dbaasConfig', (function () {
         // TODO: Make conditional parameters for grunt.js to package the deployments
-        var versionTag = "0.2";
+        var versionTag = "0.8";
 //        var serviceUrl = "http://localhost:8000";
         var serviceUrl= "https://dbaas-test.geniedb.com:4000";
 

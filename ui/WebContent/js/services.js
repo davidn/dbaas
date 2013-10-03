@@ -81,7 +81,18 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             $localStorage.user = user;
         }
 
+        function updateUserVoice() {
+            UserVoice.push(['identify', {
+                email: aUser.email,
+                account: {
+                    name: aUser.email,
+                    plan: aUser.is_paid ? 'Paid' : 'Free',
+                }
+            }]);
+        }
+
         function setUser(aUser) {
+
             user.isPaid = aUser.is_paid;
             updateUserStorage();
         }
@@ -181,7 +192,7 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             angular.forEach(dbaasConfig.quickStartFlavors, function (defaultFlavor, providerCode) {
                 var provider = _.findWhere(providers, {code: providerCode});
                 if (provider) {
-                    provider.quickStartFlavor = _.findWhere(provider.flavors, {code:defaultFlavor});
+                    provider.quickStartFlavor = _.findWhere(provider.flavors, {code: defaultFlavor});
                 }
             });
             angular.forEach(dbaasConfig.launchTimes, function (launchTime, providerCode) {

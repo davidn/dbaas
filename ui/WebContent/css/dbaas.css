@@ -30,12 +30,26 @@ body{
 }
 
 #dbaasHeader{
-    padding-top: 50px;
+    padding-top: 15px;
     padding-left: 10%;
 }
 
 #gdbHeader{
-    padding-top: 25px;
+}
+
+#logout{
+    position: relative;
+    top: 15px;
+    left: 20%;
+    color: #6f6f6f;
+}
+
+.navbar-default{
+    background-color: #313131;
+    background-color: rgba(49, 49, 49, 0.9);
+    border-color: #313131;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .modal-header{
@@ -96,15 +110,6 @@ body{
 .node-popup{
     background-color: #707070;
     padding: 15px 0px;
-}
-
-.div-logout{
-    position: absolute;
-    top: 50px;
-    left: 40%;
-    overflow: visible;
-    color: #6f6f6f;
-    z-index: 1030;
 }
 
 .input-login{
@@ -226,7 +231,7 @@ a.dropdown-toggle:hover{
 .version-tag{
     text-align: right;
     font-size: 8pt;
-    color: #aaa;
+    color: #888;
 }
 
 .list-sparkline{
@@ -306,4 +311,8 @@ button.close-sm{
     font-size: 10pt;
     padding-right: 10px;
     padding-top: 10px;
+}
+
+.paid-user{
+    color: #999;
 }
