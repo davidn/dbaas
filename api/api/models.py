@@ -16,8 +16,10 @@ from time import sleep
 import re
 from hashlib import sha1
 from itertools import islice
+import datetime
 from Crypto import Random
 from Crypto.PublicKey import RSA
+import OpenSSL
 from django.db import models
 from django.dispatch.dispatcher import receiver
 from django.conf import settings
@@ -177,13 +179,67 @@ class Cluster(models.Model):
     iam_key = models.CharField(max_length=255, blank=True, default="")
     iam_secret = models.CharField(max_length=255, blank=True, default="")
 
+    # SSL Keys
+    ca_cert = models.TextField("CA Certificate", default="")
+    client_cert = models.TextField("Client Certificate", default="")
+    server_cert = models.TextField("Server Certificate", default="")
+    client_key = models.TextField("Client Private Key", default="")
+    server_key = models.TextField("Server Private Key", default="")
+
     historyTrail = audit.AuditTrail(show_in_admin=True)
+
+    def __init__(self, *args, **kwargs):
+        models.Model.__init__(self, *args, **kwargs)
+        self.generate_keys()
 
     def __repr__(self):
         return "Cluster(uuid={uuid}, user={user})".format(uuid=repr(self.uuid), user=repr(self.user))
 
     def __unicode__(self):
         return self.dns_name
+
+    def generate_keys(self):
+        ca_pk = OpenSSL.crypto.PKey()
+        ca_pk.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
+        client_pk = OpenSSL.crypto.PKey()
+        client_pk.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
+        server_pk = OpenSSL.crypto.PKey()
+        server_pk.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
+        ca_cert = OpenSSL.crypto.X509()
+        ca_cert.set_pubkey(ca_pk)
+        ca_cert.get_subject().C = 'US'
+        ca_cert.get_subject().ST = 'CA'
+        ca_cert.get_subject().CN = 'GenieDB Inc.'
+        ca_cert.set_issuer(ca_cert.get_subject())
+        ca_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
+        ca_cert.set_notAfter((datetime.datetime.utcnow()+datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
+        ca_cert.set_serial_number(1)
+        ca_cert.sign(ca_pk,'sha256')
+        client_cert = OpenSSL.crypto.X509()
+        client_cert.set_pubkey(client_pk)
+        client_cert.get_subject().CN = str(self)
+        client_cert.set_issuer(ca_cert.get_subject())
+        client_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
+        client_cert.set_notAfter((datetime.datetime.utcnow()+datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
+        client_cert.set_serial_number(2)
+        client_cert.sign(ca_pk,'sha256')
+        server_cert = OpenSSL.crypto.X509()
+        server_cert.set_pubkey(server_pk)
+        server_cert.get_subject().C = 'US'
+        server_cert.get_subject().ST = 'CA'
+        server_cert.get_subject().O = 'GenieDB Inc.'
+        server_cert.get_subject().CN = self.dns_name
+        server_cert.set_issuer(ca_cert.get_subject())
+        server_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
+        server_cert.set_notAfter((datetime.datetime.utcnow()+datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
+        server_cert.set_serial_number(3)
+        server_cert.sign(ca_pk,'sha256')
+
+        self.ca_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, ca_cert)
+        self.client_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, client_cert)
+        self.server_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, server_cert)
+        self.client_key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, client_pk)
+        self.server_key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, server_pk)
 
     def launch(self):
         """Set up an IAM user and S3 bucket for nodes in this cluster to send backups to."""
@@ -500,6 +556,9 @@ class Node(models.Model):
         """Return a string to be passed to cloud-init on a newly provisioned node."""
         connect_to_list = "\n    ".join("ConnectTo = node_"+str(node.nid) for node in self.cluster.nodes.all())
         rsa_priv = self.tinc_private_key.replace("\n", "\n    ")
+        ca_cert = self.ca_cert.replace("\n", "\n    ")
+        server_cert = self.server_cert.replace("\n", "\n    ")
+        server_key = self.server_key.replace("\n", "\n    ")
         host_files = "\n".join("""- content: |
     Address={address}
     Subnet=192.168.33.{nid}/32
@@ -518,9 +577,27 @@ write_files:
     geniedb_buffer_pool_size={buffer_pool_size}
     default_storage_engine=GenieDB
     port={port}
+    ssl_ca=/etc/mysql/ca.cert
+    ssl_cert=/etc/mysql/server.cert
+    ssl_key=/etc/mysql/server.pem
   path: /etc/mysql/conf.d/geniedb.cnf
   owner: root:root
   permissions: '0644'
+- content: |
+   {ca_cert}
+  path: /etc/mysql/ca.cert
+  permissions: '600'
+  owner: mysql:mysql
+- content: |
+   {server_cert}
+  path: /etc/mysql/server.cert
+  permissions: '600'
+  owner: mysql:mysql
+- content: |
+   {server_key}
+  path: /etc/mysql/server.pem
+  permissions: '600'
+  owner: mysql:mysql
 - content: |
    CREATE DATABASE {dbname};
    CREATE USER '{dbusername}'@'%' IDENTIFIED BY PASSWORD '{dbpassword}';
@@ -621,6 +698,9 @@ runcmd:
            mysql_password='*'+sha1(sha1(settings.MYSQL_PASSWORD).digest()).hexdigest().upper(),
            connect_to_list=connect_to_list,
            rsa_priv=rsa_priv,
+           ca_cert=ca_cert,
+           server_cert=server_cert,
+           server_key=server_key,
            host_files=host_files,
            buffer_pool_size=self.buffer_pool_size,
            backup_schedule=self.cluster.backup_schedule.format(nid=self.nid),
