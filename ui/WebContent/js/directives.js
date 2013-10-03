@@ -102,6 +102,7 @@ angular.module('Utility.directives', ['GenieDBaaS.config'])
             "<div class=\"popover list-popover {{placement}}\" ng-class=\"{ in: isOpen(), fade: animation() }\">" +
                 "  <div class=\"arrow\"><\/div>" +
                 "  <div class=\"popover-inner\">" +
+                "      <button class=\"close close-sm\" ng-click=\"Hide()\">X<\/button>" +
                 "      <h3 class=\"popover-title\" ng-bind=\"title\" ng-show=\"title\"><\/h3>" +
                 "      <div class=\"popover-content\"><\/div>" +
                 "  <\/div>" +
@@ -128,8 +129,8 @@ angular.module('Utility.directives', ['GenieDBaaS.config'])
             }
         };
     }])
-    .directive('popoverTemplate', [ '$tooltip', function ($tooltip) {
-        var tooltip = $tooltip('popoverTemplate', 'popover', 'click');
+    .directive('popoverTemplate', [ '$tooltipX', function ($tooltipX) {
+        var tooltip = $tooltipX('popoverTemplate', 'popover', 'click');
 
         tooltip.compile = function () {
             return {

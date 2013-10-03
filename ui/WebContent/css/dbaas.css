@@ -48,6 +48,10 @@ body{
     border-radius: 2px 2px 0px 0px;
 }
 
+.popover-title{
+    background-color: #505050;
+}
+
 .modal-footer{
     background-color: #c1c1c1;
     padding: 15px;
@@ -286,10 +290,20 @@ input.form-control{
     border-bottom-color: #5c5c5c;
 }
 
+.popover.right .arrow:after{
+    border-right-color: #5c5c5c;
+}
+
 .info-popover{
     color: #c7c7c7;
 }
 
 .info-popover-label{
     color: #a0a0a0;
+}
+
+button.close-sm{
+    font-size: 10pt;
+    padding-right: 10px;
+    padding-top: 10px;
 }

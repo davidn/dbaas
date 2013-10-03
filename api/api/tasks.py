@@ -58,8 +58,28 @@ def launch_email(cluster, sendGeneralNotification=True):
         'regions': ' and '.join(node.region.name for node in nodes)
     }
 
-    # Before we send out the email notification, ensure that Zabbix
-    # can interract with the host.
+    # Send the email Notification.
+    from django.core.mail import EmailMultiAlternatives
+    from django.template.loader import render_to_string
+
+    subject = render_to_string('confirmation_email_subject.txt', ctx_dict)
+    # Email subject *must not* contain newlines
+    subject = ''.join(subject.splitlines())
+
+    message_text = render_to_string('confirmation_email.txt', ctx_dict)
+    message_html = render_to_string('confirmation_email.html', ctx_dict)
+
+    recipient = [cluster.user.email] if not sendGeneralNotification else config_value('api_email', 'RECIPIENTS')
+
+    msg = EmailMultiAlternatives(subject, message_text, settings.DEFAULT_FROM_EMAIL, recipient)
+    msg.attach_alternative(message_html, "text/html")
+    msg.send()
+
+
+@task()
+def wait_nodes_zabbix(cluster):
+    nodes = cluster.nodes.all()
+
     z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
     z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
     for node in nodes:
@@ -81,22 +101,6 @@ def launch_email(cluster, sendGeneralNotification=True):
             if not nodeIsReady:
                 logger.warning("Unable to confirm that Host %s is executing before sending email notification." % (hostName,))
 
-    # Send the email Notification.
-    from django.core.mail import EmailMultiAlternatives
-    from django.template.loader import render_to_string
-
-    subject = render_to_string('confirmation_email_subject.txt', ctx_dict)
-    # Email subject *must not* contain newlines
-    subject = ''.join(subject.splitlines())
-
-    message_text = render_to_string('confirmation_email.txt', ctx_dict)
-    message_html = render_to_string('confirmation_email.html', ctx_dict)
-
-    recipient = [cluster.user.email] if not sendGeneralNotification else config_value('api_email', 'RECIPIENTS')
-
-    msg = EmailMultiAlternatives(subject, message_text, settings.DEFAULT_FROM_EMAIL, recipient)
-    msg.attach_alternative(message_html, "text/html")
-    msg.send()
 
 
 @task()
@@ -111,6 +115,7 @@ def install_cluster(cluster, sendGeneralNotification=True):
            | wait_nodes.si([node for node in install_nodes]) \
            | group([install.si(node) for node in install_nodes]) \
            | group([install_region.si(lbr_region) for lbr_region in lbr_regions]) \
+           | wait_nodes_zabbix.si(cluster) \
            | launch_email.si(cluster, sendGeneralNotification)
     return task.delay()
 
