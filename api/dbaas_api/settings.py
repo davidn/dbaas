@@ -4,7 +4,7 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-# ('Your Name', 'your_email@example.com'),
+    # ('Your Name', 'your_email@example.com'),
 )
 
 MANAGERS = ADMINS
@@ -12,29 +12,29 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': '', # Or path to database file if using sqlite3.
+        'NAME': '',                      # Or path to database file if using sqlite3.
         # The following settings are not used with sqlite3:
         'USER': '',
         'PASSWORD': '',
-        'HOST': '', # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
-        'PORT': '', # Set to empty string for default.
+        'HOST': '',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        'PORT': '',                      # Set to empty string for default.
     }
 }
 
-MYSQL_USER = "dbaas"
-MYSQL_PASS = ""
+MYSQL_USER="dbaas"
+MYSQL_PASS=""
 
-ZABBIX_ENDPOINT = "http://zabbix.example.com/zabbix/"
-ZABBIX_USER = ""
-ZABBIX_PASSWORD = ""
+ZABBIX_ENDPOINT="http://zabbix.example.com/zabbix/"
+ZABBIX_USER=""
+ZABBIX_PASSWORD=""
 
-AWS_ACCESS_KEY = ""
-AWS_SECRET_KEY = ""
+AWS_ACCESS_KEY=""
+AWS_SECRET_KEY=""
 
-RACKSPACE_USER = ""
-RACKSPACE_PASS = ""
-RACKSPACE_TENANT = ""
-RACKSPACE_AUTH_URL = "https://identity.api.rackspacecloud.com/v2.0"
+RACKSPACE_USER=""
+RACKSPACE_PASS=""
+RACKSPACE_TENANT=""
+RACKSPACE_AUTH_URL="https://identity.api.rackspacecloud.com/v2.0"
 
 PROFITBRICK_USER = ""
 PROFITBRICK_PASS = ""
@@ -44,12 +44,11 @@ CLUSTER_DNS_TEMPLATE = "{cluster}.dbaas.example.com"
 REGION_DNS_TEMPLATE = "{cluster}-{lbr_region}.dbaas.example.com"
 NODE_DNS_TEMPLATE = "{cluster}-{node}.dbaas.example.com"
 import datetime
-
-TRIAL_LENGTH = datetime.timedelta(weeks=1)
+TRIAL_LENGTH=datetime.timedelta(weeks=1)
 
 DEFAULT_PORT = 3306
 
-HOSTS_DIR = '/tmp/hosts'
+HOSTS_DIR='/tmp/hosts'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
@@ -110,9 +109,9 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-# Put strings here, like "/home/html/static" or "C:/www/django/static".
-# Always use forward slashes, even on Windows.
-# Don't forget to use absolute paths, not relative paths.
+    # Put strings here, like "/home/html/static" or "C:/www/django/static".
+    # Always use forward slashes, even on Windows.
+    # Don't forget to use absolute paths, not relative paths.
 )
 
 # List of finder classes that know how to find static files in
@@ -120,7 +119,7 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # Make this unique, and don't share it with anybody.
@@ -130,7 +129,7 @@ SECRET_KEY = 'mfv4^l$w==@%xbnr-45+k^e1av3=%(l(g&@syg^e+czl348l$w'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-    #     'django.template.loaders.eggs.Loader',
+#     'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -149,15 +148,16 @@ ROOT_URLCONF = 'dbaas_api.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'dbaas_api.wsgi.application'
 
+
 import os.path
 
 TEMPLATE_DIRS = (
-    os.path.join(os.path.dirname(__file__), '../rest_registration/templates').replace('\\', '/'),
+    os.path.join(os.path.dirname(__file__), '../rest_registration/templates').replace('\\','/'),
     os.path.join(os.path.dirname(__file__), '../api/templates').replace('\\', '/'),
+    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
+    # Always use forward slashes, even on Windows.
+    # Don't forget to use absolute paths, not relative paths.
 )
-
-FIXTURE_DIRS = (
-    os.path.join(os.path.dirname(__file__), '../api/fixtures').replace('\\', '/'),)
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -178,11 +178,11 @@ INSTALLED_APPS = (
     'api'
 )
 
-ACCOUNT_ACTIVATION_DAYS = 7
+ACCOUNT_ACTIVATION_DAYS=7
 
-AUTH_USER_MODEL = 'api.User'
+AUTH_USER_MODEL='api.User'
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_ALLOW_ALL=True
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
