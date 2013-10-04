@@ -217,6 +217,14 @@ class Cluster(models.Model):
         ca_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
         ca_cert.set_notAfter((datetime.datetime.utcnow()+datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
         ca_cert.set_serial_number(1)
+        ca_cert.add_extensions([
+            OpenSSL.crypto.X509Extension("basicConstraints", False, "CA:TRUE"),
+            OpenSSL.crypto.X509Extension("keyUsage", False, "keyCertSign"),
+            OpenSSL.crypto.X509Extension("subjectKeyIdentifier", False, "hash", subject=ca_cert)
+            ])
+        ca_cert.add_extensions([
+            OpenSSL.crypto.X509Extension("authorityKeyIdentifier", False, "keyid:always", issuer=ca_cert),
+            ])
         ca_cert.sign(ca_pk,'sha')
         client_cert = OpenSSL.crypto.X509()
         client_cert.set_pubkey(client_pk)
