@@ -87,7 +87,7 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
                 email: user.email,
                 account: {
                     name: user.email,
-                    plan: user.is_paid ? 'Paid' : 'Free',
+                    plan: user.is_paid ? 'Paid' : 'Free'
                 }
             }]);
         }
