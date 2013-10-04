@@ -209,6 +209,7 @@ class Cluster(models.Model):
         server_pk = OpenSSL.crypto.PKey()
         server_pk.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
         ca_cert = OpenSSL.crypto.X509()
+        ca_cert.set_version(0x2) # version 3
         ca_cert.set_pubkey(ca_pk)
         ca_cert.get_subject().C = 'US'
         ca_cert.get_subject().ST = 'CA'
