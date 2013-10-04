@@ -16,6 +16,7 @@ from time import sleep
 import re
 from hashlib import sha1
 from itertools import islice
+import base64
 import datetime
 from Crypto import Random
 from Crypto.PublicKey import RSA
@@ -88,6 +89,9 @@ def split_every(n, iterable):
     while piece:
         yield piece
         piece = list(islice(i, n))
+
+def asn1_to_pem(s):
+    return "-----BEGIN RSA PRIVATE KEY-----\n{0}-----END RSA PRIVATE KEY-----\n".format(base64.encodestring(s))
 
 class UserManager(BaseUserManager):
 
@@ -236,8 +240,8 @@ class Cluster(models.Model):
 
         self.client_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, client_cert)
         self.server_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, server_cert)
-        self.client_key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, client_pk)
-        self.server_key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, server_pk)
+        self.client_key = asn1_to_pem(OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_ASN1, client_pk))
+        self.server_key = asn1_to_pem(OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_ASN1, server_pk))
         self.ca_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, ca_cert)
 
     def launch(self):
