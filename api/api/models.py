@@ -188,10 +188,6 @@ class Cluster(models.Model):
 
     historyTrail = audit.AuditTrail(show_in_admin=True)
 
-    def __init__(self, *args, **kwargs):
-        models.Model.__init__(self, *args, **kwargs)
-        self.generate_keys()
-
     def __repr__(self):
         return "Cluster(uuid={uuid}, user={user})".format(uuid=repr(self.uuid), user=repr(self.user))
 
@@ -199,6 +195,9 @@ class Cluster(models.Model):
         return self.dns_name
 
     def generate_keys(self):
+        # idempotence
+        if len(self.ca_cert) != 0:
+            return
         ca_pk = OpenSSL.crypto.PKey()
         ca_pk.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
         client_pk = OpenSSL.crypto.PKey()
@@ -235,14 +234,15 @@ class Cluster(models.Model):
         server_cert.set_serial_number(3)
         server_cert.sign(ca_pk,'sha256')
 
-        self.ca_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, ca_cert)
         self.client_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, client_cert)
         self.server_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, server_cert)
         self.client_key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, client_pk)
         self.server_key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, server_pk)
+        self.ca_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, ca_cert)
 
     def launch(self):
         """Set up an IAM user and S3 bucket for nodes in this cluster to send backups to."""
+        self.generate_keys()
         if self.iam_key == "":
             iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             if self.iam_arn == "":
