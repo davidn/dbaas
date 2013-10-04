@@ -180,11 +180,11 @@ class Cluster(models.Model):
     iam_secret = models.CharField(max_length=255, blank=True, default="")
 
     # SSL Keys
-    ca_cert = models.TextField("CA Certificate", default="")
-    client_cert = models.TextField("Client Certificate", default="")
-    server_cert = models.TextField("Server Certificate", default="")
-    client_key = models.TextField("Client Private Key", default="")
-    server_key = models.TextField("Server Private Key", default="")
+    ca_cert = models.TextField("CA Certificate", blank=True, default="")
+    client_cert = models.TextField("Client Certificate", blank=True, default="")
+    server_cert = models.TextField("Server Certificate", blank=True, default="")
+    client_key = models.TextField("Client Private Key", blank=True, default="")
+    server_key = models.TextField("Server Private Key", blank=True, default="")
 
     historyTrail = audit.AuditTrail(show_in_admin=True)
 

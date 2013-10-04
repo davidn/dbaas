@@ -9,59 +9,59 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
 
-
         # Adding field 'ClusterAudit.ca_cert'
         db.add_column(u'api_cluster_audit', 'ca_cert',
-                      self.gf('django.db.models.fields.TextField')(default=''),
+                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
                       keep_default=False)
 
         # Adding field 'ClusterAudit.client_cert'
         db.add_column(u'api_cluster_audit', 'client_cert',
-                      self.gf('django.db.models.fields.TextField')(default=''),
+                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
                       keep_default=False)
 
         # Adding field 'ClusterAudit.server_cert'
         db.add_column(u'api_cluster_audit', 'server_cert',
-                      self.gf('django.db.models.fields.TextField')(default=''),
+                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
                       keep_default=False)
 
         # Adding field 'ClusterAudit.client_key'
         db.add_column(u'api_cluster_audit', 'client_key',
-                      self.gf('django.db.models.fields.TextField')(default=''),
+                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
                       keep_default=False)
 
         # Adding field 'ClusterAudit.server_key'
         db.add_column(u'api_cluster_audit', 'server_key',
-                      self.gf('django.db.models.fields.TextField')(default=''),
+                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
                       keep_default=False)
 
         # Adding field 'Cluster.ca_cert'
         db.add_column(u'api_cluster', 'ca_cert',
-                      self.gf('django.db.models.fields.TextField')(default=''),
+                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
                       keep_default=False)
 
         # Adding field 'Cluster.client_cert'
         db.add_column(u'api_cluster', 'client_cert',
-                      self.gf('django.db.models.fields.TextField')(default=''),
+                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
                       keep_default=False)
 
         # Adding field 'Cluster.server_cert'
         db.add_column(u'api_cluster', 'server_cert',
-                      self.gf('django.db.models.fields.TextField')(default=''),
+                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
                       keep_default=False)
 
         # Adding field 'Cluster.client_key'
         db.add_column(u'api_cluster', 'client_key',
-                      self.gf('django.db.models.fields.TextField')(default=''),
+                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
                       keep_default=False)
 
         # Adding field 'Cluster.server_key'
         db.add_column(u'api_cluster', 'server_key',
-                      self.gf('django.db.models.fields.TextField')(default=''),
+                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
                       keep_default=False)
 
 
     def backwards(self, orm):
+
         # Deleting field 'ClusterAudit.ca_cert'
         db.delete_column(u'api_cluster_audit', 'ca_cert')
 
@@ -106,9 +106,9 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'Cluster'},
             'backup_count': ('django.db.models.fields.PositiveIntegerField', [], {'default': '24'}),
             'backup_schedule': ('django.db.models.fields.CharField', [], {'default': "'3 */2 * * *'", 'max_length': '255'}),
-            'ca_cert': ('django.db.models.fields.TextField', [], {'default': "''"}),
-            'client_cert': ('django.db.models.fields.TextField', [], {'default': "''"}),
-            'client_key': ('django.db.models.fields.TextField', [], {'default': "''"}),
+            'ca_cert': ('django.db.models.fields.TextField', [], {'default': "''", 'blank': 'True'}),
+            'client_cert': ('django.db.models.fields.TextField', [], {'default': "''", 'blank': 'True'}),
+            'client_key': ('django.db.models.fields.TextField', [], {'default': "''", 'blank': 'True'}),
             'dbname': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'dbpassword': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'dbusername': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
@@ -117,8 +117,8 @@ class Migration(SchemaMigration):
             'iam_secret': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
             'label': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
             'port': ('django.db.models.fields.PositiveIntegerField', [], {'default': '3306'}),
-            'server_cert': ('django.db.models.fields.TextField', [], {'default': "''"}),
-            'server_key': ('django.db.models.fields.TextField', [], {'default': "''"}),
+            'server_cert': ('django.db.models.fields.TextField', [], {'default': "''", 'blank': 'True'}),
+            'server_key': ('django.db.models.fields.TextField', [], {'default': "''", 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'clusters'", 'to': u"orm['api.User']"}),
             'uuid': ('django.db.models.fields.CharField', [], {'max_length': '36', 'primary_key': 'True'})
         },
@@ -129,9 +129,9 @@ class Migration(SchemaMigration):
             '_audit_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'db_index': 'True', 'blank': 'True'}),
             'backup_count': ('django.db.models.fields.PositiveIntegerField', [], {'default': '24'}),
             'backup_schedule': ('django.db.models.fields.CharField', [], {'default': "'3 */2 * * *'", 'max_length': '255'}),
-            'ca_cert': ('django.db.models.fields.TextField', [], {'default': "''"}),
-            'client_cert': ('django.db.models.fields.TextField', [], {'default': "''"}),
-            'client_key': ('django.db.models.fields.TextField', [], {'default': "''"}),
+            'ca_cert': ('django.db.models.fields.TextField', [], {'default': "''", 'blank': 'True'}),
+            'client_cert': ('django.db.models.fields.TextField', [], {'default': "''", 'blank': 'True'}),
+            'client_key': ('django.db.models.fields.TextField', [], {'default': "''", 'blank': 'True'}),
             'dbname': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'dbpassword': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'dbusername': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
@@ -140,8 +140,8 @@ class Migration(SchemaMigration):
             'iam_secret': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
             'label': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
             'port': ('django.db.models.fields.PositiveIntegerField', [], {'default': '3306'}),
-            'server_cert': ('django.db.models.fields.TextField', [], {'default': "''"}),
-            'server_key': ('django.db.models.fields.TextField', [], {'default': "''"}),
+            'server_cert': ('django.db.models.fields.TextField', [], {'default': "''", 'blank': 'True'}),
+            'server_key': ('django.db.models.fields.TextField', [], {'default': "''", 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'_audit_clusters'", 'on_delete': 'models.DO_NOTHING', 'to': u"orm['api.User']"}),
             'uuid': ('django.db.models.fields.CharField', [], {'max_length': '36', 'blank': 'True'})
         },
@@ -188,7 +188,7 @@ class Migration(SchemaMigration):
             'security_group': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '200', 'blank': 'True'}),
             'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'storage': ('django.db.models.fields.IntegerField', [], {}),
-            'tinc_private_key': ('django.db.models.fields.TextField', [], {'default': "'-----BEGIN RSA PRIVATE KEY-----\\nMIIEowIBAAKCAQEAtf6wGtHlJnBQrBQvScXl55sbZXYtUILVJbR5wKQx35t+0Kf8\\n80Kouda6bVZyqBG0IWk3m9A4gENQgHQff7qj4uD5+JloPMsr4jy3078e5VGeXg/u\\nzFuNAphfi3LNCugzUR73bLwvYPv+Qba42aUpQYR8dh+rED91LCS6DmtcqPMTPaZy\\nXZI4uB4+mVxYWzmrqmENCDmZOarcVATPX9xFFUE+jAu2E+ywLvTRzb70TzBr+PLP\\nh6Wtc5jyWP9xrELoaQKA0ma0ztX5jqjIZsStjU1nPTGpPntn0rsrmOYuPXE61NZv\\nWgz3TkCPbc/KRfhCD0d+vi/NLuJyzLqyxNXJUQIDAQABAoIBAHdZWF+eOiolCaJv\\ncjts/kIOY7776uebhPA/FIESrGo5bMalA6r7ke6dNJCzWmmBgqFOgNs7h3IFsusq\\nO+XlncgRRZyT7dnAWzz4GI1SDo7QIY0J4c4+U5DaH/4xAOogMFcIebXjCycM2kZ5\\n72s7dnyyx3QnfGUhWFPkmecO3SslcK5QfdXnBtLxT4rnrnhT3irAMEnWZ/Z1l8gJ\\n4uXckMagH15AkxRn0/oqA0xnipWuYZ2I9FSD02yR6xWq2Hs4aHAtBl0OhyIKR9MH\\nuL50gm0aab8NTI1qXwoZoJ9BVt+hN/6Und138UbIEzFUo0suUKzw9jA5jY/5JRux\\n3y00GAECgYEAxMptruZTpBZu+LQ5WVWS+uxQJdepkpqAAx2O90Dbenb++e9Wso7d\\nuskkkRWE+nGpSM13W0dgcbmHHtAtZjjMKU5vp5iSfhRJ9N0nHQeYpjENmQnyxtS5\\niV8oGIQKLiIWIJaEF68Q6UQFIDMd+K8L2fdWWeehReI6YyoNNVhLxpECgYEA7MCg\\nOkjQZ3gkmht3BdYXlm9IY1LhST8URZOD635GbnanioQMIEizjyjm6igiA1EpjW9Y\\n/YpbXj+hiSbV/LC6PHAQpbmmohwYPGo4reuMVCqOCJbeUcWyZy/YP9uClIOeV5XF\\nmUjbllhTgs5VlYBHb2yrfkxXw/CWitv5RpTqtsECgYBeMvP787733dEy9bo5/A+G\\nU1YuNySxy4kZdK25x28IGSwGYb3jbSXQQnZhiKaF56B7+/Z1WB5fccqvQkFpHCkG\\nYMhrtknxVi7sqmwNplQ4wWRb7HotGSjTDBy6V4I0ARcMdGA4ohF7R5cYib+ACfKn\\nXJEWKh11wUvnqfp2nZRwMQKBgQC/tySIzhnlD8cj/AWf9kRXj3ng5GaGd8wko1X6\\nRuEl5nO5mUBwjC7LSOXky+bvJLQvUfGQLo/afFCEzawO2dWVx3HTocisEXAWzDVl\\nsQ6LwYIOto0FTsAvCvFklI7jUMnSRvgiLnuS/adyjz+CtsQiGK+usIeJpbNicssj\\nOsfugQKBgEn6mzJxjxWva+SHlk8CFjb4JhlLvkK6SlTGflOXiUr7EYfoee+qXeK6\\njIfyhT3F2zdN9NGz7IJhulQIbALuYKWTtSDkfhV7AL1L61zPnHlMzyBwSuU72+U8\\nsLw29iosfjOM2MxlCMnwkvLwiB+OfUrmOJ3ZRoVMKoyVC9TUsyYz\\n-----END RSA PRIVATE KEY-----'"})
+            'tinc_private_key': ('django.db.models.fields.TextField', [], {'default': "'-----BEGIN RSA PRIVATE KEY-----\\nMIIEowIBAAKCAQEAhiycNqK2RfiD29ZcNzVr6fDqgDcuO/wrAzlvUw6smFOrm8hV\\nB9p+hRKDs0z6JF+wSSOuHIPyVJB6dBzstJ5QXRgDlUQEQSniqIY6rfQ0OdSlHpZF\\nvQAhxZ6JXuFhIdk7PAUaG3t7moy2nQ5At9D38hURXi169nQl5Lkrn9H5eVILw7+3\\n/qNCw+lwMh8lfF3ZcTPD7P59Nou5/G6Zc+MMh5vOohrMzrEqQMqDYehE1z8O8i00\\nVOWki3C+zW9H0WQ9+pE3chBdmlmqcVd0DthJcNcK0IzMshDweDXF4+trjiioOH3V\\npTxYoW3ywRj84YaC8lVM9rvIL4THXRarKLIgoQIDAQABAoIBAHmq0iyo92gTpl4e\\nz5gwlR6aG8sQPpieXdKarlw+njuzA5ZL3u80Li41T7+zOdDqBE0OUcAB1ijgqmnI\\nIMzYEj+YmwcrmkAM3z+6GFPNcd5O+Tv3QF3WVMmCrUagURgEiDYw2i+5lafbmWxp\\nlD4a+/tFJ26jBzGcuQ/i6bAPE43yjB6fOlk+rb8nhFjWHfSGxvniQkSicVe8a3Y2\\nC9WAITEXlV2s3Sjk1uEqB3/3Z4hC3yzztZlRoDCkyvz+WFXU9ZiMFTB1DDjdHQdU\\nE36oBjezynosqDFfTSioOqldCWilBjlTSprOljUHg2PfaK3GiWMbsb0kJtWlV+Ps\\nCbazApECgYEAt9KiCDI9DThv0sQfohmzgqyb3HNf9RL716TWzv42dn7WWSu0eSD6\\noTUaIxPjI318ZIqBMP5lF0sSES2pLKAs0PpNjkuAbeE1A+bCgKwGkzAmFtVcvCWr\\nDK0GoLtrtOhoFG+D1A87p/qEoU8LPxlSs5/kaYiK5ayTw8iW7sNDZ8cCgYEAuttx\\nN9WqQirN14fnHpKzu2Bj4iNkgbg5FAHy3WGVQtIg8cumFhrYXFKf88aW8MuYR6wn\\nB+q52vhtK8gFArk7X8dGPOdQqVgGG/N2Nz80dWnzXnFTp090UYU84ZJVJCAmfGR/\\nGSYZkTChf3ACJH2UHf3MRxLFz9e3hmRSU0r/RFcCgYABYf9ACoi1CcClmD4YrRLR\\nn9TIUsHdCRiF5cKL6hOkzo10PETuSFY6UjjxHJwvzyjZZMVWBgPiqfjn0i0cndPY\\nepmMwXqk2PXaIqlB6IlgIBOZRl+dNrdTsBWFrgNAaCMoTDJ0rOyo9dR7limifuFF\\nYqWIObO5yJOP/HlOMH/YTwKBgQCf+2gpJN+7/Qf2I96Gt5X4tONv51uTENaVwcFd\\nN8JizqP0Qac2v89E5F0ci4gKLFZ57vQP/DEaQJ6/4GYh2dPzAhup42aVRs8cOUua\\nq5vPd2IuFxtHYWi2rzvb6bzJzFkHIcgMESnMvHVZNd4vvfEF6JlwtKr2c7wm7Vfr\\nBogdywKBgGhDo3EFyxrD4tU9Z+1K5mkUI+YE845MD6lHYE0O0l9f8r4UE5LKu159\\n0FpswhBmpHOvmoCyry3XV3JM4PevZ6aHwyaUoRUkLuxwbNa6aT0a9ajb/LmWvpoD\\nwvLQza3NsfNHxsPTtCI7quOfA77UvSBo8cY/5TdYsYvzQF6uuIHV\\n-----END RSA PRIVATE KEY-----'"})
         },
         u'api.nodeaudit': {
             'Meta': {'ordering': "['-_audit_timestamp']", 'object_name': 'NodeAudit', 'db_table': "u'api_node_audit'"},
@@ -209,7 +209,7 @@ class Migration(SchemaMigration):
             'security_group': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '200', 'blank': 'True'}),
             'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'storage': ('django.db.models.fields.IntegerField', [], {}),
-            'tinc_private_key': ('django.db.models.fields.TextField', [], {'default': "'-----BEGIN RSA PRIVATE KEY-----\\nMIIEowIBAAKCAQEA3vU77V5Dxy6jpAiWVb4W5Wl7TKewYgl3p/nndj2GVQiPnypl\\nLUY2tg0QwwIWIsQMqzJwxjuvt1HQfBE+2sQjN43yItKAHKXX2Oo2GvZjGTIkJSZG\\np2IDCCkuNtLo4nQEtQ7j02/8ZR3yZg8HlQHHnoDNvuTswBQ/eg8YFXwbeE9HpxZu\\npBq9K/zSkHpKWYYivc7vcYbwptD7OKZJ8myq/mU22o+IJ6Iy9hqYBbbn6ui2c7eQ\\n79Ll3Z1atw9xAe1s2Hh+CaCM09CPzr//v0Vv/DI80rHavRF6/ZHxHA3SVX5hjm81\\nfBpvT49Oj+RhUS3adEtf2WAeq2RwZFsunGpzUQIDAQABAoIBAQCndfp05wBxco5m\\nfiysagI4fWmmwayxdfrxp7o6DSwAYlW9btJflwUw589XKRIHOslpLJGX0uy//Ctj\\nhHB5UChDadIcZY7j9YyR2BibV8RHAGo1nPIkdnFgh822T+Orcwi2FWD5RnuEV2Hh\\nVhiTyqpsWsIuRzOrcYnb28pzGKxpR3tp+4LmYURcJfr3NQFEvcyWq6s3GrpwBFCH\\nO2pGwbRWzagGGrl1y4lEWRjfrOPYlp4a/6qa6QJirjFEn69PylXMyCdmGgXpfE+n\\nhDprJxXpOrf+ucxcPWSpcWvZYnX641CiViu85d/HUzi1ypbOJ12Ilf7OMPnyAv7B\\nwFHZAGABAoGBAOMpk7ZNd2HvckoPRobZHitnM8Pfv5fE7+tLDaywJ+YkyRvd7e75\\nlfzCMBMqwjXTbBPgI7KxdpBE5NGln9wsEZnkRxhBTbL26XW5YbChUXWR9/9Ik8nU\\n3tprV5PGWVRVFtATpocraxarHJxDx5lZnkEB0lWsvw+9l/xIYd76QubBAoGBAPtD\\nBMEQ1/kvbFUC7dJt0C5793vFVsEMfWnnIHL55USJDPzi55TZpTNqcuq+YmRCs8+g\\nh1DP9j98F9VmY8lYM2qnJlmvL7cFSlNaycQ9hiIwOdFmE9tJlm9GRBKjTvpAA1Jg\\nPuSNllvHAbycOlbBBn1HxFlpVUCB46phSzbJtcCRAoGAOcxjZBgzzvxgxQ078aWe\\nsoZwul7c3d3i+ahAE3dCv6EOdoOyPYLNseEq4EWZ4p4nuqrmClpzA2Q0IE+W7Cte\\nUxytJjO/dFC0uBpyC8IP+u0n/5FU4R7DkSmMv/HQ2s9HnavSTEQ03DCvd+cbCx6t\\nUHcJMHlip7uixzMXi+d7TEECgYBs4uk/hb4ipdOLr75CkAZE7sIcaDOla3U6HMhq\\nKzOZFM+FFAwJ7Jv0ATCV3DWlf2aPFuEtO0Ja1rs5ZqrdyZRWpuMuwIWsCeXg45pG\\nqebkEAQuY889G9HOnSPI8+648l6+Jyl6QIWldkOhag66I+JdDmnf2Y7xapiv8IP4\\n1UcnkQKBgCUXRz0+qpd1/1gZcLaLHqiTMgLBvorQSO9N/aobYF/ddloblwFSGVaI\\nZJHgnE9cW4kKuHunMg3YkliKlKAS3kgs3dXveZXKhvvDvUpG6zzrB5Zw2+SGs2yo\\noHLPAaTNkbo6ULj3kyyuzjZntlct8gyWD+SIGexVOKh24hUO+RRf\\n-----END RSA PRIVATE KEY-----'"})
+            'tinc_private_key': ('django.db.models.fields.TextField', [], {'default': "'-----BEGIN RSA PRIVATE KEY-----\\nMIIEpAIBAAKCAQEAppHKWc0B2pi6MkNuH13Bp7lx0XZPAy5CDgwC2QLpNWbI2B/t\\nQWNZ4jy2aq++n2ycGFwGdhnK5/lHS+ALYLNdhW534HCn4VBWUSCfFR0eQS3bj2y6\\nVNkNlhaKi3dyKPTAdyPX4UTTI6hoLQgVQ+Nz6faHyIcA2E/zKph0uT2zWmB7WsJ7\\nqSBPYpo96K5pmbfz76OlAqtvkGQbagJVFVUszYSCcp62JPqn/S43kqLJ1zH/0eP5\\nIS6U1pbdLfWu3BvTcPuYznpBggooRTydQsizp5CUYPVprOr8mxLlbs2DEEloyiTC\\nO7uwjpHmmigcoT3zIAoa9FKOG/oyWWqBsPFYjQIDAQABAoIBAGZleV97B4i6GryL\\nd0cQ+9t/xNhfQnNSHIlGGPoPMA4EAbPa7J8l1Duf1wP+xdB7k/nlmJNBh9rTA2FB\\neb0YhoVgQ5FVr95y5J060JDKNa8b4b1puaIvTIrXkJPr+eHzk92pyyxQgvuIq4ID\\nVg9F5BwP0akUVRClFXc6AYdexsLnTwfzLkVuUSakaXPE1ADjbUkhTQi6WmHAU/cz\\nPH+Jp5PplTJU/i+TX2cpxp84U1LPATwGf7U9MpDWlaA9LA1EPo9nRFxbNFBwVQUR\\noI4q4IKARARyGozm6IsqBnY1s1SEDTjSW+EvUI2BMv/KwK4aZoO666IjyD3NqHc4\\n2L6/yAECgYEAzNTkW96gYbhIKrf1Pe40ec/i/lXRzlLUhaRySInYf06h5yFSmRAE\\nTYiALzjRpqSg/JYKRGRKyd+AywvebV/7xu6FsNoh+lHFY1nPGekjTULdDNR6wzCM\\n71TP1k79OQ9tjvUHsJWj61GOqF6sjZS1loBZV3/FxS7j6hNqrkgG3H0CgYEA0C4D\\nMYc3mcH5UXX4W9MD5TPKRTaqO5jkcQWRWOFBdjQm3qXSAc5LDJzhy7MWj4E+IKW9\\nRB3mlwZ7SoP6te4X1xxZUD4ol26pyuI8RSFz5WSyRJ8LoqD1ZqCg42fRptzsT2Fr\\nBLbmCzTENKtU7ATWT9NUJeN5MtqlzDUdNUSQ+VECgYEAp1uO1c1Zh15VgKnbc+Vr\\n9Nc5ZYtjKEwfHq6VPdV7EdGCkWF1pmAi0+KisXKgQaMjch15eBXl0XmPNteUvhL9\\nmbWLgEtKFce4GovnngkR8e+ewvvc7hx+GpJWWokhdvy3DGYCCXLKgtuZTtJD9E47\\n7CMkXEymn4zHZZrFwG5TRNUCgYBfnDJFRffIOykZO5gD/Cb21lFYdmG6m16Xddoq\\nOtIIyqzrZrbLs4YOVeLx3d9HqzDwZ45EQYNM62Imd/TmJ2J1ngR68QFNgzqh/kN1\\n8IY83YFuOKlsWIY8Sxt5NY45F4/EaVZwRNvkW6idE+8dsp8G7GTiPdXFAFxTLDWs\\n6D+48QKBgQCt8fhx3mLzC3wR/qpUkJdIuVxSxpon6tA0F3lwJnjhQwrF9khcNwuN\\nvHFwkbFdnE4g5grg0f/ELrXeG1RrqWPrLz8knTSv7w9y8yUaTCPLMYBexp8roeCB\\nqB8ljgKwy+w1Vsg1KUdS0TEj/8RYobhPUO1jYDtLaiiXPrC0BhE+7w==\\n-----END RSA PRIVATE KEY-----'"})
         },
         u'api.provider': {
             'Meta': {'object_name': 'Provider'},
