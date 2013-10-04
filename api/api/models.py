@@ -217,7 +217,7 @@ class Cluster(models.Model):
         ca_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
         ca_cert.set_notAfter((datetime.datetime.utcnow()+datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
         ca_cert.set_serial_number(1)
-        ca_cert.sign(ca_pk,'sha256')
+        ca_cert.sign(ca_pk,'sha')
         client_cert = OpenSSL.crypto.X509()
         client_cert.set_pubkey(client_pk)
         client_cert.get_subject().CN = str(self)
@@ -225,7 +225,7 @@ class Cluster(models.Model):
         client_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
         client_cert.set_notAfter((datetime.datetime.utcnow()+datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
         client_cert.set_serial_number(2)
-        client_cert.sign(ca_pk,'sha256')
+        client_cert.sign(ca_pk,'sha')
         server_cert = OpenSSL.crypto.X509()
         server_cert.set_pubkey(server_pk)
         server_cert.get_subject().C = 'US'
@@ -236,7 +236,7 @@ class Cluster(models.Model):
         server_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
         server_cert.set_notAfter((datetime.datetime.utcnow()+datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
         server_cert.set_serial_number(3)
-        server_cert.sign(ca_pk,'sha256')
+        server_cert.sign(ca_pk,'sha')
 
         self.client_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, client_cert)
         self.server_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, server_cert)
