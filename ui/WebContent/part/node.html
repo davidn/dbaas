@@ -8,15 +8,9 @@
 				<label style="width: 20%"> Node Region</label>
 				<select ui-select2 ng-model="node.region" ng-change="updateFlavor()" data-placeholder="Pick a region" ng-options="region as region.name group by region.provider.name for region in regions" style="width: 70%"></select>
 			</div>
-			<!--<div class="form-group" ang-if="user.isPaid">-->
-				<!--<label style="width: 20%"> Node Type</label>-->
-				<!--<select ui-select2 ng-model="node.flavor" ng-disabled="!node.region" data-placeholder="Pick a type" ng-options="flavor as flavor.name for flavor in node.region.provider.flavors" style="width: 70%"></select>-->
-			<!--</div>-->
-			<div class="form-group" ang-if="user.isPaid">
+			<div class="form-group" ng-if="user.isPaid">
 				<label style="width: 20%"> Node Type</label>
-				<select ui-select2 ng-model="node.flavor" data-placeholder="Pick a region" style="width: 70%">
-					<option ng-repeat="flavor in node.region.provider.flavors" value="{{flavor}}">{{flavor.name}}</option>
-				</select>
+				<select ui-select2 ng-model="node.flavor" ng-disabled="!node.region" data-placeholder="Pick a type" ng-options="flavor as flavor.name for flavor in node.region.provider.flavors" style="width: 70%"></select>
 			</div>
 
 			<div class="form-group" ng-if="user.isPaid">

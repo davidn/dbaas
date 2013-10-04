@@ -157,12 +157,12 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
             $scope.refresh();
         }).error(handleError);
     };
-    $scope.deleteCluster = function (cluster) {
-//    $scope.addNode = function (cluster) {
+
+    $scope.addNode = function (cluster) {
         $location.path("/cluster/" + cluster.url.slice(-36) + "/node");
     }
 
-    $scope.xdeleteCluster = function (cluster) {
+    $scope.deleteCluster = function (cluster) {
         cluster.isDeleting = true;
         var title = 'Confirm';
         var msg = 'Are you sure you want to delete cluster <strong>' + cluster.label + '</strong>?';

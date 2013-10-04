@@ -49,6 +49,7 @@ def launch_email(cluster, sendGeneralNotification=True):
     ctx_dict = {
         'nodes': nodes,
         'username': str(cluster.user),
+        'is_paid': cluster.user.is_paid,
         'cluster_dns': cluster.dns_name,
         'trial_end': datetime.date.today() + settings.TRIAL_LENGTH,
         'port': cluster.port,

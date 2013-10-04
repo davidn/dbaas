@@ -63,6 +63,7 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
 
         if (user.token) {
             $http.defaults.headers.common['Authorization'] = 'Token ' + user.token;
+            updateUserVoice();
         }
 
         function clearToken() {
@@ -83,18 +84,18 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
 
         function updateUserVoice() {
             UserVoice.push(['identify', {
-                email: aUser.email,
+                email: user.email,
                 account: {
-                    name: aUser.email,
-                    plan: aUser.is_paid ? 'Paid' : 'Free',
+                    name: user.email,
+                    plan: user.is_paid ? 'Paid' : 'Free',
                 }
             }]);
         }
 
         function setUser(aUser) {
-
             user.isPaid = aUser.is_paid;
             updateUserStorage();
+            updateUserVoice();
         }
 
         return {
