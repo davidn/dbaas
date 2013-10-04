@@ -17,6 +17,7 @@
     "select2": "latest",
     "toastr": "latest",
     "underscore": "latest",
+    "jquery-jsonp": "latest",
     "sparkline": "latest"
   },
   "resolutions": {

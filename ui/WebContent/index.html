@@ -17,6 +17,7 @@
 	<script src="bower_components/angular-ui-bootstrap/dist/ui-bootstrap-tpls-0.6.0.js"></script>
 	<script src="bower_components/sparkline/dist/jquery.sparkline.js"></script>
 	<script src="bower_components/underscore/underscore.js"></script>
+	<script src="bower_components/jquery-jsonp/src/jquery.jsonp.js"></script>
 
 	<script src="bower_components/toastr/toastr.js"></script>
 
@@ -93,43 +94,14 @@
 		s.parentNode.insertBefore(uv, s)
 	})();
 
-	//
-	// UserVoice Javascript SDK developer documentation:
-	// https://www.uservoice.com/o/javascript-sdk
-	//
-
-	// Set colors
 	UserVoice.push(['set', {
 		accent_color: '#6aba2e',
 		trigger_color: 'white',
 		trigger_background_color: '#448dd6'
 	}]);
 
-	// Identify the user and pass traits
-	// To enable, replace sample data with actual user traits and uncomment the line
-	UserVoice.push(['identify', {
-		//email:      'john.doe@example.com', // User’s email address
-		//name:       'John Doe', // User’s real name
-		//created_at: 1364406966, // Unix timestamp for the date the user signed up
-		//id:         123, // Optional: Unique id of the user (if set, this should not change)
-		//type:       'Owner', // Optional: segment your users by type
-		//account: {
-		//  id:           123, // Optional: associate multiple users with a single account
-		//  name:         'Acme, Co.', // Account name
-		//  created_at:   1364406966, // Unix timestamp for the date the account was created
-		//  monthly_rate: 9.99, // Decimal; monthly rate of the account
-		//  ltv:          1495.00, // Decimal; lifetime value of the account
-		//  plan:         'Enhanced' // Plan name for the account
-		//}
-	}]);
-
-	// Add default trigger to the bottom-right corner of the window:
 	UserVoice.push(['addTrigger', { mode: 'contact', trigger_position: 'bottom-right' }]);
 
-	// Or, use your own custom trigger:
-	UserVoice.push(['addTrigger', '#upgrade', { mode: 'contact', screenshot_enabled:'false', contact_title:'Please provide the best way to followup with you on upgrading your account.', smartvote_enabled:false, post_idea_enabled:false }]);
-
-	// Autoprompt for Satisfaction and SmartVote (only displayed under certain conditions)
 	UserVoice.push(['autoprompt', {}]);
 </script>
 

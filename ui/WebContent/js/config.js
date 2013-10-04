@@ -1,11 +1,11 @@
-
 angular.module('GenieDBaaS.config', [])
     .constant('dbaasConfig', (function () {
         // TODO: Make conditional parameters for grunt.js to package the deployments
         var versionTag = "0.8";
 //        var serviceUrl = "http://localhost:8000";
-        var serviceUrl= "https://dbaas-test.geniedb.com:4000";
-
+        var serviceUrl = "https://dbaas-test.geniedb.com:4000";
+        var userVoiceSubdomain = "geniedb";
+        var userVoiceClientKey = "GyAUbnphymL97STPKy379g";
 
         var defaultRefresh = 15000;
 
@@ -23,16 +23,16 @@ angular.module('GenieDBaaS.config', [])
 
 
         // TODO: Move quickStartFlavors to server side
-        var quickStartFlavors={
-            rs:"3",
-            az:"m1.small",
-            test:"test-small"
+        var quickStartFlavors = {
+            rs: "3",
+            az: "m1.small",
+            test: "test-small"
         };
         // TODO: Move launchTimes to server side
-        var launchTimes={
-            rs:5,
-            az:3,
-            test:1
+        var launchTimes = {
+            rs: 5,
+            az: 3,
+            test: 1
         };
 
         // TODO: Only used for $resource - purge if migrated off
@@ -47,6 +47,9 @@ angular.module('GenieDBaaS.config', [])
             quickStart: quickStartCluster,
             quickStartFlavors: quickStartFlavors,
             launchTimes: launchTimes,
+            userVoiceSubdomain:userVoiceSubdomain,
+            userVoiceClientKey:userVoiceClientKey,
+
 
             // TODO: Only used for $resource - purge if migrated off
             authUrlEscaped: escapedUrl + authPath,

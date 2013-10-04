@@ -4,49 +4,22 @@
 
 angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngStorage', 'ng'])
     .factory("growl", function ($rootScope) {
-        var queue = [], currentMessage = {};
 
+        // TODO: Clear messages on route success?
         $rootScope.$on('$routeChangeSuccess', function () {
-            if (queue.length > 0)
-                currentMessage = queue.shift();
-            else
-                currentMessage = {};
         });
-
         return {
-            set: function (message) {
-                queue.push(message);
-            },
-            get: function (message) {
-                return currentMessage;
-            },
-            pop: function (message) {
-                switch (message.type) {
-                    case 'success':
-                        toastr.success(message.body, message.title);
-                        break;
-                    case 'info':
-                        toastr.info(message.body, message.title);
-                        break;
-                    case 'warning':
-                        toastr.warning(message.body, message.title);
-                        break;
-                    case 'error':
-                        toastr.error(message.body, message.title);
-                        break;
-                }
-            },
             success: function (message) {
-                toastr.success(message.body, message.title);
+                toastr.success(message.body, message.title, message);
             },
             info: function (message) {
-                toastr.info(message.body, message.title);
+                toastr.info(message.body, message.title, message);
             },
             warning: function (message) {
-                toastr.warning(message.body, message.title);
+                toastr.warning(message.body, message.title, message);
             },
             error: function (message) {
-                toastr.error(message.body, message.title);
+                toastr.error(message.body, message.title, message);
             }
         };
     })
@@ -253,4 +226,28 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             regions: regions
         };
 
-    }]);
+    }])
+    .factory("userVoice", function (dbaasConfig, User, growl) {
+        return {
+            contact: function (subject, message) {
+                $.jsonp({
+                           url: 'https://' + dbaasConfig.userVoiceSubdomain + '.uservoice.com/api/v1/tickets/create_via_jsonp.json?callback=?',
+                           data: {
+                               client: dbaasConfig.userVoiceClientKey,
+                               ticket: {
+                                   message: message,
+                                   subject: subject
+                               },
+                               email: User.user.email
+                           },
+                           success: function(data) {
+                               growl.success({body: 'Your request has been submitted, we will follow-up within one business day.', timeOut:10000});
+                           },
+                           error: function(d, msg) {
+                               growl.error({body: 'Unable to submit request.  Please try again.'});
+                           }
+                       });
+            }
+        }
+    });
+

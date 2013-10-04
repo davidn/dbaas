@@ -7,12 +7,15 @@ function MainCntl(User) {
     // Inject User to force initialization
 }
 
-function NavigationCtlr($scope, User) {
+function NavigationCtlr($scope, User, userVoice) {
     $scope.user = User.user;
 
     $scope.logout = function () {
         User.logout();
     };
+    $scope.upgrade = function () {
+        userVoice.contact('Upgrade Account', 'Interested in upgrading to paid account.')
+    }
 }
 
 function WelcomeCntl($scope, $location, User, growl) {
