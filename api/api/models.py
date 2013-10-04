@@ -556,9 +556,9 @@ class Node(models.Model):
         """Return a string to be passed to cloud-init on a newly provisioned node."""
         connect_to_list = "\n    ".join("ConnectTo = node_"+str(node.nid) for node in self.cluster.nodes.all())
         rsa_priv = self.tinc_private_key.replace("\n", "\n    ")
-        ca_cert = self.ca_cert.replace("\n", "\n    ")
-        server_cert = self.server_cert.replace("\n", "\n    ")
-        server_key = self.server_key.replace("\n", "\n    ")
+        ca_cert = self.cluster.ca_cert.replace("\n", "\n    ")
+        server_cert = self.cluster.server_cert.replace("\n", "\n    ")
+        server_key = self.cluster.server_key.replace("\n", "\n    ")
         host_files = "\n".join("""- content: |
     Address={address}
     Subnet=192.168.33.{nid}/32
