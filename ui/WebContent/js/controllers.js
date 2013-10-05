@@ -183,7 +183,7 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
                     $scope.isLoading = true;
                     $http.post(cluster.url + '/add_database', {dbname: $scope.db.name}).success(function () {
                         $modalInstance.dismiss('cancel');
-                        growl.success({body: "Database " + database + " added to " + cluster.label + " cluster."});
+                        growl.success({body: "Database " + $scope.db.name + " added to " + cluster.label + " cluster."});
                         $scope.refresh();
                     }).error(handleError);
                 }
