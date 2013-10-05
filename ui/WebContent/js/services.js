@@ -152,9 +152,23 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             return data;
         }
 
+        function formatDataUrl(data) {
+//            return 'data:text/plain;utf-8,'+ encodeURI(data);
+            return (window.URL || window.webkitURL).createObjectURL(new Blob([ data ], { type: 'text/plain' }));
+        }
+
         function hydrateClusterData(data) {
             data.forEach(function (cluster, i) {
                 hydrateNodeData(i, cluster.nodes);
+                if (cluster.ca_cert !== '') {
+                    cluster.hasKeys = true;
+                    cluster.ca_cert_url = formatDataUrl(cluster.ca_cert);
+                    cluster.client_cert_url = formatDataUrl(cluster.client_cert);
+                    cluster.client_key_url = formatDataUrl(cluster.client_key);
+                } else {
+                    cluster.hasKeys = false;
+                }
+
                 cluster.canLaunch = cluster.nodes.maxStatus === 0;
                 cluster.hasRunning = cluster.nodes.hasRunning;
                 cluster.label = cluster.label || cluster.dbname;
@@ -203,6 +217,10 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
                 launch: {
                     method: "POST",
                     params: { command: 'launch_all'}
+                },
+                addDatabase: {
+                    method: "POST",
+                    params: { command: 'add_database'}
                 }
             }
         );
@@ -231,22 +249,22 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         return {
             contact: function (subject, message) {
                 $.jsonp({
-                           url: 'https://' + dbaasConfig.userVoiceSubdomain + '.uservoice.com/api/v1/tickets/create_via_jsonp.json?callback=?',
-                           data: {
-                               client: dbaasConfig.userVoiceClientKey,
-                               ticket: {
-                                   message: message,
-                                   subject: subject
-                               },
-                               email: User.user.email
-                           },
-                           success: function(data) {
-                               growl.success({body: 'Your request has been submitted, we will follow-up within one business day.', timeOut:10000});
-                           },
-                           error: function(d, msg) {
-                               growl.error({body: 'Unable to submit request.  Please try again.'});
-                           }
-                       });
+                    url: 'https://' + dbaasConfig.userVoiceSubdomain + '.uservoice.com/api/v1/tickets/create_via_jsonp.json?callback=?',
+                    data: {
+                        client: dbaasConfig.userVoiceClientKey,
+                        ticket: {
+                            message: message,
+                            subject: subject
+                        },
+                        email: User.user.email
+                    },
+                    success: function (data) {
+                        growl.success({body: 'Your request has been submitted, we will follow-up within one business day.', timeOut: 10000});
+                    },
+                    error: function (d, msg) {
+                        growl.error({body: 'Unable to submit request.  Please try again.'});
+                    }
+                });
             }
         }
     });

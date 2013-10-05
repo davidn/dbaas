@@ -329,6 +329,8 @@ button.close-sm{
     background-color: #5c5c5c;
     color: #d7d7d7;
 }
+
+/* Hack for tabset embedding in repeat */
 .tabbable {
     position: relative;
     padding-top: 42px; /* height of the tabs */

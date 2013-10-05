@@ -13,6 +13,7 @@ function NavigationCtlr($scope, User, userVoice) {
     $scope.logout = function () {
         User.logout();
     };
+
     $scope.upgrade = function () {
         userVoice.contact('Upgrade Account', 'Interested in upgrading to paid account.')
     }
@@ -104,7 +105,7 @@ function RegisterCntl($scope, $location, User, growl) {
     };
 }
 
-function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, growl, User, messageBox) {
+function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, growl, User, messageBox, $modal) {
 //    TODO Disable UI while processing update on cluster
     // TODO: Add service to route onChange to confirm token existence
     if (!User.user.token) {
@@ -163,6 +164,31 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
 
     $scope.addNode = function (cluster) {
         $location.path("/cluster/" + cluster.url.slice(-36) + "/node");
+    }
+
+    $scope.addDatabase = function (cluster) {
+        var database = 'foo';
+
+
+        $modal.open({
+            templateUrl: 'part/adddatabase.html',
+            backdrop: true,
+            windowClass: 'modal',
+            controller: function ($scope, $modalInstance) {
+                $scope.db = {name:''};
+                $scope.submit = function () {
+                    console.log($scope.db.name);
+                    $scope.isLoading = true;
+                    $http.post(cluster.url + '/add_database', {dbname: database}).success(function () {
+                        $modalInstance.dismiss('cancel');
+                        growl.success({body: "Database " + database + " added to " + cluster.label + " cluster."});
+                    }).error(handleError);
+                }
+                $scope.cancel = function () {
+                    $modalInstance.dismiss('cancel');
+                };
+            }
+        });
     }
 
     $scope.deleteCluster = function (cluster) {

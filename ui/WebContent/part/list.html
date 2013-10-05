@@ -30,6 +30,9 @@
 		<div class="col-lg-11">{{node.storage}} GB</div>
 	</div>
 </script>
+<script id="add-database.html" type="text/ng-template">
+
+</script>
 <div class="box summary">
 	<div class="modal-header">Cluster Summary
 		<button class="btn btn-primary add-cluster-btn" ng-click="addCluster()"><i class="icon-plus"></i> ADD CLUSTER</button>
@@ -128,15 +131,15 @@
 					<div class="col-lg-11">{{cluster.dbusername}}</div>
 				</div>
 			</tab>
-			<tab>
+			<tab disabled="!cluster.hasKeys">
 				<tab-heading>
-					<i class="icon-lock"></i> SSL Certs
+						<i class="icon-lock"></i> SSL Certs
 				</tab-heading>
 				<br/>
 
-				<a class="btn btn-primary" download="ca-cert.pem" ng-href="{{ cluster.ca_cert }}"><i class="icon-download-alt"></i> &nbsp; Cert CA</a>
-				<a class="btn btn-primary" download="server-cert.pem" ng-href="{{ cluster.server_cert }}"><i class="icon-download-alt"></i> &nbsp; Server Cert</a>
-				<a class="btn btn-primary" download="client-cert.pem" ng-href="{{ cluster.client_cert }}"><i class="icon-download-alt"></i> &nbsp; Client Cert</a>
+				<a class="btn btn-primary" download="ca-cert.pem" ng-href="{{ cluster.ca_cert_url }}"><i class="icon-download-alt"></i> &nbsp; CA Cert</a>
+				<a class="btn btn-primary" download="client-cert.pem" ng-href="{{ cluster.client_cert_url }}"><i class="icon-download-alt"></i> &nbsp; Client Cert</a>
+				<a class="btn btn-primary" download="client-key.pem" ng-href="{{ cluster.client_key_url }}"><i class="icon-download-alt"></i> &nbsp; Client Key</a>
 
 				<br/>
 				<br/>
