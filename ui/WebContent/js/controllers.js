@@ -173,6 +173,7 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
     }
 
     $scope.addDatabase = function (cluster) {
+        var outerScope = $scope;
         $modal.open({
             templateUrl: 'part/adddatabase.html',
             backdrop: true,
@@ -184,7 +185,7 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
                     $http.post(cluster.url + '/add_database', {dbname: $scope.db.name}).success(function () {
                         $modalInstance.dismiss('cancel');
                         growl.success({body: "Database " + $scope.db.name + " added to " + cluster.label + " cluster."});
-                        $scope.refresh();
+                        outerScope.refresh();
                     }).error(handleError);
                 }
                 $scope.cancel = function () {
