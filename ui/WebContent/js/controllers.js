@@ -173,9 +173,6 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
     }
 
     $scope.addDatabase = function (cluster) {
-        var database = 'foo';
-
-
         $modal.open({
             templateUrl: 'part/adddatabase.html',
             backdrop: true,
@@ -183,11 +180,11 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
             controller: function ($scope, $modalInstance) {
                 $scope.db = {name:''};
                 $scope.submit = function () {
-                    console.log($scope.db.name);
                     $scope.isLoading = true;
-                    $http.post(cluster.url + '/add_database', {dbname: database}).success(function () {
+                    $http.post(cluster.url + '/add_database', {dbname: $scope.db.name}).success(function () {
                         $modalInstance.dismiss('cancel');
                         growl.success({body: "Database " + database + " added to " + cluster.label + " cluster."});
+                        $scope.refresh();
                     }).error(handleError);
                 }
                 $scope.cancel = function () {
