@@ -54,7 +54,7 @@
 				Welcome {{ user.email }}&nbsp;
 				<i class="icon-user" ng-class="{'paid-user': user.isPaid}"></i> &nbsp;&nbsp;
 				<button class="btn btn-primary btn-sm" ng-click="logout()">LOGOUT</button>
-				<button id="upgrade" class="btn btn-success btn-sm"  ng-if="!user.isPaid" ng-click="upgrade()">UPGRADE</button>
+				<button class="btn btn-success btn-sm"  ng-if="!user.isPaid" ng-click="upgrade()">UPGRADE</button>
 			</div>
 			<a id="gdbHeader" class="navbar-right" href="http://www.geniedb.com/"><img src="img/GenieDB_Logo.png"/></a>
 		</div>

@@ -142,7 +142,31 @@ angular.module('Utility.directives', ['GenieDBaaS.config'])
         };
 
         return tooltip;
-    }]);
+    }])
+    .directive('tabsetTitles', ['$http', function ($http) {
+        return {
+            restrict: 'A',
+            require: '^tabset',
+            templateUrl: 'template/tabs/tabset-titles.html',
+            replace: true,
+            link: function (scope, elm, attrs, tabsetCtrl) {
+                if (!scope.$eval(attrs.tabsetTitles)) {
+                    elm.remove();
+                } else {
+                    setTimeout(function () {
+                        //now that tabs location has been decided, transclude the tab titles in
+                        tabsetCtrl.$transcludeFn(tabsetCtrl.$scope.$parent, function (node) {
+                            elm.append(node);
+                        });
+                        scope.$apply();
+                    }, 0);
+                }
+
+
+            }
+        };
+    }])
+;
 
 
 angular.module('ui.directives', []);

@@ -316,3 +316,25 @@ button.close-sm{
 .paid-user{
     color: #999;
 }
+
+.tab-pane{
+    background-color: #5c5c5c;
+    color: #d7d7d7;
+    padding: 15px;
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus{
+    background-color: #5c5c5c;
+    color: #d7d7d7;
+}
+.tabbable {
+    position: relative;
+    padding-top: 42px; /* height of the tabs */
+}
+
+.tabbable .nav-tabs {
+    position: absolute;
+    top: 0;
+}
