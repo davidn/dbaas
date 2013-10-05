@@ -168,6 +168,9 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
                 } else {
                     cluster.hasKeys = false;
                 }
+                cluster.dbnames = _.uniq(cluster.dbname.split(','));
+                cluster.dbnamesLabel = cluster.dbnames.length > 1 ? 'Databases' : 'Database';
+                console.log(cluster.dbnames);
 
                 cluster.canLaunch = cluster.nodes.maxStatus === 0;
                 cluster.hasRunning = cluster.nodes.hasRunning;

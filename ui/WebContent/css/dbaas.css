@@ -330,6 +330,11 @@ button.close-sm{
     color: #d7d7d7;
 }
 
+.pad5{
+    margin: 5px;
+    padding: 5px 15px;
+}
+
 /* Hack for tabset embedding in repeat */
 .tabbable {
     position: relative;
