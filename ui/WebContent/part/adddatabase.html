@@ -1,5 +1,4 @@
-
-<div class="modal-dialog">
+<div class="modal-dialog" >
 	<div class="modal-content">
 		<div class="modal-header">
 			<h3>Add Database</h3>
@@ -7,7 +6,8 @@
 		<form ng-submit="submit()">
 			<div class="modal-body">
 				<label>Database Name</label>
-				<input type="text" focus-me ng-model="db.name"/>
+				<input class="form-control" ng-model="db.name" size="40" type="text" focus-me/>
+
 			</div>
 			<div class="modal-footer">
 				<button class="btn btn-success" btn-loading="isLoading" data-loading-text="Adding..." ng-click="save()">SAVE</button>
