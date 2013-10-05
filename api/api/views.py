@@ -197,8 +197,10 @@ class ClusterViewSet(mixins.CreateModelMixin,
     @action()
     def add_database(self, request, *args, **kwargs):
         self.object = self.get_object()
+        self.object.dbname += ','+request.DATA['dbname']
         for node in self.object.nodes.filter(status=Node.RUNNING):
             node.add_database(request.DATA['dbname'])
+        self.object.save()
         return Response(status=status.HTTP_200_OK)
 
     @action()
