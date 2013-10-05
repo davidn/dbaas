@@ -20,6 +20,12 @@ function NavigationCtlr($scope, User, userVoice) {
 }
 
 function WelcomeCntl($scope, $location, User, growl) {
+    // TODO Refactor login flow
+    if (User.user.token) {
+        $location.path("/list");
+        return;
+    }
+
     $scope.form = angular.copy(User.user);
     $scope.showValidationMessages = false;
     $scope.isLoading = false;
@@ -33,7 +39,7 @@ function WelcomeCntl($scope, $location, User, growl) {
 
     $scope.onForgot = function () {
         console.log("Add forgot view");
-        // TODO - Forgot
+        // TODO - Forgot password
     };
 
     $scope.onLogin = function () {

@@ -16,6 +16,8 @@ from time import sleep
 import re
 from hashlib import sha1
 from itertools import islice
+import base64
+import textwrap
 import datetime
 from Crypto import Random
 from Crypto.PublicKey import RSA
@@ -88,6 +90,9 @@ def split_every(n, iterable):
     while piece:
         yield piece
         piece = list(islice(i, n))
+
+def asn1_to_pem(s):
+    return "-----BEGIN RSA PRIVATE KEY-----\n{0}\n-----END RSA PRIVATE KEY-----\n".format(textwrap.fill(base64.standard_b64encode(s),64))
 
 class UserManager(BaseUserManager):
 
@@ -180,17 +185,13 @@ class Cluster(models.Model):
     iam_secret = models.CharField(max_length=255, blank=True, default="")
 
     # SSL Keys
-    ca_cert = models.TextField("CA Certificate", default="")
-    client_cert = models.TextField("Client Certificate", default="")
-    server_cert = models.TextField("Server Certificate", default="")
-    client_key = models.TextField("Client Private Key", default="")
-    server_key = models.TextField("Server Private Key", default="")
+    ca_cert = models.TextField("CA Certificate", blank=True, default="")
+    client_cert = models.TextField("Client Certificate", blank=True, default="")
+    server_cert = models.TextField("Server Certificate", blank=True, default="")
+    client_key = models.TextField("Client Private Key", blank=True, default="")
+    server_key = models.TextField("Server Private Key", blank=True, default="")
 
     historyTrail = audit.AuditTrail(show_in_admin=True)
-
-    def __init__(self, *args, **kwargs):
-        models.Model.__init__(self, *args, **kwargs)
-        self.generate_keys()
 
     def __repr__(self):
         return "Cluster(uuid={uuid}, user={user})".format(uuid=repr(self.uuid), user=repr(self.user))
@@ -199,6 +200,9 @@ class Cluster(models.Model):
         return self.dns_name
 
     def generate_keys(self):
+        # idempotence
+        if len(self.ca_cert) != 0:
+            return
         ca_pk = OpenSSL.crypto.PKey()
         ca_pk.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
         client_pk = OpenSSL.crypto.PKey()
@@ -206,6 +210,7 @@ class Cluster(models.Model):
         server_pk = OpenSSL.crypto.PKey()
         server_pk.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
         ca_cert = OpenSSL.crypto.X509()
+        ca_cert.set_version(0x2) # version 3
         ca_cert.set_pubkey(ca_pk)
         ca_cert.get_subject().C = 'US'
         ca_cert.get_subject().ST = 'CA'
@@ -214,7 +219,15 @@ class Cluster(models.Model):
         ca_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
         ca_cert.set_notAfter((datetime.datetime.utcnow()+datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
         ca_cert.set_serial_number(1)
-        ca_cert.sign(ca_pk,'sha256')
+        ca_cert.add_extensions([
+            OpenSSL.crypto.X509Extension("basicConstraints", False, "CA:TRUE"),
+            OpenSSL.crypto.X509Extension("keyUsage", False, "keyCertSign"),
+            OpenSSL.crypto.X509Extension("subjectKeyIdentifier", False, "hash", subject=ca_cert)
+            ])
+        ca_cert.add_extensions([
+            OpenSSL.crypto.X509Extension("authorityKeyIdentifier", False, "keyid:always", issuer=ca_cert),
+            ])
+        ca_cert.sign(ca_pk,'sha1')
         client_cert = OpenSSL.crypto.X509()
         client_cert.set_pubkey(client_pk)
         client_cert.get_subject().CN = str(self)
@@ -222,7 +235,7 @@ class Cluster(models.Model):
         client_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
         client_cert.set_notAfter((datetime.datetime.utcnow()+datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
         client_cert.set_serial_number(2)
-        client_cert.sign(ca_pk,'sha256')
+        client_cert.sign(ca_pk,'sha1')
         server_cert = OpenSSL.crypto.X509()
         server_cert.set_pubkey(server_pk)
         server_cert.get_subject().C = 'US'
@@ -233,16 +246,17 @@ class Cluster(models.Model):
         server_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
         server_cert.set_notAfter((datetime.datetime.utcnow()+datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
         server_cert.set_serial_number(3)
-        server_cert.sign(ca_pk,'sha256')
+        server_cert.sign(ca_pk,'sha1')
 
-        self.ca_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, ca_cert)
         self.client_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, client_cert)
         self.server_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, server_cert)
-        self.client_key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, client_pk)
-        self.server_key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, server_pk)
+        self.client_key = asn1_to_pem(OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_ASN1, client_pk))
+        self.server_key = asn1_to_pem(OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_ASN1, server_pk))
+        self.ca_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, ca_cert)
 
     def launch(self):
         """Set up an IAM user and S3 bucket for nodes in this cluster to send backups to."""
+        self.generate_keys()
         if self.iam_key == "":
             iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             if self.iam_arn == "":
@@ -556,9 +570,9 @@ class Node(models.Model):
         """Return a string to be passed to cloud-init on a newly provisioned node."""
         connect_to_list = "\n    ".join("ConnectTo = node_"+str(node.nid) for node in self.cluster.nodes.all())
         rsa_priv = self.tinc_private_key.replace("\n", "\n    ")
-        ca_cert = self.ca_cert.replace("\n", "\n    ")
-        server_cert = self.server_cert.replace("\n", "\n    ")
-        server_key = self.server_key.replace("\n", "\n    ")
+        ca_cert = self.cluster.ca_cert.replace("\n", "\n   ")
+        server_cert = self.cluster.server_cert.replace("\n", "\n   ")
+        server_key = self.cluster.server_key.replace("\n", "\n   ")
         host_files = "\n".join("""- content: |
     Address={address}
     Subnet=192.168.33.{nid}/32
