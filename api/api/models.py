@@ -92,7 +92,7 @@ def split_every(n, iterable):
         piece = list(islice(i, n))
 
 def asn1_to_pem(s):
-    return "-----BEGIN RSA PRIVATE KEY-----\n{0}-----END RSA PRIVATE KEY-----\n".format(textwrap.fill(base64.standard_b64encode(s),64))
+    return "-----BEGIN RSA PRIVATE KEY-----\n{0}\n-----END RSA PRIVATE KEY-----\n".format(textwrap.fill(base64.standard_b64encode(s),64))
 
 class UserManager(BaseUserManager):
 
