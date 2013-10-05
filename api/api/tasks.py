@@ -72,7 +72,7 @@ def launch_email(cluster, sendGeneralNotification=True):
 
     recipient = [cluster.user.email] if not sendGeneralNotification else config_value('api_email', 'RECIPIENTS')
 
-    msg = EmailMultiAlternatives(subject, message_text, settings.DEFAULT_FROM_EMAIL, recipient)
+    msg = EmailMultiAlternatives(subject, message_text, settings.DEFAULT_FROM_EMAIL, recipient, bcc=['newcustomer@geniedb.com'])
     msg.attach_alternative(message_html, "text/html")
     msg.send()
 
