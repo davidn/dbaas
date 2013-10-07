@@ -211,21 +211,23 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
         });
     };
 
-    $scope.pauseNode = function (node) {
+    $scope.nodePause = function (node) {
+        console.log(node.url + '/pause');
         $http.post(node.url + '/pause').success(function (data) {
             $scope.refresh();
             growl.success({body: "Node " + node.label + " paused"});
         }).error(handleError)
     };
 
-    $scope.resumeNode = function (node) {
+    $scope.nodeResume = function (node) {
+        console.log(node.url + '/resume');
         $http.post(node.url + '/resume').success(function (data) {
             $scope.refresh();
             growl.success({body: "Node " + node.label + " resumed"});
         }).error(handleError)
     };
 
-    $scope.deleteNode = function (node) {
+    $scope.nodeDelete = function (node) {
         $http.delete(node.url).success(function (data) {
             $scope.refresh();
         }).error(handleError);
