@@ -1,6 +1,7 @@
 angular.module('GenieDBaaS', ['GenieDBaaS.config', 'Utility.directives', 'GenieDBaaS.services', 'ui.directives', 'ui.bootstrap.tooltipX', 'ngRoute', 'ngSanitize', 'ngResource', 'ngStorage', 'ui.select2', 'ui.bootstrap', 'angulartics', 'angulartics.google.analytics', "messageBox"]).config(function ($routeProvider, $httpProvider) {
     $routeProvider.
         when("/", {templateUrl: 'part/welcome.html', controller: WelcomeCntl}).
+        when("/forgot", {templateUrl: 'part/forgot.html', controller: ForgotCntl}).
         when("/list", {templateUrl: 'part/list.html', controller: ListCntl}).
         when("/try", {templateUrl: 'part/try.html', controller: RegisterCntl}).
         when("/thankyou", {templateUrl: 'part/thanks.html', controller: ThanksCntl}).

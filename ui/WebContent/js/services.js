@@ -85,6 +85,9 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
                 clearToken();
                 return Registration.activate({activation_code: activationCode}, {password: password});
             },
+            reminder: function (email) {
+                return Registration.activate({activation_code: activationCode}, {password: password});
+            },
             login: function (email, password) {
                 user.email = email;
                 clearToken();
@@ -120,9 +123,11 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             {index: 2, code: 'installing_cf', label: 'Installing GenieDB CloudFabric'},
             {index: 3, code: 'running', label: 'running'},
             {index: 4, code: 'paused', label: 'paused'},
-            {index: 5, code: 'shutting_down', label: 'shutting down'},
-            {index: 6, code: 'over', label: 'over'},
-            {index: 7, code: 'error', label: 'An error occurred'}
+            {index: 5, code: 'pausing', label: 'pausing'},
+            {index: 6, code: 'resuming', label: 'resuming'},
+            {index: 7, code: 'shutting_down', label: 'shutting down'},
+            {index: 8, code: 'over', label: 'over'},
+            {index: 9, code: 'error', label: 'An error occurred'}
         ];
 
         function getStatusByLabel(statusLabel) {

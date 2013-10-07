@@ -18,12 +18,35 @@ function NavigationCtlr($scope, User, userVoice) {
 }
 
 function LogoutCntl(User) {
-    console.log('User', User)
     User.logout();
 }
 
+function ForgotCntl($scope, User, $location, growl) {
+    $scope.form = angular.copy(User.user);
+    $scope.isLoading = false;
+    $scope.submitted = false;
+
+    $scope.reminder = function () {
+        $scope.isLoading = true;
+
+        User.reminder($scope.form.email).$then(function () {
+            $scope.submitted = true;
+        }, function (err) {
+            $scope.isLoading = false;
+            if (err && err.data) {
+                growl.error({body: err.data});
+            } else {
+                growl.error({body: "Sorry, we don't have that user email on file. Try again?"});
+            }
+        });
+    };
+    $scope.cancel = function () {
+        User.user.email = $scope.form.email;
+        $location.path("/");
+    };
+}
+
 function WelcomeCntl($scope, $location, User, growl) {
-    // TODO Refactor login flow
     if (User.user.token) {
         $location.path("/list");
         return;
@@ -41,8 +64,7 @@ function WelcomeCntl($scope, $location, User, growl) {
     };
 
     $scope.onForgot = function () {
-        console.log("Add forgot view");
-        // TODO - Forgot password
+        $location.path("forgot");
     };
 
     $scope.onLogin = function () {
@@ -116,7 +138,6 @@ function RegisterCntl($scope, $location, User, growl) {
 
 function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, growl, User, messageBox, $modal) {
 //    TODO Disable UI while processing update on cluster
-    // TODO: Add service to route onChange to confirm token existence
     if (!User.user.token) {
         $location.path("/");
         growl.error({body: "Session Expired"});
@@ -281,8 +302,6 @@ function ClusterCntl($scope, $location, $document, apiModel, growl, dbaasConfig)
 function NodeCntl($scope, $routeParams, $location, apiModel, $http, growl, dbaasConfig, User) {
     $scope.providers = apiModel.getProviders();
 
-    // TODO: Set defaults
-//        $scope.node = {region: apiModel.regions[0], flavor: apiModel.regions[0].provider.flavor[0], size:10};
     $scope.node = {size: 10};
     $scope.regions = apiModel.regions;
     $scope.user = User.user;
