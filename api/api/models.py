@@ -910,6 +910,7 @@ runcmd:
         self.save()
 
     def complete_resume(self):
+        self.update()
         self.setup_dns()
         self.status = Node.RUNNING
         self.save()
