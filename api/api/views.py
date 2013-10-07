@@ -22,7 +22,7 @@ from django.core.mail import mail_admins
 from rest_framework import viewsets, mixins, status, permissions
 from .models import Cluster, Node, Region, Provider, Flavor
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
-from .tasks import install, install_cluster
+from .tasks import install, install_cluster, pause_node, resume_node
 from rest_framework.response import Response
 from rest_framework.decorators import action, link, api_view, permission_classes
 from django.http.response import HttpResponse
@@ -340,7 +340,7 @@ class NodeViewSet(mixins.ListModelMixin,
     @action()
     def pause(self, request, *args, **kwargs):
         self.object = self.get_object()
-        self.object.pause()
+        pause_node.delay(self.object)
         serializer = self.get_serializer(self.object)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
@@ -348,7 +348,7 @@ class NodeViewSet(mixins.ListModelMixin,
     @action()
     def resume(self, request, *args, **kwargs):
         self.object = self.get_object()
-        self.object.resume()
+        resume_node.delay(self.object)
         serializer = self.get_serializer(self.object)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)

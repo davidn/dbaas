@@ -512,6 +512,8 @@ class Node(models.Model):
     SHUTTING_DOWN=7
     OVER=8
     PAUSED=9
+    PAUSING=10
+    RESUMING=11
     ERROR=1000
     STATUSES = (
         (INITIAL, 'not yet started'),
@@ -519,6 +521,8 @@ class Node(models.Model):
         (INSTALLING_CF, 'Installing GenieDB CloudFabric'),
         (RUNNING, 'running'),
         (PAUSED, 'paused'),
+        (PAUSING, 'pausing'),
+        (RESUMING, 'resuming'),
         (SHUTTING_DOWN, 'shutting down'),
         (OVER, 'over'),
         (ERROR, 'An error occurred')
@@ -569,6 +573,14 @@ class Node(models.Model):
     def shutting_down(self):
         """Return True if the underlying cloud provider is in the process of shutting down the instance."""
         return self.region.connection.shutting_down(self)
+
+    def pausing(self):
+        """Return True if the instance is being paused by the underlying cloud provider."""
+        return self.region.connection.pausing(self)
+
+    def resuming(self):
+        """Return True if the underlying cloud provider is in the process of resuming the instance."""
+        return self.region.connection.resuming(self)
 
     def update(self, tags={}):
         return self.region.connection.update(self, tags)
@@ -830,6 +842,30 @@ runcmd:
         self.status = self.PROVISIONING
         self.save()
 
+    def setup_dns(self):
+        if self.region.provider.code != 'test':
+            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            health_check = HealthCheck(connection=r53, caller_reference=self.instance_id,
+                ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
+            self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
+            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+            rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
+                type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
+            rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
+                resource_records=[self.ip]))
+            rrs.commit()
+
+    def remove_dns(self):
+        if self.region.provider.code != 'test':
+            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+            rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
+                type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
+            rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
+                resource_records=[self.ip]))
+            rrs.commit()
+            r53.delete_health_check(self.health_check)
+
     def do_install(self):
         """Do slower parts of launching this node."""
         assert(self.status != Node.OVER)
@@ -842,17 +878,7 @@ runcmd:
             'node':str(self.pk),
             'url':'https://'+Site.objects.get_current().domain+self.get_absolute_url(),
         })
-        if self.region.provider.code != 'test':
-            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-            health_check = HealthCheck(connection=r53, caller_reference=self.instance_id,
-                ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
-            self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
-            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-            rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-                type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
-            rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
-                resource_records=[self.ip]))
-            rrs.commit()
+        self.setup_dns()
         self.status = self.RUNNING
         self.save()
         self.addToHostGroup()
@@ -864,6 +890,11 @@ runcmd:
         """Suspend this node."""
         assert(self.status == Node.RUNNING)
         self.region.connection.pause(self)
+        self.remove_dns()
+        self.status = Node.PAUSING
+        self.save()
+
+    def complete_pause(self):
         self.status = Node.PAUSED
         self.save()
 
@@ -871,6 +902,11 @@ runcmd:
         """Resume this node."""
         assert(self.status == Node.PAUSED)
         self.region.connection.resume(self)
+        self.status = Node.RESUMING
+        self.save()
+
+    def complete_resume(self):
+        self.setup_dns()
         self.status = Node.RUNNING
         self.save()
 
@@ -907,15 +943,7 @@ runcmd:
         self.removeFromHostGroup()
         if self.status in (self.PROVISIONING, self.INSTALLING_CF, self.RUNNING, self.PAUSED, self.ERROR):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
-            if self.region.provider.code != 'test':
-                r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-                rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-                rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-                    type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
-                rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
-                    resource_records=[self.ip]))
-                rrs.commit()
-                r53.delete_health_check(self.health_check)
+            self.remove_dns()
             self.region.connection.terminate(self)
 
 class Backup(models.Model):

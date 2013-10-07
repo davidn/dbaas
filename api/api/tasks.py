@@ -93,6 +93,19 @@ def wait_nodes_zabbix(cluster):
 def launch_cluster(cluster):
     cluster.launch()
 
+@task()
+def pause_node(node):
+    node.pause()
+    while node.pausing():
+        sleep(15)
+    node.complete_pause()
+
+@task()
+def resume_node(node):
+    node.resume()
+    while node.resuming():
+        sleep(15)
+    node.complete_resume()
 
 def install_cluster(cluster):
     install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)

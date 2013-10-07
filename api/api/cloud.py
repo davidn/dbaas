@@ -33,6 +33,12 @@ class Cloud(object):
     def shutting_down(self, node):
         pass
 
+    def pausing(self, node):
+        pass
+
+    def resuming(self, node):
+        pass
+
     def update(self, node, tags={}):
         pass
 
@@ -142,6 +148,12 @@ class EC2(Cloud):
     def shutting_down(self, node):
         return self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'shutting-down'
 
+    def pausing(self, node):
+        return self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'stopping'
+
+    def resuming(self, node):
+        return self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'pending'
+
     def update(self, node, tags={}):
         instance = self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0]
         node.ip = instance.ip_address
@@ -224,6 +236,12 @@ class Openstack(Cloud):
 
     def shutting_down(self, node):
         return self.nova.servers.get(node.instance_id).status == u'STOPPING'
+
+    def pausing(self, node):
+        return False
+
+    def resuming(self, node):
+        return False
 
     def update(self, node, tags=None):
         if tags is None:
@@ -333,6 +351,12 @@ class ProfitBrick(Cloud):
         except:
             dcExists = False
         return dcExists
+
+    def pausing(self, node):
+        return False
+
+    def resuming(self, node):
+        return False
 
     def update(self, node, tags=None):
         updateProperties = ['serverName', 'cores', 'ram', 'bootFromImageId', 'availabilityZone', 'bootFromStorageId', 'osType']
