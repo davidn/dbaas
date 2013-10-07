@@ -94,15 +94,13 @@ def launch_cluster(cluster):
     cluster.launch()
 
 @task()
-def pause_node(node):
-    node.pause()
+def complete_pause_node(node):
     while node.pausing():
         sleep(15)
     node.complete_pause()
 
 @task()
-def resume_node(node):
-    node.resume()
+def complete_resume_node(node):
     while node.resuming():
         sleep(15)
     node.complete_resume()
