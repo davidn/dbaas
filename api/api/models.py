@@ -163,13 +163,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         from django.core.mail import EmailMultiAlternatives
         from django.template.loader import render_to_string
 
-        recipient = settings.OVERRIDE_USER_EMAIL ? [settings.OVERRIDE_USER_EMAIL] : [self.email]
+        recipient = [settings.OVERRIDE_USER_EMAIL] if settings.OVERRIDE_USER_EMAIL else [self.email]
 
-        if not from_email
+        if not from_email:
             from_email = settings.DEFAULT_FROM_EMAIL
 
         msg = EmailMultiAlternatives(subject, message, from_email, recipient, bcc=['newcustomer@geniedb.com'])
-        if message_html
+        if message_html:
             msg.attach_alternative(message_html, "text/html")
 
         msg.send()

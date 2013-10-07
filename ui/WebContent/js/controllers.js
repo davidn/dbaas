@@ -1,8 +1,6 @@
 'use strict';
 /*jslint node: true */
 
-/* Controllers */
-
 function MainCntl(User) {
     // Inject User to force initialization
 }
@@ -17,6 +15,11 @@ function NavigationCtlr($scope, User, userVoice) {
     $scope.upgrade = function () {
         userVoice.contact('Upgrade Account', 'Interested in upgrading to paid account.')
     }
+}
+
+function LogoutCntl(User) {
+    console.log('User', User)
+    User.logout();
 }
 
 function WelcomeCntl($scope, $location, User, growl) {
@@ -172,12 +175,12 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
         $location.path("/cluster/" + cluster.url.slice(-36) + "/node");
     }
 
-    $scope.db = {name:''};
+    $scope.db = {name: ''};
     $scope.addDatabase = function (cluster) {
         $scope.isLoading = true;
         $http.post(cluster.url + '/add_database', {dbname: $scope.db.name}).success(function () {
             growl.success({body: "Database " + $scope.db.name + " added to " + cluster.label + " cluster."});
-            $scope.db = {name:''};
+            $scope.db = {name: ''};
             $scope.refresh();
             $scope.isLoading = false;
         }).error(handleError);
@@ -206,6 +209,20 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
                 cluster.isDeleting = false;
             }
         });
+    };
+
+    $scope.pauseNode = function (node) {
+        $http.post(node.url + '/pause').success(function (data) {
+            $scope.refresh();
+            growl.success({body: "Node " + node.label + " paused"});
+        }).error(handleError)
+    };
+
+    $scope.resumeNode = function (node) {
+        $http.post(node.url + '/resume').success(function (data) {
+            $scope.refresh();
+            growl.success({body: "Node " + node.label + " resumed"});
+        }).error(handleError)
     };
 
     $scope.deleteNode = function (node) {

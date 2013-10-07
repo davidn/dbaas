@@ -9,9 +9,10 @@ angular.module('GenieDBaaS', ['GenieDBaaS.config', 'Utility.directives', 'GenieD
         when("/cluster", {templateUrl: 'part/cluster.html', controller: ClusterCntl}).
         when("/cluster/:clusterid/node", {templateUrl: 'part/node.html', controller: NodeCntl}).
         when("/monitor", {templateUrl: 'part/monitor.html', controller: QuickStartCntl}).
+        when("/logout", {templateUrl: 'part/welcome.html', controller: LogoutCntl}).
         otherwise({redirectTo: '/'});
 
-    var interceptor = ['$location', '$q', 'growl', function ($location, $q, User, growl) {
+    var interceptor = ['$location', '$q', 'growl', function ($location, $q, growl) {
         function success(response) {
             return response;
         };
@@ -19,7 +20,7 @@ angular.module('GenieDBaaS', ['GenieDBaaS.config', 'Utility.directives', 'GenieD
         function error(response) {
             if (response.status === 401) {
                 if ($location.$$path !== '/') {
-                    User.logout()
+                    $location.path("/logout");
                     growl.error({body: 'Session Expired'});
                 }
             }
