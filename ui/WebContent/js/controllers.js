@@ -172,27 +172,15 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
         $location.path("/cluster/" + cluster.url.slice(-36) + "/node");
     }
 
+    $scope.db = {name:''};
     $scope.addDatabase = function (cluster) {
-        var outerScope = $scope;
-        $modal.open({
-            templateUrl: 'part/adddatabase.html',
-            backdrop: true,
-            windowClass: 'modal',
-            controller: function ($scope, $modalInstance) {
-                $scope.db = {name:''};
-                $scope.submit = function () {
-                    $scope.isLoading = true;
-                    $http.post(cluster.url + '/add_database', {dbname: $scope.db.name}).success(function () {
-                        $modalInstance.dismiss('cancel');
-                        growl.success({body: "Database " + $scope.db.name + " added to " + cluster.label + " cluster."});
-                        outerScope.refresh();
-                    }).error(handleError);
-                }
-                $scope.cancel = function () {
-                    $modalInstance.dismiss('cancel');
-                };
-            }
-        });
+        $scope.isLoading = true;
+        $http.post(cluster.url + '/add_database', {dbname: $scope.db.name}).success(function () {
+            growl.success({body: "Database " + $scope.db.name + " added to " + cluster.label + " cluster."});
+            $scope.db = {name:''};
+            $scope.refresh();
+            $scope.isLoading = false;
+        }).error(handleError);
     }
 
     $scope.deleteCluster = function (cluster) {

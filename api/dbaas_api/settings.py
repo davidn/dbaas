@@ -218,3 +218,27 @@ try:
 except:
     pass
 
+# To Add Reminders Use:
+# REMINDERS = {
+#   'dayAfter': { ETA: 'tomorrow', template: 'day_after'}
+# }
+#
+# template must be available in the template paths as:
+#   day_after_subject.txt
+#   day_after.txt
+#   day_after.html
+#
+# The multi-part email will be created from the templates and sent according to the ETA.
+#
+# See the following for ETA options:
+# http://ask.github.io/celery/userguide/executing.html#eta-and-countdown
+#
+
+
+
+# OVERRIDE_USER_EMAIL
+# Set to an email address to use instead of users email. e.g.
+#
+# OVERRIDE_USER_EMAIL = newcustomer@geniedb.com
+#
+# This will force all emails to go to newcustomer@geniedb.com instead of user.email

@@ -156,11 +156,42 @@ class User(AbstractBaseUser, PermissionsMixin):
         "Returns the short name for the user."
         return self.first_name
 
-    def email_user(self, subject, message, from_email=None):
+    def email_user(self, subject, message, from_email=None, message_html=None):
         """
         Sends an email to this User.
         """
-        send_mail(subject, message, from_email, [self.email])
+        from django.core.mail import EmailMultiAlternatives
+        from django.template.loader import render_to_string
+
+        recipient = settings.OVERRIDE_USER_EMAIL ? [settings.OVERRIDE_USER_EMAIL] : [self.email]
+
+        if not from_email
+            from_email = settings.DEFAULT_FROM_EMAIL
+
+        msg = EmailMultiAlternatives(subject, message, from_email, recipient, bcc=['newcustomer@geniedb.com'])
+        if message_html
+            msg.attach_alternative(message_html, "text/html")
+
+        msg.send()
+
+
+    def email_user_template(self, template_base_name, dictionary):
+        """
+        Sends a multipart html email to this User.
+        """
+        from django.core.mail import EmailMultiAlternatives
+        from django.template.loader import render_to_string
+
+        subject = render_to_string(template_base_name+'_subject.txt', dictionary)
+        # Email subject *must not* contain newlines
+        subject = ''.join(subject.splitlines())
+
+        message_text = render_to_string(template_base_name+'.txt', dictionary)
+        message_html = render_to_string(template_base_name+'.html', dictionary)
+
+        email_user(subject, message_text, settings.DEFAULT_FROM_EMAIL ,message_html)
+
+
 
 class Cluster(models.Model):
     """Manage a cluster.

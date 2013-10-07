@@ -259,6 +259,15 @@ input.form-control{
     padding-left: 15px;
 }
 
+input.form-control-min{
+    height: 40px;
+    margin-bottom: 5px;
+    background-color: #ebebeb;
+    border-radius: 2px;
+    border-width: 0;
+    padding-left: 15px;
+}
+
 .cluster-dialog{
     width: 350px
 }

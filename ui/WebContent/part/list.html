@@ -167,7 +167,9 @@
 				<div class="btn-group">
 			        <button type="button" class="btn btn-primary disabled pad5"  ng-repeat="database in cluster.dbnames">{{ database }}</button>
 			    </div>
-				<button ng-if="!cluster.canLaunch" class="btn btn-success btn-small" ng-click="addDatabase(cluster)">ADD</button>
+				<br/>
+				<input class="form-control-min" ng-model="db.name" size="40" type="text" focus-me/>
+				<button ng-if="!cluster.canLaunch" class="btn btn-success btn-small"  btn-loading="isLoading" data-loading-text="Adding..." ng-click="addDatabase(cluster)">ADD</button>
 
 			</tab>
 		</tabset>

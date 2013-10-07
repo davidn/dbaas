@@ -44,7 +44,7 @@ def wait_nodes(nodes):
             sleep(15)
 
 @task()
-def launch_email(cluster, sendGeneralNotification=True):
+def launch_email(cluster):
     nodes = cluster.nodes.all()
     ctx_dict = {
         'nodes': nodes,
@@ -59,22 +59,7 @@ def launch_email(cluster, sendGeneralNotification=True):
         'regions': ' and '.join(node.region.name for node in nodes)
     }
 
-    # Send the email Notification.
-    from django.core.mail import EmailMultiAlternatives
-    from django.template.loader import render_to_string
-
-    subject = render_to_string('confirmation_email_subject.txt', ctx_dict)
-    # Email subject *must not* contain newlines
-    subject = ''.join(subject.splitlines())
-
-    message_text = render_to_string('confirmation_email.txt', ctx_dict)
-    message_html = render_to_string('confirmation_email.html', ctx_dict)
-
-    recipient = [cluster.user.email] if not sendGeneralNotification else config_value('api_email', 'RECIPIENTS')
-
-    msg = EmailMultiAlternatives(subject, message_text, settings.DEFAULT_FROM_EMAIL, recipient, bcc=['newcustomer@geniedb.com'])
-    msg.attach_alternative(message_html, "text/html")
-    msg.send()
+    cluster.user.send_email_template('confirmation_email', ctx_dict)
 
 
 @task()
@@ -109,7 +94,7 @@ def launch_cluster(cluster):
     cluster.launch()
 
 
-def install_cluster(cluster, sendGeneralNotification=True):
+def install_cluster(cluster):
     install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)
     lbr_regions = cluster.lbr_regions.filter(launched=False)
     task = launch_cluster.si(cluster) \
@@ -117,7 +102,7 @@ def install_cluster(cluster, sendGeneralNotification=True):
            | group([install.si(node) for node in install_nodes]) \
            | group([install_region.si(lbr_region) for lbr_region in lbr_regions]) \
            | wait_nodes_zabbix.si(cluster) \
-           | launch_email.si(cluster, sendGeneralNotification)
+           | launch_email.si(cluster)
     return task.delay()
 
 
@@ -125,17 +110,21 @@ def install_cluster(cluster, sendGeneralNotification=True):
 def send_reminder(user, reminder):
     if user.is_paid:
         return
-    email = EmailMultiAlternatives(
-        subject=reminder['SUBJECT'],
-        body=reminder['PLAINTEXT'],
-        from_email=reminder['SENDER'],
-        to=[user.email]
-    )
-    email.attach_alternative(
-        reminder['HTML'],
-        "text/html"
-    )
-    email.send()
+
+    dictionary = {
+        'nodes': nodes,
+        'username': str(cluster.user),
+        'is_paid': cluster.user.is_paid,
+        'cluster_dns': cluster.dns_name,
+        'trial_end': datetime.date.today() + settings.TRIAL_LENGTH,
+        'port': cluster.port,
+        'db': cluster.dbname,
+        'dbusername': cluster.dbusername,
+        'dbpassword': cluster.dbpassword,
+        'regions': ' and '.join(node.region.name for node in nodes)
+    }
+
+    user.send_email_template(reminder['template'], ctx_dict)
 
 
 @receiver(models.signals.post_save, sender=get_user_model())
