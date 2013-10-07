@@ -146,6 +146,7 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
                 node.statusClass = 'node-status-' + status.code;
                 data.maxStatus = Math.max(status.index, data.maxStatus);
                 node.isRunning = status.index == 3;
+                node.isPaused = status.index == 4;
                 data.hasRunning = data.hasRunning || node.isRunning;
                 if (node.isRunning) {
                     $http.get(node.url + '/stats/').success(function (data) {

@@ -90,9 +90,9 @@
 								<a tabindex="-1"><i class="icon-bar-chart"></i> &nbsp; Detailed Stats</a>
 							</li>
 							<li class="divider"></li>
-							<li ng-if="node.status != 1">
+							<li ng-if="node.isRunning">
 								<a tabindex="-1" ng-click="nodePause(node)"><i class="icon-pause "></i> &nbsp; Pause Node</a></li>
-							<li ng-if="node.status == 1">
+							<li ng-if="node.isPaused">
 								<a tabindex="-1" ng-click="nodeResume(node)"><i class="icon-play"></i> &nbsp; Resume Node</a></li>
 							<li class="divider"></li>
 							<li class="disabled"><a tabindex="-1" href="#"><i class="icon-plus"></i> &nbsp; Clone Node</a></li>
