@@ -842,10 +842,14 @@ runcmd:
         self.status = self.PROVISIONING
         self.save()
 
+    @property
+    def health_check_reference(self):
+        return self.instance_id + self.ip
+
     def setup_dns(self):
         if self.region.provider.code != 'test':
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-            health_check = HealthCheck(connection=r53, caller_reference=self.instance_id,
+            health_check = HealthCheck(connection=r53, caller_reference=self.health_check_reference,
                 ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
             self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
             rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
