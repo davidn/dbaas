@@ -488,11 +488,11 @@ class ProfitBrick(Cloud):
         # Create the Data Center
         logger.debug("Creating the DataCenter - %s, %s" % (self.region.name, str(self.region.code)))
         dcId = self.pb.createDataCenter(str(node), self.region.code).dataCenterId
-        res = _PBwait4avail(dcId, self.pb.getDataCenter)
-        if not res:
-            logger.error("createDataCenter failed, Node:%s", node)
-            #TODO Better manage failures
-            raise Exception("pb_run_instances failed")
+        #res = _PBwait4avail(dcId, self.pb.getDataCenter)
+        #if not res:
+        #    logger.error("createDataCenter failed, Node:%s", node)
+        #    #TODO Better manage failures
+        #    raise Exception("pb_run_instances failed")
 
         # Create the Server
         logger.debug("Creating the Server - name=%s, cores=%d, ram=%d, dcId=%s" % (str(node), node.flavor.cpus, node.flavor.ram, str(dcId)))
@@ -509,25 +509,33 @@ class ProfitBrick(Cloud):
             #    '/var/lib/cloud/seed/nocloud-net/meta-data': 'instance-id: iid-local01',
             'internetAccess': True}
         svrId = self.pb.createServer(createServerRequest).serverId
-        res = _PBwait4avail(svrId, self.pb.getServer, initialDelay=250, maxRetries=12)
-        if not res:
-            logger.error("createServer failed, Node:%s", node)
-            #TODO Better manage failures
-            raise Exception("pb_run_instances failed")
+        #res = _PBwait4avail(svrId, self.pb.getServer, initialDelay=250, maxRetries=12)
+        #if not res:
+        #    logger.error("createServer failed, Node:%s", node)
+        #    #TODO Better manage failures
+        #    raise Exception("pb_run_instances failed")
 
         # Create the Storage
         logger.debug("Creating the Storage - size=%d" % (node.storage))
+        # Find the image object
+        imageId = None
+        images = self.pb.getAllImages()
+        for image in images:
+            if image['imageName'] == self.region.image:
+                imageId = image['imageId']
+                break
+        logger.debug("mounting image=%s, Id=%s" % (self.region.image, str(imageId)))
         createStorageRequest = {
             'size': node.storage,
             'dataCenterId': dcId,
-            #'mountImageId': "f39274f9-c7d1-11e2-b188-0025901dfe2a",
+            'mountImageId': imageId,
             'storageName': str(node)}
         stgId = self.pb.createStorage(createStorageRequest).storageId
-        res = _PBwait4avail(stgId, self.pb.getStorage)
-        if not res:
-            logger.error("createStorage failed, Node:%s", node)
-            #TODO Better manage failures
-            raise Exception("pb_run_instances failed")
+        #res = _PBwait4avail(stgId, self.pb.getStorage)
+        #if not res:
+        #    logger.error("createStorage failed, Node:%s", node)
+        #    #TODO Better manage failures
+        #    raise Exception("pb_run_instances failed")
 
 
         # Connect the Server to the Storage
@@ -540,7 +548,10 @@ class ProfitBrick(Cloud):
         node.save()
 
     def pending(self, node):
-        return self.pb.getServer(node.instance_id).provisioningState != 'AVAILABLE'
+        svr = self.pb.getServer(node.instance_id)
+        if svr and svr.provisioningState == 'AVAILABLE':
+            return False
+        return True
 
     def shutting_down(self, node):
         try:
