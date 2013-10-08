@@ -161,7 +161,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         Sends an email to this User.
         """
         from django.core.mail import EmailMultiAlternatives
-        from django.template.loader import render_to_string
 
         recipient = [settings.OVERRIDE_USER_EMAIL] if settings.OVERRIDE_USER_EMAIL else [self.email]
 
@@ -179,7 +178,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         Sends a multipart html email to this User.
         """
-        from django.core.mail import EmailMultiAlternatives
         from django.template.loader import render_to_string
 
         subject = render_to_string(template_base_name+'_subject.txt', dictionary)

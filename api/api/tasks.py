@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from logging import getLogger
 from celery.task import task
