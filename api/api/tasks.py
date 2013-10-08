@@ -59,7 +59,7 @@ def launch_email(cluster):
         'regions': ' and '.join(node.region.name for node in nodes)
     }
 
-    cluster.user.send_email_template('confirmation_email', ctx_dict)
+    cluster.user.email_user_template('confirmation_email', ctx_dict)
 
 
 @task()
@@ -135,7 +135,7 @@ def send_reminder(user, reminder):
         'regions': ' and '.join(node.region.name for node in nodes)
     }
 
-    user.send_email_template(reminder['template'], ctx_dict)
+    user.email_user_template(reminder['template'], ctx_dict)
 
 
 @receiver(models.signals.post_save, sender=get_user_model())

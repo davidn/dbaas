@@ -118,16 +118,16 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         }
 
         var statuses = [
-            {index: 0, code: 'initial', label: 'not yet started'},
-            {index: 1, code: 'provisioning', label: 'Provisioning Instances'},
-            {index: 2, code: 'installing_cf', label: 'Installing GenieDB CloudFabric'},
-            {index: 3, code: 'running', label: 'running'},
-            {index: 4, code: 'paused', label: 'paused'},
-            {index: 5, code: 'pausing', label: 'pausing'},
-            {index: 6, code: 'resuming', label: 'resuming'},
-            {index: 7, code: 'shutting_down', label: 'shutting down'},
-            {index: 8, code: 'over', label: 'over'},
-            {index: 9, code: 'error', label: 'An error occurred'}
+            {index: 0, code: 'initial', label: 'not yet started', isAction: false},
+            {index: 1, code: 'provisioning', label: 'Provisioning Instances', isAction: true},
+            {index: 2, code: 'installing_cf', label: 'Installing GenieDB CloudFabric', isAction: true},
+            {index: 3, code: 'running', label: 'running', isAction: false},
+            {index: 4, code: 'paused', label: 'paused', isAction: false},
+            {index: 5, code: 'pausing', label: 'pausing', isAction: true},
+            {index: 6, code: 'resuming', label: 'resuming', isAction: true},
+            {index: 7, code: 'shutting_down', label: 'shutting down', isAction: true},
+            {index: 8, code: 'over', label: 'over', isAction: false},
+            {index: 9, code: 'error', label: 'An error occurred', isAction: false}
         ];
 
         function getStatusByLabel(statusLabel) {
@@ -147,7 +147,8 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
                 data.maxStatus = Math.max(status.index, data.maxStatus);
                 node.isRunning = status.index == 3;
                 node.isPaused = status.index == 4;
-                node.isProvisioning = status.index == 1;
+                node.isAction = status.isAction;
+
                 data.hasRunning = data.hasRunning || node.isRunning;
                 if (node.isRunning) {
                     $http.get(node.url + '/stats/').success(function (data) {
