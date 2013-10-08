@@ -76,7 +76,7 @@
 				<td ng-class="{row0: $first}">{{node.$region.name}}</td>
 				<td ng-class="{row0: $first}">{{node.provider.name}}</td>
 				<td ng-class="{row0: $first}">{{node.$flavor.name}}</td>
-				<td ng-class="{row0: $first}" class="node-status {{node.statusClass}}">{{node.status}}</td>
+				<td ng-class="{row0: $first}" class="node-status {{node.statusClass}}">{{node.status}}<i class="icon-refresh icon-spin" ng-if="node.isProvisioning"></i> </td>
 				<td ng-if="cluster.hasRunning" ng-class="{row0: $first}" class="list-sparkline">
 					<span ng-if="node.isRunning" jq-sparkline ng-model="node.cpu" opts='{"width":150}'>Loading...</span></td>
 				<td ng-if="cluster.hasRunning" ng-class="{row0: $first}" class="list-sparkline">
