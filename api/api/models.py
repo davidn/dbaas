@@ -19,6 +19,10 @@ from itertools import islice
 import base64
 import textwrap
 import datetime
+from logging import getLogger
+
+import MySQLdb
+
 from Crypto import Random
 from Crypto.PublicKey import RSA
 import OpenSSL
@@ -26,13 +30,11 @@ from django.db import models
 from django.dispatch.dispatcher import receiver
 from django.conf import settings
 from django.contrib.sites.models import Site
-from logging import getLogger
 from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception
 from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
 from .cloud import EC2, Rackspace, ProfitBrick, Cloud
 import config
-import MySQLdb
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -44,16 +46,20 @@ from boto.exception import S3ResponseError
 from pyzabbix import ZabbixAPI
 import audit
 
+
 logger = getLogger(__name__)
 
 cronvalidators = (
-    lambda x, allowtext: (re.match(r'^\d+$',x) and 0 <= int(x,10) <= 59) or allowtext and x == '*',
-    lambda x, allowtext: (re.match(r'^\d+$',x) and 0 <= int(x,10) <= 23) or allowtext and x == '*',
-    lambda x, allowtext: (re.match(r'^\d+$',x) and 1 <= int(x,10) <= 31) or allowtext and x == '*',
-    lambda x, allowtext: (re.match(r'^\d+$',x) and 1 <= int(x,10) <= 12) or allowtext and x.lower() in ('*','jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'),
-    lambda x, allowtext: (re.match(r'^\d+$',x) and 0 <= int(x,10) <= 07)or allowtext and x.lower() in ('*','mon','tue','wed','thu','fri','sat','sun')
+    lambda x, allowtext: (re.match(r'^\d+$', x) and 0 <= int(x, 10) <= 59) or allowtext and x == '*',
+    lambda x, allowtext: (re.match(r'^\d+$', x) and 0 <= int(x, 10) <= 23) or allowtext and x == '*',
+    lambda x, allowtext: (re.match(r'^\d+$', x) and 1 <= int(x, 10) <= 31) or allowtext and x == '*',
+    lambda x, allowtext: (re.match(r'^\d+$', x) and 1 <= int(x, 10) <= 12) or allowtext and x.lower() in (
+    '*', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'),
+    lambda x, allowtext: (re.match(r'^\d+$', x) and 0 <= int(x, 10) <= 07) or allowtext and x.lower() in (
+    '*', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')
 )
 """Functions for validating each field of a cron schedule"""
+
 
 def cron_validator(value):
     """Raise an error if :param value: is not a valid cron schedule."""
@@ -76,12 +82,13 @@ def cron_validator(value):
                 if not cronvalidators[period](part_range[1], False):
                     raise ValidationError("Invalid range part: %s" % part_range[1])
             elif not cronvalidators[period](part_range[0], True):
-                    raise ValidationError("Invalid range part: %s" % part_range[0])
+                raise ValidationError("Invalid range part: %s" % part_range[0])
             if len(part_step) > 1:
                 if len(part_range) == 1 and part_range[0] != '*':
                     raise ValidationError("Schedule step requires a range to step over")
                 if not re.match(r'^\d+$', part_step[1]):
                     raise ValidationError("Invalid step: %s" % part_step[1])
+
 
 def split_every(n, iterable):
     """"Given an iterable, return slices of the iterable in separate lists."""
@@ -91,11 +98,12 @@ def split_every(n, iterable):
         yield piece
         piece = list(islice(i, n))
 
+
 def asn1_to_pem(s):
-    return "-----BEGIN RSA PRIVATE KEY-----\n{0}\n-----END RSA PRIVATE KEY-----\n".format(textwrap.fill(base64.standard_b64encode(s),64))
+    return "-----BEGIN RSA PRIVATE KEY-----\n{0}\n-----END RSA PRIVATE KEY-----\n".format(textwrap.fill(base64.standard_b64encode(s), 64))
+
 
 class UserManager(BaseUserManager):
-
     def create_user(self, email, password=None, **extra_fields):
         """
         Creates and saves a User with the given email and password.
@@ -118,20 +126,21 @@ class UserManager(BaseUserManager):
         u.save(using=self._db)
         return u
 
+
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_('email address'), unique=True)
     first_name = models.CharField(_('first name'), max_length=30, blank=True)
     last_name = models.CharField(_('last name'), max_length=30, blank=True)
     is_staff = models.BooleanField(_('staff status'), default=False,
-        help_text=_('Designates whether the user can log into this admin '
-                    'site.'))
+                                   help_text=_('Designates whether the user can log into this admin '
+                                               'site.'))
     is_active = models.BooleanField(_('active'), default=True,
-        help_text=_('Designates whether this user should be treated as '
-                    'active. Unselect this instead of deleting accounts.'))
+                                    help_text=_('Designates whether this user should be treated as '
+                                                'active. Unselect this instead of deleting accounts.'))
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
     is_paid = models.BooleanField(_('paid'), default=False,
-        help_text=_('Designates whether this user should be allowed to '
-                    'create arbitrary nodes and clusters.'))
+                                  help_text=_('Designates whether this user should be allowed to '
+                                              'create arbitrary nodes and clusters.'))
 
     objects = UserManager()
 
@@ -180,15 +189,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         from django.template.loader import render_to_string
 
-        subject = render_to_string(template_base_name+'_subject.txt', dictionary)
+        subject = render_to_string(template_base_name + '_subject.txt', dictionary)
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
 
-        message_text = render_to_string(template_base_name+'.txt', dictionary)
-        message_html = render_to_string(template_base_name+'.html', dictionary)
+        message_text = render_to_string(template_base_name + '.txt', dictionary)
+        message_html = render_to_string(template_base_name + '.html', dictionary)
 
-        email_user(subject, message_text, settings.DEFAULT_FROM_EMAIL ,message_html)
-
+        self.email_user(subject, message_text, settings.DEFAULT_FROM_EMAIL, message_html)
 
 
 class Cluster(models.Model):
@@ -246,25 +254,25 @@ class Cluster(models.Model):
         ca_cert.get_subject().CN = 'GenieDB Inc.'
         ca_cert.set_issuer(ca_cert.get_subject())
         ca_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
-        ca_cert.set_notAfter((datetime.datetime.utcnow()+datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
+        ca_cert.set_notAfter((datetime.datetime.utcnow() + datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
         ca_cert.set_serial_number(1)
         ca_cert.add_extensions([
             OpenSSL.crypto.X509Extension("basicConstraints", False, "CA:TRUE"),
             OpenSSL.crypto.X509Extension("keyUsage", False, "keyCertSign"),
             OpenSSL.crypto.X509Extension("subjectKeyIdentifier", False, "hash", subject=ca_cert)
-            ])
+        ])
         ca_cert.add_extensions([
             OpenSSL.crypto.X509Extension("authorityKeyIdentifier", False, "keyid:always", issuer=ca_cert),
-            ])
-        ca_cert.sign(ca_pk,'sha1')
+        ])
+        ca_cert.sign(ca_pk, 'sha1')
         client_cert = OpenSSL.crypto.X509()
         client_cert.set_pubkey(client_pk)
         client_cert.get_subject().CN = str(self)
         client_cert.set_issuer(ca_cert.get_subject())
         client_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
-        client_cert.set_notAfter((datetime.datetime.utcnow()+datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
+        client_cert.set_notAfter((datetime.datetime.utcnow() + datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
         client_cert.set_serial_number(2)
-        client_cert.sign(ca_pk,'sha1')
+        client_cert.sign(ca_pk, 'sha1')
         server_cert = OpenSSL.crypto.X509()
         server_cert.set_pubkey(server_pk)
         server_cert.get_subject().C = 'US'
@@ -273,9 +281,9 @@ class Cluster(models.Model):
         server_cert.get_subject().CN = self.dns_name
         server_cert.set_issuer(ca_cert.get_subject())
         server_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
-        server_cert.set_notAfter((datetime.datetime.utcnow()+datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
+        server_cert.set_notAfter((datetime.datetime.utcnow() + datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
         server_cert.set_serial_number(3)
-        server_cert.sign(ca_pk,'sha1')
+        server_cert.sign(ca_pk, 'sha1')
 
         self.client_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, client_cert)
         self.server_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, server_cert)
@@ -289,7 +297,7 @@ class Cluster(models.Model):
         if self.iam_key == "":
             iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             if self.iam_arn == "":
-                res= iam.create_user(self.uuid)
+                res = iam.create_user(self.uuid)
                 self.iam_arn = res['create_user_response']['create_user_result']['user']['arn']
                 self.save()
             res = iam.create_access_key(self.uuid)
@@ -300,7 +308,7 @@ class Cluster(models.Model):
         bucket = s3.lookup(self.uuid)
         if bucket is None:
             bucket = s3.create_bucket(self.uuid)
-        # S3 takes a while to treat new ARN as valid
+            # S3 takes a while to treat new ARN as valid
         for i in xrange(15):
             try:
                 bucket.set_policy("""{
@@ -315,7 +323,7 @@ class Cluster(models.Model):
                       },
                       "Action": "s3:*",
                       "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
-                }]}""" % {'iam':self.iam_arn, 'bucket':self.uuid})
+                }]}""" % {'iam': self.iam_arn, 'bucket': self.uuid})
                 break
             except S3ResponseError as e:
                 if i < 15:
@@ -337,7 +345,7 @@ class Cluster(models.Model):
         if self.iam_arn != "":
             iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             if self.iam_key != "":
-                iam.delete_access_key(self.iam_key,self.uuid)
+                iam.delete_access_key(self.iam_key, self.uuid)
                 self.iam_key = ""
                 self.save()
             iam.delete_user(self.uuid)
@@ -350,7 +358,7 @@ class Cluster(models.Model):
 
     def next_nid(self):
         """Return the next available node id."""
-        return max([node.nid for node in self.nodes.all()]+[0])+1
+        return max([node.nid for node in self.nodes.all()] + [0]) + 1
 
     @property
     def dns_name(self):
@@ -358,16 +366,18 @@ class Cluster(models.Model):
 
     @property
     def subscriptions(self):
-        return ",".join(":".join([str(node.nid), '192.168.33.'+str(node.nid), "5502"]) for node in self.nodes.all())
+        return ",".join(":".join([str(node.nid), '192.168.33.' + str(node.nid), "5502"]) for node in self.nodes.all())
 
     def get_lbr_region_set(self, region):
         """Given a Region object, return the LBRRegionNodeSet for that region in this cluster, creating one if needed."""
         obj, _ = self.lbr_regions.get_or_create(cluster=self.pk, lbr_region=region.lbr_region)
         return obj
 
+
 def gen_private_key():
     """Generate a 2048 bit RSA key, exported as ASCII, suitable for use with tinc."""
     return RSA.generate(2048, Random.new().read).exportKey()
+
 
 class Provider(models.Model):
     """Represent a Cloud Compute provider."""
@@ -381,6 +391,7 @@ class Provider(models.Model):
 
     def __unicode__(self):
         return self.name
+
 
 class Region(models.Model):
     """Represent a region in a Cloud"""
@@ -417,12 +428,13 @@ class Region(models.Model):
         return self._connection
 
     def __getstate__(self):
-        if hasattr(self,'_connection'):
+        if hasattr(self, '_connection'):
             odict = self.__dict__.copy()
             del odict['_connection']
             return odict
         else:
             return self.__dict__
+
 
 class Flavor(models.Model):
     """Represent a size/type of instance that can be created in a cloud"""
@@ -439,6 +451,7 @@ class Flavor(models.Model):
 
     def __unicode__(self):
         return self.name
+
 
 class LBRRegionNodeSet(models.Model):
     """A set of Nodes in a cluster in the same DNS routing region
@@ -478,8 +491,8 @@ class LBRRegionNodeSet(models.Model):
     @property
     def record(self):
         return RecordWithTargetHealthCheck(name=self.cluster.dns_name,
-            type='A', ttl=60, alias_hosted_zone_id=settings.ROUTE53_ZONE, alias_dns_name=self.dns_name,
-            identifier=self.identifier, region=self.lbr_region)
+                                           type='A', ttl=60, alias_hosted_zone_id=settings.ROUTE53_ZONE, alias_dns_name=self.dns_name,
+                                           identifier=self.identifier, region=self.lbr_region)
 
     def on_terminate(self):
         logger.debug("%s: terminating dns for lbr region %s, cluster %s", self, self.lbr_region, self.cluster.pk)
@@ -493,7 +506,9 @@ class LBRRegionNodeSet(models.Model):
                 if re.search('but it was not found', e.body) is None:
                     raise
                 else:
-                    logger.warning("%s: terminating dns for lbr region %s, cluster %s skipped as record not found", self, self.lbr_region, self.cluster.pk)
+                    logger.warning("%s: terminating dns for lbr region %s, cluster %s skipped as record not found", self, self.lbr_region,
+                                   self.cluster.pk)
+
 
 class Node(models.Model):
     """Manage an individual instance in the cloud.
@@ -503,16 +518,16 @@ class Node(models.Model):
     data to newly created instances.
 
     """
-    INITIAL=0
-    PROVISIONING=3
-    INSTALLING_CF=4
-    RUNNING=6
-    SHUTTING_DOWN=7
-    OVER=8
-    PAUSED=9
-    PAUSING=10
-    RESUMING=11
-    ERROR=1000
+    INITIAL = 0
+    PROVISIONING = 3
+    INSTALLING_CF = 4
+    RUNNING = 6
+    SHUTTING_DOWN = 7
+    OVER = 8
+    PAUSED = 9
+    PAUSING = 10
+    RESUMING = 11
+    ERROR = 1000
     STATUSES = (
         (INITIAL, 'not yet started'),
         (PROVISIONING, 'Provisioning Instances'),
@@ -604,12 +619,12 @@ class Node(models.Model):
 
     @property
     def buffer_pool_size(self):
-        return int(max(self.flavor.ram*0.7, self.flavor.ram-2048)*2**20)
+        return int(max(self.flavor.ram * 0.7, self.flavor.ram - 2048) * 2 ** 20)
 
     @property
     def cloud_config(self):
         """Return a string to be passed to cloud-init on a newly provisioned node."""
-        connect_to_list = "\n    ".join("ConnectTo = node_"+str(node.nid) for node in self.cluster.nodes.all())
+        connect_to_list = "\n    ".join("ConnectTo = node_" + str(node.nid) for node in self.cluster.nodes.all())
         rsa_priv = self.tinc_private_key.replace("\n", "\n    ")
         ca_cert = self.cluster.ca_cert.replace("\n", "\n   ")
         server_cert = self.cluster.server_cert.replace("\n", "\n   ")
@@ -620,8 +635,9 @@ class Node(models.Model):
     {rsa_pub}
   path: /etc/tinc/cf/hosts/node_{nid}
   owner: root:root
-  permissions: '0644'""".format(nid=node.nid,address=node.dns_name,rsa_pub=node.public_key.replace("\n","\n    ")) for node in self.cluster.nodes.all())
-        return  """#cloud-config
+  permissions: '0644'""".format(nid=node.nid, address=node.dns_name, rsa_pub=node.public_key.replace("\n", "\n    ")) for node in
+                               self.cluster.nodes.all())
+        return """#cloud-config
 write_files:
 - content: |
     [mysqld]
@@ -748,9 +764,9 @@ runcmd:
            subscriptions=self.cluster.subscriptions,
            dbname=self.cluster.dbname,
            dbusername=self.cluster.dbusername,
-           dbpassword='*'+sha1(sha1(self.cluster.dbpassword).digest()).hexdigest().upper(),
+           dbpassword='*' + sha1(sha1(self.cluster.dbpassword).digest()).hexdigest().upper(),
            mysql_user=settings.MYSQL_USER,
-           mysql_password='*'+sha1(sha1(settings.MYSQL_PASSWORD).digest()).hexdigest().upper(),
+           mysql_password='*' + sha1(sha1(settings.MYSQL_PASSWORD).digest()).hexdigest().upper(),
            connect_to_list=connect_to_list,
            rsa_priv=rsa_priv,
            ca_cert=ca_cert,
@@ -762,13 +778,14 @@ runcmd:
            backup_count=self.cluster.backup_count,
            iam_key=self.cluster.iam_key,
            iam_secret=self.cluster.iam_secret,
-           set_backup_url='https://'+Site.objects.get_current().domain+reverse('node-set-backups', args=[self.cluster.pk, self.pk]),
-    )
+           set_backup_url='https://' + Site.objects.get_current().domain + reverse('node-set-backups', args=[self.cluster.pk, self.pk]),
+        )
 
     def addToHostGroup(self):
         hostName = self.dns_name
         logger.debug("%s.addToHostGroup: using customerName='%s', hostName='%s'" % (str(self), self.customerName, hostName))
-        logger.debug("%s: visibleName='%s', ip='%s', label='%s'" % (str(self), self.visible_name(self.cluster.label), self.ip, self.cluster.label))
+        logger.debug(
+            "%s: visibleName='%s', ip='%s', label='%s'" % (str(self), self.visible_name(self.cluster.label), self.ip, self.cluster.label))
         # Be sure there is a HostGroup for the customerName so we can add a hostname to it
         # and add a hostname for the Node just launched.
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
@@ -790,12 +807,12 @@ runcmd:
         zabbixHostGroup = hostGroups[0]
         try:
             if tid is not None:
-                z.host.create(host=hostName, groups=[{"groupid":zabbixHostGroup["groupid"]}], name=self.visible_name(self.cluster.label),
-                    interfaces={"type":'1', "main":'1', "useip":'1', "ip":self.ip, "dns":hostName, "port":"10050"},
-                    templates={"templateid":tid})
+                z.host.create(host=hostName, groups=[{"groupid": zabbixHostGroup["groupid"]}], name=self.visible_name(self.cluster.label),
+                              interfaces={"type": '1', "main": '1', "useip": '1', "ip": self.ip, "dns": hostName, "port": "10050"},
+                              templates={"templateid": tid})
             else:
-                z.host.create(host=hostName, groups=[{"groupid":zabbixHostGroup["groupid"]}], name=self.visible_name(self.cluster.label),
-                    interfaces={"type":'1', "main":'1', "useip":'1', "ip":self.ip, "dns":hostName, "port":"10050"})
+                z.host.create(host=hostName, groups=[{"groupid": zabbixHostGroup["groupid"]}], name=self.visible_name(self.cluster.label),
+                              interfaces={"type": '1', "main": '1', "useip": '1', "ip": self.ip, "dns": hostName, "port": "10050"})
             logger.info("Created Zabbix Host %s" % (hostName))
         except:
             logger.warning("Failed to create Zabbix Host %s" % (hostName))
@@ -827,7 +844,7 @@ runcmd:
 
     def do_launch(self):
         """Do the initial, fast part of launching this node."""
-        assert(self.status != Node.OVER)
+        assert (self.status != Node.OVER)
         self.nid = self.cluster.next_nid()
         logger.debug("%s: Assigned NID %s", self, self.nid)
         logger.info("%s: provisioning node", self)
@@ -848,13 +865,14 @@ runcmd:
         if self.region.provider.code != 'test':
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             health_check = HealthCheck(connection=r53, caller_reference=self.health_check_reference,
-                ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
+                                       ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
             self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
             rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
             rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-                type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
+                                                                  type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
+                                                                  weight=1))
             rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
-                resource_records=[self.ip]))
+                                                          resource_records=[self.ip]))
             rrs.commit()
 
     def remove_dns(self):
@@ -862,23 +880,24 @@ runcmd:
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
             rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-                type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id, weight=1))
+                                                                  type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
+                                                                  weight=1))
             rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
-                resource_records=[self.ip]))
+                                                          resource_records=[self.ip]))
             rrs.commit()
             r53.delete_health_check(self.health_check)
 
     def do_install(self):
         """Do slower parts of launching this node."""
-        assert(self.status != Node.OVER)
+        assert (self.status != Node.OVER)
         while self.pending():
             sleep(15)
         self.update({
-            'Name':'dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),
-            'username':self.cluster.user.email,
-            'cluster':str(self.cluster.pk),
-            'node':str(self.pk),
-            'url':'https://'+Site.objects.get_current().domain+self.get_absolute_url(),
+            'Name': 'dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),
+            'username': self.cluster.user.email,
+            'cluster': str(self.cluster.pk),
+            'node': str(self.pk),
+            'url': 'https://' + Site.objects.get_current().domain + self.get_absolute_url(),
         })
         self.setup_dns()
         self.status = self.RUNNING
@@ -890,7 +909,7 @@ runcmd:
 
     def pause(self):
         """Suspend this node."""
-        assert(self.status == Node.RUNNING)
+        assert (self.status == Node.RUNNING)
         self.region.connection.pause(self)
         self.remove_dns()
         self.status = Node.PAUSING
@@ -902,7 +921,7 @@ runcmd:
 
     def resume(self):
         """Resume this node."""
-        assert(self.status == Node.PAUSED)
+        assert (self.status == Node.PAUSED)
         self.region.connection.resume(self)
         self.status = Node.RESUMING
         self.save()
@@ -915,14 +934,14 @@ runcmd:
 
     def add_database(self, dbname):
         """Create a new MySQL database on this node and grant the user permission to it."""
-        if len(dbname)>64:
+        if len(dbname) > 64:
             raise RuntimeError("Database name too long: %s" % dbname)
         if not re.match(r'^\w*[A-Za-z]\w*$', dbname):
             raise RuntimeError("Database name must consist of at least one letter and numbers only: %s" % dbname)
         con = MySQLdb.connect(host=self.dns_name,
-                user=settings.MYSQL_USER,
-                passwd=settings.MYSQL_PASSWORD,
-                port=self.cluster.port)
+                              user=settings.MYSQL_USER,
+                              passwd=settings.MYSQL_PASSWORD,
+                              port=self.cluster.port)
         try:
             cur = con.cursor()
             try:
@@ -949,6 +968,7 @@ runcmd:
             self.remove_dns()
             self.region.connection.terminate(self)
 
+
 class Backup(models.Model):
     """A record of a backup."""
     node = models.ForeignKey(Node, related_name='backups')
@@ -959,8 +979,9 @@ class Backup(models.Model):
     def get_url(self):
         s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         return s3.generate_url(3600,
-                "GET", self.node.cluster.uuid,
-                '/%s/%s' % (self.node.nid, self.filename))
+                               "GET", self.node.cluster.uuid,
+                               '/%s/%s' % (self.node.nid, self.filename))
+
 
 @receiver(models.signals.pre_delete, sender=Node)
 def node_pre_delete_callback(sender, instance, using, **kwargs):
@@ -969,12 +990,14 @@ def node_pre_delete_callback(sender, instance, using, **kwargs):
         return
     instance.on_terminate()
 
+
 @receiver(models.signals.pre_delete, sender=LBRRegionNodeSet)
 def region_pre_delete_callback(sender, instance, using, **kwargs):
     """Terminate LBRRegionNodeSets when the instances is deleted"""
     if sender != LBRRegionNodeSet:
         return
     instance.on_terminate()
+
 
 @receiver(models.signals.pre_delete, sender=Cluster)
 def cluster_pre_delete_callback(sender, instance, using, **kwargs):
