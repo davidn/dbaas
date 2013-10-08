@@ -175,6 +175,7 @@ INSTALLED_APPS = (
     'livesettings',
     'registration',
     'rest_registration',
+    'simple_history',
     'api'
 )
 

@@ -1,5 +1,6 @@
 from .models import Node, Cluster, Provider, Region, Flavor, User
 from rest_registration.models import RegistrationProfile
+from simple_history.admin import SimpleHistoryAdmin
 from django.contrib import admin
 
 
@@ -8,7 +9,7 @@ class NodeInline(admin.StackedInline):
     extra = 0
 
 
-class ClusterAdmin(admin.ModelAdmin):
+class ClusterAdmin(SimpleHistoryAdmin):
     inlines = [NodeInline]
     list_display = ('__unicode__', 'user', 'cluster_size')
 
@@ -33,7 +34,7 @@ class ProviderAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Cluster, ClusterAdmin)
-admin.site.register(Node)
+admin.site.register(Node, SimpleHistoryAdmin)
 admin.site.register(Provider, ProviderAdmin)
 admin.site.register(User)
 admin.site.register(RegistrationProfile)
