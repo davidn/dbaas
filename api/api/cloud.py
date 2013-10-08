@@ -2,6 +2,13 @@ from logging import getLogger
 from time import sleep
 from django.conf import settings
 from django.contrib.sites.models import Site
+import httplib2
+
+try:
+    from apiclient import discovery
+    from oauth2client import client
+except:
+    pass
 
 try:
     import pb.client
@@ -184,6 +191,213 @@ def _retryEC2(func, initialDelay=50, maxRetries=12):
     return result
 
 
+class GoogleComputeEngine(Cloud):
+    SERVICE_PROJECT_ID  = settings.GCE_PROJECT_ID
+    SERVICE_ACCT_EMAIL  = settings.GCE_SERVICE_ACCOUNT_EMAIL
+    SERVICE_PRIVATE_KEY = settings.GCE_PRIVATE_KEY
+
+    MAX_DELAY_RETRIES   = 40        # Max delay of 200 seconds
+    RETRY_DELAY         = 5
+    @property
+    def gce(self):
+        if not hasattr(self, "_gce_params"):
+            credentials = client.SignedJwtAssertionCredentials(
+              service_account_name=GoogleComputeEngine.SERVICE_ACCT_EMAIL,
+              private_key=GoogleComputeEngine.SERVICE_PRIVATE_KEY,
+              scope=[
+                'https://www.googleapis.com/auth/compute',
+                'https://www.googleapis.com/auth/devstorage.full_control',
+                'https://www.googleapis.com/auth/devstorage.read_write',
+              ])
+            # Create an httplib2.Http object to handle our HTTP requests and authorize it
+            # with our good Credentials.
+            http = httplib2.Http()
+            auth_http = credentials.authorize(http)
+            # Construct the service object for the interacting with the Compute Engine API.
+            gce_service = discovery.build('compute', 'v1beta15', http=auth_http)
+            self._gce_params = {
+                'credentials':credentials,
+                'auth_http':auth_http,
+                'service':gce_service,
+                'project':GoogleComputeEngine.SERVICE_PROJECT_ID,
+                'zone':'',
+                'name':'',
+                'nid':None,
+                'machineType':'',
+                'imageType':'',
+                'ip':'' }
+        return self._gce_params
+
+    def __getstate__(self):
+        if hasattr(self, '_gce_params'):
+            odict = self.__dict__.copy()
+            del odict['_gce_params']
+            return odict
+        else:
+            return self.__dict__
+
+    @property
+    def instance_name(self):
+        if self.gce['name']:
+            return self.gce['name']
+        return None
+
+    def getInstanceObjects(self, matchNames=None):
+        # Fetch the instance
+        request = self.gce['service'].instances().list(project=self.gce['project'], zone=self.gce['zone'])
+        response = request.execute()
+        try:
+            items = response['items']
+        except:
+            items = []
+        if matchNames is not None:
+            allItems = items
+            items = []
+            if type(matchNames) == type(''):
+                matchNames = [matchNames]
+            for item in allItems:
+                if item['name'] in matchNames:
+                    items.append(item)
+        return items
+
+    def launch(self, node):
+        self.gce['zone'] = self.region.name
+        self.gce['name'] = make_gce_valid_name('dbaas-cluster-{c}-node-{n}'.format(c=node.cluster.pk, n=node.nid))
+        self.gce['nid'] = node.nid
+        self.gce['machineType'] = node.flavor.name
+        self.gce['imageType'] = 'debian-cloud/global/images/debian-7-wheezy-v20130816'
+        logger.debug("%(name)s: Assigned NID %(nid)s" % self.gce)
+
+        #
+        # Create the Instance
+        #
+        # Construct the request body
+        body = {
+          'name': self.gce['name'],
+          'machineType': "https://www.googleapis.com/compute/v1beta15/projects/%(project)s/zones/%(zone)s/machineTypes/%(machineType)s" % self.gce,
+          'image': 'https://www.googleapis.com/compute/v1beta15/projects/%(imageType)s' % self.gce,
+          'networkInterfaces': [{
+            'accessConfigs': [{
+              'type': 'ONE_TO_ONE_NAT',
+              'name': 'External NAT'
+             }],
+            'network': 'https://www.googleapis.com/compute/v1beta15/projects/%(project)s/global/networks/default' % self.gce,
+          }],
+          'disk': [{
+             'source': 'https://www.googleapis.com/compute/v1beta15/projects/%(project)s/zones/%(zone)s/disks/%(name)s' % self.gce,
+             'boot': True,
+             'type': 'PERSISTENT',
+             'mode': 'READ_WRITE',
+             'deviceName': self.gce['name'],
+           }],
+        }
+
+        # Create the instance
+        request = self.gce['service'].instances().insert(project=self.gce['project'], body=body, zone=self.gce['zone'])
+        response = request.execute(self.gce['auth_http'])
+        logger.info("Created the GCE Instance %(name)s" % (self.gce))
+        node.instance_id = self.gce['name']
+        node.security_group = self.gce['zone']
+        node.status = node.PROVISIONING
+        node.save()
+
+    def pending(self, node):
+        self.gce['name'] = node.instance_id
+        self.gce['zone'] = node.security_group
+        items = self.getInstanceObjects(self.gce['name'])
+        if items:
+            try:
+                self.gce['ip'] = items[0]['networkInterfaces'][0]['accessConfigs'][0]['natIP']
+            except:
+                pass
+        if items and items[0]['status'] == 'RUNNING':
+            return False
+        return True
+
+    def shutting_down(self, node):
+        self.gce['name'] = node.instance_id
+        self.gce['zone'] = node.security_group
+        items = self.getInstanceObjects(self.gce['name'])
+        return items != []
+
+    def update(self, node, tags=None):
+        self.gce['name'] = node.instance_id
+        self.gce['zone'] = node.security_group
+        items = self.getInstanceObjects(self.gce['name'])
+        if items:
+            try:
+                self.gce['ip'] = items[0]['networkInterfaces'][0]['accessConfigs'][0]['natIP']
+            except:
+                pass
+        node.ip = self.gce['ip']
+        node.save()
+        return  # I don't know how to update any property settings yet...
+
+        updateProperties = ['serverName', 'cores', 'ram', 'bootFromImageId', 'availabilityZone', 'bootFromStorageId', 'osType']
+        if tags is None:
+            tags = {}
+        for k in tags.keys():
+            if k not in updateProperties:
+                del tags[k]
+        if tags:
+            tags['serverId'] = node.instance_id
+            logger.debug("PB.update: tags=%s" % (str(tags)))
+            self.pb.updateServer(tags)
+        s = self.pb.getServer(node.instance_id)
+        node.ip = s.ips[0]
+        node.save()
+
+    def terminate(self, node):
+        self.gce['name'] = node.instance_id
+        self.gce['zone'] = node.security_group
+        if node.instance_id != "":
+            self.gce['name'] = node.instance_id
+            if node.status != node.SHUTTING_DOWN:
+                node.status = node.SHUTTING_DOWN
+                node.save()
+            # Delete the instance
+            request = self.gce['service'].instances().delete(project=self.gce['project'], zone=self.gce['zone'], instance=self.gce['name'])
+            response = request.execute(self.gce['auth_http'])
+            node.instance_id = ""
+            logger.debug("Terminating GCE Instance %(name)s" % self.gce)
+        for i in xrange(GoogleComputeEngine.MAX_DELAY_RETRIES):
+            if not node.shutting_down():
+                break
+            sleep(GoogleComputeEngine.RETRY_DELAY)
+
+    #def pause(self, node):
+    #    # Note: this command halts, doesn't suspend, the server
+    #    self.gce['name'] = node.instance_id
+    #    self.gce['zone'] = node.security_group
+    #    self.pb.stopServer(node.instance_id)
+
+    #def resume(self, node):
+    #    self.gce['name'] = node.instance_id
+    #    self.gce['zone'] = node.security_group
+    #    self.pb.startServer(node.instance_id)
+
+
+def make_gce_valid_name(name):
+    MAX_VALID_NAME_LEN  = 63    # GCE Instance Names must be <= this length
+    FIRST_ALPHA         = "g"   # GCE Name must start with an alpha char
+    if name[:1].isalpha():
+        FIRST_ALPHA = ""
+    i = name.find('.')
+    if i >= MAX_VALID_NAME_LEN - len(FIRST_ALPHA):
+        # If we can, drop the chars just before the Node ID
+        k = name.rfind('-', 0, i)
+        if k + MAX_VALID_NAME_LEN >= i + len(FIRST_ALPHA):
+            j = k + MAX_VALID_NAME_LEN - i - len(FIRST_ALPHA)
+            name = "".join((FIRST_ALPHA, name[:j], name[k:i]))
+        else:
+            name = FIRST_ALPHA + name[:MAX_VALID_NAME_LEN-1]
+    elif (FIRST_ALPHA and name[:len(FIRST_ALPHA)] != FIRST_ALPHA) or i >= 0:
+        name = FIRST_ALPHA + name[:i]
+    elif len(name) > MAX_VALID_NAME_LEN:
+        name = name[:MAX_VALID_NAME_LEN]
+    return name.lower()
+
+
 class Openstack(Cloud):
     @property
     def nova(self):
@@ -269,7 +483,7 @@ class ProfitBrick(Cloud):
             return self.__dict__
 
     def launch(self, node):
-        logger.debug("%s: Assigned NID %s", node, node.nid)
+        logger.debug("%s: Assigned NID %s" % (str(node), node.nid))
 
         # Create the Data Center
         logger.debug("Creating the DataCenter - %s, %s" % (self.region.name, str(self.region.code)))
@@ -286,6 +500,8 @@ class ProfitBrick(Cloud):
             'serverName': str(node),
             'cores': node.flavor.cpus,
             'ram': node.flavor.ram,
+            #'bootFromImageId': "",
+            #'bootFromStorageId': "",
             'dataCenterId': dcId,
             #'availabilityZone': self.region.code,
             #'image': node.region.image,
@@ -304,8 +520,8 @@ class ProfitBrick(Cloud):
         createStorageRequest = {
             'size': node.storage,
             'dataCenterId': dcId,
+            #'mountImageId': "f39274f9-c7d1-11e2-b188-0025901dfe2a",
             'storageName': str(node)}
-        #            'mountImageId': }
         stgId = self.pb.createStorage(createStorageRequest).storageId
         res = _PBwait4avail(stgId, self.pb.getStorage)
         if not res:
@@ -367,13 +583,12 @@ class ProfitBrick(Cloud):
         while node.shutting_down():
             sleep(15)
 
-            #def pause(self, node):
-            #    # Note: this command halts, doesn't suspend, the server
-            #    self.pb.stopServer(node.instance_id)
+    #def pause(self, node):
+    #    # Note: this command halts, doesn't suspend, the server
+    #    self.pb.stopServer(node.instance_id)
 
-            #def resume(self, node):
-            #    self.pb.startServer(node.instance_id)
-
+    #def resume(self, node):
+    #    self.pb.startServer(node.instance_id)
 
 def _PBwait4avail(objid, getfunc, objField='provisioningState', targetValues=['AVAILABLE'], initialDelay=50, maxRetries=12):
     result = None

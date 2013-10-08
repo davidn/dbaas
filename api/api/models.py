@@ -26,7 +26,7 @@ from logging import getLogger
 from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception
 from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
-from .cloud import EC2, Rackspace, ProfitBrick, Cloud
+from .cloud import EC2, GoogleComputeEngine, Rackspace, ProfitBrick, Cloud
 import config
 import MySQLdb
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -307,6 +307,8 @@ class Region(models.Model):
         if not hasattr(self, '_connection'):
             if self.provider.code == "az":
                 self._connection = EC2(self)
+            elif self.provider.code == "gce":
+                self._connection = GoogleComputeEngine(self)
             elif self.provider.code == "rs":
                 self._connection = Rackspace(self)
             elif self.provider.code == "pb":
