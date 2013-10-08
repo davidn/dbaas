@@ -344,6 +344,10 @@ button.close-sm{
     padding: 5px 15px;
 }
 
+.margin-left-10{
+    margin-left: 10px;
+}
+
 /* Hack for tabset embedding in repeat */
 .tabbable {
     position: relative;
