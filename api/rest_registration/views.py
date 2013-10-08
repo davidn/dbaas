@@ -34,7 +34,7 @@ class RegistrationView(GenericViewSet):
         except IntegrityError as e:
             return Response("That email address already has an account", status=status.HTTP_400_BAD_REQUEST)
         except Exception as foo:
-            logger.error("Exception on create:", foo)
+            logger.error("Exception on create:", exc_info=True)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, *args, **kwargs):
@@ -78,6 +78,7 @@ class RegistrationView(GenericViewSet):
         class of this backend as the sender.
 
         """
+        logger.info("register")
         email, password = data['email'], data.get('password', None)
         if Site._meta.installed:
             site = Site.objects.get_current()

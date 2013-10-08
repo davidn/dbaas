@@ -34,7 +34,6 @@ from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthC
 from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
 from .cloud import EC2, Rackspace, ProfitBrick, Cloud
-import config
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -54,9 +53,9 @@ cronvalidators = (
     lambda x, allowtext: (re.match(r'^\d+$', x) and 0 <= int(x, 10) <= 23) or allowtext and x == '*',
     lambda x, allowtext: (re.match(r'^\d+$', x) and 1 <= int(x, 10) <= 31) or allowtext and x == '*',
     lambda x, allowtext: (re.match(r'^\d+$', x) and 1 <= int(x, 10) <= 12) or allowtext and x.lower() in (
-    '*', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'),
+        '*', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'),
     lambda x, allowtext: (re.match(r'^\d+$', x) and 0 <= int(x, 10) <= 07) or allowtext and x.lower() in (
-    '*', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')
+        '*', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')
 )
 """Functions for validating each field of a cron schedule"""
 
@@ -171,7 +170,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         from django.core.mail import EmailMultiAlternatives
 
-        recipient = [settings.OVERRIDE_USER_EMAIL] if settings.OVERRIDE_USER_EMAIL else [self.email]
+        recipient = [settings.OVERRIDE_USER_EMAIL] if getattr(settings, 'OVERRIDE_USER_EMAIL', False) else [self.email]
 
         if not from_email:
             from_email = settings.DEFAULT_FROM_EMAIL
@@ -181,7 +180,6 @@ class User(AbstractBaseUser, PermissionsMixin):
             msg.attach_alternative(message_html, "text/html")
 
         msg.send()
-
 
     def email_user_template(self, template_base_name, dictionary):
         """

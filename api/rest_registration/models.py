@@ -61,4 +61,4 @@ class RegistrationProfile(BaseRegistrationProfile):
                     'site': site,
                     'url': settings.FRONTEND_URL}
 
-        self.user.email_user_template('registration/activation_email', ctx_dict);
+        self.user.email_user_template('registration/activation_email', ctx_dict)
