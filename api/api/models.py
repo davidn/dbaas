@@ -172,10 +172,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         recipient = [settings.OVERRIDE_USER_EMAIL] if getattr(settings, 'OVERRIDE_USER_EMAIL', False) else [self.email]
 
+        bcc_recipient = [settings.INTERNAL_BCC_EMAIL] if getattr(settings, 'INTERNAL_BCC_EMAIL', False) else None
+
         if not from_email:
             from_email = settings.DEFAULT_FROM_EMAIL
 
-        msg = EmailMultiAlternatives(subject, message, from_email, recipient, bcc=['newcustomer@geniedb.com'])
+        msg = EmailMultiAlternatives(subject, message, from_email, recipient, bcc=bcc_recipient)
         if message_html:
             msg.attach_alternative(message_html, "text/html")
 
