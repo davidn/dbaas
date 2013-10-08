@@ -1,8 +1,12 @@
 'use strict';
 /*jslint node: true */
 
-function MainCntl(User) {
+function MainCntl($scope, User, dbaasConfig) {
     // Inject User to force initialization
+
+    $scope.showInfo = function(event){
+        console.log(dbaasConfig);
+    }
 }
 
 function NavigationCtlr($scope, User, userVoice) {
@@ -178,13 +182,10 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
         var launchTime = _.max(providers,function (provider) {
             return provider.launchTime;
         }).launchTime;
-        console.log(providers);
-        console.log(launchTime);
         var msg = 'We are now spinning up the cluster you requested.  You will receive an email when the cluster is available.  <br /><br />In general ' + _.pluck(providers, 'name').join(' and ') + ' take' + (providers.length > 1 ? '' : 's') + ' about ' + launchTime + ' minutes to provision and launch their nodes.';
         var btns = [
             {result: 'ok', label: 'Ok', cssClass: 'btn-success'}
         ];
-
         messageBox.open(title, msg, btns);
 
         $http.post(cluster.url + '/launch_all/').success(function () {
@@ -355,7 +356,7 @@ function NodeCntl($scope, $routeParams, $location, apiModel, $http, growl, dbaas
 }
 
 
-function QuickStartCntl($scope, $location, apiModel, $http, growl, dbaasConfig) {
+function QuickStartCntl($scope, $location, apiModel, $http, growl, dbaasConfig, messageBox) {
     $scope.providers = apiModel.getProviders();
     $scope.regions = apiModel.regions;
 
@@ -384,6 +385,18 @@ function QuickStartCntl($scope, $location, apiModel, $http, growl, dbaasConfig) 
             $http.post(cluster.url, nodes).success(function () {
                 growl.success({body: 'Quick start nodes created'});
                 $http.post(cluster.url + '/launch_all/').success(function () {
+
+                    var title = 'Launching Cluster';
+                    var providers = _.uniq([$scope.region1.provider, $scope.region2.provider]);
+                    var launchTime = _.max(providers,function (provider) {
+                        return provider.launchTime;
+                    }).launchTime;
+                    var msg = 'We are now spinning up the cluster you requested.  You will receive an email when the cluster is available.  <br /><br />In general ' + _.pluck(providers, 'name').join(' and ') + ' take' + (providers.length > 1 ? '' : 's') + ' about ' + launchTime + ' minutes to provision and launch their nodes.';
+                    var btns = [
+                        {result: 'ok', label: 'Ok', cssClass: 'btn-success'}
+                    ];
+                    messageBox.open(title, msg, btns);
+
                     $location.path('/list');
                 }).error(handleError);
             }).error(handleError);

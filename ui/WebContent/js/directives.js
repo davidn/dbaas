@@ -143,6 +143,20 @@ angular.module('Utility.directives', ['GenieDBaaS.config'])
 
         return tooltip;
     }])
+    .directive('ngRightClick', function ($parse) {
+        return function (scope, element, attrs) {
+            var fn = $parse(attrs.ngRightClick);
+            element.bind('contextmenu', function (event) {
+                scope.$apply(function () {
+                    // TODO Make shift and ctrl configuration options for directive
+                    if (event.shiftKey && event.ctrlKey){
+                        event.preventDefault();
+                        fn(scope, {$event: event});
+                    }
+                });
+            });
+        };
+    })
     .directive('tabsetTitles', ['$http', function ($http) {
         return {
             restrict: 'A',
