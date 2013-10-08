@@ -41,9 +41,9 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 from django.core.mail import send_mail
+from simple_history.models import HistoricalRecords
 from boto.exception import S3ResponseError
 from pyzabbix import ZabbixAPI
-import audit
 
 
 logger = getLogger(__name__)
@@ -226,7 +226,7 @@ class Cluster(models.Model):
     client_key = models.TextField("Client Private Key", blank=True, default="")
     server_key = models.TextField("Server Private Key", blank=True, default="")
 
-    historyTrail = audit.AuditTrail(show_in_admin=True)
+    history = HistoricalRecords()
 
     def __repr__(self):
         return "Cluster(uuid={uuid}, user={user})".format(uuid=repr(self.uuid), user=repr(self.user))
@@ -463,7 +463,7 @@ class LBRRegionNodeSet(models.Model):
     lbr_region = models.CharField("LBR Region", max_length=20)
     launched = models.BooleanField("Launched")
 
-    historyTrail = audit.AuditTrail(show_in_admin=True)
+    history = HistoricalRecords()
 
     def __unicode__(self):
         return self.dns_name
@@ -553,7 +553,7 @@ class Node(models.Model):
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
     tinc_private_key = models.TextField("Tinc Private Key", default=gen_private_key)
 
-    historyTrail = audit.AuditTrail(show_in_admin=True)
+    history = HistoricalRecords()
 
     def __repr__(self):
         optional = ""
