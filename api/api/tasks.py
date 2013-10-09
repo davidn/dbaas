@@ -7,7 +7,6 @@ from celery import group
 from time import sleep
 from .models import Node
 import datetime
-from livesettings import config_value
 from django.dispatch.dispatcher import receiver
 from django.db import models
 from django.contrib.auth import get_user_model
