@@ -119,6 +119,22 @@
 				SnapEngage.setCallback('Open', function (status) {
 					SnapEngage.setUserEmail(window.userEmail);
 				});
+
+				var tid;
+				function checkChatStatus() {
+					SnapEngage.getAgentStatusAsync(function (online) {
+						if (online) {
+							SnapEngage.showButton();
+						} else {
+							SnapEngage.hideButton();
+						}
+					});
+					// Recursive call.
+					clearTimeout(tid);
+					tid = setTimeout(checkChatStatus, 3 * 60 * 1000);
+				}
+				checkChatStatus();
+
 			}
 		};
 		var s = document.getElementsByTagName('script')[0];
