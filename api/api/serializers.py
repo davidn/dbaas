@@ -131,6 +131,8 @@ class CronField(serializers.CharField):
             return "0 */%d * * *" % h
 
 class ClusterSerializer(serializers.HyperlinkedModelSerializer):
+    status = StatusField(choices=Cluster.STATUSES, read_only=True)
+    status_code = serializers.ChoiceField(choices=Cluster.STATUSES, source='status', read_only=True)
     nodes = NodeSerializer(many=True, read_only=True)
     dns_name = serializers.CharField(read_only=True)
     backup_schedule = CronField()

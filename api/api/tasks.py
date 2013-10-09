@@ -3,9 +3,8 @@
 from django.conf import settings
 from logging import getLogger
 from celery.task import task
-from celery import group
 from time import sleep
-from .models import Node
+from .models import Cluster
 import datetime
 from django.dispatch.dispatcher import receiver
 from django.db import models
@@ -90,6 +89,11 @@ def wait_nodes_zabbix(cluster):
 @task()
 def launch_cluster(cluster):
     cluster.launch()
+
+@task()
+def cluster_ready(cluster):
+    cluster.status = Cluster.RUNNING
+    cluster.save()
 
 @task()
 def complete_pause_node(node):

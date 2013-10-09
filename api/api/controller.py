@@ -6,7 +6,9 @@ Created on 9 Oct 2013
 
 from celery import group
 from .models import Node
-from .tasks import install_node, install_region, wait_nodes, wait_nodes_zabbix, launch_email, complete_pause_node, complete_resume_node
+from .tasks import install_node, install_region, wait_nodes, \
+    wait_nodes_zabbix, launch_email, complete_pause_node, \
+    complete_resume_node, cluster_ready
 
 def launch_cluster(cluster):
     for node in cluster.nodes.all():
@@ -19,7 +21,8 @@ def launch_cluster(cluster):
            | group([install_node.si(node) for node in install_nodes]) \
            | group([install_region.si(lbr_region) for lbr_region in lbr_regions]) \
            | wait_nodes_zabbix.si(cluster) \
-           | launch_email.si(cluster)
+           | launch_email.si(cluster) \
+           | cluster_ready.si(cluster)
     return task.delay()
 
 def pause_node(node):

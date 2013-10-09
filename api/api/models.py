@@ -196,6 +196,21 @@ class Cluster(models.Model):
     managing the space in which backups are stored.
 
     """
+
+    INITIAL = 0
+    PROVISIONING = 3
+    RUNNING = 6
+    SHUTTING_DOWN = 7
+    OVER = 8
+    ERROR = 1000
+    STATUSES = (
+        (INITIAL, 'not yet started'),
+        (PROVISIONING, 'Provisioning Instances'),
+        (RUNNING, 'running'),
+        (SHUTTING_DOWN, 'shutting down'),
+        (OVER, 'over'),
+        (ERROR, 'An error occurred')
+    )
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='clusters')
 
     uuid = UUIDField(primary_key=True)
@@ -217,6 +232,7 @@ class Cluster(models.Model):
     client_key = models.TextField("Client Private Key", blank=True, default="")
     server_key = models.TextField("Server Private Key", blank=True, default="")
 
+    status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
     history = HistoricalRecords()
 
     def __repr__(self):
@@ -240,6 +256,8 @@ class Cluster(models.Model):
 
     def launch(self):
         """Set up an IAM user and S3 bucket for nodes in this cluster to send backups to."""
+        self.status = Cluster.PROVISIONING
+        self.save()
         self.generate_keys()
         if self.iam_key == "":
             iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
@@ -282,6 +300,8 @@ class Cluster(models.Model):
 
     def terminate(self):
         """Clean up the S3 bucket and IAM user associated with this cluster."""
+        self.status = Cluster.SHUTTING_DOWN
+        self.save()
         s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         bucket = s3.lookup(self.uuid)
         if bucket is not None:
@@ -298,6 +318,8 @@ class Cluster(models.Model):
             iam.delete_user(self.uuid)
             self.iam_arn = ""
             self.save()
+        self.status = Cluster.OVER
+        self.save()
 
     @models.permalink
     def get_absolute_url(self):
@@ -467,7 +489,6 @@ class Node(models.Model):
     """
     INITIAL = 0
     PROVISIONING = 3
-    INSTALLING_CF = 4
     RUNNING = 6
     SHUTTING_DOWN = 7
     OVER = 8
@@ -478,7 +499,6 @@ class Node(models.Model):
     STATUSES = (
         (INITIAL, 'not yet started'),
         (PROVISIONING, 'Provisioning Instances'),
-        (INSTALLING_CF, 'Installing GenieDB CloudFabric'),
         (RUNNING, 'running'),
         (PAUSED, 'paused'),
         (PAUSING, 'pausing'),
@@ -910,7 +930,7 @@ runcmd:
     def on_terminate(self):
         """Shutdown the node and remove DNS entries."""
         self.removeFromHostGroup()
-        if self.status in (self.PROVISIONING, self.INSTALLING_CF, self.RUNNING, self.PAUSED, self.ERROR):
+        if self.status in (self.PROVISIONING, self.RUNNING, self.PAUSED, self.ERROR):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
             self.remove_dns()
             self.region.connection.terminate(self)
