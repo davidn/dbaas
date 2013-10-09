@@ -29,9 +29,9 @@ class KeyPair(object):
 
 class SslPair(KeyPair):
     def __init__(self, CA, CN=None, OU=None, O=None, ST=None, C=None, *args, **kwargs):
-        super(self,SslPair).__init__(self, *args, **kwargs)
+        super(SslPair, self).__init__(*args, **kwargs)
         self._certificate = OpenSSL.crypto.X509()
-        self._certificate.set_pubkey(self.private)
+        self._certificate.set_pubkey(self._private_key)
         if CN is not None:
             self._certificate.get_subject().CN = CN
         if OU is not None:
@@ -58,7 +58,7 @@ class SslPair(KeyPair):
 
 class CertificateAuthority(SslPair):
     def __init__(self, *args, **kwargs):
-        super(self,CertificateAuthority).__init__(self, *args, **kwargs)
+        super(CertificateAuthority, self).__init__(self, *args, **kwargs)
 
     def certificate_hook(self):
         self._certificate.set_version(0x2) # version 3
