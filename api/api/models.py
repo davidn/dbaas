@@ -172,7 +172,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         recipient = [settings.OVERRIDE_USER_EMAIL] if getattr(settings, 'OVERRIDE_USER_EMAIL', False) else [self.email]
 
-        bcc_recipient = [settings.INTERNAL_BCC_EMAIL] if getattr(settings, 'INTERNAL_BCC_EMAIL', False) else None
+        bcc_recipient = settings.INTERNAL_BCC_EMAIL if getattr(settings, 'INTERNAL_BCC_EMAIL', False) else None
 
         if not from_email:
             from_email = settings.DEFAULT_FROM_EMAIL

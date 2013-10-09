@@ -244,9 +244,10 @@ except:
 
 
 # INTERNAL_BCC_EMAIL
-# Set to an email address to BCC with every user email. e.g.
+# Set to an array of email addresses to BCC with every user email. e.g.
 #
-# INTERNAL_BCC_EMAIL = "newcustomer@geniedb.com"
+# INTERNAL_BCC_EMAIL = ["newcustomer@geniedb.com","emailtosalesforce@2-51p5fxi5n5nqdb3248ig5hpt.ejjemma4.e.le.salesforce.com"]
 #
 # If missing no BCC is sent
+
 
