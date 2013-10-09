@@ -38,5 +38,11 @@ angular.module('GenieDBaaS', ['GenieDBaaS.config', 'Utility.directives', 'GenieD
 
         $.fn.sparkline.defaults.common.lineColor = '#8e8e8e';
         $.fn.sparkline.defaults.common.fillColor = undefined;
-    });
+    })
+    .config([
+        '$compileProvider',
+        function ($compileProvider) {
+            $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|blob|data):/);
+        }
+    ]);
 
