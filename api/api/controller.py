@@ -29,3 +29,9 @@ def pause_node(node):
 def resume_node(node):
     node.resume()
     complete_resume_node.delay(node)
+
+def add_database(cluster, dbname):
+    cluster.dbname += ','+dbname
+    for node in cluster.nodes.filter(status=Node.RUNNING):
+        node.add_database(dbname)
+    cluster.save()

@@ -118,3 +118,6 @@ class AdminPasswordChangeForm(forms.Form):
         if commit:
             self.user.save()
         return self.user
+
+class AddDatabaseForm(forms.Form):
+    database = forms.CharField(max_length=64)
