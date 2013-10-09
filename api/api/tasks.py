@@ -17,7 +17,7 @@ logger = getLogger(__name__)
 
 
 @task()
-def install(node):
+def install_node(node):
     for i in xrange(10, 0, -1):
         try:
             return node.do_install()
@@ -103,18 +103,6 @@ def complete_resume_node(node):
     while node.resuming():
         sleep(15)
     node.complete_resume()
-
-def install_cluster(cluster):
-    install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)
-    lbr_regions = cluster.lbr_regions.filter(launched=False)
-    task = launch_cluster.si(cluster) \
-           | wait_nodes.si([node for node in install_nodes]) \
-           | group([install.si(node) for node in install_nodes]) \
-           | group([install_region.si(lbr_region) for lbr_region in lbr_regions]) \
-           | wait_nodes_zabbix.si(cluster) \
-           | launch_email.si(cluster)
-    return task.delay()
-
 
 @task()
 def send_reminder(user, reminder):

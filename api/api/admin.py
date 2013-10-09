@@ -15,6 +15,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
+from api.controller import launch_cluster, pause_node, resume_node
 
 csrf_protect_m = method_decorator(csrf_protect)
 
@@ -26,14 +27,28 @@ class NodeInline(admin.StackedInline):
 class ClusterAdmin(SimpleHistoryAdmin):
     inlines = [NodeInline]
     list_display = ('__unicode__', 'user', 'cluster_size')
+    actions = ('launch',)
 
     def cluster_size(self, cluster):
         return cluster.nodes.count()
 
     cluster_size.short_description = 'Number of Nodes'
 
+    def launch(self, request, queryset):
+        for cluster in queryset:
+            launch_cluster(cluster)
+
 class NodeAdmin(SimpleHistoryAdmin):
     exclude = ('lbr_region',)
+    actions = ('pause', 'resume')
+
+    def pause(self, request, queryset):
+        for node in queryset:
+            pause_node(node)
+
+    def resume(self, request, queryset):
+        for node in queryset:
+            resume_node(node)
 
 class RegionInline(admin.StackedInline):
     model = Region
