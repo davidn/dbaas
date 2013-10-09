@@ -18,6 +18,7 @@ class Migration(DataMigration):
 			cluster.status = 8
 		elif cluster.nodes.filter(status__in=[6, 9, 10, 11]).count() > 0:
 			cluster.status = 6
+                cluster.save()
 
     def backwards(self, orm):
         pass
