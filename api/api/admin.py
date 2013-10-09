@@ -4,7 +4,7 @@ from simple_history.admin import SimpleHistoryAdmin
 from django.contrib import admin
 from django.db import transaction
 from django.conf import settings
-from django.contrib.auth.forms import (UserCreationForm, UserChangeForm, AdminPasswordChangeForm)
+from .forms import UserCreationForm, UserChangeForm, AdminPasswordChangeForm, AddDatabaseForm
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, Http404
@@ -15,23 +15,81 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
+from .controller import launch_cluster, pause_node, resume_node, add_database
 
 csrf_protect_m = method_decorator(csrf_protect)
 
 class NodeInline(admin.StackedInline):
     model = Node
     extra = 0
-
+    exclude = ('lbr_region',)
 
 class ClusterAdmin(SimpleHistoryAdmin):
     inlines = [NodeInline]
     list_display = ('__unicode__', 'user', 'cluster_size')
+    actions = ('launch',)
+
+    def get_urls(self):
+        from django.conf.urls import patterns
+        return patterns('',
+            (r'^(.+)/add_database/$',
+             self.admin_site.admin_view(self.add_database))
+        ) + super(ClusterAdmin, self).get_urls()
+
 
     def cluster_size(self, cluster):
         return cluster.nodes.count()
 
     cluster_size.short_description = 'Number of Nodes'
 
+    def launch(self, request, queryset):
+        for cluster in queryset:
+            launch_cluster(cluster)
+
+    def add_database(self, request, cluster_id, form_url='', extra_context=None):
+        if not self.has_change_permission(request):
+            raise PermissionDenied
+        cluster = get_object_or_404(self.queryset(request), pk=cluster_id)
+        if request.method == 'POST':
+            form = AddDatabaseForm(request.POST)
+            if form.is_valid():
+                add_database(cluster, form.cleaned_data['database'])
+                messages.success(request, 'Databased Added')
+                return HttpResponseRedirect('..')
+        else:
+            form = AddDatabaseForm()
+        fieldsets = [(None, {'fields': list(form.base_fields)})]
+        adminForm = admin.helpers.AdminForm(form, fieldsets, {})
+        context = {
+            'title': _('Add Database: %s') % escape(str(cluster)),
+            'adminform': adminForm,
+            'form_url': form_url,
+            'form': form,
+            'is_popup': '_popup' in request.REQUEST,
+            'add': False,
+            'change': True,
+            'has_delete_permission': False,
+            'has_change_permission': True,
+            'has_add_permission': True,
+            'has_absolute_url': False,
+            'opts': self.model._meta,
+            'original': cluster,
+            'save_as': False,
+            'show_save': True,
+        }
+        return TemplateResponse(request, 'add_database.html', context=context, current_app=self.admin_site.name)
+
+class NodeAdmin(SimpleHistoryAdmin):
+    exclude = ('lbr_region',)
+    actions = ('pause', 'resume')
+
+    def pause(self, request, queryset):
+        for node in queryset:
+            pause_node(node)
+
+    def resume(self, request, queryset):
+        for node in queryset:
+            resume_node(node)
 
 class RegionInline(admin.StackedInline):
     model = Region
@@ -190,6 +248,6 @@ class UserAdmin(admin.ModelAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Cluster, ClusterAdmin)
-admin.site.register(Node, SimpleHistoryAdmin)
+admin.site.register(Node, NodeAdmin)
 admin.site.register(Provider, ProviderAdmin)
 admin.site.register(RegistrationProfile)

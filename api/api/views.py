@@ -22,7 +22,7 @@ from django.core.mail import mail_admins
 from rest_framework import viewsets, mixins, status, permissions
 from .models import Cluster, Node, Region, Provider, Flavor
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
-from .tasks import install, install_cluster, complete_pause_node, complete_resume_node
+from .controller import launch_cluster, pause_node, resume_node, add_database
 from rest_framework.response import Response
 from rest_framework.decorators import action, link, api_view, permission_classes
 from django.http.response import HttpResponse
@@ -183,11 +183,6 @@ class ClusterViewSet(mixins.CreateModelMixin,
             return Response({'non_field_errors': ['Free users cannot create this flavor node']}, status=status.HTTP_403_FORBIDDEN)
 
         if serializer.is_valid():
-            if isinstance(serializer.object, list):
-                for obj in serializer.object:
-                    obj.lbr_region = self.object.get_lbr_region_set(obj.region)
-            else:
-                serializer.object.lbr_region = self.object.get_lbr_region_set(serializer.object.region)
             serializer.save(force_insert=True)
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED,
@@ -197,10 +192,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
     @action()
     def add_database(self, request, *args, **kwargs):
         self.object = self.get_object()
-        self.object.dbname += ','+request.DATA['dbname']
-        for node in self.object.nodes.filter(status=Node.RUNNING):
-            node.add_database(request.DATA['dbname'])
-
+        add_database(self.object, request.DATA['dbname'])
         serializer = self.get_serializer(self.object)
         serializer.save()
         return Response(status=status.HTTP_200_OK)
@@ -208,11 +200,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
     @action()
     def launch_all(self, request, *args, **kwargs):
         self.object = self.get_object()
-        for node in self.object.nodes.all():
-            if node.status == Node.INITIAL:
-                node.do_launch()
-
-        install_cluster(self.object)
+        launch_cluster(self.object)
         serializer = self.get_serializer(self.object)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
@@ -340,8 +328,7 @@ class NodeViewSet(mixins.ListModelMixin,
     @action()
     def pause(self, request, *args, **kwargs):
         self.object = self.get_object()
-        self.object.pause()
-        complete_pause_node.delay(self.object)
+        pause_node(self.object)
         serializer = self.get_serializer(self.object)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
@@ -349,8 +336,7 @@ class NodeViewSet(mixins.ListModelMixin,
     @action()
     def resume(self, request, *args, **kwargs):
         self.object = self.get_object()
-        self.object.resume()
-        complete_resume_node.delay(self.object)
+        resume_node(self.object)
         serializer = self.get_serializer(self.object)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)

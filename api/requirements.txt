@@ -5,7 +5,6 @@ python-novaclient
 south
 djangorestframework>=2.3.6
 django-cors-headers
-hg+https://bitbucket.org/bkroeze/django-livesettings
 django-keyedcache
 pyzabbix
 MySQL-python

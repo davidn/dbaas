@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from django import forms
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from .models import User
 
 class UserCreationForm(forms.ModelForm):
@@ -117,3 +118,6 @@ class AdminPasswordChangeForm(forms.Form):
         if commit:
             self.user.save()
         return self.user
+
+class AddDatabaseForm(forms.Form):
+    database = forms.CharField(max_length=64)

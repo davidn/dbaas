@@ -131,12 +131,15 @@ class CronField(serializers.CharField):
             return "0 */%d * * *" % h
 
 class ClusterSerializer(serializers.HyperlinkedModelSerializer):
+    status = StatusField(choices=Cluster.STATUSES, read_only=True)
+    status_code = serializers.ChoiceField(choices=Cluster.STATUSES, source='status', read_only=True)
+    id = serializers.CharField(source='pk', read_only=True)
     nodes = NodeSerializer(many=True, read_only=True)
     dns_name = serializers.CharField(read_only=True)
     backup_schedule = CronField()
     class Meta:
         model = Cluster
-        fields = ('url','label','user','dbname','dbusername','dbpassword','dns_name','port','nodes', 'backup_count', 'backup_schedule', 'ca_cert', 'client_cert', 'client_key')
+        fields = ('url', 'id', 'label','user','dbname','dbusername','dbpassword','dns_name','port','nodes', 'backup_count', 'backup_schedule', 'ca_cert', 'client_cert', 'client_key')
         read_only_fields = ('ca_cert', 'client_cert', 'client_key')
 
 class DateUtilField(serializers.DateTimeField):
