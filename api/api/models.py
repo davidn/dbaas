@@ -16,16 +16,9 @@ from time import sleep
 import re
 from hashlib import sha1
 from itertools import islice
-import base64
-import textwrap
-import datetime
 from logging import getLogger
 
 import MySQLdb
-
-from Crypto import Random
-from Crypto.PublicKey import RSA
-import OpenSSL
 from django.db import models
 from django.dispatch.dispatcher import receiver
 from django.conf import settings
@@ -34,6 +27,7 @@ from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthC
 from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
 from .cloud import EC2, Rackspace, ProfitBrick, Cloud
+from .crypto import KeyPair, SslPair, CertificateAuthority
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -96,11 +90,6 @@ def split_every(n, iterable):
     while piece:
         yield piece
         piece = list(islice(i, n))
-
-
-def asn1_to_pem(s):
-    return "-----BEGIN RSA PRIVATE KEY-----\n{0}\n-----END RSA PRIVATE KEY-----\n".format(textwrap.fill(base64.standard_b64encode(s), 64))
-
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -240,56 +229,14 @@ class Cluster(models.Model):
         # idempotence
         if len(self.ca_cert) != 0:
             return
-        ca_pk = OpenSSL.crypto.PKey()
-        ca_pk.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
-        client_pk = OpenSSL.crypto.PKey()
-        client_pk.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
-        server_pk = OpenSSL.crypto.PKey()
-        server_pk.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
-        ca_cert = OpenSSL.crypto.X509()
-        ca_cert.set_version(0x2) # version 3
-        ca_cert.set_pubkey(ca_pk)
-        ca_cert.get_subject().C = 'US'
-        ca_cert.get_subject().ST = 'CA'
-        ca_cert.get_subject().CN = 'GenieDB Inc.'
-        ca_cert.set_issuer(ca_cert.get_subject())
-        ca_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
-        ca_cert.set_notAfter((datetime.datetime.utcnow() + datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
-        ca_cert.set_serial_number(1)
-        ca_cert.add_extensions([
-            OpenSSL.crypto.X509Extension("basicConstraints", False, "CA:TRUE"),
-            OpenSSL.crypto.X509Extension("keyUsage", False, "keyCertSign"),
-            OpenSSL.crypto.X509Extension("subjectKeyIdentifier", False, "hash", subject=ca_cert)
-        ])
-        ca_cert.add_extensions([
-            OpenSSL.crypto.X509Extension("authorityKeyIdentifier", False, "keyid:always", issuer=ca_cert),
-        ])
-        ca_cert.sign(ca_pk, 'sha1')
-        client_cert = OpenSSL.crypto.X509()
-        client_cert.set_pubkey(client_pk)
-        client_cert.get_subject().CN = str(self)
-        client_cert.set_issuer(ca_cert.get_subject())
-        client_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
-        client_cert.set_notAfter((datetime.datetime.utcnow() + datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
-        client_cert.set_serial_number(2)
-        client_cert.sign(ca_pk, 'sha1')
-        server_cert = OpenSSL.crypto.X509()
-        server_cert.set_pubkey(server_pk)
-        server_cert.get_subject().C = 'US'
-        server_cert.get_subject().ST = 'CA'
-        server_cert.get_subject().O = 'GenieDB Inc.'
-        server_cert.get_subject().CN = self.dns_name
-        server_cert.set_issuer(ca_cert.get_subject())
-        server_cert.set_notBefore(datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ'))
-        server_cert.set_notAfter((datetime.datetime.utcnow() + datetime.timedelta(3650)).strftime('%Y%m%d%H%M%SZ'))
-        server_cert.set_serial_number(3)
-        server_cert.sign(ca_pk, 'sha1')
-
-        self.client_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, client_cert)
-        self.server_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, server_cert)
-        self.client_key = asn1_to_pem(OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_ASN1, client_pk))
-        self.server_key = asn1_to_pem(OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_ASN1, server_pk))
-        self.ca_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, ca_cert)
+        ca = CertificateAuthority(CN='GenieDB Inc',ST='CA', C='US')
+        client = SslPair(ca, CN=self.dns_name, O='GenieDB Inc',ST='CA', C='US')
+        server = SslPair(ca, CN=self.dns_name, O='GenieDB Inc',ST='CA', C='US')
+        self.client_cert = client.certificate
+        self.client_key = client.private_key
+        self.server_cert = server.certificate
+        self.server_key = server.private_key
+        self.ca_cert = ca.certificate
 
     def launch(self):
         """Set up an IAM user and S3 bucket for nodes in this cluster to send backups to."""
@@ -376,7 +323,7 @@ class Cluster(models.Model):
 
 def gen_private_key():
     """Generate a 2048 bit RSA key, exported as ASCII, suitable for use with tinc."""
-    return RSA.generate(2048, Random.new().read).exportKey()
+    return KeyPair().private_key
 
 
 class Provider(models.Model):
@@ -615,7 +562,7 @@ class Node(models.Model):
 
     @property
     def public_key(self):
-        return RSA.importKey(self.tinc_private_key).publickey().exportKey()
+        return KeyPair(self.tinc_private_key).public_key
 
     @property
     def buffer_pool_size(self):
