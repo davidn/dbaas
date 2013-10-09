@@ -54,7 +54,7 @@
 				Welcome {{ user.email }}&nbsp;
 				<i class="icon-user" ng-class="{'paid-user': user.isPaid}"></i> &nbsp;&nbsp;
 				<button class="btn btn-primary btn-sm" ng-click="logout()">LOGOUT</button>
-				<button class="btn btn-success btn-sm"  ng-if="!user.isPaid" ng-click="upgrade()">UPGRADE</button>
+				<button class="btn btn-success btn-sm" ng-if="!user.isPaid" ng-click="upgrade()">UPGRADE</button>
 			</div>
 			<a id="gdbHeader" class="navbar-right" href="http://www.geniedb.com/"><img src="img/GenieDB_Logo.png"/></a>
 		</div>
@@ -79,10 +79,7 @@
 
 	ga('create', 'UA-22758127-3', 'geniedb.com');
 	ga('send', 'pageview');
-</script>
 
-
-<script>
 	// Include the UserVoice JavaScript SDK (only needed once on a page)
 	UserVoice = window.UserVoice || [];
 	(function () {
@@ -104,7 +101,30 @@
 
 	UserVoice.push(['autoprompt', {}]);
 </script>
-
-
+<!-- begin bugsnag code -->
+<!--<script src="//d2wy8f7a9ursnm.cloudfront.net/bugsnag-1.0.9.min.js" data-releaseStage="development" data-apikey="d32f5b8a58dc32f80a606c354b350d7d"></script>-->
+<!-- begin bugsnag code -->
+<!-- begin SnapEngage code -->
+<script type="text/javascript">
+	(function () {
+		var se = document.createElement('script');
+		se.type = 'text/javascript';
+		se.async = true;
+		se.src = '//commondatastorage.googleapis.com/code.snapengage.com/js/c551aca7-c41d-4143-ad88-fada5ec761d4.js';
+		var done = false;
+		se.onload = se.onreadystatechange = function () {
+			if (!done && (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete')) {
+				done = true;
+				SnapEngage.setUserEmail(window.userEmail);
+				SnapEngage.setCallback('Open', function (status) {
+					SnapEngage.setUserEmail(window.userEmail);
+				});
+			}
+		};
+		var s = document.getElementsByTagName('script')[0];
+		s.parentNode.insertBefore(se, s);
+	})();
+</script>
+<!-- end SnapEngage code -->
 </body>
 </html>

@@ -149,7 +149,6 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
     }
     $scope.providers = apiModel.getProviders();
 
-
     $scope.addCluster = function () {
         $location.path("/cluster");
     };

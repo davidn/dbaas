@@ -63,6 +63,7 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
                     plan: user.is_paid ? 'Paid' : 'Free'
                 }
             }]);
+            window.userEmail = user.email;
         }
 
         function setUser(aUser) {
