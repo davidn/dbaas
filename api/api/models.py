@@ -929,6 +929,13 @@ class Backup(models.Model):
                                "GET", self.node.cluster.uuid,
                                '/%s/%s' % (self.node.nid, self.filename))
 
+@receiver(models.signals.pre_save, sender=Node)
+def node_pre_save_callback(sender, instance, raw, using, **kwargs):
+    if sender != Node:
+        return
+    if raw:
+        return
+    instance.lbr_region = instance.cluster.get_lbr_region_set(instance.region)
 
 @receiver(models.signals.pre_delete, sender=Node)
 def node_pre_delete_callback(sender, instance, using, **kwargs):

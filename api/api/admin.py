@@ -21,7 +21,7 @@ csrf_protect_m = method_decorator(csrf_protect)
 class NodeInline(admin.StackedInline):
     model = Node
     extra = 0
-
+    exclude = ('lbr_region',)
 
 class ClusterAdmin(SimpleHistoryAdmin):
     inlines = [NodeInline]
@@ -32,6 +32,8 @@ class ClusterAdmin(SimpleHistoryAdmin):
 
     cluster_size.short_description = 'Number of Nodes'
 
+class NodeAdmin(SimpleHistoryAdmin):
+    exclude = ('lbr_region',)
 
 class RegionInline(admin.StackedInline):
     model = Region
@@ -190,6 +192,6 @@ class UserAdmin(admin.ModelAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Cluster, ClusterAdmin)
-admin.site.register(Node, SimpleHistoryAdmin)
+admin.site.register(Node, NodeAdmin)
 admin.site.register(Provider, ProviderAdmin)
 admin.site.register(RegistrationProfile)

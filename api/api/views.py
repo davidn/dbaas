@@ -183,11 +183,6 @@ class ClusterViewSet(mixins.CreateModelMixin,
             return Response({'non_field_errors': ['Free users cannot create this flavor node']}, status=status.HTTP_403_FORBIDDEN)
 
         if serializer.is_valid():
-            if isinstance(serializer.object, list):
-                for obj in serializer.object:
-                    obj.lbr_region = self.object.get_lbr_region_set(obj.region)
-            else:
-                serializer.object.lbr_region = self.object.get_lbr_region_set(serializer.object.region)
             serializer.save(force_insert=True)
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED,
