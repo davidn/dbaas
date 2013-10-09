@@ -67,7 +67,8 @@
     "pk": 8,
     "fields": {
       "name": "ProfitBricks",
-      "code": "pb"
+      "code": "pb",
+      "enabled": false
     }
   },
   {
