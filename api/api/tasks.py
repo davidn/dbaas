@@ -10,6 +10,8 @@ from django.dispatch.dispatcher import receiver
 from django.db import models
 from django.contrib.auth import get_user_model
 from pyzabbix import ZabbixAPI
+from django.core.mail import mail_admins
+from celery import AsyncResult
 
 logger = getLogger(__name__)
 
@@ -62,36 +64,30 @@ def launch_email(cluster):
         'dbpassword': cluster.dbpassword,
         'regions': ' and '.join(node.region.name for node in nodes)
     }
-
     cluster.user.email_user_template('confirmation_email', ctx_dict)
 
+@task()
+def error_email(task_id):
+    result = AsyncResult(task_id)
+    exc = result.get(propagate=False)
+    mail_admins('Task Failure occured', 'Task: %s\nException: %s\n%s'%(task_id, exc, result.traceback))
 
 @task()
-def wait_nodes_zabbix(cluster):
+def wait_zabbix(cluster):
     nodes = cluster.nodes.all()
 
     z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
     z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
     for node in nodes:
-        hostName = node.dns_name
-        key = "system.cpu.util[]"
-        if node.region.provider.code != 'test':
-            nodeIsReady = False
-            for i in xrange(50):
-                try:
-                    items = z.item.get(host=hostName, filter={"key_": key})
-                except:
-                    logger.warning("Exception thrown trying to validate Zabbix registration for Host %s." % (hostName,))
-                    break
-                if items:
-                    nodeIsReady = True
-                    break
-                logger.info("Trying to validate Zabbix registration for Host %s." % (hostName,))
-                sleep(5)
-            if not nodeIsReady:
-                logger.warning("Unable to confirm that Host %s is executing before sending email notification." % (hostName,))
-
-
+        if node.region.provider.code == 'test':
+            continue
+        for _ in xrange(50):
+            if z.item.get(host=node.dns_name, filter={"key_": "system.cpu.util[]"}):
+                break
+            logger.info("Retrying Zabbix registration for Host %s." % (node.dns_name,))
+            sleep(5)
+        else:
+            raise AssertionError("Unable to confirm that Host %s is executing before sending email notification." % (node.dns_name,))
 
 @task()
 def launch_cluster(cluster):

@@ -2,6 +2,7 @@ from logging import getLogger
 from time import sleep
 from django.conf import settings
 from django.contrib.sites.models import Site
+from .utils import retry
 
 try:
     import pb.client
@@ -87,7 +88,7 @@ class EC2(Cloud):
                 to_port=node.cluster.port)
             return True
 
-        _retryEC2(ec2_authorize_security_group)
+        retry(ec2_authorize_security_group)
         logger.debug("%s: Created Security Group %s (named %s) with port %s open", node, sg.id, sg.name, node.cluster.port)
         node.save()
         return sg
@@ -124,18 +125,18 @@ class EC2(Cloud):
                     node.get_absolute_url()) + '/cloud_config/\n',
             )
 
-        res = _retryEC2(ec2_run_instances)
-        if not res:
+        try:
+            res = retry(ec2_run_instances)
+        except:
             logger.error("run_instances failed, deleting security group. Node: %s", node)
-
             def ec2_delete_security():
                 return self.ec2.delete_security_group(group_id=node.security_group)
-
-            res = _retryEC2(ec2_delete_security)
-            if not res:
+            try:
+                res = retry(ec2_delete_security)
+            except:
                 logger.error("delete_security_group failed, Node:%s", node)
                 #TODO Better manage failures
-            raise Exception("ec2_run_instances failed")
+            raise
 
         node.instance_id = res.instances[0].id
         logger.debug("%s: Reservation %s launched. Instance id %s", node, res.id, node.instance_id)
@@ -176,25 +177,6 @@ class EC2(Cloud):
 
     def resume(self, node):
         self.ec2.start_instances([node.instance_id])
-
-
-def _retryEC2(func, initialDelay=50, maxRetries=12):
-    delay = initialDelay
-    for retry in range(maxRetries):
-        try:
-            result = func()
-            if result:
-                break
-            sleep(delay / 1000.0)
-        except:
-            #Logging for this can be captured from Boto
-            pass
-        delay *= 2
-    else:
-        logger.error("Giving up on EC2 after %d attempts", maxRetries)
-
-    return result
-
 
 class Openstack(Cloud):
     @property
@@ -292,11 +274,7 @@ class ProfitBrick(Cloud):
         # Create the Data Center
         logger.debug("Creating the DataCenter - %s, %s" % (self.region.name, str(self.region.code)))
         dcId = self.pb.createDataCenter(str(node), self.region.code).dataCenterId
-        res = _PBwait4avail(dcId, self.pb.getDataCenter)
-        if not res:
-            logger.error("createDataCenter failed, Node:%s", node)
-            #TODO Better manage failures
-            raise Exception("pb_run_instances failed")
+        retry(lambda: provisioningStateAvailable(self.pb.getDataCenter(dcId)))
 
         # Create the Server
         logger.debug("Creating the Server - name=%s, cores=%d, ram=%d, dcId=%s" % (str(node), node.flavor.cpus, node.flavor.ram, str(dcId)))
@@ -311,11 +289,7 @@ class ProfitBrick(Cloud):
             #    '/var/lib/cloud/seed/nocloud-net/meta-data': 'instance-id: iid-local01',
             'internetAccess': True}
         svrId = self.pb.createServer(createServerRequest).serverId
-        res = _PBwait4avail(svrId, self.pb.getServer, initialDelay=250, maxRetries=12)
-        if not res:
-            logger.error("createServer failed, Node:%s", node)
-            #TODO Better manage failures
-            raise Exception("pb_run_instances failed")
+        retry(lambda: provisioningStateAvailable(self.pb.getServer(srvId)), initialDelay=250)
 
         # Create the Storage
         logger.debug("Creating the Storage - size=%d" % (node.storage))
@@ -325,12 +299,7 @@ class ProfitBrick(Cloud):
             'storageName': str(node)}
         #            'mountImageId': }
         stgId = self.pb.createStorage(createStorageRequest).storageId
-        res = _PBwait4avail(stgId, self.pb.getStorage)
-        if not res:
-            logger.error("createStorage failed, Node:%s", node)
-            #TODO Better manage failures
-            raise Exception("pb_run_instances failed")
-
+        retry(lambda: provisioningStateAvailable(self.pb.getStorage(stgId)))
 
         # Connect the Server to the Storage
         self.pb.connectStorageToServer({"storageId": stgId, "serverId": svrId})
@@ -398,24 +367,6 @@ class ProfitBrick(Cloud):
             #def resume(self, node):
             #    self.pb.startServer(node.instance_id)
 
-
-def _PBwait4avail(objid, getfunc, objField='provisioningState', targetValues=['AVAILABLE'], initialDelay=50, maxRetries=12):
-    result = None
-    delay = initialDelay
-    for retry in range(maxRetries):
-        try:
-            obj = getfunc(objid)
-            state = getattr(obj, objField)
-            if state in targetValues:
-                result = obj
-                break
-            sleep(delay / 1000.0)
-        except:
-            #Logging for this can be captured from the obj data
-            pass
-        delay *= 2
-    else:
-        logger.error("Giving up on PB after %d attempts", maxRetries)
-    return result
-
-
+def provisioningStateAvailable(obj):
+    if obj.provisioningState=='AVAILABLE':
+        return object

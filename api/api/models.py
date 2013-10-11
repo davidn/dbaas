@@ -12,7 +12,6 @@ partition the Nodes in a cluster. See `the wiki`_ for more info.
 
 """
 
-from time import sleep
 import re
 from hashlib import sha1
 from itertools import islice
@@ -28,6 +27,7 @@ from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
 from .cloud import EC2, Rackspace, ProfitBrick, Cloud
 from .crypto import KeyPair, SslPair, CertificateAuthority
+from .utils import retry
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -274,8 +274,7 @@ class Cluster(models.Model):
         if bucket is None:
             bucket = s3.create_bucket(self.uuid)
             # S3 takes a while to treat new ARN as valid
-        for i in xrange(15):
-            try:
+        def attempt_bucket_policy():
                 bucket.set_policy("""{
                   "Version": "2008-10-17",
                   "Id": "S3PolicyId1",
@@ -289,14 +288,7 @@ class Cluster(models.Model):
                       "Action": "s3:*",
                       "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
                 }]}""" % {'iam': self.iam_arn, 'bucket': self.uuid})
-                break
-            except S3ResponseError as e:
-                if i < 15:
-                    logger.info("Retrying S3 permission grant.  Err='%s'" % (e.message))
-                    sleep(2)
-                else:
-                    logger.info("Retry limit exceeded, error='%s'" % (e.message))
-                    raise
+        retry(attempt_bucket_policy)
 
     def terminate(self):
         """Clean up the S3 bucket and IAM user associated with this cluster."""
@@ -447,9 +439,11 @@ class LBRRegionNodeSet(models.Model):
         logger.debug("%s: setting up dns for lbr region %s, cluster %s", self, self.lbr_region, self.cluster.pk)
         if self.lbr_region != 'test':
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-            rrs.add_change_record('CREATE', self.record)
-            rrs.commit()
+            def try_add_dns():
+                rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+                rrs.add_change_record('CREATE', self.record)
+                rrs.commit()
+            retry(try_add_dns)
         self.launched = True
         self.save()
 
@@ -467,16 +461,18 @@ class LBRRegionNodeSet(models.Model):
         logger.debug("%s: terminating dns for lbr region %s, cluster %s", self, self.lbr_region, self.cluster.pk)
         if self.lbr_region != 'test':
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-            rrs.add_change_record('DELETE', self.record)
-            try:
-                rrs.commit()
-            except exception.DNSServerError, e:
-                if re.search('but it was not found', e.body) is None:
-                    raise
-                else:
-                    logger.warning("%s: terminating dns for lbr region %s, cluster %s skipped as record not found", self, self.lbr_region,
+            def try_remove_dns():
+                rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+                rrs.add_change_record('DELETE', self.record)
+                try:
+                    rrs.commit()
+                except exception.DNSServerError, e:
+                    if re.search('but it was not found', e.body) is None:
+                        raise
+                    else:
+                        logger.warning("%s: terminating dns for lbr region %s, cluster %s skipped as record not found", self, self.lbr_region,
                                    self.cluster.pk)
+            retry(try_remove_dns)
 
 
 class Node(models.Model):
@@ -831,34 +827,39 @@ runcmd:
     def setup_dns(self):
         if self.region.provider.code != 'test':
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-            health_check = HealthCheck(connection=r53, caller_reference=self.health_check_reference,
-                                       ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
-            self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
-            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-            rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-                                                                  type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
-                                                                  weight=1))
-            rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
-                                                          resource_records=[self.ip]))
-            rrs.commit()
+            def try_setup_health_check():
+                health_check = HealthCheck(connection=r53, caller_reference=self.health_check_reference,
+                                           ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
+                self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
+            retry(try_setup_health_check)
+            def try_setup_dns():
+                rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+                rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
+                                                                      type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
+                                                                      weight=1))
+                rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
+                                                              resource_records=[self.ip]))
+                rrs.commit()
+            retry(try_setup_dns)
 
     def remove_dns(self):
         if self.region.provider.code != 'test':
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-            rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-                                                                  type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
-                                                                  weight=1))
-            rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
-                                                          resource_records=[self.ip]))
-            rrs.commit()
-            r53.delete_health_check(self.health_check)
+            def try_remove_dns():
+                rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+                rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
+                                                                      type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
+                                                                      weight=1))
+                rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
+                                                              resource_records=[self.ip]))
+                rrs.commit()
+        retry(try_remove_dns)
+        retry(lambda: r53.delete_health_check(self.health_check))
 
     def do_install(self):
         """Do slower parts of launching this node."""
         assert (self.status != Node.OVER)
-        while self.pending():
-            sleep(15)
+        retry(lambda: assert(not self.pending()))
         self.update({
             'Name': 'dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),
             'username': self.cluster.user.email,

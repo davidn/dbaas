@@ -4,7 +4,7 @@ Created on 9 Oct 2013
 @author: david
 '''
 
-from celery import group
+from celery import group, chain
 from .models import Node
 from . import tasks
 
@@ -14,14 +14,18 @@ def launch_cluster(cluster):
             node.do_launch()
     install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)
     lbr_regions = cluster.lbr_regions.filter(launched=False)
-    task = tasks.launch_cluster.si(cluster) \
-           | tasks.wait_nodes.si([node for node in install_nodes]) \
-           | group([tasks.install_node.si(node) for node in install_nodes]) \
-           | group([tasks.install_region.si(lbr_region) for lbr_region in lbr_regions]) \
-           | tasks.wait_nodes_zabbix.si(cluster) \
-           | tasks.launch_email.si(cluster) \
-           | tasks.cluster_ready.si(cluster)
-    return task.delay()
+    task_list = (
+        tasks.launch_cluster.si(cluster),
+        tasks.wait_nodes.si([node for node in install_nodes]),
+        group([tasks.install_node.si(node) for node in install_nodes]),
+        group([tasks.install_region.si(lbr_region) for lbr_region in lbr_regions]),
+        tasks.wait_zabbix.si(cluster),
+        tasks.launch_email.si(cluster),
+        tasks.cluster_ready.si(cluster),
+    )
+    for task in task_list:
+        task.link_error(tasks.error_email)
+    return chain(*task_list).delay()
 
 def pause_node(node):
     node.pause()

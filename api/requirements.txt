@@ -12,4 +12,5 @@ django-registration
 python-dateutil
 suds
 pyopenssl
+pycrypto
 git+https://github.com/treyhunner/django-simple-history
