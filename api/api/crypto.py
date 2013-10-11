@@ -1,14 +1,14 @@
 import datetime
 import OpenSSL
 from Crypto.PublicKey import RSA
-from Crypto import Random
 
 class KeyPair(object):
     def __init__(self, key=None):
         if key is None:
-            self._private_key = RSA.generate(2048, Random.new().read)
-        else:
-            self._private_key = RSA.importKey(key)
+            k = OpenSSL.crypto.PKey()
+            k.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
+            key = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, k)
+        self._private_key = RSA.importKey(key)
 
     @property
     def private_key(self):
