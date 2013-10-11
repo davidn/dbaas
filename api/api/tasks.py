@@ -11,7 +11,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from pyzabbix import ZabbixAPI
 from django.core.mail import mail_admins
-from celery import AsyncResult
+from celery.result import AsyncResult
 
 logger = getLogger(__name__)
 
