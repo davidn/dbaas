@@ -7,6 +7,33 @@ Replace this with more appropriate tests for your application.
 
 from django.test import TestCase
 
+from .models import User, Node, Cluster, Region, Flavor
+class ClusterTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(email='test@example.com')
+
+    def test_create(self):
+        """
+        Tests cluster creation.
+        """
+        cluster = Cluster.objects.create(user=self.user)
+
+class NodeTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(email='test@example.com')
+        self.cluster = Cluster.objects.create(user=self.user)
+
+    def test_create(self):
+        """
+        Tests node creation.
+        """
+        node = Node.objects.create(
+            cluster=self.cluster,
+            storage=10,
+            region=Region.objects.get(code='test-1'),
+            flavor=Flavor.objects.get(code='test-small')
+        )
+
 from api.crypto import KeyPair
 from Crypto.PublicKey.RSA import importKey, generate
 from Crypto import Random
