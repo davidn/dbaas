@@ -65,3 +65,19 @@ class KeyPairTest(TestCase):
         self.assertTrue(kp.public_key.strip().endswith('-----END PUBLIC KEY-----'))
         pub8 = importKey(kp.public_key)
         self.assertFalse(pub8.has_private())
+
+from api.crypto import CertificateAuthority
+from OpenSSL.crypto import load_certificate, FILETYPE_PEM, X509Extension
+from hashlib import sha1
+class CertificateAuthorityTest(TestCase):
+    def test_X509(self):
+        cert = load_certificate(FILETYPE_PEM, CertificateAuthority().certificate)
+        self.assertEqual(cert.get_version(), 0x2)
+        self.assertEqual(cert.get_issuer(), cert.get_subject())
+        self.assertFalse(cert.has_expired())
+        extensions = dict((cert.get_extension(i).get_short_name(), cert.get_extension(i).get_data()) for i in range(cert.get_extension_count()))
+        self.assertEqual(len(extensions), cert.get_extension_count(), 'An X509v3 extension appeared twice.')
+        self.assertEqual(extensions["basicConstraints"], X509Extension("basicConstraints", False, "CA:TRUE").get_data())
+        self.assertEqual(extensions["keyUsage"], X509Extension("keyUsage", False, "keyCertSign").get_data())
+        self.assertEqual(extensions["subjectKeyIdentifier"], X509Extension("subjectKeyIdentifier", False, 'hash', subject=cert).get_data())
+        self.assertEqual(extensions["authorityKeyIdentifier"], X509Extension("authorityKeyIdentifier", False, "keyid:always", issuer=cert).get_data())
