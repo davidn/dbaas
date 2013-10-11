@@ -333,7 +333,7 @@
       "provider": 7,
       "code": "gce",
       "name": "Unspecified Google Compute Engine",
-      "image": "xxx",
+      "image": "dbaas-image.img",
       "lbr_region": "test",
       "key_name": "dbaas",
       "security_group": "",
@@ -348,7 +348,7 @@
       "provider": 8,
       "code": "NORTH_AMERICA",
       "name": "Las Vegas, NV, USA",
-	  "image": "image_id1",
+      "image": "dbaas-image.img",
 	  "lbr_region": "us-west-1",
       "key_name": "dbaas",
       "security_group": "",
@@ -364,6 +364,82 @@
       "code": "EUROPE",
       "name": "Germany",
 	  "image": "image_id2",
+	  "lbr_region": "eu-west-1",
+      "key_name": "dbaas",
+      "security_group": "",
+      "latitude": 0,
+      "longitude": 0
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 21,
+    "fields": {
+      "provider": 7,
+      "code": "USA1a",
+      "name": "us-central1-a",
+	  "image": "debian-cloud/global/images/debian-7-wheezy-v20130816",
+	  "lbr_region": "us-west-1",
+      "key_name": "dbaas",
+      "security_group": "",
+      "latitude": 0,
+      "longitude": 0
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 22,
+    "fields": {
+      "provider": 7,
+      "code": "USA1b",
+      "name": "us-central1-b",
+	  "image": "debian-cloud/global/images/debian-7-wheezy-v20130816",
+	  "lbr_region": "us-west-1",
+      "key_name": "dbaas",
+      "security_group": "",
+      "latitude": 0,
+      "longitude": 0
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 23,
+    "fields": {
+      "provider": 7,
+      "code": "USA2a",
+      "name": "us-central2-a",
+      "name": "USA3",
+	  "image": "debian-cloud/global/images/debian-7-wheezy-v20130816",
+	  "lbr_region": "us-west-1",
+      "key_name": "dbaas",
+      "security_group": "",
+      "latitude": 0,
+      "longitude": 0
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 24,
+    "fields": {
+      "provider": 7,
+      "code": "EUR1a",
+      "name": "europe-west1-a",
+	  "image": "debian-cloud/global/images/debian-7-wheezy-v20130816",
+	  "lbr_region": "eu-west-1",
+      "key_name": "dbaas",
+      "security_group": "",
+      "latitude": 0,
+      "longitude": 0
+    }
+  },
+  {
+    "model": "api.region",
+    "pk": 25,
+    "fields": {
+      "provider": 7,
+      "code": "EUR1b",
+      "name": "europe-west1-b",
+	  "image": "debian-cloud/global/images/debian-7-wheezy-v20130816",
 	  "lbr_region": "eu-west-1",
       "key_name": "dbaas",
       "security_group": "",
@@ -747,6 +823,39 @@
       "code": "pb.small",
       "name": "pb.small",
       "ram": 256,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 33,
+    "fields": {
+      "provider": 7,
+      "code": "gce.micro",
+      "name": "f1-micro",
+      "ram": 600,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 34,
+    "fields": {
+      "provider": 7,
+      "code": "gce.small",
+      "name": "g1-small",
+      "ram": 1700,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 35,
+    "fields": {
+      "provider": 7,
+      "code": "gce.std1d",
+      "name": "n1-standard-1-d",
+      "ram": 3750,
       "cpus": 1
     }
   }
