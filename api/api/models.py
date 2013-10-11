@@ -851,7 +851,13 @@ runcmd:
                                                                       weight=1))
                 rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
                                                               resource_records=[self.ip]))
-                rrs.commit()
+                try:
+                    rrs.commit()
+                except exception.DNSServerError, e:
+                    if re.search('but it was not found', e.body) is None:
+                        raise
+                    else:
+                        logger.warning("%s: terminating dns skipped as record not found", self)
         retry(try_remove_dns)
         retry(lambda: r53.delete_health_check(self.health_check))
 
