@@ -91,4 +91,6 @@ config/*.conf
 
 
 ui/WebContent/bower_components
-
+# UI build automation
+ui/node_modules
+ui/bower_components

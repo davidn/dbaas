@@ -77,7 +77,7 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         }
 
         function checkIdentity() {
-            Identity.get({}, function (data) {
+            return Identity.get({}, function (data) {
                 setUser(data);
             });
         }
@@ -107,14 +107,20 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
                     checkIdentity();
                 });
             },
-            identify: function () {
-                if (!identityConfirmed) {
-                    checkIdentity();
+            identify: function (forceCheck) {
+                forceCheck = typeof forceCheck !== 'undefined' ? forceCheck : false;
+
+                if (!identityConfirmed || forceCheck) {
+                    return checkIdentity();
                 }
+                return null;
             },
             logout: function () {
                 clearToken();
                 $location.path("/");
+            },
+            setToken: function (token) {
+                setToken(token);
             }
         };
     }])

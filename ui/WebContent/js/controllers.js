@@ -3,7 +3,7 @@
 
 function MainCntl($scope, User, dbaasConfig) {
     // Inject User to force initialization of Token
-    $scope.showInfo = function(event){
+    $scope.showInfo = function (event) {
         console.log(dbaasConfig);
     }
 }
@@ -111,6 +111,16 @@ function ActivationCntl($scope, $location, $routeParams, User, growl) {
             growl.error({body: 'Unable to activate account'});
         });
     }
+}
+
+function ImpersonateCntl($location, $routeParams, User, growl) {
+    User.setToken($routeParams.token);
+    User.identify(true).$then(function (success) {
+        $location.path("/list");
+    }, function (failure) {
+        console.log('Impersonation Failed');
+    });
+
 }
 
 function ThanksCntl() {
