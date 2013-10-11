@@ -830,9 +830,31 @@
     "pk": 33,
     "fields": {
       "provider": 7,
+      "code": "gce.micro",
+      "name": "f1-micro",
+      "ram": 600,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 34,
+    "fields": {
+      "provider": 7,
+      "code": "gce.small",
+      "name": "g1-small",
+      "ram": 1700,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 35,
+    "fields": {
+      "provider": 7,
       "code": "gce.std1d",
       "name": "n1-standard-1-d",
-      "ram": 3840,
+      "ram": 3750,
       "cpus": 1
     }
   }

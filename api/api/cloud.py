@@ -214,7 +214,7 @@ class GoogleComputeEngine(Cloud):
             http = httplib2.Http()
             auth_http = credentials.authorize(http)
             # Construct the service object for the interacting with the Compute Engine API.
-            gce_service = discovery.build('compute', 'v1beta15', http=auth_http)
+            gce_service = discovery.build('compute', 'v1beta16', http=auth_http)
             self._gce_params = {
                 'credentials':credentials,
                 'auth_http':auth_http,
@@ -224,7 +224,9 @@ class GoogleComputeEngine(Cloud):
                 'name':'',
                 'nid':None,
                 'machineType':'',
+                'kernel':'google/global/kernels/gce-v20130813',
                 'imageType':'',
+                'imageName':'',
                 'ip':'' }
         return self._gce_params
 
@@ -242,14 +244,7 @@ class GoogleComputeEngine(Cloud):
             return self.gce['name']
         return None
 
-    def getInstanceObjects(self, matchNames=None):
-        # Fetch the instance
-        request = self.gce['service'].instances().list(project=self.gce['project'], zone=self.gce['zone'])
-        response = request.execute()
-        try:
-            items = response['items']
-        except:
-            items = []
+    def filterNames(self, items, matchNames=None):
         if matchNames is not None:
             allItems = items
             items = []
@@ -260,36 +255,79 @@ class GoogleComputeEngine(Cloud):
                     items.append(item)
         return items
 
+    def getInstanceObjects(self, matchNames=None):
+        # Fetch the instance
+        request = self.gce['service'].instances().list(project=self.gce['project'], zone=self.gce['zone'])
+        response = request.execute()
+        try:
+            items = response['items']
+        except:
+            items = []
+        return self.filterNames(items, matchNames)
+
+    def getDiskObjects(self, matchNames=None):
+        # Fetch the instance
+        request = self.gce['service'].disks().list(project=self.gce['project'], zone=self.gce['zone'])
+        response = request.execute()
+        try:
+            items = response['items']
+        except:
+            items = []
+        return self.filterNames(items, matchNames)
+
     def launch(self, node):
         self.gce['zone'] = self.region.name
         self.gce['name'] = make_gce_valid_name('dbaas-cluster-{c}-node-{n}'.format(c=node.cluster.pk, n=node.nid))
         self.gce['nid'] = node.nid
         self.gce['machineType'] = node.flavor.name
-        self.gce['imageType'] = 'debian-cloud/global/images/debian-7-wheezy-v20130816'
+        self.gce['imageName'] = 'dbaas-test'
         logger.debug("%(name)s: Assigned NID %(nid)s" % self.gce)
+
+        #
+        # Create a persistent Disk for the Instance to mount
+        #
+        body = {
+          "name": self.gce['name'],
+          "sizeGb": node.storage,
+          "description": "boot disk",
+          "sourceImage": 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/images/%(imageName)s' % self.gce,
+        }
+        request = self.gce['service'].disks().insert(project=self.gce['project'], body=body, zone=self.gce['zone'])
+        response = request.execute(self.gce['auth_http'])
+
+        sleep(2)
+        for i in xrange(GoogleComputeEngine.MAX_DELAY_RETRIES):
+            disks = self.getDiskObjects(self.gce['name'])
+            if disks:
+                break
+            sleep(GoogleComputeEngine.RETRY_DELAY)
 
         #
         # Create the Instance
         #
         # Construct the request body
-        body = {
-          'name': self.gce['name'],
-          'machineType': "https://www.googleapis.com/compute/v1beta15/projects/%(project)s/zones/%(zone)s/machineTypes/%(machineType)s" % self.gce,
-          'image': 'https://www.googleapis.com/compute/v1beta15/projects/%(imageType)s' % self.gce,
-          'networkInterfaces': [{
+        disk_body = [
+          {'source': "https://www.googleapis.com/compute/v1beta16/projects/%(project)s/zones/%(zone)s/disks/%(name)s" % self.gce,
+           'boot': True,
+           'type': 'PERSISTENT',
+           'mode': 'READ_WRITE',
+           'deviceName': "bootdisk",
+          }]
+        netIfc_body = [{
             'accessConfigs': [{
               'type': 'ONE_TO_ONE_NAT',
               'name': 'External NAT'
              }],
-            'network': 'https://www.googleapis.com/compute/v1beta15/projects/%(project)s/global/networks/default' % self.gce,
-          }],
-          'disk': [{
-             'source': 'https://www.googleapis.com/compute/v1beta15/projects/%(project)s/zones/%(zone)s/disks/%(name)s' % self.gce,
-             'boot': True,
-             'type': 'PERSISTENT',
-             'mode': 'READ_WRITE',
-             'deviceName': self.gce['name'],
-           }],
+            'network': 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/networks/default' % self.gce,
+          }]
+        body = {
+          'name': self.gce['name'],
+          'kernel': 'https://www.googleapis.com/compute/v1beta16/projects/%(kernel)s' % self.gce,
+          'machineType': "https://www.googleapis.com/compute/v1beta16/projects/%(project)s/zones/%(zone)s/machineTypes/%(machineType)s" % self.gce,
+          'networkInterfaces': netIfc_body,
+          'disks': disk_body,
+          'description': '%(name)s instance' % self.gce,
+          'metadata': {'items': [], 'kind': 'compute#metadata'}
         }
 
         # Create the instance
@@ -323,6 +361,21 @@ class GoogleComputeEngine(Cloud):
     def update(self, node, tags=None):
         self.gce['name'] = node.instance_id
         self.gce['zone'] = node.security_group
+
+        updateProperties = []   # Put in the list of supported metadata properties when they are known.
+        body = {"items": []}
+        if tags is None:
+            tags = {}
+        for k in tags.keys():
+            if k not in updateProperties:
+                del tags[k]
+        if tags:
+            body['items'].append( {"name": node.instance_id} )  # Is this the right property name?
+            for k, v in tags.items():
+                body['items'].append( {k: v} )
+            request = self.gce['service'].instances().setMetadata(project=self.gce['project'], zone=self.gce['zone'], instance=self.gce['name'], body=body)
+            response = request.execute(self.gce['auth_http'])
+
         items = self.getInstanceObjects(self.gce['name'])
         if items:
             try:
@@ -330,21 +383,6 @@ class GoogleComputeEngine(Cloud):
             except:
                 pass
         node.ip = self.gce['ip']
-        node.save()
-        return  # I don't know how to update any property settings yet...
-
-        updateProperties = ['serverName', 'cores', 'ram', 'bootFromImageId', 'availabilityZone', 'bootFromStorageId', 'osType']
-        if tags is None:
-            tags = {}
-        for k in tags.keys():
-            if k not in updateProperties:
-                del tags[k]
-        if tags:
-            tags['serverId'] = node.instance_id
-            logger.debug("PB.update: tags=%s" % (str(tags)))
-            self.pb.updateServer(tags)
-        s = self.pb.getServer(node.instance_id)
-        node.ip = s.ips[0]
         node.save()
 
     def terminate(self, node):
@@ -355,15 +393,25 @@ class GoogleComputeEngine(Cloud):
             if node.status != node.SHUTTING_DOWN:
                 node.status = node.SHUTTING_DOWN
                 node.save()
+            #
             # Delete the instance
+            #
             request = self.gce['service'].instances().delete(project=self.gce['project'], zone=self.gce['zone'], instance=self.gce['name'])
             response = request.execute(self.gce['auth_http'])
-            node.instance_id = ""
             logger.debug("Terminating GCE Instance %(name)s" % self.gce)
-        for i in xrange(GoogleComputeEngine.MAX_DELAY_RETRIES):
-            if not node.shutting_down():
-                break
-            sleep(GoogleComputeEngine.RETRY_DELAY)
+            #
+            # Wait for Shutdown to occur.
+            #
+            for i in xrange(GoogleComputeEngine.MAX_DELAY_RETRIES):
+                if not node.shutting_down():
+                    break
+                sleep(GoogleComputeEngine.RETRY_DELAY)
+            #
+            # We also need to delete the persistent disk.
+            #
+            request = self.gce['service'].disks().delete(project=self.gce['project'], zone=self.gce['zone'], disk=self.gce['name'])
+            response = request.execute(self.gce['auth_http'])
+            node.instance_id = ""
 
     #def pause(self, node):
     #    # Note: this command halts, doesn't suspend, the server
@@ -488,11 +536,11 @@ class ProfitBrick(Cloud):
         # Create the Data Center
         logger.debug("Creating the DataCenter - %s, %s" % (self.region.name, str(self.region.code)))
         dcId = self.pb.createDataCenter(str(node), self.region.code).dataCenterId
-        #res = _PBwait4avail(dcId, self.pb.getDataCenter)
-        #if not res:
-        #    logger.error("createDataCenter failed, Node:%s", node)
-        #    #TODO Better manage failures
-        #    raise Exception("pb_run_instances failed")
+        res = _PBwait4avail(dcId, self.pb.getDataCenter)
+        if not res:
+            logger.error("createDataCenter failed, Node:%s", node)
+            #TODO Better manage failures
+            raise Exception("pb_run_instances failed")
 
         # Create the Server
         logger.debug("Creating the Server - name=%s, cores=%d, ram=%d, dcId=%s" % (str(node), node.flavor.cpus, node.flavor.ram, str(dcId)))
