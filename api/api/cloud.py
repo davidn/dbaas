@@ -238,11 +238,8 @@ class GoogleComputeEngine(Cloud):
         else:
             return self.__dict__
 
-    @property
-    def instance_name(self):
-        if self.gce['name']:
-            return self.gce['name']
-        return None
+    def getDiskName(self, name):
+        return name + '-disk'
 
     def filterNames(self, items, matchNames=None):
         if matchNames is not None:
@@ -278,27 +275,45 @@ class GoogleComputeEngine(Cloud):
     def launch(self, node):
         self.gce['zone'] = self.region.name
         self.gce['name'] = make_gce_valid_name('dbaas-cluster-{c}-node-{n}'.format(c=node.cluster.pk, n=node.nid))
+        diskName = self.gce['name'] + '-disk'
+        self.gce['diskName'] = diskName
         self.gce['nid'] = node.nid
         self.gce['machineType'] = node.flavor.name
         self.gce['imageName'] = 'dbaas-test'
+        self.gce['sourceImage'] = 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/images/%(imageName)s' % self.gce,
         logger.debug("%(name)s: Assigned NID %(nid)s" % self.gce)
 
         #
         # Create a persistent Disk for the Instance to mount
         #
         body = {
-          "name": self.gce['name'],
-          "sizeGb": node.storage,
-          "description": "boot disk",
-          "sourceImage": 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/images/%(imageName)s' % self.gce,
+          "name": self.gce['diskName'],
+          "sizeGb": str(node.storage),
+          "description": "GenieDB disk",
+#          "description": "boot disk",
+          #"sourceImage": self.gce['sourceImage'],
         }
-        request = self.gce['service'].disks().insert(project=self.gce['project'], body=body, zone=self.gce['zone'])
-        response = request.execute(self.gce['auth_http'])
+        gce_service = self.gce['service']
+        auth_http = self.gce['auth_http']
+        project = self.gce['project']
+        zone = self.gce['zone']
+        sourceImage=self.gce['sourceImage']
+
+#        params = {'project': project, 'imageName': 'dbaas-test'}
+        sourceImage = 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/images/%(imageName)s' % self.gce
+        body = {
+          "name": diskName,
+          "sizeGb": '10',
+          "description": "GenieDB disk",
+        }
+
+        request = gce_service.disks().insert(project=project, body=body, sourceImage=sourceImage, zone=zone)
+        response = request.execute(auth_http)
 
         sleep(2)
         for i in xrange(GoogleComputeEngine.MAX_DELAY_RETRIES):
-            disks = self.getDiskObjects(self.gce['name'])
-            if disks:
+            disks = self.getDiskObjects(diskName)
+            if disks and disks[0]['status'] == 'READY':
                 break
             sleep(GoogleComputeEngine.RETRY_DELAY)
 
@@ -307,7 +322,7 @@ class GoogleComputeEngine(Cloud):
         #
         # Construct the request body
         disk_body = [
-          {'source': "https://www.googleapis.com/compute/v1beta16/projects/%(project)s/zones/%(zone)s/disks/%(name)s" % self.gce,
+          {'source': "https://www.googleapis.com/compute/v1beta16/projects/%(project)s/zones/%(zone)s/disks/%(diskName)s" % self.gce,
            'boot': True,
            'type': 'PERSISTENT',
            'mode': 'READ_WRITE',
@@ -388,6 +403,8 @@ class GoogleComputeEngine(Cloud):
     def terminate(self, node):
         self.gce['name'] = node.instance_id
         self.gce['zone'] = node.security_group
+        diskName = self.gce['name'] + '-disk'
+        self.gce['diskName'] = diskName
         if node.instance_id != "":
             self.gce['name'] = node.instance_id
             if node.status != node.SHUTTING_DOWN:
@@ -409,7 +426,7 @@ class GoogleComputeEngine(Cloud):
             #
             # We also need to delete the persistent disk.
             #
-            request = self.gce['service'].disks().delete(project=self.gce['project'], zone=self.gce['zone'], disk=self.gce['name'])
+            request = self.gce['service'].disks().delete(project=self.gce['project'], zone=self.gce['zone'], disk=self.gce['diskName'])
             response = request.execute(self.gce['auth_http'])
             node.instance_id = ""
 
