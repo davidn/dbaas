@@ -16,6 +16,7 @@ import re
 from hashlib import sha1
 from itertools import islice
 from logging import getLogger
+from time import sleep
 
 import MySQLdb
 from django.db import models
@@ -859,7 +860,8 @@ runcmd:
     def do_install(self):
         """Do slower parts of launching this node."""
         assert (self.status != Node.OVER)
-        retry(lambda: assert(not self.pending()))
+        while self.pending():
+            sleep(15)
         self.update({
             'Name': 'dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),
             'username': self.cluster.user.email,
