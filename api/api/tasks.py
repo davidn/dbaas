@@ -82,12 +82,12 @@ def wait_zabbix(cluster):
         if node.region.provider.code == 'test':
             continue
         for _ in xrange(50):
-            items = z.item.get(host=node.dns_name, filter={"key_": "system.cpu.util[]"})
-            if items:
+            if z.item.get(host=node.dns_name, filter={"key_": "system.cpu.util[]"}):
                 break
             logger.info("Retrying Zabbix registration for Host %s." % (node.dns_name,))
             sleep(5)
-        assert(items, "Unable to confirm that Host %s is executing before sending email notification." % (node.dns_name,))
+        else:
+            raise AssertionError("Unable to confirm that Host %s is executing before sending email notification." % (node.dns_name,))
 
 @task()
 def launch_cluster(cluster):
