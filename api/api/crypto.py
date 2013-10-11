@@ -23,7 +23,7 @@ class KeyPair(object):
 class SslPair(KeyPair):
     def __init__(self, CA, CN=None, OU=None, O=None, ST=None, C=None, *args, **kwargs):
         super(SslPair, self).__init__(*args, **kwargs)
-        self._ssl_private_key = OpenSSL.crypto.load_privatekey(self.private_key)
+        self._ssl_private_key = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, self.private_key)
         self._certificate = OpenSSL.crypto.X509()
         self._certificate.set_pubkey(self._ssl_private_key)
         if CN is not None:
