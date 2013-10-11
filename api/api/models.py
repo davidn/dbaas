@@ -858,8 +858,14 @@ runcmd:
                         raise
                     else:
                         logger.warning("%s: terminating dns skipped as record not found", self)
-        retry(try_remove_dns)
-        retry(lambda: r53.delete_health_check(self.health_check))
+            retry(try_remove_dns)
+            def try_remove_health_check():
+                try:
+                    r53.delete_health_check(self.health_check)
+                except exception.DNSServerError, e:
+                    if e.status != 404:
+                        raise
+            retry(try_remove_health_check)
 
     def do_install(self):
         """Do slower parts of launching this node."""
