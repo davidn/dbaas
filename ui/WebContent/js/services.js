@@ -28,9 +28,10 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
             activate: {method: 'PUT'}
         });
         var Token = $resource(dbaasConfig.authUrlEscaped + '/:id', {id: '@id'});
-        var User = $resource(dbaasConfig.apiUrlEscaped + 'users', {}, {
+        var User = $resource(dbaasConfig.apiUrlEscaped + 'self', {}, {
             'identity': { method: 'GET', isArray: true }
         });
+        var identityConfirmed = false;
 
         var user = $localStorage.$default({user: {email: "", isPaid: false, token: undefined}}).user;
 
@@ -68,8 +69,18 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
 
         function setUser(aUser) {
             user.isPaid = aUser.is_paid;
+            user.email = aUser.email;
+            user.firstName = aUser.first_name;
+            user.lastName = aUser.last_name;
+            identityConfirmed = true;
             updateUserStorage();
             updateUserVoice();
+        }
+
+        function checkIdentity() {
+            User.identity({}, function (data) {
+                setUser(data);
+            });
         }
 
         return {
@@ -94,10 +105,13 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
                 clearToken();
                 return Token.save({username: email, password: password}, function (data) {
                     setToken(data.token);
-                    User.identity({}, function (data) {
-                        setUser(_.findWhere(data, {email: email}));
-                    });
+                    checkIdentity();
                 });
+            },
+            identify: function () {
+                if (!identityConfirmed) {
+                    checkIdentity();
+                }
             },
             logout: function () {
                 clearToken();

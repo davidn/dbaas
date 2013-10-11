@@ -2,8 +2,7 @@
 /*jslint node: true */
 
 function MainCntl($scope, User, dbaasConfig) {
-    // Inject User to force initialization
-
+    // Inject User to force initialization of Token
     $scope.showInfo = function(event){
         console.log(dbaasConfig);
     }
@@ -147,6 +146,9 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
         growl.error({body: "Session Expired"});
         return;
     }
+
+    User.identify();
+
     $scope.providers = apiModel.getProviders();
 
     $scope.addCluster = function () {

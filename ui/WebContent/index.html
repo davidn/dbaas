@@ -92,9 +92,10 @@
 	})();
 
 	UserVoice.push(['set', {
-		accent_color: '#6aba2e',
+//		accent_color: '#6aba2e',
+		accent_color: '#26bd38',
 		trigger_color: 'white',
-		trigger_background_color: '#448dd6'
+		trigger_background_color: '#5473c4'
 	}]);
 
 	UserVoice.push(['addTrigger', { mode: 'contact', trigger_position: 'bottom-right' }]);
@@ -125,13 +126,14 @@
 					SnapEngage.getAgentStatusAsync(function (online) {
 						if (online) {
 							SnapEngage.showButton();
-						} else {
+						}
+						else {
 							SnapEngage.hideButton();
 						}
 					});
 					// Recursive call.
 					clearTimeout(tid);
-					tid = setTimeout(checkChatStatus, 3 * 60 * 1000);
+					tid = setTimeout(checkChatStatus, 1 * 60 * 1000);
 				}
 				checkChatStatus();
 
