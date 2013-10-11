@@ -25,12 +25,11 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
     })
     .factory("User", ['$resource', '$localStorage', '$http', 'dbaasConfig', '$location', function ($resource, $localStorage, $http, dbaasConfig, $location) {
         var Registration = $resource(dbaasConfig.registerUrlEscaped + ':activation_code', {activation_code: '@activation_code'}, {
-            activate: {method: 'PUT'}
+            activate: {method: 'PUT'},
+            reminder: {method: 'GET'}
         });
         var Token = $resource(dbaasConfig.authUrlEscaped + '/:id', {id: '@id'});
-        var User = $resource(dbaasConfig.apiUrlEscaped + 'self', {}, {
-            'identity': { method: 'GET', isArray: true }
-        });
+        var Identity = $resource(dbaasConfig.apiUrlEscaped + 'self');
         var identityConfirmed = false;
 
         var user = $localStorage.$default({user: {email: "", isPaid: false, token: undefined}}).user;
@@ -78,7 +77,7 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
         }
 
         function checkIdentity() {
-            User.identity({}, function (data) {
+            Identity.get({}, function (data) {
                 setUser(data);
             });
         }
@@ -98,7 +97,7 @@ angular.module('GenieDBaaS.services', ['GenieDBaaS.config', 'ngResource', 'ngSto
                 return Registration.activate({activation_code: activationCode}, {password: password});
             },
             reminder: function (email) {
-                return Registration.activate({activation_code: activationCode}, {password: password});
+                return Registration.reminder({email: email});
             },
             login: function (email, password) {
                 user.email = email;

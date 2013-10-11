@@ -235,7 +235,6 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
     };
 
     $scope.nodePause = function (node) {
-        console.log(node.url + '/pause');
         $http.post(node.url + '/pause').success(function (data) {
             $scope.refresh();
             growl.success({body: "Node " + node.label + " paused"});
@@ -243,7 +242,6 @@ function ListCntl($scope, $location, $timeout, apiModel, dbaasConfig, $http, gro
     };
 
     $scope.nodeResume = function (node) {
-        console.log(node.url + '/resume');
         $http.post(node.url + '/resume').success(function (data) {
             $scope.refresh();
             growl.success({body: "Node " + node.label + " resumed"});
