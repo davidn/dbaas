@@ -12,7 +12,6 @@ partition the Nodes in a cluster. See `the wiki`_ for more info.
 
 """
 
-from time import sleep
 import re
 from hashlib import sha1
 from itertools import islice
@@ -28,6 +27,7 @@ from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
 from .cloud import EC2, Rackspace, ProfitBrick, Cloud
 from .crypto import KeyPair, SslPair, CertificateAuthority
+from .utils import retry
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -274,8 +274,7 @@ class Cluster(models.Model):
         if bucket is None:
             bucket = s3.create_bucket(self.uuid)
             # S3 takes a while to treat new ARN as valid
-        for i in xrange(15):
-            try:
+        def attempt_bucket_policy():
                 bucket.set_policy("""{
                   "Version": "2008-10-17",
                   "Id": "S3PolicyId1",
@@ -289,14 +288,7 @@ class Cluster(models.Model):
                       "Action": "s3:*",
                       "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
                 }]}""" % {'iam': self.iam_arn, 'bucket': self.uuid})
-                break
-            except S3ResponseError as e:
-                if i < 15:
-                    logger.info("Retrying S3 permission grant.  Err='%s'" % (e.message))
-                    sleep(2)
-                else:
-                    logger.info("Retry limit exceeded, error='%s'" % (e.message))
-                    raise
+        retry(attempt_bucket_policy)
 
     def terminate(self):
         """Clean up the S3 bucket and IAM user associated with this cluster."""
