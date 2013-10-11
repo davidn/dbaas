@@ -1,3 +1,5 @@
+from rest_framework.authtoken.admin import TokenAdmin
+from rest_framework.authtoken.models import Token
 from .models import Node, Cluster, Provider, Region, Flavor, User
 from rest_registration.models import RegistrationProfile
 from simple_history.admin import SimpleHistoryAdmin
@@ -19,10 +21,12 @@ from .controller import launch_cluster, pause_node, resume_node, add_database
 
 csrf_protect_m = method_decorator(csrf_protect)
 
+
 class NodeInline(admin.StackedInline):
     model = Node
     extra = 0
     exclude = ('lbr_region',)
+
 
 class ClusterAdmin(SimpleHistoryAdmin):
     inlines = [NodeInline]
@@ -31,9 +35,10 @@ class ClusterAdmin(SimpleHistoryAdmin):
 
     def get_urls(self):
         from django.conf.urls import patterns
+
         return patterns('',
-            (r'^(.+)/add_database/$',
-             self.admin_site.admin_view(self.add_database))
+                        (r'^(.+)/add_database/$',
+                         self.admin_site.admin_view(self.add_database))
         ) + super(ClusterAdmin, self).get_urls()
 
 
@@ -79,6 +84,7 @@ class ClusterAdmin(SimpleHistoryAdmin):
         }
         return TemplateResponse(request, 'add_database.html', context=context, current_app=self.admin_site.name)
 
+
 class NodeAdmin(SimpleHistoryAdmin):
     exclude = ('lbr_region',)
     actions = ('pause', 'resume')
@@ -90,6 +96,7 @@ class NodeAdmin(SimpleHistoryAdmin):
     def resume(self, request, queryset):
         for node in queryset:
             resume_node(node)
+
 
 class RegionInline(admin.StackedInline):
     model = Region
@@ -103,6 +110,7 @@ class FlavorInline(admin.StackedInline):
 
 class ProviderAdmin(admin.ModelAdmin):
     inlines = [RegionInline, FlavorInline]
+
 
 class UserAdmin(admin.ModelAdmin):
     add_form_template = 'admin/auth/user/add_form.html'
@@ -149,9 +157,10 @@ class UserAdmin(admin.ModelAdmin):
 
     def get_urls(self):
         from django.conf.urls import patterns
+
         return patterns('',
-            (r'^(\d+)/password/$',
-             self.admin_site.admin_view(self.user_change_password))
+                        (r'^(\d+)/password/$',
+                         self.admin_site.admin_view(self.user_change_password))
         ) + super(UserAdmin, self).get_urls()
 
     def lookup_allowed(self, lookup, value):
@@ -226,9 +235,9 @@ class UserAdmin(admin.ModelAdmin):
             'show_save': True,
         }
         return TemplateResponse(request,
-            self.change_user_password_template or
-            'admin/auth/user/change_password.html',
-            context, current_app=self.admin_site.name)
+                                self.change_user_password_template or
+                                'admin/auth/user/change_password.html',
+                                context, current_app=self.admin_site.name)
 
     def response_add(self, request, obj, post_url_continue=None):
         """
@@ -246,8 +255,25 @@ class UserAdmin(admin.ModelAdmin):
         return super(UserAdmin, self).response_add(request, obj,
                                                    post_url_continue)
 
+
+class TokenImpersonationAdmin(TokenAdmin):
+    list_display = ('key', 'user', 'impersonate', 'created')
+
+    readonly_fields = ('impersonate',)
+
+    def impersonate(self, instance):
+        return "<a href=" + settings.FRONTEND_URL + '#/impersonate/' + instance.key + ">Impersonate User</a>"
+
+    # short_description functions like a model field's verbose_name
+    impersonate.short_description = "Impersonation"
+    # in this example, we have used HTML tags in the output
+    impersonate.allow_tags = True
+
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Cluster, ClusterAdmin)
 admin.site.register(Node, NodeAdmin)
 admin.site.register(Provider, ProviderAdmin)
 admin.site.register(RegistrationProfile)
+admin.site.unregister(Token)
+admin.site.register(Token, TokenImpersonationAdmin)

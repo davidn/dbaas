@@ -12,6 +12,7 @@ angular.module('GenieDBaaS', ['GenieDBaaS.config', 'Utility.directives', 'GenieD
             when("/cluster/:clusterid/node", {templateUrl: 'part/node.html', controller: NodeCntl}).
             when("/monitor", {templateUrl: 'part/monitor.html', controller: QuickStartCntl}).
             when("/logout", {templateUrl: 'part/welcome.html', controller: LogoutCntl}).
+            when("/impersonate/:token", {templateUrl: 'part/impersonate.html', controller: ImpersonateCntl}).
             otherwise({redirectTo: '/'});
 
         var interceptor = function ($location, $q, growl) {
