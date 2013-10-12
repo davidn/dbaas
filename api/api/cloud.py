@@ -297,7 +297,7 @@ class GoogleComputeEngine(Cloud):
         sourceImage = 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/images/%(imageName)s' % self.gce
         body = {
           "name": diskName,
-          "sizeGb": '10',
+          "sizeGb": str(node.storage),
           "description": "GenieDB disk",
         }
 
