@@ -363,7 +363,7 @@
       "provider": 8,
       "code": "EUROPE",
       "name": "Germany",
-	  "image": "image_id2",
+      "image": "dbaas-image.img",
 	  "lbr_region": "eu-west-1",
       "key_name": "dbaas",
       "security_group": "",
@@ -636,18 +636,6 @@
       "name": "hs1.8xlarge",
       "ram": 119808,
       "cpus": 16,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 17,
-    "fields": {
-      "provider": 1,
-      "code": "cg1.4xlarge",
-      "name": "cg1.4xlarge",
-      "ram": 23040,
-      "cpus": 32,
       "free_allowed": false
     }
   },
