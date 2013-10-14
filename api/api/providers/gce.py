@@ -105,7 +105,7 @@ class GoogleComputeEngine(Cloud):
         self.gce['diskName'] = diskName
         self.gce['nid'] = node.nid
         self.gce['machineType'] = node.flavor.name
-        self.gce['imageName'] = 'dbaas-test'
+        self.gce['imageName'] = 'dbaas-gce'
         sourceImage = 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/images/%(imageName)s' % self.gce
         self.gce['sourceImage'] = sourceImage
         logger.debug("%(name)s: Assigned NID %(nid)s" % self.gce)
@@ -147,6 +147,9 @@ class GoogleComputeEngine(Cloud):
              }],
             'network': 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/networks/default' % self.gce,
           }]
+        user_data = \
+            '#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(node.get_absolute_url()) + '/cloud_config/\n'
+        metadata_items = [{"key": "user-data", "value": user_data}]
         body = {
           'name': self.gce['name'],
           'kernel': 'https://www.googleapis.com/compute/v1beta16/projects/%(kernel)s' % self.gce,
@@ -154,9 +157,8 @@ class GoogleComputeEngine(Cloud):
           'networkInterfaces': netIfc_body,
           'disks': disk_body,
           'description': '%(name)s instance' % self.gce,
-          'metadata': {'items': [], 'kind': 'compute#metadata'}
+          'metadata': {'items': metadata_items}
         }
-
         # Create the instance
         request = self.gce['service'].instances().insert(project=self.gce['project'], body=body, zone=self.gce['zone'])
         response = request.execute(self.gce['auth_http'])
