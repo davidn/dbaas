@@ -81,3 +81,20 @@ class CertificateAuthorityTest(TestCase):
         self.assertEqual(extensions["keyUsage"], X509Extension("keyUsage", False, "keyCertSign").get_data())
         self.assertEqual(extensions["subjectKeyIdentifier"], X509Extension("subjectKeyIdentifier", False, 'hash', subject=cert).get_data())
         self.assertEqual(extensions["authorityKeyIdentifier"], X509Extension("authorityKeyIdentifier", False, "keyid:always", issuer=cert).get_data())
+        # test sig?
+
+from api.crypto import SslPair
+class SslPairTest(TestCase):
+    def setUp(self):
+        self.ca = CertificateAuthority()
+
+    def runTest(self):
+        cert = load_certificate(FILETYPE_PEM, SslPair(self.ca).certificate)
+        ca = load_certificate(FILETYPE_PEM, self.ca.certificate)
+        self.assertEqual(cert.get_subject(), ca.get_subject())
+        self.assertFalse(cert.has_expired())
+        extensions = dict((cert.get_extension(i).get_short_name(), cert.get_extension(i).get_data()) for i in range(cert.get_extension_count()))
+        if extensions.has_key('basicConstraints'):
+            self.assertEqual(extensions["basicConstraints"], X509Extension("basicConstraints", False, "CA:FALSE").get_data())
+        # test sig?
+
