@@ -22,7 +22,7 @@ from django.db import models
 from django.dispatch.dispatcher import receiver
 from django.conf import settings
 from django.contrib.sites.models import Site
-from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception
+from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception, , catch_dns_exists, catch_dns_not_found
 from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
 from .cloud import EC2, GoogleComputeEngine, Rackspace, ProfitBrick, Cloud
@@ -392,7 +392,7 @@ class LBRRegionNodeSet(models.Model):
             def try_add_dns():
                 rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
                 rrs.add_change_record('CREATE', self.record)
-                rrs.commit()
+                catch_dns_exists(rrs)
             retry(try_add_dns)
         self.launched = True
         self.save()
@@ -414,14 +414,7 @@ class LBRRegionNodeSet(models.Model):
             def try_remove_dns():
                 rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
                 rrs.add_change_record('DELETE', self.record)
-                try:
-                    rrs.commit()
-                except exception.DNSServerError, e:
-                    if re.search('but it was not found', e.body) is None:
-                        raise
-                    else:
-                        logger.warning("%s: terminating dns for lbr region %s, cluster %s skipped as record not found", self, self.lbr_region,
-                                   self.cluster.pk)
+                catch_dns_not_found(rrs)
             retry(try_remove_dns)
 
 
@@ -790,7 +783,7 @@ runcmd:
                                                                       weight=1))
                 rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
                                                               resource_records=[self.ip]))
-                rrs.commit()
+                catch_dns_exists(rrs)
             retry(try_setup_dns)
 
     def remove_dns(self):
@@ -803,13 +796,7 @@ runcmd:
                                                                       weight=1))
                 rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
                                                               resource_records=[self.ip]))
-                try:
-                    rrs.commit()
-                except exception.DNSServerError, e:
-                    if re.search('but it was not found', e.body) is None:
-                        raise
-                    else:
-                        logger.warning("%s: terminating dns skipped as record not found", self)
+                catch_dns_not_found(rrs)
             retry(try_remove_dns)
             def try_remove_health_check():
                 try:

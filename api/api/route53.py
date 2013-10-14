@@ -106,3 +106,17 @@ class HealthCheck(ResultSet):
         if not self.connection:
             self.connection = boto.connect_route53()
         return self.connection.create_health_check(self.to_xml())
+
+def catch_dns_exists(rrs):
+    try:
+        rrs.commit()
+    except exception.DNSServerError, e:
+        if re.search('but it already exists', e.body) is None:
+            raise
+
+def catch_dns_not_found(rrs):
+    try:
+        rrs.commit()
+    except exception.DNSServerError, e:
+        if re.search('but it was not found', e.body) is None:
+            raise
