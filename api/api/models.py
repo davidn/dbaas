@@ -14,7 +14,6 @@ partition the Nodes in a cluster. See `the wiki`_ for more info.
 
 import re
 from hashlib import sha1
-from itertools import islice
 from logging import getLogger
 from time import sleep
 
@@ -23,7 +22,7 @@ from django.db import models
 from django.dispatch.dispatcher import receiver
 from django.conf import settings
 from django.contrib.sites.models import Site
-from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception
+from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception, catch_dns_exists, catch_dns_not_found
 from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
 from .cloud import Cloud
@@ -32,9 +31,8 @@ from providers.gce import GoogleComputeEngine
 from providers.openstack import Rackspace
 from providers.pb import ProfitBrick
 from .crypto import KeyPair, SslPair, CertificateAuthority
-from .utils import retry
+from .utils import retry, split_every, cron_validator
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
@@ -44,55 +42,6 @@ from pyzabbix import ZabbixAPI
 
 
 logger = getLogger(__name__)
-
-cronvalidators = (
-    lambda x, allowtext: (re.match(r'^\d+$', x) and 0 <= int(x, 10) <= 59) or allowtext and x == '*',
-    lambda x, allowtext: (re.match(r'^\d+$', x) and 0 <= int(x, 10) <= 23) or allowtext and x == '*',
-    lambda x, allowtext: (re.match(r'^\d+$', x) and 1 <= int(x, 10) <= 31) or allowtext and x == '*',
-    lambda x, allowtext: (re.match(r'^\d+$', x) and 1 <= int(x, 10) <= 12) or allowtext and x.lower() in (
-        '*', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'),
-    lambda x, allowtext: (re.match(r'^\d+$', x) and 0 <= int(x, 10) <= 07) or allowtext and x.lower() in (
-        '*', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')
-)
-"""Functions for validating each field of a cron schedule"""
-
-
-def cron_validator(value):
-    """Raise an error if :param value: is not a valid cron schedule."""
-    if "\n" in value or "\r" in value:
-        raise ValidationError("No new lines allowed in schedule")
-    values = value.split()
-    if len(values) != 5:
-        raise ValidationError("Schedule must have exactly 5 whitespace separated fields")
-    for period, field in enumerate(values):
-        for part in field.split(","):
-            part_step = part.split("/")
-            if not 0 < len(part_step) <= 2:
-                raise ValidationError("Invalid schedule step: %s" % part)
-            part_range = part_step[0].split("-")
-            if not 0 < len(part_range) <= 2:
-                raise ValidationError("Invalid schedule range: %s" % part_step[0])
-            if len(part_range) == 2:
-                if not cronvalidators[period](part_range[0], False):
-                    raise ValidationError("Invalid range part: %s" % part_range[0])
-                if not cronvalidators[period](part_range[1], False):
-                    raise ValidationError("Invalid range part: %s" % part_range[1])
-            elif not cronvalidators[period](part_range[0], True):
-                raise ValidationError("Invalid range part: %s" % part_range[0])
-            if len(part_step) > 1:
-                if len(part_range) == 1 and part_range[0] != '*':
-                    raise ValidationError("Schedule step requires a range to step over")
-                if not re.match(r'^\d+$', part_step[1]):
-                    raise ValidationError("Invalid step: %s" % part_step[1])
-
-
-def split_every(n, iterable):
-    """"Given an iterable, return slices of the iterable in separate lists."""
-    i = iter(iterable)
-    piece = list(islice(i, n))
-    while piece:
-        yield piece
-        piece = list(islice(i, n))
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -447,7 +396,7 @@ class LBRRegionNodeSet(models.Model):
             def try_add_dns():
                 rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
                 rrs.add_change_record('CREATE', self.record)
-                rrs.commit()
+                catch_dns_exists(rrs)
             retry(try_add_dns)
         self.launched = True
         self.save()
@@ -469,14 +418,7 @@ class LBRRegionNodeSet(models.Model):
             def try_remove_dns():
                 rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
                 rrs.add_change_record('DELETE', self.record)
-                try:
-                    rrs.commit()
-                except exception.DNSServerError, e:
-                    if re.search('but it was not found', e.body) is None:
-                        raise
-                    else:
-                        logger.warning("%s: terminating dns for lbr region %s, cluster %s skipped as record not found", self, self.lbr_region,
-                                   self.cluster.pk)
+                catch_dns_not_found(rrs)
             retry(try_remove_dns)
 
 
@@ -665,8 +607,8 @@ write_files:
     PidFile=/var/run/zabbix/zabbix_agentd.pid
     LogFile=/var/log/zabbix/zabbix_agentd.log
     LogFileSize=0
-    Server=zabbix.geniedb.com
-    ServerActive=zabbix.geniedb.com
+    Server={zabbix_server}
+    ServerActive={zabbix_server}
     Hostname={dns_name}
     Include=/etc/zabbix/zabbix_agentd.d/
     EnableRemoteCommands=1
@@ -742,6 +684,7 @@ runcmd:
            server_key=server_key,
            host_files=host_files,
            buffer_pool_size=self.buffer_pool_size,
+           zabbix_server=settings.ZABBIX_SERVER,
            backup_schedule=self.cluster.backup_schedule.format(nid=self.nid),
            backup_count=self.cluster.backup_count,
            iam_key=self.cluster.iam_key,
@@ -844,7 +787,7 @@ runcmd:
                                                                       weight=1))
                 rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
                                                               resource_records=[self.ip]))
-                rrs.commit()
+                catch_dns_exists(rrs)
             retry(try_setup_dns)
 
     def remove_dns(self):
@@ -857,13 +800,7 @@ runcmd:
                                                                       weight=1))
                 rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
                                                               resource_records=[self.ip]))
-                try:
-                    rrs.commit()
-                except exception.DNSServerError, e:
-                    if re.search('but it was not found', e.body) is None:
-                        raise
-                    else:
-                        logger.warning("%s: terminating dns skipped as record not found", self)
+                catch_dns_not_found(rrs)
             retry(try_remove_dns)
             def try_remove_health_check():
                 try:
