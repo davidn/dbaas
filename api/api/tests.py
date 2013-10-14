@@ -6,6 +6,7 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from mock import MagicMock
 
 from .models import User, Node, Cluster, Region, Flavor
 class ClusterTest(TestCase):
@@ -98,3 +99,102 @@ class SslPairTest(TestCase):
             self.assertEqual(extensions["basicConstraints"], X509Extension("basicConstraints", False, "CA:FALSE").get_data())
         # test sig?
 
+from api.utils import cron_validator
+from django.core.exceptions import ValidationError
+class CronValidatorTest(TestCase):
+    valid = (
+        "* * * * *",
+        "* * *\t* *",
+        "* *  * * *",
+        "* * *\t  * *",
+        "* * * 1 *",
+        "* 0,2,4,6,8,10,12,14,16,18,20,22 * * *",
+        "0 0 1 1 0",
+        "59 23 31 12 7",
+        "* * * jan fri",
+        "* * * Feb Sat",
+        "* * * MAR WED",
+    )
+    invalid = (
+        "* * * *",
+        "* * * * * *",
+        "-1 * * * * *",
+        "* -1 * * *",
+        "* * 0 * *",
+        "* * * 0 *",
+        "* * * * -1",
+        "60 * * * *",
+        "* 24 * * *",
+        "* * 32 * *",
+        "* * * 13 *",
+        "* * * * 8",
+        "* * *\r* *",
+        "*\n* * * *",
+        "a * * * *",
+        "* b * * *",
+        "* * c * *",
+        "* * * d *",
+        "* * * * e",
+        "* * * * sam",
+    )
+    def test_valid(self):
+        for i in self.valid:
+            cron_validator(i)
+    def test_invalid(self):
+        for i in self.invalid:
+            try:
+                with self.assertRaises(ValidationError):
+                    cron_validator(i)
+            except AssertionError, e:
+                e.args += (i,)
+                raise
+
+from api.utils import split_every
+class SplitEveryTest(TestCase):
+    def test_divisable(self):
+        self.assertListEqual(
+            list(split_every(2, (1,2,3,4))),
+            [[1,2],[3,4]])
+    def test_remainder(self):
+        self.assertListEqual(
+            list(split_every(2, (1,2,3,4,5))),
+            [[1,2],[3,4],[5]])
+    def test_empty(self):
+        self.assertListEqual(
+            list(split_every(2, ())),
+            [])
+    def test_generator(self):
+        self.assertListEqual(
+            list(split_every(2, xrange(4))),
+            [[0,1],[2,3]])
+    def test_read_out_of_order(self):
+        se = split_every(2, (1,2,3,4))
+        first = se.next()
+        second = se.next()
+        self.assertListEqual([3,4], second)
+        self.assertListEqual([1,2], first)
+        self.assertRaises(StopIteration, se.next)
+
+from api.utils import retry
+class RetryTest(TestCase):
+    def setUp(self):
+        self.retry_func = MagicMock(name='retry_func')
+        self.retry_func.return_value=1
+    def test_success(self):
+        self.assertEqual(self.retry_func.return_value,
+            retry(self.retry_func, initialDelay=1, maxRetries=3)
+        )
+        self.assertEqual(1, len(self.retry_func.mock_calls))
+    def test_fail(self):
+        self.retry_func.side_effect=Exception('asdf')
+        with self.assertRaisesRegexp(Exception, 'asdf'):
+            self.assertEqual(self.retry_func.return_value,
+                retry(self.retry_func, initialDelay=1, maxRetries=3)
+            )
+        self.assertEqual(3, len(self.retry_func.mock_calls))
+    def test_fail_once(self):
+        self.retry_func.side_effect=(Exception(),1)
+        self.assertEqual(self.retry_func.return_value,
+            retry(self.retry_func, initialDelay=1, maxRetries=3)
+        )
+        self.assertEqual(2, len(self.retry_func.mock_calls))
