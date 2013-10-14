@@ -31,7 +31,7 @@ from providers.gce import GoogleComputeEngine
 from providers.openstack import Rackspace
 from providers.pb import ProfitBrick
 from .crypto import KeyPair, SslPair, CertificateAuthority
-from .utils import retry, split_every, cron_validator
+from .utils import retry, split_every, cron_validator, mysql_database_validator
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -857,10 +857,7 @@ runcmd:
 
     def add_database(self, dbname):
         """Create a new MySQL database on this node and grant the user permission to it."""
-        if len(dbname) > 64:
-            raise RuntimeError("Database name too long: %s" % dbname)
-        if not re.match(r'^\w*[A-Za-z]\w*$', dbname):
-            raise RuntimeError("Database name must consist of at least one letter and numbers only: %s" % dbname)
+        mysql_database_validator(dbname)
         con = MySQLdb.connect(host=self.dns_name,
                               user=settings.MYSQL_USER,
                               passwd=settings.MYSQL_PASSWORD,
