@@ -59,7 +59,7 @@
     "fields": {
       "name": "Google Compute Engine",
       "code": "gce",
-      "enabled": false
+      "enabled": true
     }
   },
   {
