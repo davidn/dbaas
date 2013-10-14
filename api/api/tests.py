@@ -149,6 +149,49 @@ class CronValidatorTest(TestCase):
                 e.args += (i,)
                 raise
 
+from api.utils import mysql_database_validator
+class MysqlDatabaseValidatorTest(TestCase):
+    valid = (
+        "db",
+        "db_asdf",
+        "d0023432",
+        "324d3242",
+        "234d",
+        "a$",
+        "a$",
+        "_a",
+        "a234567890123456789012345678901234567890123456789012345678901234",
+    )
+    invalid = (
+        "a b",
+        "a,b",
+        "a.b",
+        "a/b",
+        "a\\b",
+        "a-b",
+        "",
+        "\n",
+        "\r",
+        "(",
+        "_",
+        "321",
+        "$",
+        'CREATE',
+        'create',
+        "a2345678901234567890123456789012345678901234567890123456789012345",
+)
+    def test_valid(self):
+        for i in self.valid:
+            mysql_database_validator(i)
+    def test_invalid(self):
+        for i in self.invalid:
+            try:
+                with self.assertRaises(ValidationError):
+                    mysql_database_validator(i)
+            except AssertionError, e:
+                e.args += (i,)
+                raise
+
 from api.utils import split_every
 class SplitEveryTest(TestCase):
     def test_divisable(self):
