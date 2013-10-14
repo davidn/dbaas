@@ -26,7 +26,11 @@ from django.contrib.sites.models import Site
 from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception
 from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
-from .cloud import EC2, GoogleComputeEngine, Rackspace, ProfitBrick, Cloud
+from .cloud import Cloud
+from providers.aws import EC2
+from providers.gce import GoogleComputeEngine
+from providers.openstack import Rackspace
+from providers.pb import ProfitBrick
 from .crypto import KeyPair, SslPair, CertificateAuthority
 from .utils import retry
 from django.core.validators import MinValueValidator, MaxValueValidator
