@@ -661,8 +661,8 @@ write_files:
     PidFile=/var/run/zabbix/zabbix_agentd.pid
     LogFile=/var/log/zabbix/zabbix_agentd.log
     LogFileSize=0
-    Server=zabbix.geniedb.com
-    ServerActive=zabbix.geniedb.com
+    Server={zabbix_server}
+    ServerActive={zabbix_server}
     Hostname={dns_name}
     Include=/etc/zabbix/zabbix_agentd.d/
     EnableRemoteCommands=1
@@ -738,6 +738,7 @@ runcmd:
            server_key=server_key,
            host_files=host_files,
            buffer_pool_size=self.buffer_pool_size,
+           zabbix_server=settings.ZABBIX_SERVER,
            backup_schedule=self.cluster.backup_schedule.format(nid=self.nid),
            backup_count=self.cluster.backup_count,
            iam_key=self.cluster.iam_key,
