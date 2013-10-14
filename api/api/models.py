@@ -22,7 +22,7 @@ from django.db import models
 from django.dispatch.dispatcher import receiver
 from django.conf import settings
 from django.contrib.sites.models import Site
-from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception, , catch_dns_exists, catch_dns_not_found
+from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception, catch_dns_exists, catch_dns_not_found
 from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
 from .cloud import EC2, GoogleComputeEngine, Rackspace, ProfitBrick, Cloud
