@@ -112,7 +112,7 @@ class ClusterTest(TestCase):
         self.assertEqual(nodes[2].nid, 5)
         self.assertEqual(nodes[3].nid, 6)
 
-import yaml
+import yaml, json
 class NodeTest(TestCase):
     def setUp(self):
         self.user = User.objects.create(email='test@example.com')
@@ -130,13 +130,21 @@ class NodeTest(TestCase):
         )
 
     def test_cloud_config(self):
+        self.cluster.uuid='15bbb7df-8d4b-49f4-9210-418bb80235e5'
+        self.cluster.ca_cert = 'CA_CERT'
+        self.cluster.server_cert = 'SERVER_CERT'
+        self.cluster.server_key = 'SERVER_KEY'
         node = Node.objects.create(
             cluster=self.cluster,
             storage=10,
             region=Region.objects.get(code='test-1'),
             flavor=Flavor.objects.get(code='test-small')
         )
-        yaml.load(node.cloud_config)
+        node.tinc_private_key = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA34jp0sVa9rX0/aqJEjeQy1Z0Kd8WGtN81MxHlXGN86zBqlQU\n11qTE+TzSVR0YwzJANLAATwVFpknUuiIH04ad5Fc754rLAnQz8SobJWH4S0lLF72\nvmk9j3AsdaC7GcO3mTYc0s/F8eLLBahTq0glHQfKOqMG3LnTgoeNPxGbRDDqH7aI\nN6rJCTYk/d5MbAiu+F1ZxwJPpcjT9AhTSpv5P2iFXOVe1DzvxqMFMjrN65duJdGw\nwabep9Sa02oX063bvulCircrhuNfS2aJZ2tyIcQl0ZowHDHipx00INq7efKi2n0y\npJbnXr9zTwoFcaO4J9mW1c7U5fADyAtswFuyPQIDAQABAoIBAA/nlvN3NVSud6MA\n2kXgjD3bheJgzBrWh2BAtKsubDI1TYZH+z+jYymcNa83Ahz2EOstE5pC4yE7fm/I\nub64eOue/STTdTDp9eCClpU7QnLEGowAqb+8jzPAgHlSGV3o7gxJrF1XiTb/swBR\nDLr4JCPfpQTtCpTz59e2u1cMcqa0TjAjfbd2AaavT0WGHOoodycpQwPuRXUZrWi0\nypvWnsCsw7wJGMpEOup+SmkC3PpTb1I323DXKLKb76vTJxZh7x2E89EAwjMANzIf\n1FKsJ9Hx+BaNRgWUA7LlvDB2u79PaXlzk1OD9kGzj56uKvI1fiDL8dmtgpU6mBX2\nsbwfqgECgYEA+qKfj6KM2rBuWwCXdR/6dYb0+IKg8cVbPnyoOWnXqgfqq2VzCP+j\nyDPBeTE5xFm+46WMVTcM6LLasmQ3aXK1/tD7+H+zSidRJxkbZR0BQ07XiAJQYGBi\nZIzUMrDjS6TkpQUsgtrcW4XSLn4jBg72t/L1xXxPkshaGawR1lKUHb0CgYEA5FHK\ngLzhQpStxMhxCQWY/sZs7U6hhhkh9U0XV0beaNbIqHUfY/mLh3/t2Y+60g4eEGwA\nwD7ATngLE4tRC7wZ+9A43lTFAil4vCh3CZTjYCx6bAqdnNlmV+WcqzumnK7x8waA\nyqEWL/Z5IxgQk9658FMUwNhoIYTl8RsbzpoP7oECgYAPnWAZf8QMv98wNjo5ZtOg\nzNaoQOMsDOKhYvzMDucLxdB9+yUOk3atu2O7XDDAJeM5pY+3o2Vfff0YDhxRqn7i\nMDzyf2o5HXf12p+VThhNDDVrWNGPH5Iht5Bk1BZlGRHRoh/iyyXdYdn1YZBnCTmf\nvjhHpHYErAzI+qpl0uE9dQKBgEPh4YBHJ/4gsE1qftj81hEhs68WisWQ4VzKT98+\nDdBD06LqN6wEvKxLp87ggd4EHoIpaku+HHT4Eer8p9sCUQNiVBYeQ/ixldjzevjZ\nUIT+lGNdAKFqrZgCh4MNmCrLhNoJm+8i17Lo5/k8JWmhdczzFp+Dd+pHVgpKUgkq\nGwSBAoGBAObzpgXyXyOM+A8mmoJwMG4st2Hov2EMzyF737QT+vGRwf3kElj4JRiQ\ncrG3Bn4qOURCEzeHHhewYZNFsODaw0sWBO/fkINuBq/MHNWQESt9tFSeaSaf07vW\ndSgc64TgukO28KabJEgjVJd0C89MjxndouR50emloKyGN6Fsl7KS\n-----END RSA PRIVATE KEY-----"
+        node.save()
+        yml = yaml.load(node.cloud_config)
+        with open('test_cc.json') as test_cc:
+            self.assertEqual(yml,yaml.load(test_cc.read()))
 
 from api.crypto import KeyPair
 from Crypto.PublicKey.RSA import importKey, generate
