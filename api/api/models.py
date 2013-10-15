@@ -16,7 +16,9 @@ import re
 from hashlib import sha1
 from logging import getLogger
 from time import sleep
+from textwrap import dedent
 
+import yaml
 import MySQLdb
 from django.db import models
 from django.dispatch.dispatcher import receiver
@@ -537,163 +539,184 @@ class Node(models.Model):
     @property
     def cloud_config(self):
         """Return a string to be passed to cloud-init on a newly provisioned node."""
-        connect_to_list = "\n    ".join("ConnectTo = node_" + str(node.nid) for node in self.cluster.nodes.all())
-        rsa_priv = self.tinc_private_key.replace("\n", "\n    ")
-        ca_cert = self.cluster.ca_cert.replace("\n", "\n   ")
-        server_cert = self.cluster.server_cert.replace("\n", "\n   ")
-        server_key = self.cluster.server_key.replace("\n", "\n   ")
-        host_files = "\n".join("""- content: |
-    Address={address}
-    Subnet=192.168.33.{nid}/32
-    {rsa_pub}
-  path: /etc/tinc/cf/hosts/node_{nid}
-  owner: root:root
-  permissions: '0644'""".format(nid=node.nid, address=node.dns_name, rsa_pub=node.public_key.replace("\n", "\n    ")) for node in
-                               self.cluster.nodes.all())
-        return """#cloud-config
-write_files:
-- content: |
-    [mysqld]
-    auto_increment_offset={nid}
-    auto_increment_increment=255
-    geniedb_my_node_id={nid}
-    geniedb_subscriptions={subscriptions}
-    geniedb_buffer_pool_size={buffer_pool_size}
-    default_storage_engine=GenieDB
-    port={port}
-    ssl_ca=/etc/mysql/ca.cert
-    ssl_cert=/etc/mysql/server.cert
-    ssl_key=/etc/mysql/server.pem
-  path: /etc/mysql/conf.d/geniedb.cnf
-  owner: root:root
-  permissions: '0644'
-- content: |
-   {ca_cert}
-  path: /etc/mysql/ca.cert
-  permissions: '600'
-  owner: mysql:mysql
-- content: |
-   {server_cert}
-  path: /etc/mysql/server.cert
-  permissions: '600'
-  owner: mysql:mysql
-- content: |
-   {server_key}
-  path: /etc/mysql/server.pem
-  permissions: '600'
-  owner: mysql:mysql
-- content: |
-   CREATE DATABASE {dbname};
-   CREATE USER '{dbusername}'@'%' IDENTIFIED BY PASSWORD '{dbpassword}';
-   CREATE USER '{mysql_user}'@'%' IDENTIFIED BY PASSWORD '{mysql_password}';
-   GRANT ALL ON {dbname}.* to '{dbusername}'@'%';
-   GRANT ALL ON *.* to '{mysql_user}'@'%' WITH GRANT OPTION;
-  path: /etc/mysqld-grants
-  owner: root:root
-  permissions: '0644'
-- content: |
-    Name = node_{nid}
-    Device = /dev/net/tun
-    {connect_to_list}
-  path: /etc/tinc/cf/tinc.conf
-  owner: root:root
-  permissions: '0644'
-- content: |
-    #!/bin/sh
-    ip addr flush cf
-    ip addr add 192.168.33.{nid}/24 dev cf
-    ip link set cf up
-  path: /etc/tinc/cf/tinc-up
-  owner: root:root
-  permissions: '0755'
-- content: |
-    PidFile=/var/run/zabbix/zabbix_agentd.pid
-    LogFile=/var/log/zabbix/zabbix_agentd.log
-    LogFileSize=0
-    Server={zabbix_server}
-    ServerActive={zabbix_server}
-    Hostname={dns_name}
-    Include=/etc/zabbix/zabbix_agentd.d/
-    EnableRemoteCommands=1
-  path: /etc/zabbix/zabbix_agentd.conf
-  permissions: '0644'
-  owner: root:root
-- path: /etc/mysqlbackup.logrotate
-  content: |
-    compress
-    /var/backup/mysqlbackup.sql {{
-        dateext
-        dateformat -%Y%m%d.%s
-        rotate {backup_count}
-    }}
-  owner: root:root
-  permissions: '0644'
-- path: /etc/cron.d/backup
-  content: |
-    {backup_schedule} root /usr/local/bin/backup
-  owner: root:root
-  permissions: '0644'
-- path: /root/.s3cfg
-  content: |
-    access_key = {iam_key}
-    secret_key = {iam_secret}
-  owner: root:root
-  permissions: '0600'
-- path: /usr/local/bin/backup
-  content: |
-    #!/bin/sh
-    /usr/bin/mysqldump --all-databases > /var/backup/mysqlbackup.sql
-    /usr/sbin/logrotate -fs /etc/mysqlbackup.state /etc/mysqlbackup.logrotate
-    /usr/bin/s3cmd sync --delete-removed /var/backup/ s3://{cluster}/{nid}/
-    /usr/bin/curl {set_backup_url} -X POST -H "Content-type: application/json" -d "$(
-      c=false
-      cd /var/backup/
-      printf '[\\n'
-      for i in *; do
-        if $c; then
-          printf ',\\n'
-        else
-          c=true
-        fi
-        stat --printf '  {{"filename":"%n", "time":"%y", "size":"%s"}}' "$i"
-      done
-      printf '\\n]\\n'
-    )"
-  owner: root:root
-  permissions: '0755'
-- path: /etc/tinc/cf/rsa_key.priv
-  owner: root:root
-  permissions: '0600'
-  content: |
-    {rsa_priv}
-{host_files}
-runcmd:
-- [lokkit, -p, "{port}:tcp"]
-- [ mkdir, -p, /var/backup ]
-""".format(nid=self.nid,
-           dns_name=self.dns_name,
-           cluster=self.cluster.pk,
-           port=self.cluster.port,
-           subscriptions=self.cluster.subscriptions,
-           dbname=self.cluster.dbname,
-           dbusername=self.cluster.dbusername,
-           dbpassword='*' + sha1(sha1(self.cluster.dbpassword).digest()).hexdigest().upper(),
-           mysql_user=settings.MYSQL_USER,
-           mysql_password='*' + sha1(sha1(settings.MYSQL_PASSWORD).digest()).hexdigest().upper(),
-           connect_to_list=connect_to_list,
-           rsa_priv=rsa_priv,
-           ca_cert=ca_cert,
-           server_cert=server_cert,
-           server_key=server_key,
-           host_files=host_files,
-           buffer_pool_size=self.buffer_pool_size,
-           zabbix_server=settings.ZABBIX_SERVER,
-           backup_schedule=self.cluster.backup_schedule.format(nid=self.nid),
-           backup_count=self.cluster.backup_count,
-           iam_key=self.cluster.iam_key,
-           iam_secret=self.cluster.iam_secret,
-           set_backup_url='https://' + Site.objects.get_current().domain + reverse('node-set-backups', args=[self.cluster.pk, self.pk]),
-        )
+        cloud_config={'write_files':[], 'runcmd':[]}
+
+        # Configure MySQL
+        cloud_config['write_files'].append({
+            "path": "/etc/mysql/conf.d/geniedb.cnf",
+            "owner": "root:root",
+            "permissions": "0644",
+            "content": dedent("""\
+                [mysqld]
+                auto_increment_offset={nid}
+                auto_increment_increment=255
+                geniedb_my_node_id={nid}
+                geniedb_subscriptions={subscriptions}
+                geniedb_buffer_pool_size={buffer_pool_size}
+                default_storage_engine=GenieDB
+                port={port}
+                ssl_ca=/etc/mysql/ca.cert
+                ssl_cert=/etc/mysql/server.cert
+                ssl_key=/etc/mysql/server.pem""").format(
+                    nid=self.nid, subscriptions=self.cluster.subscriptions,
+                    port=self.cluster.port,
+                    buffer_pool_size=self.buffer_pool_size
+                )
+        })
+        cloud_config['write_files'].append({
+            "path": "/etc/mysql/ca.cert",
+            "owner": "mysql:mysql",
+            "permissions": "0600",
+            "content": self.cluster.ca_cert
+        })
+        cloud_config['write_files'].append({
+            "path": "/etc/mysql/server.cert",
+            "owner": "mysql:mysql",
+            "permissions": "0600",
+            "content": self.cluster.server_cert
+        })
+        cloud_config['write_files'].append({
+            "path": "/etc/mysql/server.pem",
+            "owner": "mysql:mysql",
+            "permissions": "0600",
+            "content": self.cluster.server_key
+        })
+        cloud_config['write_files'].append({
+            "path": "/etc/mysqld-grants",
+            "owner": "root:root",
+            "permissions": "0644",
+            "content": dedent("""\
+                CREATE DATABASE {dbname};
+                CREATE USER '{dbusername}'@'%' IDENTIFIED BY PASSWORD '{dbpassword}';
+                CREATE USER '{mysql_user}'@'%' IDENTIFIED BY PASSWORD '{mysql_password}';
+                GRANT ALL ON {dbname}.* to '{dbusername}'@'%';
+                GRANT ALL ON *.* to '{mysql_user}'@'%' WITH GRANT OPTION;""").format(
+                   dbname=self.cluster.dbname,
+                   dbusername=self.cluster.dbusername,
+                   dbpassword='*' + sha1(sha1(self.cluster.dbpassword).digest()).hexdigest().upper(),
+                   mysql_user=settings.MYSQL_USER,
+                   mysql_password='*' + sha1(sha1(settings.MYSQL_PASSWORD).digest()).hexdigest().upper(),
+                )
+        })
+
+        # Configure Tinc
+        cloud_config['write_files'].append({
+            "path": "/etc/tinc/cf/tinc.conf",
+            "owner": "root:root",
+            "permissions": "0644",
+            "content": dedent("""\
+                Name = node_{nid}
+                Device = /dev/net/tun
+                """).format(nid=self.nid) + "\n".join("ConnectTo = node_" + str(node.nid) for node in self.cluster.nodes.all())
+        })
+        cloud_config['write_files'].append({
+            "path": "/etc/tinc/cf/tinc-up",
+            "owner": "root:root",
+            "permissions": "0755",
+            "content": dedent("""\
+                #!/bin/sh
+                ip addr flush cf
+                ip addr add 192.168.33.{nid}/24 dev cf
+                ip link set cf up""").format(nid=self.nid)
+        })
+        cloud_config['write_files'].append({
+            "path": "/etc/tinc/cf/rsa_key.priv",
+            "owner": "root:root",
+            "permissions": "0600",
+            "content": self.tinc_private_key
+        })
+        cloud_config['write_files'].extend({
+            "path": "/etc/tinc/cf/hosts/node_{nid}".format(nid=node.nid),
+            "owner": "root:root",
+            "permissions": "0600",
+            "content": dedent("""
+                Address={address}
+                Subnet=192.168.33.{nid}/32
+                """).format(nid=node.nid, address=node.dns_name) + node.public_key}
+            for node in self.cluster.nodes.all())
+
+        # Configure Zabbix
+        cloud_config['write_files'].append({
+            "path": "/etc/zabbix/zabbix_agentd.conf",
+            "owner": "root:root",
+            "permissions": "0755",
+            "content": dedent("""\
+                PidFile=/var/run/zabbix/zabbix_agentd.pid
+                LogFile=/var/log/zabbix/zabbix_agentd.log
+                LogFileSize=0
+                Server={zabbix_server}
+                ServerActive={zabbix_server}
+                Hostname={dns_name}
+                Include=/etc/zabbix/zabbix_agentd.d/
+                EnableRemoteCommands=1""").format(
+                    dns_name=self.dns_name, zabbix_server=settings.ZABBIX_SERVER
+                )
+        })
+
+        # Configure backups
+        cloud_config['write_files'].append({
+            "path": "/etc/mysqlbackup.logrotate",
+            "owner": "root:root",
+            "permissions": "0755",
+            "content": dedent("""\
+                compress
+                /var/backup/mysqlbackup.sql {{
+                    dateext
+                    dateformat -%Y%m%d.%s
+                    rotate {backup_count}
+                }}""").format(backup_count=self.cluster.backup_count)
+        })
+        cloud_config['write_files'].append({
+            "path": "/etc/cron.d/backup",
+            "owner": "root:root",
+            "permissions": "0755",
+            "content": dedent("{backup_schedule} root /usr/local/bin/backup").format(
+                backup_schedule=self.cluster.backup_schedule
+            )
+        })
+        cloud_config['write_files'].append({
+            "path": "/root/.s3cfg",
+            "owner": "root:root",
+            "permissions": "0600",
+            "content": dedent("""\
+                access_key = {iam_key}
+                secret_key = {iam_secret}""").format(
+                    iam_key=self.cluster.iam_key,
+                    iam_secret=self.cluster.iam_secret
+                )
+        })
+        cloud_config['write_files'].append({
+            "path": "/usr/local/bin/backup",
+            "owner": "root:root",
+            "permissions": "0755",
+            "content": dedent("""\
+                #!/bin/sh
+                /usr/bin/mysqldump --all-databases > /var/backup/mysqlbackup.sql
+                /usr/sbin/logrotate -fs /etc/mysqlbackup.state /etc/mysqlbackup.logrotate
+                /usr/bin/s3cmd sync --delete-removed /var/backup/ s3://{cluster}/{nid}/
+                /usr/bin/curl {set_backup_url} -X POST -H "Content-type: application/json" -d "$(
+                  c=false
+                  cd /var/backup/
+                  printf '[\\n'
+                  for i in *; do
+                    if $c; then
+                      printf ',\\n'
+                    else
+                      c=true
+                    fi
+                    stat --printf '  {{"filename":"%n", "time":"%y", "size":"%s"}}' "$i"
+                  done
+                  printf '\\n]\\n'
+                )"
+            """).format(
+                nid=self.nid, cluster=self.cluster.pk,
+                set_backup_url='https://' + Site.objects.get_current().domain + reverse('node-set-backups', args=[self.cluster.pk, self.pk])
+            )
+        })
+
+        cloud_config['runcmd'].append(["lokkit", "-p", "{port}:tcp"])
+        cloud_config['runcmd'].append(["mkdir", "-p", "/var/backup"])
+        return "#cloud-config\n" + yaml.dump(cloud_config)
 
     def addToHostGroup(self):
         hostName = self.dns_name
