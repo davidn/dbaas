@@ -696,7 +696,7 @@ class Node(models.Model):
             set_backup_url='https://' + Site.objects.get_current().domain + reverse('node-set-backups', args=[self.cluster.pk, self.pk])
         )
 
-        cloud_config.add_command(["lokkit", "-p", "{port}:tcp"])
+        cloud_config.add_command(["lokkit", "-p", "{port}:tcp".format(port=self.cluster.port)])
         cloud_config.add_command(["mkdir", "-p", "/var/backup"])
         return str(cloud_config)
 
