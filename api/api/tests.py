@@ -144,7 +144,10 @@ class NodeTest(TestCase):
         node.save()
         yml = yaml.load(node.cloud_config)
         with open('test_cc.json') as test_cc:
-            self.assertEqual(yml,yaml.load(test_cc.read()))
+            comp = yaml.load(test_cc.read())
+        for key in comp.keys():
+            self.assertItemsEqual(yml[key], comp[key])
+        self.assertEqual(len(comp), len(yml))
 
 from api.crypto import KeyPair
 from Crypto.PublicKey.RSA import importKey, generate
