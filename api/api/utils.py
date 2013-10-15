@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 logger = getLogger(__name__)
 
 def retry(func, initialDelay=50, maxRetries=12):
+    """func must return truthy value"""
     delay = initialDelay
     for retry in range(maxRetries-1):
         try:
