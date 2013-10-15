@@ -92,6 +92,25 @@ class ClusterTest(TestCase):
         connect_s3.return_value.lookup.assert_called_once_with(cluster.uuid)
         connect_s3.return_value.lookup.return_value.delete_keys.assert_called_once_with(['a','b','c'])
 
+    def test_next_nid(self):
+        cluster = Cluster.objects.create(user=self.user)
+        nodes = [Node.objects.create(
+            cluster=cluster,
+            storage=10,
+            region=Region.objects.get(code='test-1'),
+            flavor=Flavor.objects.get(code='test-small')) for _ in xrange(4)]
+        nodes[0].nid = cluster.next_nid()
+        nodes[0].save()
+        nodes[1].nid = cluster.next_nid()
+        nodes[1].save()
+        nodes[2].nid = 5 # test skips
+        nodes[2].save()
+        nodes[3].nid = cluster.next_nid()
+        self.assertEqual(nodes[0].nid, 1)
+        self.assertEqual(nodes[1].nid, 2)
+        self.assertEqual(nodes[2].nid, 5)
+        self.assertEqual(nodes[3].nid, 6)
+
 class NodeTest(TestCase):
     def setUp(self):
         self.user = User.objects.create(email='test@example.com')
