@@ -778,17 +778,6 @@
   },
   {
     "model": "api.flavor",
-    "pk": 31,
-    "fields": {
-      "provider": 7,
-      "code": "gce",
-      "name": "Unspecified Google Compute Engine",
-      "ram": 1,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
     "pk": 32,
     "fields": {
       "provider": 8,
