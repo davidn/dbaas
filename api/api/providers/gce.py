@@ -99,13 +99,13 @@ class GoogleComputeEngine(Cloud):
 
     def launch(self, node):
         project = self.gce['project']
-        zone = self.region.name
+        zone = self.region.code
         self.gce['zone'] = zone
         self.gce['name'] = make_gce_valid_name('dbaas-cluster-{c}-node-{n}'.format(c=node.cluster.pk, n=node.nid))
         diskName = self.gce['name'] + '-disk'
         self.gce['diskName'] = diskName
         self.gce['nid'] = node.nid
-        self.gce['machineType'] = node.flavor.name
+        self.gce['machineType'] = node.flavor.code
         sourceImage = 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/images/%(imageName)s' % self.gce
         self.gce['sourceImage'] = sourceImage
         logger.debug("%(name)s: Assigned NID %(nid)s" % self.gce)

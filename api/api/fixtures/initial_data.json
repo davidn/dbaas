@@ -326,21 +326,6 @@
       "longitude": 0
     }
   },
-  {
-    "model": "api.region",
-    "pk": 18,
-    "fields": {
-      "provider": 7,
-      "code": "gce",
-      "name": "Unspecified Google Compute Engine",
-      "image": "dbaas-image.img",
-      "lbr_region": "test",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": 0,
-      "longitude": 0
-    }
-  },
  {
     "model": "api.region",
     "pk": 19,
@@ -376,7 +361,7 @@
     "pk": 21,
     "fields": {
       "provider": 7,
-      "code": "USA1a",
+      "code": "us-central1-a",
       "name": "us-central1-a",
 	  "image": "debian-cloud/global/images/debian-7-wheezy-v20130816",
 	  "lbr_region": "us-west-1",
@@ -391,7 +376,7 @@
     "pk": 22,
     "fields": {
       "provider": 7,
-      "code": "USA1b",
+      "code": "us-central1-b",
       "name": "us-central1-b",
 	  "image": "debian-cloud/global/images/debian-7-wheezy-v20130816",
 	  "lbr_region": "us-west-1",
@@ -406,9 +391,8 @@
     "pk": 23,
     "fields": {
       "provider": 7,
-      "code": "USA2a",
+      "code": "us-central2-a",
       "name": "us-central2-a",
-      "name": "USA3",
 	  "image": "debian-cloud/global/images/debian-7-wheezy-v20130816",
 	  "lbr_region": "us-west-1",
       "key_name": "dbaas",
@@ -422,7 +406,7 @@
     "pk": 24,
     "fields": {
       "provider": 7,
-      "code": "EUR1a",
+      "code": "europe-west1-a",
       "name": "europe-west1-a",
 	  "image": "debian-cloud/global/images/debian-7-wheezy-v20130816",
 	  "lbr_region": "eu-west-1",
@@ -437,7 +421,7 @@
     "pk": 25,
     "fields": {
       "provider": 7,
-      "code": "EUR1b",
+      "code": "europe-west1-b",
       "name": "europe-west1-b",
 	  "image": "debian-cloud/global/images/debian-7-wheezy-v20130816",
 	  "lbr_region": "eu-west-1",
@@ -819,7 +803,7 @@
     "pk": 33,
     "fields": {
       "provider": 7,
-      "code": "gce.micro",
+      "code": "f1-micro",
       "name": "f1-micro",
       "ram": 600,
       "cpus": 1
@@ -830,7 +814,7 @@
     "pk": 34,
     "fields": {
       "provider": 7,
-      "code": "gce.small",
+      "code": "g1-small",
       "name": "g1-small",
       "ram": 1700,
       "cpus": 1
@@ -841,7 +825,7 @@
     "pk": 35,
     "fields": {
       "provider": 7,
-      "code": "gce.std1d",
+      "code": "n1-standard-1-d",
       "name": "n1-standard-1-d",
       "ram": 3750,
       "cpus": 1
@@ -852,7 +836,7 @@
     "pk": 36,
     "fields": {
       "provider": 7,
-      "code": "gce.std2d",
+      "code": "n1-standard-2-d",
       "name": "n1-standard-2-d",
       "ram": 7500,
       "cpus": 2
@@ -863,7 +847,7 @@
     "pk": 37,
     "fields": {
       "provider": 7,
-      "code": "gce.std4d",
+      "code": "n1-standard-4-d",
       "name": "n1-standard-4-d",
       "ram": 15000,
       "cpus": 4
@@ -874,7 +858,7 @@
     "pk": 38,
     "fields": {
       "provider": 7,
-      "code": "gce.std8d",
+      "code": "n1-standard-8-d",
       "name": "n1-standard-8-d",
       "ram": 30000,
       "cpus": 8
@@ -885,7 +869,7 @@
     "pk": 39,
     "fields": {
       "provider": 7,
-      "code": "gce.std1",
+      "code": "n1-standard-1",
       "name": "n1-standard-1",
       "ram": 3750,
       "cpus": 1
@@ -896,7 +880,7 @@
     "pk": 40,
     "fields": {
       "provider": 7,
-      "code": "gce.std2",
+      "code": "n1-standard-2",
       "name": "n1-standard-2",
       "ram": 7500,
       "cpus": 2
@@ -907,7 +891,7 @@
     "pk": 41,
     "fields": {
       "provider": 7,
-      "code": "gce.std4",
+      "code": "n1-standard-4",
       "name": "n1-standard-4",
       "ram": 15000,
       "cpus": 4
@@ -918,7 +902,7 @@
     "pk": 42,
     "fields": {
       "provider": 7,
-      "code": "gce.std8",
+      "code": "n1-standard-8",
       "name": "n1-standard-8",
       "ram": 30000,
       "cpus": 8
