@@ -363,7 +363,7 @@
       "provider": 7,
       "code": "us-central1-a",
       "name": "GCE USA1a",
-	  "image": "dbaas-gce-5",
+	  "image": "dbaas-gce",
 	  "lbr_region": "us-west-1",
       "key_name": "dbaas",
       "security_group": "",
@@ -378,7 +378,7 @@
       "provider": 7,
       "code": "us-central1-b",
       "name": "GCE USA1b",
-	  "image": "dbaas-gce-5",
+	  "image": "dbaas-gce",
 	  "lbr_region": "us-west-1",
       "key_name": "dbaas",
       "security_group": "",
@@ -393,7 +393,7 @@
       "provider": 7,
       "code": "us-central2-a",
       "name": "GCE USA2a",
-	  "image": "dbaas-gce-5",
+	  "image": "dbaas-gce",
 	  "lbr_region": "us-west-1",
       "key_name": "dbaas",
       "security_group": "",
@@ -408,7 +408,7 @@
       "provider": 7,
       "code": "europe-west1-a",
       "name": "GCE Europe 1a",
-	  "image": "dbaas-gce-5",
+	  "image": "dbaas-gce",
 	  "lbr_region": "eu-west-1",
       "key_name": "dbaas",
       "security_group": "",
@@ -423,7 +423,7 @@
       "provider": 7,
       "code": "europe-west1-b",
       "name": "GCE Europe 1b",
-	  "image": "dbaas-gce-5",
+	  "image": "dbaas-gce",
 	  "lbr_region": "eu-west-1",
       "key_name": "dbaas",
       "security_group": "",
@@ -778,17 +778,6 @@
   },
   {
     "model": "api.flavor",
-    "pk": 32,
-    "fields": {
-      "provider": 8,
-      "code": "pb.small",
-      "name": "pb.small",
-      "ram": 256,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
     "pk": 33,
     "fields": {
       "provider": 7,
@@ -894,6 +883,61 @@
       "code": "n1-standard-8",
       "name": "n1-standard-8",
       "ram": 30000,
+      "cpus": 8
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 43,
+    "fields": {
+      "provider": 8,
+      "code": "pb.std1",
+      "name": "PB 1 cpu, 2GB",
+      "ram": 2048,
+      "cpus": 1
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 44,
+    "fields": {
+      "provider": 8,
+      "code": "pb.std2",
+      "name": "PB 2 cpu, 4GB",
+      "ram": 4096,
+      "cpus": 2
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 45,
+    "fields": {
+      "provider": 8,
+      "code": "pb.std4",
+      "name": "PB 4 cpu, 8GB",
+      "ram": 8192,
+      "cpus": 4
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 46,
+    "fields": {
+      "provider": 8,
+      "code": "pb.std6",
+      "name": "PB 6 cpu, 12GB",
+      "ram": 12288,
+      "cpus": 6
+    }
+  },
+  {
+    "model": "api.flavor",
+    "pk": 47,
+    "fields": {
+      "provider": 8,
+      "code": "pb.std8",
+      "name": "PB 8 cpu, 16GB",
+      "ram": 16384,
       "cpus": 8
     }
   }
