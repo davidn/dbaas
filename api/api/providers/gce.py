@@ -19,7 +19,6 @@ class GoogleComputeEngine(Cloud):
     SERVICE_PROJECT_ID  = settings.GCE_PROJECT_ID
     SERVICE_ACCT_EMAIL  = settings.GCE_SERVICE_ACCOUNT_EMAIL
     SERVICE_PRIVATE_KEY = settings.GCE_PRIVATE_KEY
-    GDB_IMAGE_NAME      = settings.GCE_IMAGE_NAME
 
     MAX_DELAY_RETRIES   = 40        # Max delay of 200 seconds
     RETRY_DELAY         = 5
@@ -51,7 +50,7 @@ class GoogleComputeEngine(Cloud):
                 'machineType':'',
                 'kernel':'google/global/kernels/gce-v20130813',
                 'imageType':'',
-                'imageName':GoogleComputeEngine.GDB_IMAGE_NAME,
+                'imageName': '',
                 'ip':'' }
         return self._gce_params
 
@@ -106,6 +105,7 @@ class GoogleComputeEngine(Cloud):
         self.gce['diskName'] = diskName
         self.gce['nid'] = node.nid
         self.gce['machineType'] = node.flavor.code
+        self.gce['imageName'] = node.region.image
         sourceImage = 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/images/%(imageName)s' % self.gce
         self.gce['sourceImage'] = sourceImage
         logger.debug("%(name)s: Assigned NID %(nid)s" % self.gce)
