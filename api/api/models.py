@@ -554,7 +554,8 @@ class Node(models.Model):
                 port={port}
                 ssl_ca=/etc/mysql/ca.cert
                 ssl_cert=/etc/mysql/server.cert
-                ssl_key=/etc/mysql/server.pem"""),
+                ssl_key=/etc/mysql/server.pem
+                """),
             nid=self.nid, subscriptions=self.cluster.subscriptions,
             port=self.cluster.port,
             buffer_pool_size=self.buffer_pool_size
@@ -563,19 +564,19 @@ class Node(models.Model):
             "/etc/mysql/ca.cert",
             owner="mysql:mysql",
             permissions="0600",
-            content=self.cluster.ca_cert
+            content=self.cluster.ca_cert+"\n"
         )
         cloud_config.add_file(
             "/etc/mysql/server.cert",
             owner="mysql:mysql",
             permissions="0600",
-            content=self.cluster.server_cert
+            content=self.cluster.server_cert+"\n"
         )
         cloud_config.add_file(
             "/etc/mysql/server.pem",
             owner="mysql:mysql",
             permissions="0600",
-            content=self.cluster.server_key
+            content=self.cluster.server_key+"\n"
         )
         cloud_config.add_file(
             "/etc/mysqld-grants",
@@ -584,7 +585,8 @@ class Node(models.Model):
                 CREATE USER '{dbusername}'@'%' IDENTIFIED BY PASSWORD '{dbpassword}';
                 CREATE USER '{mysql_user}'@'%' IDENTIFIED BY PASSWORD '{mysql_password}';
                 GRANT ALL ON {dbname}.* to '{dbusername}'@'%';
-                GRANT ALL ON *.* to '{mysql_user}'@'%' WITH GRANT OPTION;"""),
+                GRANT ALL ON *.* to '{mysql_user}'@'%' WITH GRANT OPTION;
+                """),
             dbname=self.cluster.dbname,
             dbusername=self.cluster.dbusername,
             dbpassword='*' + sha1(sha1(self.cluster.dbpassword).digest()).hexdigest().upper(),
@@ -598,7 +600,7 @@ class Node(models.Model):
             dedent("""\
                 Name = node_{nid}
                 Device = /dev/net/tun
-                """) + "\n".join("ConnectTo = node_" + str(node.nid) for node in self.cluster.nodes.all()),
+                """) + "\n".join("ConnectTo = node_" + str(node.nid) for node in self.cluster.nodes.all())+"\n",
             nid=self.nid
         )
         cloud_config.add_file(
@@ -608,22 +610,22 @@ class Node(models.Model):
                 #!/bin/sh
                 ip addr flush cf
                 ip addr add 192.168.33.{nid}/24 dev cf
-                ip link set cf up"""),
+                ip link set cf up
+                """),
             nid=self.nid
         )
         cloud_config.add_file(
             "/etc/tinc/cf/rsa_key.priv",
             permissions="0600",
-            content=self.tinc_private_key
+            content=self.tinc_private_key+"\n"
         )
         for node in self.cluster.nodes.all():
             cloud_config.add_file(
                 "/etc/tinc/cf/hosts/node_{nid}".format(nid=node.nid),
-                permissions="0600",
-                content=dedent("""
+                dedent("""\
                     Address={address}
                     Subnet=192.168.33.{nid}/32
-                    """)+node.public_key,
+                    """)+node.public_key+"\n",
                 nid=node.nid,
                 address=node.dns_name
             )
@@ -639,7 +641,8 @@ class Node(models.Model):
                 ServerActive={zabbix_server}
                 Hostname={dns_name}
                 Include=/etc/zabbix/zabbix_agentd.d/
-                EnableRemoteCommands=1"""),
+                EnableRemoteCommands=1
+                """),
             dns_name=self.dns_name, zabbix_server=settings.ZABBIX_SERVER
         )
 
@@ -652,12 +655,13 @@ class Node(models.Model):
                     dateext
                     dateformat -%Y%m%d.%s
                     rotate {backup_count}
-                }}"""),
+                }}
+                """),
             backup_count=self.cluster.backup_count
         )
         cloud_config.add_file(
             "/etc/cron.d/backup",
-            "{backup_schedule} root /usr/local/bin/backup",
+            "{backup_schedule} root /usr/local/bin/backup\n",
             backup_schedule=self.cluster.backup_schedule
         )
         cloud_config.add_file(
@@ -665,7 +669,8 @@ class Node(models.Model):
             permissions="0600",
             content=dedent("""\
                 access_key = {iam_key}
-                secret_key = {iam_secret}"""),
+                secret_key = {iam_secret}
+                """),
             iam_key=self.cluster.iam_key,
             iam_secret=self.cluster.iam_secret
         )
