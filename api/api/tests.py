@@ -6,9 +6,29 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-from mock import MagicMock
+from mock import MagicMock, patch
+from django.conf import settings
 
-from .models import User, Node, Cluster, Region, Flavor
+def connect_iam():
+    connect_iam = MagicMock()
+    connect_iam.return_value.create_user.return_value = \
+        {'create_user_response':{'create_user_result':{'user':{'arn':'NEW_ARN'}}}}
+    connect_iam.return_value.create_access_key.return_value = \
+        {'create_access_key_response':{'create_access_key_result':{'access_key':{
+            'access_key_id':'NEW_AKI',
+            'secret_access_key':'NEW_SAK'}}}}
+    return connect_iam
+
+def connect_s3(empty=True):
+    connect_s3 = MagicMock()
+    if empty:
+        connect_s3.return_value.lookup.return_value = None
+    else:
+        connect_s3.return_value.lookup.return_value.__iter__ = lambda _: iter(('a','b','c'))
+    connect_s3.return_value.create_bucket.return_value.set_policy.return_value = True
+    return connect_s3
+
+from api.models import User, Node, Cluster, Region, Flavor
 class ClusterTest(TestCase):
     def setUp(self):
         self.user = User.objects.create(email='test@example.com')
@@ -18,6 +38,59 @@ class ClusterTest(TestCase):
         Tests cluster creation.
         """
         cluster = Cluster.objects.create(user=self.user)
+
+    @patch('api.models.connect_iam', new_callable=connect_iam)
+    @patch('api.models.connect_s3', new_callable=connect_s3)
+    def test_launch(self, connect_s3, connect_iam):
+
+        cluster = Cluster.objects.create(user=self.user)
+        cluster.launch()
+
+        connect_iam.assert_called_once_with(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+        connect_iam.return_value.create_user.assert_called_once_with(cluster.uuid)
+        connect_iam.return_value.create_access_key.assert_called_once_with(cluster.uuid)
+        connect_s3.assert_called_once_with(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+        connect_s3.return_value.lookup.assert_called_once_with(cluster.uuid)
+        self.assertEqual(connect_s3.return_value.create_bucket.return_value.set_policy.call_count,1)
+        self.assertEqual('NEW_ARN', cluster.iam_arn)
+        self.assertEqual('NEW_AKI', cluster.iam_key)
+        self.assertEqual('NEW_SAK', cluster.iam_secret)
+        self.assertEqual(Cluster.PROVISIONING, cluster.status)
+
+    @patch('api.models.connect_iam', new_callable=connect_iam)
+    @patch('api.models.connect_s3', new_callable=connect_s3)
+    def test_launch_setpolicy_failure(self, connect_s3, connect_iam):
+        connect_s3.return_value.create_bucket.return_value.set_policy.side_effect = (Exception("Fail once"),True)
+
+        cluster = Cluster.objects.create(user=self.user)
+        cluster.launch()
+
+        connect_iam.assert_called_once_with(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+        connect_iam.return_value.create_user.assert_called_once_with(cluster.uuid)
+        connect_iam.return_value.create_access_key.assert_called_once_with(cluster.uuid)
+        connect_s3.assert_called_once_with(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+        connect_s3.return_value.lookup.assert_called_once_with(cluster.uuid)
+        self.assertEqual(connect_s3.return_value.create_bucket.return_value.set_policy.call_count,2)
+        self.assertEqual('NEW_ARN', cluster.iam_arn)
+        self.assertEqual('NEW_AKI', cluster.iam_key)
+        self.assertEqual('NEW_SAK', cluster.iam_secret)
+        self.assertEqual(Cluster.PROVISIONING, cluster.status)
+
+    @patch('api.models.connect_iam', new_callable=connect_iam)
+    @patch('api.models.connect_s3', new_callable=lambda: connect_s3(False))
+    def test_terminate(self, connect_s3, connect_iam):
+        cluster = Cluster.objects.create(user=self.user)
+        cluster.iam_arn = 'NEW_ARN'
+        cluster.iam_key = 'NEW_AKI'
+        cluster.iam_secret = 'NEW_SAK'
+        cluster.terminate()
+
+        connect_iam.assert_called_once_with(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+        connect_iam.return_value.delete_access_key.assert_called_once_with('NEW_AKI', cluster.uuid)
+        connect_iam.return_value.delete_user.assert_called_once_with(cluster.uuid)
+        connect_s3.assert_called_once_with(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+        connect_s3.return_value.lookup.assert_called_once_with(cluster.uuid)
+        connect_s3.return_value.lookup.return_value.delete_keys.assert_called_once_with(['a','b','c'])
 
 class NodeTest(TestCase):
     def setUp(self):
