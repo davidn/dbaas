@@ -112,6 +112,7 @@ class ClusterTest(TestCase):
         self.assertEqual(nodes[2].nid, 5)
         self.assertEqual(nodes[3].nid, 6)
 
+import yaml
 class NodeTest(TestCase):
     def setUp(self):
         self.user = User.objects.create(email='test@example.com')
@@ -127,6 +128,15 @@ class NodeTest(TestCase):
             region=Region.objects.get(code='test-1'),
             flavor=Flavor.objects.get(code='test-small')
         )
+
+    def test_cloud_config(self):
+        node = Node.objects.create(
+            cluster=self.cluster,
+            storage=10,
+            region=Region.objects.get(code='test-1'),
+            flavor=Flavor.objects.get(code='test-small')
+        )
+        yaml.load(node.cloud_config)
 
 from api.crypto import KeyPair
 from Crypto.PublicKey.RSA import importKey, generate
