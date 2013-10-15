@@ -37,7 +37,7 @@ class ClusterTest(TestCase):
         """
         Tests cluster creation.
         """
-        cluster = Cluster.objects.create(user=self.user)
+        Cluster.objects.create(user=self.user)
 
     @patch('api.models.connect_iam', new_callable=connect_iam)
     @patch('api.models.connect_s3', new_callable=connect_s3)
@@ -91,6 +91,7 @@ class ClusterTest(TestCase):
         connect_s3.assert_called_once_with(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         connect_s3.return_value.lookup.assert_called_once_with(cluster.uuid)
         connect_s3.return_value.lookup.return_value.delete_keys.assert_called_once_with(['a','b','c'])
+        self.assertEqual(Cluster.OVER, cluster.status)
 
     def test_next_nid(self):
         cluster = Cluster.objects.create(user=self.user)
@@ -120,7 +121,7 @@ class NodeTest(TestCase):
         """
         Tests node creation.
         """
-        node = Node.objects.create(
+        Node.objects.create(
             cluster=self.cluster,
             storage=10,
             region=Region.objects.get(code='test-1'),
@@ -161,7 +162,6 @@ class KeyPairTest(TestCase):
 
 from api.crypto import CertificateAuthority
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM, X509Extension
-from hashlib import sha1
 class CertificateAuthorityTest(TestCase):
     def test_X509(self):
         cert = load_certificate(FILETYPE_PEM, CertificateAuthority().certificate)
