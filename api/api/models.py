@@ -31,7 +31,7 @@ from providers.gce import GoogleComputeEngine
 from providers.openstack import Rackspace
 from providers.pb import ProfitBrick
 from .crypto import KeyPair, SslPair, CertificateAuthority
-from .utils import retry, split_every, cron_validator
+from .utils import retry, split_every, cron_validator, mysql_database_validator
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -240,6 +240,7 @@ class Cluster(models.Model):
                       "Action": "s3:*",
                       "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
                 }]}""" % {'iam': self.iam_arn, 'bucket': self.uuid})
+                return True
         retry(attempt_bucket_policy)
 
     def terminate(self):
@@ -397,6 +398,7 @@ class LBRRegionNodeSet(models.Model):
                 rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
                 rrs.add_change_record('CREATE', self.record)
                 catch_dns_exists(rrs)
+                return True
             retry(try_add_dns)
         self.launched = True
         self.save()
@@ -419,6 +421,7 @@ class LBRRegionNodeSet(models.Model):
                 rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
                 rrs.add_change_record('DELETE', self.record)
                 catch_dns_not_found(rrs)
+                return True
             retry(try_remove_dns)
 
 
@@ -779,6 +782,7 @@ runcmd:
                 health_check = HealthCheck(connection=r53, caller_reference=self.health_check_reference,
                                            ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
                 self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
+                return True
             retry(try_setup_health_check)
             def try_setup_dns():
                 rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
@@ -788,6 +792,7 @@ runcmd:
                 rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
                                                               resource_records=[self.ip]))
                 catch_dns_exists(rrs)
+                return True
             retry(try_setup_dns)
 
     def remove_dns(self):
@@ -801,6 +806,7 @@ runcmd:
                 rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
                                                               resource_records=[self.ip]))
                 catch_dns_not_found(rrs)
+                return True
             retry(try_remove_dns)
             def try_remove_health_check():
                 try:
@@ -808,6 +814,7 @@ runcmd:
                 except exception.DNSServerError, e:
                     if e.status != 404:
                         raise
+                return True
             retry(try_remove_health_check)
 
     def do_install(self):
@@ -857,10 +864,7 @@ runcmd:
 
     def add_database(self, dbname):
         """Create a new MySQL database on this node and grant the user permission to it."""
-        if len(dbname) > 64:
-            raise RuntimeError("Database name too long: %s" % dbname)
-        if not re.match(r'^\w*[A-Za-z]\w*$', dbname):
-            raise RuntimeError("Database name must consist of at least one letter and numbers only: %s" % dbname)
+        mysql_database_validator(dbname)
         con = MySQLdb.connect(host=self.dns_name,
                               user=settings.MYSQL_USER,
                               passwd=settings.MYSQL_PASSWORD,

@@ -19,6 +19,7 @@ from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.mail import mail_admins
+from django.core.exceptions import ValidationError
 from rest_framework import viewsets, mixins, status, permissions
 from .models import Cluster, Node, Region, Provider, Flavor
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
@@ -27,6 +28,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action, link, api_view, permission_classes
 from django.http.response import HttpResponse
 from pyzabbix import ZabbixAPI
+from api.utils import mysql_database_validator
 
 
 class Owner(permissions.BasePermission):
@@ -192,10 +194,14 @@ class ClusterViewSet(mixins.CreateModelMixin,
     @action()
     def add_database(self, request, *args, **kwargs):
         self.object = self.get_object()
-        add_database(self.object, request.DATA['dbname'])
-        serializer = self.get_serializer(self.object)
-        serializer.save()
-        return Response(status=status.HTTP_200_OK)
+        try:
+            mysql_database_validator(request.DATA['dbname'])
+            add_database(self.object, request.DATA['dbname'])
+            serializer = self.get_serializer(self.object)
+            serializer.save()
+            return Response(status=status.HTTP_200_OK)
+        except ValidationError, e:
+            return Response({'dbname': list(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
 
     @action()
     def launch_all(self, request, *args, **kwargs):
