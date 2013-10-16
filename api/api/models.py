@@ -581,13 +581,13 @@ class Node(models.Model):
         cloud_config.add_file(
             "/etc/mysqld-grants",
             dedent("""\
-                CREATE DATABASE {dbname};
                 CREATE USER '{dbusername}'@'%' IDENTIFIED BY PASSWORD '{dbpassword}';
                 CREATE USER '{mysql_user}'@'%' IDENTIFIED BY PASSWORD '{mysql_password}';
-                GRANT ALL ON {dbname}.* to '{dbusername}'@'%';
                 GRANT ALL ON *.* to '{mysql_user}'@'%' WITH GRANT OPTION;
-                """),
-            dbname=self.cluster.dbname,
+                """) + "".join(
+                    "CREATE DATABASE {dbname};\nGRANT ALL ON {dbname}.* to '{{dbusername}}'@'%';\n".format(
+                        dbname=dbname,
+                    ) for dbname in self.cluster.dbname.split(',')),
             dbusername=self.cluster.dbusername,
             dbpassword='*' + sha1(sha1(self.cluster.dbpassword).digest()).hexdigest().upper(),
             mysql_user=settings.MYSQL_USER,
