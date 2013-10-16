@@ -315,8 +315,8 @@ class Region(models.Model):
     name = models.CharField("Name", max_length=255)
     image = models.CharField("Image", max_length=255)
     lbr_region = models.CharField("LBR Region", max_length=20)
-    key_name = models.CharField("SSH Key", max_length=255)
-    security_group = models.CharField("Security Group", max_length=255)
+    key_name = models.CharField("SSH Key", max_length=255, blank=True)
+    security_group = models.CharField("Security Group", max_length=255, blank=True)
     longitude = models.FloatField("Longitude", validators=[MaxValueValidator(180), MinValueValidator(-180)])
     latitude = models.FloatField("Latitude", validators=[MaxValueValidator(90), MinValueValidator(-90)])
 
