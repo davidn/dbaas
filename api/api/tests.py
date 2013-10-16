@@ -8,6 +8,7 @@ Replace this with more appropriate tests for your application.
 from django.test import TestCase
 from mock import MagicMock, patch, call
 from django.conf import settings
+from textwrap import dedent
 
 def connect_iam():
     connect_iam = MagicMock()
@@ -156,7 +157,8 @@ class AddDatabaseControllerTest(TestCase):
             connect.return_value.cursor.return_value.execute.call_args_list
         )
 
-import yaml, json
+import yaml
+from hashlib import sha1
 class NodeTest(TestCase):
     def setUp(self):
         self.user = User.objects.create(email='test@example.com')
@@ -192,6 +194,32 @@ class NodeTest(TestCase):
         for key in comp.keys():
             self.assertItemsEqual(yml[key], comp[key])
         self.assertEqual(len(comp), len(yml))
+
+    def test_cloud_config_multi_db(self):
+        self.cluster.dbname = "first_database,second_database"
+        self.cluster.dbusername = "dbuser"
+        self.cluster.dbpassword = "dbpw"
+        node = Node.objects.create(
+            cluster=self.cluster,
+            storage=10,
+            region=Region.objects.get(code='test-1'),
+            flavor=Flavor.objects.get(code='test-small')
+        )
+        yml = yaml.load(node.cloud_config)
+        for f in yml['write_files']:
+            if f['path'] == '/etc/mysqld-grants':
+                self.assertMultiLineEqual(f['content'], dedent("""\
+                    CREATE USER 'dbuser'@'%' IDENTIFIED BY PASSWORD '*5D8437CCDC45A2E565B0561CBB441CF1371202C8';
+                    CREATE USER '{mysql_user}'@'%' IDENTIFIED BY PASSWORD '{mysql_password}';
+                    GRANT ALL ON *.* to '{mysql_user}'@'%' WITH GRANT OPTION;
+                    CREATE DATABASE first_database;
+                    GRANT ALL ON first_database.* to 'dbuser'@'%';
+                    CREATE DATABASE second_database;
+                    GRANT ALL ON second_database.* to 'dbuser'@'%';
+                    """).format(mysql_user=settings.MYSQL_USER, mysql_password='*' + sha1(sha1(settings.MYSQL_PASSWORD).digest()).hexdigest().upper()))
+                break
+        else:
+            raise self.failureException('/etc/mysqld-grants not found in cloud_config')
 
 from api.crypto import KeyPair
 from Crypto.PublicKey.RSA import importKey, generate
