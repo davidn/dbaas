@@ -388,21 +388,6 @@
   },
   {
     "model": "api.region",
-    "pk": 23,
-    "fields": {
-      "provider": 7,
-      "code": "us-central2-a",
-      "name": "GCE USA2a",
-	  "image": "dbaas-gce",
-	  "lbr_region": "us-west-1",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": 0,
-      "longitude": 0
-    }
-  },
-  {
-    "model": "api.region",
     "pk": 24,
     "fields": {
       "provider": 7,
