@@ -783,7 +783,7 @@ class Node(models.Model):
 
     @property
     def health_check_reference(self):
-        return self.instance_id + self.ip
+        return str(n.id)+"-"+n.ip
 
     def setup_dns(self):
         if self.region.provider.code != 'test':
