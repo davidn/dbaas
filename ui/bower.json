@@ -1,0 +1,37 @@
+{
+  "name": "geniedb",
+  "version": "0.0.0",
+  "main": "index.html",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components"
+  ],
+  "dependencies": {
+    "jquery": "latest",
+    "lodash": "latest",
+    "bootstrap": "latest",
+    "angular": "latest",
+    "angular-resource": "latest",
+    "angular-mocks": "latest",
+    "angular-ui": "latest",
+    "angular-ui-utils": "latest",
+    "moment": "latest",
+    "less.js": "latest",
+    "font-awesome": "latest",
+    "angular-resource-unstable": "latest",
+    "angular-route": "latest",
+    "angular-sanitize": "latest",
+    "angular-ui-bootstrap": "latest",
+    "angular-ui-select2": "latest",
+    "angulartics": "latest",
+    "ngstorage": "latest",
+    "select2": "latest",
+    "toastr": "latest",
+    "jquery-jsonp": "latest",
+    "sparkline": "latest"
+  },
+  "resolutions": {
+    "angular": "1.2.0-rc.3"
+  }
+}

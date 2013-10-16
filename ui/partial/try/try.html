@@ -1,0 +1,28 @@
+<div class="modal-dialog login" ng-controller="TryCtrl">
+	<div class="modal-content login">
+		<form id="register-form" class="form-login">
+			<div class="modal-header">Sign Up</div>
+			<div class="modal-body">
+				<p>
+					To get started all we need is your email address. </p>
+
+				<p>
+					<input class="input-login" type="text" ng-model="form.email" placeholder="Email Address" required>
+				</p>
+
+				<p>
+					By clicking the button below, you agree to GenieDB's
+					<a href="http://www.geniedb.com/wp-content/uploads/2013/08/GenieDB-DBaaS-Customer-Agreement-8-01-13.pdf">terms of service</a>.
+				</p>
+
+				<div>
+					<button type="submit" class="btn btn-success" btn-loading="isLoading" data-loading-text="Signing Up..." ng-click="register()">SIGN UP</button>
+				</div>
+			</div>
+			<div class="modal-footer">
+				Already have an account?
+				<button type="submit" class="btn btn-primary pull-right" ng-click="cancel()">SIGN IN</button>
+			</div>
+		</form>
+	</div>
+</div>

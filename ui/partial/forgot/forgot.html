@@ -1,0 +1,32 @@
+<div class="modal-dialog login" ng-controller="ForgotCtrl">
+	<div class="modal-content login">
+		<form id="register-form" class="form-login">
+			<div class="modal-header">Sign Up</div>
+			<div class="modal-body" ng-if="!submitted">
+				<p>
+					Enter your username </p>
+
+				<p>
+					<input class="input-login" type="text" ng-model="form.email" placeholder="Email Address" required>
+				</p>
+
+				<div>
+					<button type="submit" class="btn btn-success" btn-loading="isLoading" data-loading-text="Sending Reminder..." ng-click="reminder()">SUBMIT</button>
+				</div>
+			</div>
+			<div class="modal-body" ng-if="submitted">
+				<p>
+					<b> Please check your email for next steps to access your account.</b>
+				</p>
+
+				<p>
+					If your reminder email has not arrived, be sure to check your junk folder. Sometimes automated emails are more likely to get blocked by overzealous SPAM filters. If you do not receive your email within 10 minutes, be sure to
+					<a href="mailto:support@geniedb.com?subject=Help activating account">contact us</a> and we'll activate your account manually.
+				</p>
+			</div>
+			<div class="modal-footer">
+				<button type="submit" class="btn btn-primary pull-right" ng-click="cancel()">SIGN IN</button>
+			</div>
+		</form>
+	</div>
+</div>

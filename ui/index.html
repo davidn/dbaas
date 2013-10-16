@@ -1,0 +1,112 @@
+<!doctype html><!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]--><!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]--><!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]--><!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>GenieDB DBaaS Console</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+	<!-- CSS from Bower components  -->
+	<link href="bower_components/angular-ui/build/angular-ui.css" rel="stylesheet">
+
+	<!-- App LESS -->
+	<link href="css/app.less" type="text/css" rel="stylesheet/less">
+</head>
+<body ng-app="geniedb">
+
+<!--[if lt IE 7]>
+<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please
+	<a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+<![endif]-->
+
+
+<div ng-controller="MainCntl" class="container">
+	<div class="navbar navbar-fixed-top navbar-default" role="navigation" ng-controller="NavigationCtlr">
+		<div class="container">
+			<div class="navbar-header">
+				<a id="dbaasHeader" class="navbar-brand" href="#"> <img src="img/DBaaSConsole_Logo.png"/> </a>
+			</div>
+			<div id="logout" class="navbar-header" ng-if="user.token">
+				Welcome {{ user.email }}&nbsp;
+				<i class="icon-user" ng-class="{'paid-user': user.isPaid}"></i> &nbsp;&nbsp;
+				<button class="btn btn-primary btn-sm" ng-click="logout()">LOGOUT</button>
+				<button class="btn btn-success btn-sm" ng-if="!user.isPaid" ng-click="upgrade()" analytics-on="click" analytics-event="Upgrade">UPGRADE</button>
+			</div>
+			<a id="gdbHeader" class="navbar-right" href="http://www.geniedb.com/"><img src="img/GenieDB_Logo.png"/></a>
+		</div>
+	</div>
+
+	<div ng-view></div>
+	<div class="version-tag" ng-right-click="showInfo(event)">GenieDB DBaaS v<span app-version></span></div>
+</div>
+
+<!--[if lt IE 9]>
+<script src="bower_components/es5-shim/es5-shim.js"></script>
+<script src="bower_components/json3/lib/json3.min.js"></script>
+<![endif]-->
+
+<!-- Livereload script for development only (stripped during dist build) -->
+<script src="http://localhost:35729/livereload.js" data-build="exclude"></script>
+
+<!-- JS from Bower components -->
+<script src="bower_components/less.js/dist/less-1.4.0.js" data-build="exclude"></script>
+<script src="bower_components/jquery/jquery.js"></script>
+<script src="bower_components/lodash/dist/lodash.compat.js"></script>
+<script src="bower_components/bootstrap/js/bootstrap-affix.js"></script>
+<script src="bower_components/bootstrap/js/bootstrap-alert.js"></script>
+<script src="bower_components/bootstrap/js/bootstrap-button.js"></script>
+<script src="bower_components/bootstrap/js/bootstrap-carousel.js"></script>
+<script src="bower_components/bootstrap/js/bootstrap-collapse.js"></script>
+<script src="bower_components/bootstrap/js/bootstrap-dropdown.js"></script>
+<script src="bower_components/bootstrap/js/bootstrap-modal.js"></script>
+<script src="bower_components/bootstrap/js/bootstrap-tooltip.js"></script>
+<script src="bower_components/bootstrap/js/bootstrap-popover.js"></script>
+<script src="bower_components/bootstrap/js/bootstrap-scrollspy.js"></script>
+<script src="bower_components/bootstrap/js/bootstrap-tab.js"></script>
+<script src="bower_components/bootstrap/js/bootstrap-transition.js"></script>
+<script src="bower_components/bootstrap/js/bootstrap-typeahead.js"></script>
+<script src="bower_components/angular/angular.min.js"></script>
+<script src="bower_components/angular-resource/angular-resource.js"></script>
+<script src="bower_components/angular-cookies/angular-cookies.js"></script>
+<script src="bower_components/angular-ui/build/angular-ui.js"></script>
+<script src="bower_components/angular-bootstrap/ui-bootstrap.js"></script>
+<script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+<script src="bower_components/moment/min/moment.min.js"></script>
+
+<!-- Main App JS -->
+<script src="js/setup.js"></script>
+
+<!-- Service JS -->
+<script src="service/growl.js"></script>
+  <script src="service/user.js"></script>
+  <script src="service/apiModel.js"></script>
+  <script src="service/userVoice.js"></script>
+  <!-- Add New Service JS Above -->
+
+<!-- Directive JS -->
+<!-- Add New Directive JS Above -->
+
+<!-- Filter JS -->
+<!-- Add New Filter JS Above -->
+
+<!-- Partial JS -->
+<script src="partial/activate/activate.js"></script>
+  <script src="partial/forgot/forgot.js"></script>
+  <script src="partial/list/list.js"></script>
+  <script src="partial/try/try.js"></script>
+  <script src="partial/thanks/thanks.js"></script>
+  <script src="partial/quickstart/quickstart.js"></script>
+  <script src="partial/cluster/cluster.js"></script>
+  <script src="partial/node/node.js"></script>
+  <script src="partial/monitor/monitor.js"></script>
+  <script src="partial/logout/logout.js"></script>
+  <script src="partial/impersonate/impersonate.js"></script>
+  <!-- Add New Partial JS Above -->
+
+</body>
+</html>
