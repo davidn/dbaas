@@ -139,7 +139,7 @@ class ClusterSerializer(serializers.HyperlinkedModelSerializer):
     backup_schedule = CronField()
     class Meta:
         model = Cluster
-        fields = ('url', 'id', 'label','user','dbname','dbusername','dbpassword','dns_name','port','nodes', 'backup_count', 'backup_schedule', 'ca_cert', 'client_cert', 'client_key')
+        fields = ('url', 'id', 'label','status', 'status_code', 'user','dbname','dbusername','dbpassword','dns_name','port','nodes', 'backup_count', 'backup_schedule', 'ca_cert', 'client_cert', 'client_key')
         read_only_fields = ('ca_cert', 'client_cert', 'client_key')
 
 class DateUtilField(serializers.DateTimeField):
