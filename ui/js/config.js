@@ -25,7 +25,8 @@ angular.module('geniedb').constant('dbaasConfig', (function () {
     var quickStartFlavors = {
         rs: "3",
         az: "m1.small",
-        test: "test-small"
+        test: "test-small",
+        gce: "g1-small"
     };
     // TODO: Move launchTimes to server side
     var launchTimes = {
