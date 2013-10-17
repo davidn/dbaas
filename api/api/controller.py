@@ -12,7 +12,7 @@ def launch_cluster(cluster):
     for node in cluster.nodes.all():
         if node.status == Node.INITIAL:
             node.do_launch()
-    install_nodes = cluster.nodes.filter(status=Node.PROVISIONING)
+    install_nodes = cluster.nodes.filter(status=Node.STARTING)
     lbr_regions = cluster.lbr_regions.filter(launched=False)
     task_list = (
         tasks.launch_cluster.si(cluster),
