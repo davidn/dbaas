@@ -243,7 +243,7 @@
             "provider": 2,
             "code": "lon",
             "name": "Rackspace London",
-            "image": "TODO-NOEL-FIXME!!!!",
+            "image": "800b92aa-2292-4fb5-9282-2e8b7863ae92",
             "lbr_region": "eu-west-1",
             "key_name": "dbaas",
             "security_group": "",
