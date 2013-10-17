@@ -42,7 +42,7 @@ angular.module('geniedb').controller('ListCtrl', function ($scope, $location, $t
         var launchTime = _.max(providers,function (provider) {
             return provider.launchTime;
         }).launchTime;
-        var msg = 'We are now spinning up the cluster you requested.  You will receive an email when the cluster is available.  <br /><br />In general ' + _.pluck(providers, 'name').join(' and ') + ' take' + (providers.length > 1 ? '' : 's') + ' about ' + launchTime + ' minutes to provision and launch their nodes.';
+        var msg = 'We are now spinning up the cluster you requested.  You will receive an email with <strong>connection instructions</strong> when the cluster is available.  <br /><br />In general ' + _.pluck(providers, 'name').join(' and ') + ' take' + (providers.length > 1 ? '' : 's') + ' about ' + launchTime + ' minutes to provision and launch their nodes.';
         var btns = [
             {result: 'ok', label: 'Ok', cssClass: 'btn-success'}
         ];
