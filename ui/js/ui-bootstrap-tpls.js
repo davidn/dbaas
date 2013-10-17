@@ -1,7 +1,7 @@
 //TODO: Move to distributed version once the PR is published  https://github.com/angular-ui/bootstrap/pull/1171
 
-angular.module("ui.bootstrap", ["ui.bootstrap.tpls", "ui.bootstrap.transition", "ui.bootstrap.collapse", "ui.bootstrap.accordion", "ui.bootstrap.alert", "ui.bootstrap.bindHtml", "ui.bootstrap.buttons", "ui.bootstrap.carousel", "ui.bootstrap.position", "ui.bootstrap.datepicker", "ui.bootstrap.dropdownToggle", "ui.bootstrap.modal", "ui.bootstrap.pagination", "ui.bootstrap.tooltip", "ui.bootstrap.popover", "ui.bootstrap.progressbar", "ui.bootstrap.rating", "ui.bootstrap.tabs", "ui.bootstrap.timepicker", "ui.bootstrap.typeahead"]);
-angular.module("ui.bootstrap.tpls", ["template/accordion/accordion-group.html", "template/accordion/accordion.html", "template/alert/alert.html", "template/carousel/carousel.html", "template/carousel/slide.html", "template/datepicker/datepicker.html", "template/datepicker/popup.html", "template/modal/backdrop.html", "template/modal/window.html", "template/pagination/pager.html", "template/pagination/pagination.html", "template/tooltip/tooltip-html-unsafe-popup.html", "template/tooltip/tooltip-popup.html", "template/popover/popover.html", "template/progressbar/bar.html", "template/progressbar/progress.html", "template/rating/rating.html", "template/tabs/tab.html", "template/tabs/tabset-titles.html", "template/tabs/tabset.html", "template/timepicker/timepicker.html", "template/typeahead/typeahead-match.html", "template/typeahead/typeahead-popup.html"]);
+angular.module("ui.bootstrap", ["ui.bootstrap.tpls", "ui.bootstrap.transition", "ui.bootstrap.collapse", "ui.bootstrap.accordion", "ui.bootstrap.alert", "ui.bootstrap.bindHtml", "ui.bootstrap.buttons", "ui.bootstrap.position", "ui.bootstrap.dropdownToggle", "ui.bootstrap.modal", "ui.bootstrap.pagination", "ui.bootstrap.tooltip", "ui.bootstrap.popover", "ui.bootstrap.progressbar", "ui.bootstrap.rating", "ui.bootstrap.tabs", "ui.bootstrap.timepicker", "ui.bootstrap.typeahead"]);
+angular.module("ui.bootstrap.tpls", ["template/accordion/accordion-group.html", "template/accordion/accordion.html", "template/alert/alert.html", "template/modal/backdrop.html", "template/modal/window.html", "template/pagination/pager.html", "template/pagination/pagination.html", "template/tooltip/tooltip-html-unsafe-popup.html", "template/tooltip/tooltip-popup.html", "template/popover/popover.html", "template/progressbar/bar.html", "template/progressbar/progress.html", "template/rating/rating.html", "template/tabs/tab.html", "template/tabs/tabset-titles.html", "template/tabs/tabset.html", "template/timepicker/timepicker.html", "template/typeahead/typeahead-match.html", "template/typeahead/typeahead-popup.html"]);
 angular.module('ui.bootstrap.transition', [])
 
 /**
@@ -2588,73 +2588,6 @@ angular.module("template/alert/alert.html", []).run(["$templateCache", function 
             "    <div ng-transclude></div>\n" +
             "</div>\n" +
             "");
-}]);
-
-angular.module("template/carousel/carousel.html", []).run(["$templateCache", function ($templateCache) {
-    $templateCache.put("template/carousel/carousel.html",
-        "<div ng-mouseenter=\"pause()\" ng-mouseleave=\"play()\" class=\"carousel\">\n" +
-            "    <ol class=\"carousel-indicators\" ng-show=\"slides().length > 1\">\n" +
-            "        <li ng-repeat=\"slide in slides()\" ng-class=\"{active: isActive(slide)}\" ng-click=\"select(slide)\"></li>\n" +
-            "    </ol>\n" +
-            "    <div class=\"carousel-inner\" ng-transclude></div>\n" +
-            "    <a ng-click=\"prev()\" class=\"carousel-control left\" ng-show=\"slides().length > 1\">&lsaquo;</a>\n" +
-            "    <a ng-click=\"next()\" class=\"carousel-control right\" ng-show=\"slides().length > 1\">&rsaquo;</a>\n" +
-            "</div>\n" +
-            "");
-}]);
-
-angular.module("template/carousel/slide.html", []).run(["$templateCache", function ($templateCache) {
-    $templateCache.put("template/carousel/slide.html",
-        "<div ng-class=\"{\n" +
-            "    'active': leaving || (active && !entering),\n" +
-            "    'prev': (next || active) && direction=='prev',\n" +
-            "    'next': (next || active) && direction=='next',\n" +
-            "    'right': direction=='prev',\n" +
-            "    'left': direction=='next'\n" +
-            "  }\" class=\"item\" ng-transclude></div>\n" +
-            "");
-}]);
-
-angular.module("template/datepicker/datepicker.html", []).run(["$templateCache", function ($templateCache) {
-    $templateCache.put("template/datepicker/datepicker.html",
-        "<table>\n" +
-            "  <thead>\n" +
-            "    <tr class=\"text-center\">\n" +
-            "      <th><button type=\"button\" class=\"btn pull-left\" ng-click=\"move(-1)\"><i class=\"icon-chevron-left\"></i></button></th>\n" +
-            "      <th colspan=\"{{rows[0].length - 2 + showWeekNumbers}}\"><button type=\"button\" class=\"btn btn-block\" ng-click=\"toggleMode()\"><strong>{{title}}</strong></button></th>\n" +
-            "      <th><button type=\"button\" class=\"btn pull-right\" ng-click=\"move(1)\"><i class=\"icon-chevron-right\"></i></button></th>\n" +
-            "    </tr>\n" +
-            "    <tr class=\"text-center\" ng-show=\"labels.length > 0\">\n" +
-            "      <th ng-show=\"showWeekNumbers\">#</th>\n" +
-            "      <th ng-repeat=\"label in labels\">{{label}}</th>\n" +
-            "    </tr>\n" +
-            "  </thead>\n" +
-            "  <tbody>\n" +
-            "    <tr ng-repeat=\"row in rows\">\n" +
-            "      <td ng-show=\"showWeekNumbers\" class=\"text-center\"><em>{{ getWeekNumber(row) }}</em></td>\n" +
-            "      <td ng-repeat=\"dt in row\" class=\"text-center\">\n" +
-            "        <button type=\"button\" style=\"width:100%;\" class=\"btn\" ng-class=\"{'btn-info': dt.selected}\" ng-click=\"select(dt.date)\" ng-disabled=\"dt.disabled\"><span ng-class=\"{muted: dt.secondary}\">{{dt.label}}</span></button>\n" +
-            "      </td>\n" +
-            "    </tr>\n" +
-            "  </tbody>\n" +
-            "</table>\n" +
-            "");
-}]);
-
-angular.module("template/datepicker/popup.html", []).run(["$templateCache", function ($templateCache) {
-    $templateCache.put("template/datepicker/popup.html",
-        "<ul class=\"dropdown-menu\" ng-style=\"{display: (isOpen && 'block') || 'none', top: position.top+'px', left: position.left+'px'}\" class=\"dropdown-menu\">\n" +
-            "	<li ng-transclude></li>\n" +
-            "	<li class=\"divider\"></li>\n" +
-            "	<li style=\"padding: 9px;\">\n" +
-            "		<span class=\"btn-group\">\n" +
-            "			<button class=\"btn btn-small btn-inverse\" ng-click=\"today()\">Today</button>\n" +
-            "			<button class=\"btn btn-small btn-info\" ng-click=\"showWeeks = ! showWeeks\" ng-class=\"{active: showWeeks}\">Weeks</button>\n" +
-            "			<button class=\"btn btn-small btn-danger\" ng-click=\"clear()\">Clear</button>\n" +
-            "		</span>\n" +
-            "		<button class=\"btn btn-small btn-success pull-right\" ng-click=\"isOpen = false\">Close</button>\n" +
-            "	</li>\n" +
-            "</ul>");
 }]);
 
 angular.module("template/modal/backdrop.html", []).run(["$templateCache", function ($templateCache) {

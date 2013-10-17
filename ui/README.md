@@ -9,20 +9,15 @@
 
 
 
-Setup local environment
+## Setup Build Environment
 
 ```shell
 npm install
 bower install
 ```
 
-```shell
-npm install
-bower install
-```
 
-
-### Special Build Bower Components (Don't know why these specifically do not play nice with bower packaging rules)
+### Special Build Bower Components (Don't know why this specifically does not play nice with bower packaging rules)
 
 ```shell
 cd bower_components/sparkline
