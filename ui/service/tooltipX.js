@@ -226,7 +226,7 @@ angular.module( 'ui.bootstrap.tooltipX', [ 'ui.bootstrap.position', 'ui.bootstra
             scope.tt_isOpen = true;
               _.each(activeTooltips, function (element, index, list){
                   element.Hide();
-              })
+              });
             activeTooltips.push(scope);
           }
 
@@ -330,11 +330,9 @@ angular.module( 'ui.bootstrap.tooltipX', [ 'ui.bootstrap.position', 'ui.bootstra
     templateUrl: 'template/tooltip/tooltip-popup.html'
   };
 })
-
-.directive( 'tooltip', [ '$tooltipX', function ( $tooltip ) {
+.directive( 'tooltip', [ '$tooltipX', function ( $tooltipX ) {
   return $tooltipX( 'tooltip', 'tooltip', 'mouseenter' );
 }])
-
 .directive( 'tooltipHtmlUnsafePopup', function () {
   return {
     restrict: 'E',
@@ -344,6 +342,6 @@ angular.module( 'ui.bootstrap.tooltipX', [ 'ui.bootstrap.position', 'ui.bootstra
   };
 })
 
-.directive( 'tooltipHtmlUnsafe', [ '$tooltipX', function ( $tooltip ) {
+.directive( 'tooltipHtmlUnsafe', [ '$tooltipX', function ( $tooltipX ) {
   return $tooltipX( 'tooltipHtmlUnsafe', 'tooltip', 'mouseenter' );
 }]);

@@ -1,10 +1,10 @@
-angular.module('geniedb', ['GenieDBaaS.config', 'Utility.directives', 'GenieDBaaS.services', 'ui.directives', 'ui.bootstrap.tooltipX',
-    'ngRoute', 'ngSanitize', 'ngResource', 'ngStorage', 'ui.select2', 'ui.bootstrap', 'angulartics', 'angulartics.google.analytics', "messageBox"]);
+angular.module('geniedb', ['ui.keypress', 'ui.bootstrap.tooltipX', 'ngRoute', 'ngSanitize', 'ngResource', 'ngStorage', 'ui.select2', 'ui.bootstrap', 'angulartics', 'angulartics.google.analytics', 'messageBox']);
 
 angular.module('geniedb').config(function ($routeProvider, $httpProvider, $compileProvider) {
 
     $routeProvider.
         when('/', {templateUrl: 'partial/welcome/welcome.html'}).
+        when('/activate/:activationHash', {templateUrl: 'partial/activate/activate.html'}).
         when('/cluster', {templateUrl: 'partial/cluster/cluster.html'}).
         when('/cluster/:clusterid/node', {templateUrl: 'partial/node/node.html'}).
         when('/forgot', {templateUrl: 'partial/forgot/forgot.html'}).
@@ -15,7 +15,6 @@ angular.module('geniedb').config(function ($routeProvider, $httpProvider, $compi
         when('/quickstart', {templateUrl: 'partial/quickstart/quickstart.html'}).
         when('/thankyou', {templateUrl: 'partial/thanks/thanks.html'}).
         when('/try', {templateUrl: 'partial/try/try.html'}).
-        when('/activate/:activationHash', {templateUrl: 'partial/activate/activate.html'}).
         /* Add New Routes Above */
         otherwise({redirectTo: '/'});
 
