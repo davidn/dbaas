@@ -86,7 +86,7 @@ class RackspaceLondon(Openstack):
     USER = settings.RACKSPACELONDON_USER
     PASS = settings.RACKSPACELONDON_PASS
     TENANT = settings.RACKSPACELONDON_TENANT
-    AUTH_URL = settings.RACKSPACE_AUTHLONDON_URL
+    AUTH_URL = settings.RACKSPACELONDON_AUTH_URL
 
 
 
