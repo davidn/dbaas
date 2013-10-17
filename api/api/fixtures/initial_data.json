@@ -1,944 +1,944 @@
 [
-  {
-    "model": "api.provider",
-    "pk": 1,
-    "fields": {
-      "name": "Amazon",
-      "code": "az",
-      "enabled": true
-    }
-  },
-  {
-    "model": "api.provider",
-    "pk": 2,
-    "fields": {
-      "name": "Rackspace",
-      "code": "rs",
-      "enabled": true
-    }
-  },
-  {
-    "model": "api.provider",
-    "pk": 3,
-    "fields": {
-      "name": "Test",
-      "code": "test",
-      "enabled": false
-    }
-  },
-  {
-    "model": "api.provider",
-    "pk": 4,
-    "fields": {
-      "name": "HP Cloud",
-      "code": "hp",
-      "enabled": false
-    }
-  },
-  {
-    "model": "api.provider",
-    "pk": 5,
-    "fields": {
-      "name": "LayeredTech",
-      "code": "layeredtech",
-      "enabled": false
-    }
-  },
-  {
-    "model": "api.provider",
-    "pk": 6,
-    "fields": {
-      "name": "DataPipe",
-      "code": "datapipe",
-      "enabled": false
-    }
-  },
-  {
-    "model": "api.provider",
-    "pk": 7,
-    "fields": {
-      "name": "Google Compute Engine",
-      "code": "gce",
-      "enabled": true
-    }
-  },
-  {
-    "model": "api.provider",
-    "pk": 8,
-    "fields": {
-      "name": "ProfitBricks",
-      "code": "pb",
-      "enabled": false
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 1,
-    "fields": {
-      "provider": 1,
-      "code": "us-west-1",
-      "name": "EC2 US West (Northern California)",
-      "image": "ami-12162257",
-      "lbr_region": "us-west-1",
-      "key_name": "dbaas",
-      "security_group": "dbaas",
-      "latitude": 41.48,
-      "longitude": -120.53
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 2,
-    "fields": {
-      "provider": 1,
-      "code": "us-west-2",
-      "name": "EC2 US West (Oregon)",
-      "image": "ami-f4e07ec4",
-      "lbr_region": "us-west-2",
-      "key_name": "dbaas",
-      "security_group": "dbaas",
-      "latitude": 46.15,
-      "longitude": -123.88
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 3,
-    "fields": {
-      "provider": 1,
-      "code": "us-east-1",
-      "name": "EC2 US East (Northern Virginia)",
-      "image": "ami-fb227592",
-      "lbr_region": "us-east-1",
-      "key_name": "dbaas",
-      "security_group": "dbaas",
-      "latitude": 38.13,
-      "longitude": -78.45
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 4,
-    "fields": {
-      "provider": 1,
-      "code": "eu-west-1",
-      "name": "EC2 EU (Ireland)",
-      "image": "ami-1043a467",
-      "lbr_region": "eu-west-1",
-      "key_name": "dbaas",
-      "security_group": "dbaas",
-      "latitude": 53,
-      "longitude": -8
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 5,
-    "fields": {
-      "provider": 1,
-      "code": "ap-northeast-1",
-      "name": "EC2 Asia Pacific (Tokyo)",
-      "image": "ami-914ed090",
-      "lbr_region": "ap-northeast-1",
-      "key_name": "dbaas",
-      "security_group": "dbaas",
-      "latitude": 35.41,
-      "longitude": 139.42
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 6,
-    "fields": {
-      "provider": 1,
-      "code": "ap-southeast-1",
-      "name": "EC2 Asia Pacific (Singapore)",
-      "image": "ami-cc206a9e",
-      "lbr_region": "ap-southeast-1",
-      "key_name": "dbaas",
-      "security_group": "dbaas",
-      "latitude": 1.37,
-      "longitude": 103.8
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 7,
-    "fields": {
-      "provider": 1,
-      "code": "ap-southeast-2",
-      "name": "EC2 Asia Pacific (Sydney)",
-      "image": "ami-8d65f8b7",
-      "lbr_region": "ap-southeast-2",
-      "key_name": "dbaas",
-      "security_group": "dbaas",
-      "latitude": -33.8683,
-      "longitude": 151.2111
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 8,
-    "fields": {
-      "provider": 1,
-      "code": "sa-east-1",
-      "name": "EC2 South America (Sao Paulo)",
-      "image": "ami-294aed34",
-      "lbr_region": "sa-east-1",
-      "key_name": "dbaas",
-      "security_group": "dbaas",
-      "latitude": -23.34,
-      "longitude": -46.38
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 9,
-    "fields": {
-      "provider": 2,
-      "code": "ord",
-      "name": "Rackspace Chicago",
-      "image": "cc09831b-db14-4367-9c50-7112b3924539",
-      "lbr_region": "us-east-1",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": 41.8819,
-      "longitude": -87.65
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 10,
-    "fields": {
-      "provider": 2,
-      "code": "dfw",
-      "name": "Rackspace Dallas",
-      "image": "f0537183-854c-4c11-a2b8-38add5792d5d",
-      "lbr_region": "us-west-1",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": 32.7828,
-      "longitude": -96.7967
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 11,
-    "fields": {
-      "provider": 2,
-      "code": "syd",
-      "name": "Rackspace Sydney",
-      "image": "b9067883-14d9-479c-9e26-62fa7631dbbc",
-      "lbr_region": "ap-southeast-2",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": -33.8683,
-      "longitude": 151.2111
-    }
-  },
     {
-      "model": "api.region",
-      "pk": 26,
-      "fields": {
-        "provider": 2,
-        "code": "lon",
-        "name": "Rackspace London",
-  	  "image": "TODO-NOEL-FIXME!!!!",
-  	  "lbr_region": "eu-west-1",
-        "key_name": "dbaas",
-        "security_group": "",
-          "latitude": 51,
-          "longitude": 0
-      }
+        "model": "api.provider",
+        "pk": 1,
+        "fields": {
+            "name": "Amazon",
+            "code": "az",
+            "enabled": true
+        }
     },
-  {
-    "model": "api.region",
-    "pk": 12,
-    "fields": {
-      "provider": 3,
-      "code": "test-1",
-      "name": "Test One",
-      "image": "image-test-1",
-      "lbr_region": "test",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": 90,
-      "longitude": 0
+    {
+        "model": "api.provider",
+        "pk": 2,
+        "fields": {
+            "name": "Rackspace",
+            "code": "rs",
+            "enabled": true
+        }
+    },
+    {
+        "model": "api.provider",
+        "pk": 3,
+        "fields": {
+            "name": "Test",
+            "code": "test",
+            "enabled": false
+        }
+    },
+    {
+        "model": "api.provider",
+        "pk": 4,
+        "fields": {
+            "name": "HP Cloud",
+            "code": "hp",
+            "enabled": false
+        }
+    },
+    {
+        "model": "api.provider",
+        "pk": 5,
+        "fields": {
+            "name": "LayeredTech",
+            "code": "layeredtech",
+            "enabled": false
+        }
+    },
+    {
+        "model": "api.provider",
+        "pk": 6,
+        "fields": {
+            "name": "DataPipe",
+            "code": "datapipe",
+            "enabled": false
+        }
+    },
+    {
+        "model": "api.provider",
+        "pk": 7,
+        "fields": {
+            "name": "Google Compute Engine",
+            "code": "gce",
+            "enabled": true
+        }
+    },
+    {
+        "model": "api.provider",
+        "pk": 8,
+        "fields": {
+            "name": "ProfitBricks",
+            "code": "pb",
+            "enabled": false
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 1,
+        "fields": {
+            "provider": 1,
+            "code": "us-west-1",
+            "name": "EC2 US West (Northern California)",
+            "image": "ami-12162257",
+            "lbr_region": "us-west-1",
+            "key_name": "dbaas",
+            "security_group": "dbaas",
+            "latitude": 41.48,
+            "longitude": -120.53
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 2,
+        "fields": {
+            "provider": 1,
+            "code": "us-west-2",
+            "name": "EC2 US West (Oregon)",
+            "image": "ami-f4e07ec4",
+            "lbr_region": "us-west-2",
+            "key_name": "dbaas",
+            "security_group": "dbaas",
+            "latitude": 46.15,
+            "longitude": -123.88
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 3,
+        "fields": {
+            "provider": 1,
+            "code": "us-east-1",
+            "name": "EC2 US East (Northern Virginia)",
+            "image": "ami-fb227592",
+            "lbr_region": "us-east-1",
+            "key_name": "dbaas",
+            "security_group": "dbaas",
+            "latitude": 38.13,
+            "longitude": -78.45
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 4,
+        "fields": {
+            "provider": 1,
+            "code": "eu-west-1",
+            "name": "EC2 EU (Ireland)",
+            "image": "ami-1043a467",
+            "lbr_region": "eu-west-1",
+            "key_name": "dbaas",
+            "security_group": "dbaas",
+            "latitude": 53,
+            "longitude": -8
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 5,
+        "fields": {
+            "provider": 1,
+            "code": "ap-northeast-1",
+            "name": "EC2 Asia Pacific (Tokyo)",
+            "image": "ami-914ed090",
+            "lbr_region": "ap-northeast-1",
+            "key_name": "dbaas",
+            "security_group": "dbaas",
+            "latitude": 35.41,
+            "longitude": 139.42
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 6,
+        "fields": {
+            "provider": 1,
+            "code": "ap-southeast-1",
+            "name": "EC2 Asia Pacific (Singapore)",
+            "image": "ami-cc206a9e",
+            "lbr_region": "ap-southeast-1",
+            "key_name": "dbaas",
+            "security_group": "dbaas",
+            "latitude": 1.37,
+            "longitude": 103.8
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 7,
+        "fields": {
+            "provider": 1,
+            "code": "ap-southeast-2",
+            "name": "EC2 Asia Pacific (Sydney)",
+            "image": "ami-8d65f8b7",
+            "lbr_region": "ap-southeast-2",
+            "key_name": "dbaas",
+            "security_group": "dbaas",
+            "latitude": -33.8683,
+            "longitude": 151.2111
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 8,
+        "fields": {
+            "provider": 1,
+            "code": "sa-east-1",
+            "name": "EC2 South America (Sao Paulo)",
+            "image": "ami-294aed34",
+            "lbr_region": "sa-east-1",
+            "key_name": "dbaas",
+            "security_group": "dbaas",
+            "latitude": -23.34,
+            "longitude": -46.38
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 9,
+        "fields": {
+            "provider": 2,
+            "code": "ord",
+            "name": "Rackspace Chicago",
+            "image": "cc09831b-db14-4367-9c50-7112b3924539",
+            "lbr_region": "us-east-1",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 41.8819,
+            "longitude": -87.65
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 10,
+        "fields": {
+            "provider": 2,
+            "code": "dfw",
+            "name": "Rackspace Dallas",
+            "image": "f0537183-854c-4c11-a2b8-38add5792d5d",
+            "lbr_region": "us-west-1",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 32.7828,
+            "longitude": -96.7967
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 11,
+        "fields": {
+            "provider": 2,
+            "code": "syd",
+            "name": "Rackspace Sydney",
+            "image": "b9067883-14d9-479c-9e26-62fa7631dbbc",
+            "lbr_region": "ap-southeast-2",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": -33.8683,
+            "longitude": 151.2111
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 26,
+        "fields": {
+            "provider": 2,
+            "code": "lon",
+            "name": "Rackspace London",
+            "image": "TODO-NOEL-FIXME!!!!",
+            "lbr_region": "eu-west-1",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 51,
+            "longitude": 0
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 12,
+        "fields": {
+            "provider": 3,
+            "code": "test-1",
+            "name": "Test One",
+            "image": "image-test-1",
+            "lbr_region": "test",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 90,
+            "longitude": 0
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 13,
+        "fields": {
+            "provider": 3,
+            "code": "test-2",
+            "name": "Test Two",
+            "image": "image-test-2",
+            "lbr_region": "test",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": -90,
+            "longitude": 0
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 14,
+        "fields": {
+            "provider": 3,
+            "code": "test-3",
+            "name": "Test Three",
+            "image": "image-test-3",
+            "lbr_region": "test",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 0,
+            "longitude": 0
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 15,
+        "fields": {
+            "provider": 4,
+            "code": "hp",
+            "name": "Unspecified HP Cloud",
+            "image": "xxx",
+            "lbr_region": "test",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 0,
+            "longitude": 0
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 16,
+        "fields": {
+            "provider": 5,
+            "code": "layeredtech",
+            "name": "Unspecified LayeredTech",
+            "image": "xxx",
+            "lbr_region": "test",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 0,
+            "longitude": 0
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 17,
+        "fields": {
+            "provider": 6,
+            "code": "datapipe",
+            "name": "Unspecified DataPipe",
+            "image": "xxx",
+            "lbr_region": "test",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 0,
+            "longitude": 0
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 19,
+        "fields": {
+            "provider": 8,
+            "code": "NORTH_AMERICA",
+            "name": "Las Vegas, NV, USA",
+            "image": "dbaas-image.img",
+            "lbr_region": "us-west-1",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 0,
+            "longitude": 0
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 20,
+        "fields": {
+            "provider": 8,
+            "code": "EUROPE",
+            "name": "Germany",
+            "image": "dbaas-image.img",
+            "lbr_region": "eu-west-1",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 0,
+            "longitude": 0
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 21,
+        "fields": {
+            "provider": 7,
+            "code": "us-central1-a",
+            "name": "GCE USA1a",
+            "image": "dbaas-gce",
+            "lbr_region": "us-west-1",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 0,
+            "longitude": 0
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 22,
+        "fields": {
+            "provider": 7,
+            "code": "us-central1-b",
+            "name": "GCE USA1b",
+            "image": "dbaas-gce",
+            "lbr_region": "us-west-1",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 0,
+            "longitude": 0
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 24,
+        "fields": {
+            "provider": 7,
+            "code": "europe-west1-a",
+            "name": "GCE Europe 1a",
+            "image": "dbaas-gce",
+            "lbr_region": "eu-west-1",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 0,
+            "longitude": 0
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 25,
+        "fields": {
+            "provider": 7,
+            "code": "europe-west1-b",
+            "name": "GCE Europe 1b",
+            "image": "dbaas-gce",
+            "lbr_region": "eu-west-1",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 0,
+            "longitude": 0
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 1,
+        "fields": {
+            "provider": 1,
+            "code": "t1.micro",
+            "name": "t1.micro",
+            "ram": 630,
+            "cpus": 1,
+            "free_allowed": true
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 2,
+        "fields": {
+            "provider": 1,
+            "code": "m1.small",
+            "name": "m1.small",
+            "ram": 1741,
+            "cpus": 1,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 3,
+        "fields": {
+            "provider": 1,
+            "code": "m1.medium",
+            "name": "m1.medium",
+            "ram": 3840,
+            "cpus": 1,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 4,
+        "fields": {
+            "provider": 1,
+            "code": "m1.large",
+            "name": "m1.large",
+            "ram": 7680,
+            "cpus": 2,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 5,
+        "fields": {
+            "provider": 1,
+            "code": "m1.xlarge",
+            "name": "m1.xlarge",
+            "ram": 15360,
+            "cpus": 4,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 6,
+        "fields": {
+            "provider": 1,
+            "code": "m3.xlarge",
+            "name": "m3.xlarge",
+            "ram": 15360,
+            "cpus": 4,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 7,
+        "fields": {
+            "provider": 1,
+            "code": "m3.2xlarge",
+            "name": "m3.2xlarge",
+            "ram": 30720,
+            "cpus": 8,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 8,
+        "fields": {
+            "provider": 1,
+            "code": "c1.medium",
+            "name": "c1.medium",
+            "ram": 1741,
+            "cpus": 2,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 9,
+        "fields": {
+            "provider": 1,
+            "code": "c1.xlarge",
+            "name": "c1.xlarge",
+            "ram": 7168,
+            "cpus": 8,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 10,
+        "fields": {
+            "provider": 1,
+            "code": "cc2.8xlarge",
+            "name": "cc2.8xlarge",
+            "ram": 61952,
+            "cpus": 32,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 11,
+        "fields": {
+            "provider": 1,
+            "code": "m2.xlarge",
+            "name": "m2.xlarge",
+            "ram": 17510,
+            "cpus": 2,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 12,
+        "fields": {
+            "provider": 1,
+            "code": "m2.2xlarge",
+            "name": "m2.2xlarge",
+            "ram": 35021,
+            "cpus": 4,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 13,
+        "fields": {
+            "provider": 1,
+            "code": "m2.4xlarge",
+            "name": "m2.4xlarge",
+            "ram": 70042,
+            "cpus": 8,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 14,
+        "fields": {
+            "provider": 1,
+            "code": "cr1.8xlarge",
+            "name": "cr1.8xlarge",
+            "ram": 229376,
+            "cpus": 32,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 15,
+        "fields": {
+            "provider": 1,
+            "code": "hi1.4xlarge",
+            "name": "hi1.4xlarge",
+            "ram": 61952,
+            "cpus": 16,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 16,
+        "fields": {
+            "provider": 1,
+            "code": "hs1.8xlarge",
+            "name": "hs1.8xlarge",
+            "ram": 119808,
+            "cpus": 16,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 18,
+        "fields": {
+            "provider": 2,
+            "code": "2",
+            "name": "512MB Standard Instance",
+            "ram": 512,
+            "cpus": 1,
+            "free_allowed": true
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 19,
+        "fields": {
+            "provider": 2,
+            "code": "3",
+            "name": "1GB Standard Instance",
+            "ram": 1024,
+            "cpus": 1,
+            "free_allowed": true
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 20,
+        "fields": {
+            "provider": 2,
+            "code": "4",
+            "name": "2GB Standard Instance",
+            "ram": 2048,
+            "cpus": 2,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 21,
+        "fields": {
+            "provider": 2,
+            "code": "5",
+            "name": "4GB Standard Instance",
+            "ram": 4096,
+            "cpus": 2,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 22,
+        "fields": {
+            "provider": 2,
+            "code": "6",
+            "name": "8GB Standard Instance",
+            "ram": 8192,
+            "cpus": 4,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 23,
+        "fields": {
+            "provider": 2,
+            "code": "7",
+            "name": "15GB Standard Instance",
+            "ram": 15872,
+            "cpus": 6,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 24,
+        "fields": {
+            "provider": 2,
+            "code": "8",
+            "name": "30GB Standard Instance",
+            "ram": 30720,
+            "cpus": 8,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 25,
+        "fields": {
+            "provider": 3,
+            "code": "test-small",
+            "name": "Small Fake Instance",
+            "ram": 2048,
+            "cpus": 1,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 26,
+        "fields": {
+            "provider": 3,
+            "code": "test-medium",
+            "name": "Medium Fake Instance",
+            "ram": 4096,
+            "cpus": 2,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 27,
+        "fields": {
+            "provider": 3,
+            "code": "test-large",
+            "name": "Large Fake Instance",
+            "ram": 8192,
+            "cpus": 4,
+            "free_allowed": false
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 28,
+        "fields": {
+            "provider": 4,
+            "code": "hp",
+            "name": "Unspecified HP Cloud",
+            "ram": 1,
+            "cpus": 1
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 29,
+        "fields": {
+            "provider": 5,
+            "code": "layeredtech",
+            "name": "Unspecified LayeredTech",
+            "ram": 1,
+            "cpus": 1
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 30,
+        "fields": {
+            "provider": 6,
+            "code": "datapipe",
+            "name": "Unspecified DataPipe",
+            "ram": 1,
+            "cpus": 1
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 33,
+        "fields": {
+            "provider": 7,
+            "code": "f1-micro",
+            "name": "f1-micro",
+            "ram": 600,
+            "cpus": 1
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 34,
+        "fields": {
+            "provider": 7,
+            "code": "g1-small",
+            "name": "g1-small",
+            "ram": 1700,
+            "cpus": 1
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 35,
+        "fields": {
+            "provider": 7,
+            "code": "n1-standard-1-d",
+            "name": "n1-standard-1-d",
+            "ram": 3750,
+            "cpus": 1
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 36,
+        "fields": {
+            "provider": 7,
+            "code": "n1-standard-2-d",
+            "name": "n1-standard-2-d",
+            "ram": 7500,
+            "cpus": 2
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 37,
+        "fields": {
+            "provider": 7,
+            "code": "n1-standard-4-d",
+            "name": "n1-standard-4-d",
+            "ram": 15000,
+            "cpus": 4
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 38,
+        "fields": {
+            "provider": 7,
+            "code": "n1-standard-8-d",
+            "name": "n1-standard-8-d",
+            "ram": 30000,
+            "cpus": 8
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 39,
+        "fields": {
+            "provider": 7,
+            "code": "n1-standard-1",
+            "name": "n1-standard-1",
+            "ram": 3750,
+            "cpus": 1
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 40,
+        "fields": {
+            "provider": 7,
+            "code": "n1-standard-2",
+            "name": "n1-standard-2",
+            "ram": 7500,
+            "cpus": 2
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 41,
+        "fields": {
+            "provider": 7,
+            "code": "n1-standard-4",
+            "name": "n1-standard-4",
+            "ram": 15000,
+            "cpus": 4
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 42,
+        "fields": {
+            "provider": 7,
+            "code": "n1-standard-8",
+            "name": "n1-standard-8",
+            "ram": 30000,
+            "cpus": 8
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 43,
+        "fields": {
+            "provider": 8,
+            "code": "pb.std1",
+            "name": "PB 1 cpu, 2GB",
+            "ram": 2048,
+            "cpus": 1
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 44,
+        "fields": {
+            "provider": 8,
+            "code": "pb.std2",
+            "name": "PB 2 cpu, 4GB",
+            "ram": 4096,
+            "cpus": 2
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 45,
+        "fields": {
+            "provider": 8,
+            "code": "pb.std4",
+            "name": "PB 4 cpu, 8GB",
+            "ram": 8192,
+            "cpus": 4
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 46,
+        "fields": {
+            "provider": 8,
+            "code": "pb.std6",
+            "name": "PB 6 cpu, 12GB",
+            "ram": 12288,
+            "cpus": 6
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 47,
+        "fields": {
+            "provider": 8,
+            "code": "pb.std8",
+            "name": "PB 8 cpu, 16GB",
+            "ram": 16384,
+            "cpus": 8
+        }
     }
-  },
-  {
-    "model": "api.region",
-    "pk": 13,
-    "fields": {
-      "provider": 3,
-      "code": "test-2",
-      "name": "Test Two",
-      "image": "image-test-2",
-      "lbr_region": "test",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": -90,
-      "longitude": 0
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 14,
-    "fields": {
-      "provider": 3,
-      "code": "test-3",
-      "name": "Test Three",
-      "image": "image-test-3",
-      "lbr_region": "test",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": 0,
-      "longitude": 0
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 15,
-    "fields": {
-      "provider": 4,
-      "code": "hp",
-      "name": "Unspecified HP Cloud",
-      "image": "xxx",
-      "lbr_region": "test",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": 0,
-      "longitude": 0
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 16,
-    "fields": {
-      "provider": 5,
-      "code": "layeredtech",
-      "name": "Unspecified LayeredTech",
-      "image": "xxx",
-      "lbr_region": "test",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": 0,
-      "longitude": 0
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 17,
-    "fields": {
-      "provider": 6,
-      "code": "datapipe",
-      "name": "Unspecified DataPipe",
-      "image": "xxx",
-      "lbr_region": "test",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": 0,
-      "longitude": 0
-    }
-  },
- {
-    "model": "api.region",
-    "pk": 19,
-    "fields": {
-      "provider": 8,
-      "code": "NORTH_AMERICA",
-      "name": "Las Vegas, NV, USA",
-      "image": "dbaas-image.img",
-	  "lbr_region": "us-west-1",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": 0,
-      "longitude": 0
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 20,
-    "fields": {
-      "provider": 8,
-      "code": "EUROPE",
-      "name": "Germany",
-      "image": "dbaas-image.img",
-	  "lbr_region": "eu-west-1",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": 0,
-      "longitude": 0
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 21,
-    "fields": {
-      "provider": 7,
-      "code": "us-central1-a",
-      "name": "GCE USA1a",
-	  "image": "dbaas-gce",
-	  "lbr_region": "us-west-1",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": 0,
-      "longitude": 0
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 22,
-    "fields": {
-      "provider": 7,
-      "code": "us-central1-b",
-      "name": "GCE USA1b",
-	  "image": "dbaas-gce",
-	  "lbr_region": "us-west-1",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": 0,
-      "longitude": 0
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 24,
-    "fields": {
-      "provider": 7,
-      "code": "europe-west1-a",
-      "name": "GCE Europe 1a",
-	  "image": "dbaas-gce",
-	  "lbr_region": "eu-west-1",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": 0,
-      "longitude": 0
-    }
-  },
-  {
-    "model": "api.region",
-    "pk": 25,
-    "fields": {
-      "provider": 7,
-      "code": "europe-west1-b",
-      "name": "GCE Europe 1b",
-	  "image": "dbaas-gce",
-	  "lbr_region": "eu-west-1",
-      "key_name": "dbaas",
-      "security_group": "",
-      "latitude": 0,
-      "longitude": 0
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 1,
-    "fields": {
-      "provider": 1,
-      "code": "t1.micro",
-      "name": "t1.micro",
-      "ram": 630,
-      "cpus": 1,
-      "free_allowed": true
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 2,
-    "fields": {
-      "provider": 1,
-      "code": "m1.small",
-      "name": "m1.small",
-      "ram": 1741,
-      "cpus": 1,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 3,
-    "fields": {
-      "provider": 1,
-      "code": "m1.medium",
-      "name": "m1.medium",
-      "ram": 3840,
-      "cpus": 1,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 4,
-    "fields": {
-      "provider": 1,
-      "code": "m1.large",
-      "name": "m1.large",
-      "ram": 7680,
-      "cpus": 2,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 5,
-    "fields": {
-      "provider": 1,
-      "code": "m1.xlarge",
-      "name": "m1.xlarge",
-      "ram": 15360,
-      "cpus": 4,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 6,
-    "fields": {
-      "provider": 1,
-      "code": "m3.xlarge",
-      "name": "m3.xlarge",
-      "ram": 15360,
-      "cpus": 4,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 7,
-    "fields": {
-      "provider": 1,
-      "code": "m3.2xlarge",
-      "name": "m3.2xlarge",
-      "ram": 30720,
-      "cpus": 8,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 8,
-    "fields": {
-      "provider": 1,
-      "code": "c1.medium",
-      "name": "c1.medium",
-      "ram": 1741,
-      "cpus": 2,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 9,
-    "fields": {
-      "provider": 1,
-      "code": "c1.xlarge",
-      "name": "c1.xlarge",
-      "ram": 7168,
-      "cpus": 8,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 10,
-    "fields": {
-      "provider": 1,
-      "code": "cc2.8xlarge",
-      "name": "cc2.8xlarge",
-      "ram": 61952,
-      "cpus": 32,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 11,
-    "fields": {
-      "provider": 1,
-      "code": "m2.xlarge",
-      "name": "m2.xlarge",
-      "ram": 17510,
-      "cpus": 2,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 12,
-    "fields": {
-      "provider": 1,
-      "code": "m2.2xlarge",
-      "name": "m2.2xlarge",
-      "ram": 35021,
-      "cpus": 4,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 13,
-    "fields": {
-      "provider": 1,
-      "code": "m2.4xlarge",
-      "name": "m2.4xlarge",
-      "ram": 70042,
-      "cpus": 8,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 14,
-    "fields": {
-      "provider": 1,
-      "code": "cr1.8xlarge",
-      "name": "cr1.8xlarge",
-      "ram": 229376,
-      "cpus": 32,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 15,
-    "fields": {
-      "provider": 1,
-      "code": "hi1.4xlarge",
-      "name": "hi1.4xlarge",
-      "ram": 61952,
-      "cpus": 16,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 16,
-    "fields": {
-      "provider": 1,
-      "code": "hs1.8xlarge",
-      "name": "hs1.8xlarge",
-      "ram": 119808,
-      "cpus": 16,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 18,
-    "fields": {
-      "provider": 2,
-      "code": "2",
-      "name": "512MB Standard Instance",
-      "ram": 512,
-      "cpus": 1,
-      "free_allowed": true
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 19,
-    "fields": {
-      "provider": 2,
-      "code": "3",
-      "name": "1GB Standard Instance",
-      "ram": 1024,
-      "cpus": 1,
-      "free_allowed": true
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 20,
-    "fields": {
-      "provider": 2,
-      "code": "4",
-      "name": "2GB Standard Instance",
-      "ram": 2048,
-      "cpus": 2,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 21,
-    "fields": {
-      "provider": 2,
-      "code": "5",
-      "name": "4GB Standard Instance",
-      "ram": 4096,
-      "cpus": 2,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 22,
-    "fields": {
-      "provider": 2,
-      "code": "6",
-      "name": "8GB Standard Instance",
-      "ram": 8192,
-      "cpus": 4,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 23,
-    "fields": {
-      "provider": 2,
-      "code": "7",
-      "name": "15GB Standard Instance",
-      "ram": 15872,
-      "cpus": 6,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 24,
-    "fields": {
-      "provider": 2,
-      "code": "8",
-      "name": "30GB Standard Instance",
-      "ram": 30720,
-      "cpus": 8,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 25,
-    "fields": {
-      "provider": 3,
-      "code": "test-small",
-      "name": "Small Fake Instance",
-      "ram": 2048,
-      "cpus": 1,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 26,
-    "fields": {
-      "provider": 3,
-      "code": "test-medium",
-      "name": "Medium Fake Instance",
-      "ram": 4096,
-      "cpus": 2,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 27,
-    "fields": {
-      "provider": 3,
-      "code": "test-large",
-      "name": "Large Fake Instance",
-      "ram": 8192,
-      "cpus": 4,
-      "free_allowed": false
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 28,
-    "fields": {
-      "provider": 4,
-      "code": "hp",
-      "name": "Unspecified HP Cloud",
-      "ram": 1,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 29,
-    "fields": {
-      "provider": 5,
-      "code": "layeredtech",
-      "name": "Unspecified LayeredTech",
-      "ram": 1,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 30,
-    "fields": {
-      "provider": 6,
-      "code": "datapipe",
-      "name": "Unspecified DataPipe",
-      "ram": 1,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 33,
-    "fields": {
-      "provider": 7,
-      "code": "f1-micro",
-      "name": "f1-micro",
-      "ram": 600,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 34,
-    "fields": {
-      "provider": 7,
-      "code": "g1-small",
-      "name": "g1-small",
-      "ram": 1700,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 35,
-    "fields": {
-      "provider": 7,
-      "code": "n1-standard-1-d",
-      "name": "n1-standard-1-d",
-      "ram": 3750,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 36,
-    "fields": {
-      "provider": 7,
-      "code": "n1-standard-2-d",
-      "name": "n1-standard-2-d",
-      "ram": 7500,
-      "cpus": 2
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 37,
-    "fields": {
-      "provider": 7,
-      "code": "n1-standard-4-d",
-      "name": "n1-standard-4-d",
-      "ram": 15000,
-      "cpus": 4
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 38,
-    "fields": {
-      "provider": 7,
-      "code": "n1-standard-8-d",
-      "name": "n1-standard-8-d",
-      "ram": 30000,
-      "cpus": 8
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 39,
-    "fields": {
-      "provider": 7,
-      "code": "n1-standard-1",
-      "name": "n1-standard-1",
-      "ram": 3750,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 40,
-    "fields": {
-      "provider": 7,
-      "code": "n1-standard-2",
-      "name": "n1-standard-2",
-      "ram": 7500,
-      "cpus": 2
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 41,
-    "fields": {
-      "provider": 7,
-      "code": "n1-standard-4",
-      "name": "n1-standard-4",
-      "ram": 15000,
-      "cpus": 4
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 42,
-    "fields": {
-      "provider": 7,
-      "code": "n1-standard-8",
-      "name": "n1-standard-8",
-      "ram": 30000,
-      "cpus": 8
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 43,
-    "fields": {
-      "provider": 8,
-      "code": "pb.std1",
-      "name": "PB 1 cpu, 2GB",
-      "ram": 2048,
-      "cpus": 1
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 44,
-    "fields": {
-      "provider": 8,
-      "code": "pb.std2",
-      "name": "PB 2 cpu, 4GB",
-      "ram": 4096,
-      "cpus": 2
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 45,
-    "fields": {
-      "provider": 8,
-      "code": "pb.std4",
-      "name": "PB 4 cpu, 8GB",
-      "ram": 8192,
-      "cpus": 4
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 46,
-    "fields": {
-      "provider": 8,
-      "code": "pb.std6",
-      "name": "PB 6 cpu, 12GB",
-      "ram": 12288,
-      "cpus": 6
-    }
-  },
-  {
-    "model": "api.flavor",
-    "pk": 47,
-    "fields": {
-      "provider": 8,
-      "code": "pb.std8",
-      "name": "PB 8 cpu, 16GB",
-      "ram": 16384,
-      "cpus": 8
-    }
-  }
 ]
