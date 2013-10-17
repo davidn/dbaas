@@ -21,13 +21,15 @@
     "angular-resource-unstable": "latest",
     "angular-route": "latest",
     "angular-sanitize": "latest",
-    "angular-ui-bootstrap": "latest",
+    "angular-bootstrap": "latest",
     "angular-ui-select2": "latest",
     "angulartics": "latest",
     "ngstorage": "latest",
     "select2": "latest",
     "toastr": "latest",
     "jquery-jsonp": "latest",
+    "es5-shim": "latest",
+    "json3": "latest",
     "sparkline": "latest"
   },
   "resolutions": {

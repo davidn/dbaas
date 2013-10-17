@@ -18,13 +18,15 @@ angular.module('geniedb').factory('User', function ($resource, $localStorage, $h
 
     function updateUserVoice() {
         /*global UserVoice:false */
-        UserVoice.push(['identify', {
-            email: user.email,
-            account: {
-                name: user.email,
-                plan: user.is_paid ? 'Paid' : 'Free'
-            }
-        }]);
+        if (typeof UserVoice !== 'undefined') {
+            UserVoice.push(['identify', {
+                email: user.email,
+                account: {
+                    name: user.email,
+                    plan: user.is_paid ? 'Paid' : 'Free'
+                }
+            }]);
+        }
         window.userEmail = user.email;
     }
 
@@ -48,7 +50,6 @@ angular.module('geniedb').factory('User', function ($resource, $localStorage, $h
             setUser(data);
         });
     }
-
 
 
     var Registration = $resource(dbaasConfig.registerUrlEscaped + ':activation_code', {activation_code: '@activation_code'}, {

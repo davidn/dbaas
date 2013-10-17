@@ -10,7 +10,6 @@
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-	<link rel="shortcut icon" href="favicon.ico">
 
 	<!-- CSS from Bower components  -->
 	<link href="bower_components/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
@@ -21,6 +20,8 @@
 
 	<!-- App LESS -->
 	<link href="css/app.less" type="text/css" rel="stylesheet/less">
+
+	<link rel="shortcut icon" href="favicon.ico">
 </head>
 <body ng-app="geniedb">
 
@@ -30,8 +31,8 @@
 <![endif]-->
 
 
-<div ng-controller="MainCntl" class="container">
-	<div class="navbar navbar-fixed-top navbar-default" role="navigation" ng-controller="NavigationCtlr">
+<div ng-controller="MainCtrl" class="container">
+	<div class="navbar navbar-fixed-top navbar-default" role="navigation" ng-controller="NavigationCtrl">
 		<div class="container">
 			<div class="navbar-header">
 				<a id="dbaasHeader" class="navbar-brand" href="#"> <img src="img/DBaaSConsole_Logo.png"/> </a>
@@ -67,7 +68,6 @@
 <script src="bower_components/angular-route/angular-route.js"></script>
 <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
 <script src="bower_components/angular-resource-unstable/angular-resource.js"></script>
-<script src="bower_components/angular-ui-bootstrap/dist/ui-bootstrap-tpls-0.6.0.js"></script>
 <script src="bower_components/angular-ui-select2/src/select2.js"></script>
 <script src="bower_components/angulartics/src/angulartics.js"></script>
 <script src="bower_components/angulartics/src/angulartics-google-analytics.js"></script>
@@ -80,13 +80,16 @@
 <script src="bower_components/sparkline/dist/jquery.sparkline.js"></script>
 <script src="bower_components/toastr/toastr.js"></script>
 
+<!--TODO: Move to distributed version once the PR is published  https://github.com/angular-ui/bootstrap/pull/1171  -->
+<!--<script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>-->
 <script src="bower_components/angular-ui-utils/modules/keypress/keypress.js"></script>
 
-<script src="js/config.js"></script>
+<script src="js/ui-bootstrap-tpls.js"></script>
 
 
 <!-- Main App JS -->
 <script src="js/setup.js"></script>
+<script src="js/config.js"></script>
 
 <!-- Service JS -->
 <script src="service/growl.js"></script>
@@ -105,7 +108,6 @@
   <script src="directive/focusMe.js"></script>
   <script src="directive/popoverTemplate.js"></script>
   <script src="directive/ngRightClick.js"></script>
-  <script src="directive/tabsetTitles.js"></script>
   <!-- Add New Directive JS Above -->
 
 <!-- Filter JS -->
