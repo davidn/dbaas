@@ -40,7 +40,7 @@ module.exports = function (grunt) {
       after: {
         src:['temp']
       }
-    }, 
+    },
     less: {
       production: {
         options: {
@@ -49,7 +49,7 @@ module.exports = function (grunt) {
           "temp/app.css": "css/app.less"
         }
       }
-    },         
+    },
     ngtemplates: {
       main: {
         options: {
@@ -65,9 +65,9 @@ module.exports = function (grunt) {
           {src: ['index.html'], dest: 'dist/'},
           {src: ['img/**'], dest: 'dist/'},
           {src: ['bower_components/angular-ui/build/angular-ui-ieshiv.js'], dest: 'dist/'},
-          {src: ['bower_components/font-awesome/build/assets/font-awesome/font/**'], dest: 'dist/',filter:'isFile',expand:true},
+          {src: ['bower_components/font-awesome/font/**'], dest: 'dist/font/',flatten:true,filter:'isFile',expand:true},
           // {src: ['bower_components/select2/*.png','bower_components/select2/*.gif'], dest:'dist/css/',flatten:true,expand:true},
-          {src: ['bower_components/angular-mocks/angular-mocks.js'], dest: 'dist/'}
+//          {src: ['bower_components/angular-mocks/angular-mocks.js'], dest: 'dist/'}
         ]
       }
     },
@@ -90,13 +90,13 @@ module.exports = function (grunt) {
           append:{selector:'head',html:'<script src="app.full.min.js"></script>'}
         },
         src:'dist/index.html'
-      }, 
+      },
       addscript: {
         options:{
           append:{selector:'body',html:'<script src="app.full.min.js"></script>'}
         },
         src:'dist/index.html'
-      },       
+      },
       removecss: {
         options:{
           remove:'link',
@@ -109,11 +109,11 @@ module.exports = function (grunt) {
           append:{selector:'head',html:'<link rel="stylesheet" href="css/app.full.min.css">'}
         },
         src:'dist/index.html'
-      }      
+      }
     },
     cssmin: {
       main: {
-        src:['temp/app.css','<%= dom_munger.data.appcss %>'],
+        src:['<%= dom_munger.data.appcss %>','temp/app.css'],
         dest:'dist/css/app.full.min.css'
       }
     },
@@ -126,7 +126,7 @@ module.exports = function (grunt) {
     ngmin: {
       main: {
         src:'temp/app.full.js',
-        dest: 'temp/app.full.js'
+        dest: 'dist/app.full.min.js'
       }
     },
     uglify: {
@@ -181,7 +181,10 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-ngmin');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
-  grunt.registerTask('build',['jshint','clean:before','less','dom_munger:readcss','dom_munger:readscripts','ngtemplates','cssmin','concat','ngmin','uglify','copy','dom_munger:removecss','dom_munger:addcss','dom_munger:removescripts','dom_munger:addscript','htmlmin','imagemin','clean:after']);
+
+    // Original flow
+//  grunt.registerTask('build',['jshint','clean:before','less','dom_munger:readcss','dom_munger:readscripts','ngtemplates','cssmin','concat','ngmin','uglify','copy','dom_munger:removecss','dom_munger:addcss','dom_munger:removescripts','dom_munger:addscript','htmlmin','imagemin','clean:after']);
+  grunt.registerTask('build',['jshint','clean:before','less','dom_munger:readcss','dom_munger:readscripts','ngtemplates','cssmin','concat','ngmin','copy','dom_munger:removecss','dom_munger:addcss','dom_munger:removescripts','dom_munger:addscript','htmlmin','imagemin','clean:after']);
   grunt.registerTask('server', ['jshint','connect', 'watch']);
   grunt.registerTask('test',['dom_munger:readscripts','jasmine'])
 };

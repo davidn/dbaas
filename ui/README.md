@@ -29,9 +29,5 @@ cd bower_components/sparkline
 make
 ```
 
-You can ignore any error from the make (requires uglifyjs - we do not require the min version for building)
+You can ignore any error from the make (requires uglifyjs - we do not require the min version for running)
 
-
-cd bower_components/angular-ui-bootstrap/
-node install
-grunt build
