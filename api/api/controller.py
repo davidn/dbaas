@@ -16,7 +16,6 @@ def launch_cluster(cluster):
     lbr_regions = cluster.lbr_regions.filter(launched=False)
     task_list = (
         tasks.launch_cluster.si(cluster),
-        tasks.wait_nodes.si([node for node in install_nodes]),
         group([tasks.install_node.si(node) for node in install_nodes]),
         group([tasks.install_region.si(lbr_region) for lbr_region in lbr_regions]),
         tasks.wait_zabbix.si(cluster),

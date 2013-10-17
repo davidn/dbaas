@@ -42,13 +42,6 @@ def install_node(node):
 def install_region(region):
     region.do_launch()
 
-
-@task()
-def wait_nodes(nodes):
-    for node in nodes:
-        while node.pending():
-            sleep(15)
-
 @task()
 def launch_email(cluster):
     nodes = cluster.nodes.all()

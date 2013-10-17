@@ -771,13 +771,6 @@ class Node(models.Model):
         assert (self.status != Node.OVER)
         self.nid = self.cluster.next_nid()
         logger.debug("%s: Assigned NID %s", self, self.nid)
-        logger.info("%s: provisioning node", self)
-        try:
-            self.region.connection.launch(self)
-        except:
-            self.status = self.ERROR
-            self.save()
-            raise
         self.status = self.PROVISIONING
         self.save()
 
@@ -830,6 +823,13 @@ class Node(models.Model):
     def do_install(self):
         """Do slower parts of launching this node."""
         assert (self.status != Node.OVER)
+        logger.info("%s: provisioning node", self)
+        try:
+            self.region.connection.launch(self)
+        except:
+            self.status = self.ERROR
+            self.save()
+            raise
         while self.pending():
             sleep(15)
         self.update({
