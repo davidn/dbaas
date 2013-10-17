@@ -13,6 +13,7 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
 
     var statuses = [
         {index: 0, code: 'initial', label: 'not yet started', isAction: false},
+        {index: 12, code: 'starting', label: 'Starting launch', isAction: true},
         {index: 1, code: 'provisioning', label: 'Provisioning Instances', isAction: true},
         {index: 2, code: 'installing_cf', label: 'Installing GenieDB CloudFabric', isAction: true},
         {index: 3, code: 'running', label: 'running', isAction: false},

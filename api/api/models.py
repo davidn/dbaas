@@ -438,6 +438,7 @@ class Node(models.Model):
 
     """
     INITIAL = 0
+    STARTING = 12
     PROVISIONING = 3
     RUNNING = 6
     SHUTTING_DOWN = 7
@@ -448,6 +449,7 @@ class Node(models.Model):
     ERROR = 1000
     STATUSES = (
         (INITIAL, 'not yet started'),
+        (STARTING, 'Starting launch'),
         (PROVISIONING, 'Provisioning Instances'),
         (RUNNING, 'running'),
         (PAUSED, 'paused'),
@@ -774,7 +776,7 @@ class Node(models.Model):
         assert (self.status != Node.OVER)
         self.nid = self.cluster.next_nid()
         logger.debug("%s: Assigned NID %s", self, self.nid)
-        self.status = self.PROVISIONING
+        self.status = self.STARTING
         self.save()
 
     @property
@@ -828,7 +830,9 @@ class Node(models.Model):
         assert (self.status != Node.OVER)
         logger.info("%s: provisioning node", self)
         try:
+            self.status = self.PROVISIONING
             self.region.connection.launch(self)
+            self.save()
         except:
             self.status = self.ERROR
             self.save()

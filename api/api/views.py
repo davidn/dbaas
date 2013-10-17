@@ -240,8 +240,9 @@ class NodeViewSet(mixins.ListModelMixin,
     @link(permission_classes=[permissions.AllowAny])
     def cloud_config(self, request, *args, **kwargs):
         self.object = self.get_object()
-        for node in self.object.cluster.nodes.filter(status=Node.PROVISIONING):
-            while node.pending():
+        for node in self.object.cluster.nodes.filter(status__in=(Node.PROVISIONING, Node.STARTING)):
+            n = Node.objects.get(id=node.id)
+            while n.status == Node.STARTING or n.pending():
                 sleep(15)
         return HttpResponse(self.object.cloud_config, content_type='text/cloud-config')
 
