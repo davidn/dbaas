@@ -44,7 +44,7 @@ RACKSPACE_AUTH_URL = "https://identity.api.rackspacecloud.com/v2.0"
 RACKSPACELONDON_USER = ""
 RACKSPACELONDON_PASS = ""
 RACKSPACELONDON_TENANT = ""
-RACKSPACELONDON_AUTH_URL = ""
+RACKSPACELONDON_AUTH_URL = "https://lon.identity.api.rackspacecloud.com/v2.0/"
 
 PROFITBRICK_USER = ""
 PROFITBRICK_PASS = ""
