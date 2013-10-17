@@ -236,6 +236,21 @@
       "longitude": 151.2111
     }
   },
+    {
+      "model": "api.region",
+      "pk": 26,
+      "fields": {
+        "provider": 2,
+        "code": "lon",
+        "name": "Rackspace London",
+  	  "image": "TODO-NOEL-FIXME!!!!",
+  	  "lbr_region": "eu-west-1",
+        "key_name": "dbaas",
+        "security_group": "",
+          "latitude": 51,
+          "longitude": 0
+      }
+    },
   {
     "model": "api.region",
     "pk": 12,

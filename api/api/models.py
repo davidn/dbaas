@@ -29,7 +29,7 @@ from .uuid_field import UUIDField
 from .cloud import Cloud
 from providers.aws import EC2
 from providers.gce import GoogleComputeEngine
-from providers.openstack import Rackspace
+from providers.openstack import Rackspace, RackspaceLondon
 from providers.pb import ProfitBrick
 from .crypto import KeyPair, SslPair, CertificateAuthority
 from .utils import retry, split_every, cron_validator, mysql_database_validator, CloudConfig
@@ -335,7 +335,10 @@ class Region(models.Model):
             elif self.provider.code == "gce":
                 self._connection = GoogleComputeEngine(self)
             elif self.provider.code == "rs":
-                self._connection = Rackspace(self)
+                if self.code == "lon":
+                    self._connection = RackspaceLondon(self)
+                else:
+                    self._connection = Rackspace(self)
             elif self.provider.code == "pb":
                 self._connection = ProfitBrick(self)
             elif self.provider.code == "test":

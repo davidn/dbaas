@@ -37,7 +37,8 @@ class Openstack(Cloud):
             key_name=self.region.key_name,
             availability_zone=self.region.code,
             files={
-                '/var/lib/cloud/seed/nocloud-net/user-data': '#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(node.get_absolute_url()) + '/cloud_config/\n',
+                '/var/lib/cloud/seed/nocloud-net/user-data': '#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(
+                    node.get_absolute_url()) + '/cloud_config/\n',
                 '/var/lib/cloud/seed/nocloud-net/meta-data': 'instance-id: iid-local01',
             },
         )
@@ -79,6 +80,13 @@ class Rackspace(Openstack):
     PASS = settings.RACKSPACE_PASS
     TENANT = settings.RACKSPACE_TENANT
     AUTH_URL = settings.RACKSPACE_AUTH_URL
+
+
+class RackspaceLondon(Openstack):
+    USER = settings.RACKSPACELONDON_USER
+    PASS = settings.RACKSPACELONDON_PASS
+    TENANT = settings.RACKSPACELONDON_TENANT
+    AUTH_URL = settings.RACKSPACE_AUTHLONDON_URL
 
 
 
