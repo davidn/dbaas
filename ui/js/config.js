@@ -47,13 +47,13 @@ angular.module('GenieDBaaS.config', [])
             quickStart: quickStartCluster,
             quickStartFlavors: quickStartFlavors,
             launchTimes: launchTimes,
-            userVoiceSubdomain:userVoiceSubdomain,
-            userVoiceClientKey:userVoiceClientKey,
+            userVoiceSubdomain: userVoiceSubdomain,
+            userVoiceClientKey: userVoiceClientKey,
 
 
             // TODO: Only used for $resource - purge if migrated off
             authUrlEscaped: escapedUrl + authPath,
             apiUrlEscaped: escapedUrl + apiPath,
             registerUrlEscaped: escapedUrl + registrationPath
-        }
-    })())
+        };
+    })());

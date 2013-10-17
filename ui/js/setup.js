@@ -1,36 +1,70 @@
-angular.module('geniedb', ['ui.bootstrap','ui']);
+angular.module('geniedb', ['GenieDBaaS.config', 'Utility.directives', 'GenieDBaaS.services', 'ui.directives', 'ui.bootstrap.tooltipX',
+    'ngRoute', 'ngSanitize', 'ngResource', 'ngStorage', 'ui.select2', 'ui.bootstrap', 'angulartics', 'angulartics.google.analytics', "messageBox"]);
 
-angular.module('geniedb').config(function($routeProvider) {
+angular.module('geniedb').config(function ($routeProvider, $httpProvider, $compileProvider) {
 
     $routeProvider.
-    when('/activate/:activationHash',{templateUrl: 'partial/activate/activate.html'}).
-	when('/forgot',{templateUrl: 'partial/forgot/forgot.html'}).
-	when('/list',{templateUrl: 'partial/list/list.html'}).
-	when('/try',{templateUrl: 'partial/try/try.html'}).
-	when('/thankyou',{templateUrl: 'partial/thanks/thanks.html'}).
-	when('/quickstart',{templateUrl: 'partial/quickstart/quickstart.html'}).
-	when('/cluster',{templateUrl: 'partial/cluster/cluster.html'}).
-	when('/cluster/:clusterid/node',{templateUrl: 'partial/node/node.html'}).
-	when('/monitor',{templateUrl: 'partial/monitor/monitor.html'}).
-	when('/logout',{templateUrl: 'partial/logout/logout.html'}).
-	when('/impersonate/:token',{templateUrl: 'partial/impersonate/impersonate.html'}).
-	/* Add New Routes Above */
-    otherwise({redirectTo:'/home'});
-//    when("/logout", {templateUrl: 'part/welcome.html', controller: LogoutCntl}).
+        when('/', {templateUrl: 'partial/welcome/welcome.html'}).
+        when('/cluster', {templateUrl: 'partial/cluster/cluster.html'}).
+        when('/cluster/:clusterid/node', {templateUrl: 'partial/node/node.html'}).
+        when('/forgot', {templateUrl: 'partial/forgot/forgot.html'}).
+        when('/impersonate/:token', {templateUrl: 'partial/impersonate/impersonate.html'}).
+        when('/list', {templateUrl: 'partial/list/list.html'}).
+        when('/logout', {templateUrl: 'partial/logout/logout.html', controller: 'LogoutCntl'}).
+        when('/monitor', {templateUrl: 'partial/monitor/monitor.html'}).
+        when('/quickstart', {templateUrl: 'partial/quickstart/quickstart.html'}).
+        when('/thankyou', {templateUrl: 'partial/thanks/thanks.html'}).
+        when('/try', {templateUrl: 'partial/try/try.html'}).
+        when('/activate/:activationHash', {templateUrl: 'partial/activate/activate.html'}).
+        /* Add New Routes Above */
+        otherwise({redirectTo: '/'});
+
+
+    // Clear token and redirect to login if we get a security token error
+    var interceptor = function ($location, $q, growl) {
+        function success(response) {
+            return response;
+        }
+
+        function error(response) {
+            if (response.status === 401) {
+                if ($location.$$path !== '/') {
+                    $location.path("/logout");
+                    growl.error({body: 'Session Expired'});
+                }
+            }
+            return $q.reject(response);
+        }
+
+        return function (promise) {
+            return promise.then(success, error);
+        };
+    };
+
+    $httpProvider.responseInterceptors.push(interceptor);
+
+
+    // Allow blob downloads for the SSL certs
+    $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|blob|data):/);
+
 
 });
 
-angular.module('geniedb').run(function($rootScope) {
+angular.module('geniedb').run(function ($rootScope) {
 
-	$rootScope.safeApply = function(fn) {
-		var phase = $rootScope.$$phase;
-		if (phase === '$apply' || phase === '$digest') {
-			if (fn && (typeof(fn) === 'function')) {
-				fn();
-			}
-		} else {
-			this.$apply(fn);
-		}
-	};
+    $rootScope.safeApply = function (fn) {
+        var phase = $rootScope.$$phase;
+        if (phase === '$apply' || phase === '$digest') {
+            if (fn && (typeof(fn) === 'function')) {
+                fn();
+            }
+        } else {
+            this.$apply(fn);
+        }
+    };
+
+
+    $.fn.sparkline.defaults.common.lineColor = '#8e8e8e';
+    $.fn.sparkline.defaults.common.fillColor = undefined;
 
 });

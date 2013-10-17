@@ -9,10 +9,15 @@
 	<title>GenieDB DBaaS Console</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+	<link rel="shortcut icon" href="favicon.ico">
 
 	<!-- CSS from Bower components  -->
-	<link href="bower_components/angular-ui/build/angular-ui.css" rel="stylesheet">
+	<link href="bower_components/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
+	<link href="bower_components/font-awesome/css/font-awesome.css" rel="stylesheet">
+	<link href="bower_components/toastr/toastr.css" rel="stylesheet">
+	<link href="bower_components/select2/select2.css" rel="stylesheet">
+
 
 	<!-- App LESS -->
 	<link href="css/app.less" type="text/css" rel="stylesheet/less">
@@ -55,28 +60,29 @@
 
 <!-- JS from Bower components -->
 <script src="bower_components/less.js/dist/less-1.4.0.js" data-build="exclude"></script>
+
+
 <script src="bower_components/jquery/jquery.js"></script>
+<script src="bower_components/angular/angular.js"></script>
+<script src="bower_components/angular-route/angular-route.js"></script>
+<script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+<script src="bower_components/angular-resource-unstable/angular-resource.js"></script>
+<script src="bower_components/angular-ui-bootstrap/dist/ui-bootstrap-tpls-0.6.0.js"></script>
+<script src="bower_components/angular-ui-select2/src/select2.js"></script>
+<script src="bower_components/angulartics/src/angulartics.js"></script>
+<script src="bower_components/angulartics/src/angulartics-google-analytics.js"></script>
+<!--<script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>-->
+<script src="bower_components/jquery-jsonp/src/jquery.jsonp.js"></script>
 <script src="bower_components/lodash/dist/lodash.compat.js"></script>
-<script src="bower_components/bootstrap/js/bootstrap-affix.js"></script>
-<script src="bower_components/bootstrap/js/bootstrap-alert.js"></script>
-<script src="bower_components/bootstrap/js/bootstrap-button.js"></script>
-<script src="bower_components/bootstrap/js/bootstrap-carousel.js"></script>
-<script src="bower_components/bootstrap/js/bootstrap-collapse.js"></script>
-<script src="bower_components/bootstrap/js/bootstrap-dropdown.js"></script>
-<script src="bower_components/bootstrap/js/bootstrap-modal.js"></script>
-<script src="bower_components/bootstrap/js/bootstrap-tooltip.js"></script>
-<script src="bower_components/bootstrap/js/bootstrap-popover.js"></script>
-<script src="bower_components/bootstrap/js/bootstrap-scrollspy.js"></script>
-<script src="bower_components/bootstrap/js/bootstrap-tab.js"></script>
-<script src="bower_components/bootstrap/js/bootstrap-transition.js"></script>
-<script src="bower_components/bootstrap/js/bootstrap-typeahead.js"></script>
-<script src="bower_components/angular/angular.min.js"></script>
-<script src="bower_components/angular-resource/angular-resource.js"></script>
-<script src="bower_components/angular-cookies/angular-cookies.js"></script>
-<script src="bower_components/angular-ui/build/angular-ui.js"></script>
-<script src="bower_components/angular-bootstrap/ui-bootstrap.js"></script>
-<script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
 <script src="bower_components/moment/min/moment.min.js"></script>
+<script src="bower_components/ngstorage/ngStorage.js"></script>
+<script src="bower_components/select2/select2.js"></script>
+<script src="bower_components/sparkline/dist/jquery.sparkline.js"></script>
+<script src="bower_components/toastr/toastr.js"></script>
+
+
+<script src="js/config.js"></script>
+
 
 <!-- Main App JS -->
 <script src="js/setup.js"></script>
@@ -89,7 +95,12 @@
   <!-- Add New Service JS Above -->
 
 <!-- Directive JS -->
-<!-- Add New Directive JS Above -->
+<script src="directive/pwCheck.js"></script>
+  <script src="directive/btnLoading.js"></script>
+  <script src="directive/appVersion.js"></script>
+  <script src="directive/jqSparkline.js"></script>
+  <script src="directive/focusMe.js"></script>
+  <!-- Add New Directive JS Above -->
 
 <!-- Filter JS -->
 <!-- Add New Filter JS Above -->
@@ -106,6 +117,9 @@
   <script src="partial/monitor/monitor.js"></script>
   <script src="partial/logout/logout.js"></script>
   <script src="partial/impersonate/impersonate.js"></script>
+  <script src="partial/main/main.js"></script>
+  <script src="partial/navigation/navigation.js"></script>
+  <script src="partial/welcome/welcome.js"></script>
   <!-- Add New Partial JS Above -->
 
 </body>

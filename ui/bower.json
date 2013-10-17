@@ -12,7 +12,6 @@
     "lodash": "latest",
     "bootstrap": "latest",
     "angular": "latest",
-    "angular-resource": "latest",
     "angular-mocks": "latest",
     "angular-ui": "latest",
     "angular-ui-utils": "latest",
