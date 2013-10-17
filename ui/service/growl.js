@@ -3,8 +3,6 @@ angular.module('geniedb').factory("growl", function ($rootScope) {
     $rootScope.$on('$routeChangeSuccess', function () {
     });
     return {
-        /*global toastr:false */
-
         success: function (message) {
             toastr.success(message.body, message.title, message);
         },

@@ -17,7 +17,6 @@ angular.module('geniedb').factory('User', function ($resource, $localStorage, $h
     }
 
     function updateUserVoice() {
-        /*global UserVoice:false */
         if (typeof UserVoice !== 'undefined') {
             UserVoice.push(['identify', {
                 email: user.email,
