@@ -1,0 +1,25 @@
+<div id="register-div" class="modal-dialog login" ng-controller="WelcomeCtrl">
+	<div class="modal-content login">
+		<form name="loginForm" ng novalidate class="form-login">
+			<div class="modal-header">Account Login</div>
+			<div class="modal-body">
+				<p>
+					<input class="input-login" type="email" name="email" required ng-model="form.email" placeholder="Email" ng-class="{'form-invalid': showValidationMessages && loginForm.email.$invalid}">
+				</p>
+
+				<p>
+					<input class="input-login" type="password" name="passwd" required ng-model="form.password" placeholder="Password" ng-class="{'form-invalid': showValidationMessages && loginForm.passwd.$invalid}">
+				</p>
+
+				<div>
+					<button class="btn btn-success" ng-click="onLogin()">LOGIN</button>
+					<!--<button class="btn btn-link" ng-click="onForgot()">Forgot Password?</button>-->
+				</div>
+				<br/>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-primary" ng-click="goRegister()">CREATE ACCOUNT</button>
+			</div>
+		</form>
+	</div>
+</div>
