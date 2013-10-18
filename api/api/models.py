@@ -729,6 +729,12 @@ class Node(models.Model):
             logger.info("%s: Creating Zabbix HostGroup %s", self, self.customerName)
             hostGroups = z.hostgroup.create(name=self.customerName)
 
+        existingHosts = z.host.getobjects(name=self.visible_name())
+        if existingHosts:
+            logger.warning('%s: Cleaning up old zabbix host with same visible name "%s" and id "%s".',
+                           self, self.visible_name(), existingHosts[0]['hostid'])
+            z.host.delete(existingHosts[0])
+
         logger.info("%s: Creating Zabbix Host with visible name: %s", self, self.visible_name())
         z.host.create(host=hostName, groups=hostGroups, name=self.visible_name(), templates=templates,
                       interfaces={"type": '1', "main": '1', "useip": '1', "ip": self.ip, "dns": hostName, "port": "10050"})
