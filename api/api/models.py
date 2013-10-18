@@ -896,7 +896,7 @@ class Node(models.Model):
                 except Warning:
                     pass
                 try:
-                    cur.execute("GRANT ALL ON " + dbname + ".* to '%s'@'%%';", (self.cluster.dbusername,))
+                    cur.execute("GRANT ALL ON " + dbname + ".* to %s@'%%';", (self.cluster.dbusername,))
                 except Warning:
                     pass
             finally:

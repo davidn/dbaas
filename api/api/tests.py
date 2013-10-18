@@ -152,8 +152,8 @@ class AddDatabaseControllerTest(TestCase):
         self.assertItemsEqual(
             [call("CREATE DATABASE IF NOT EXISTS db2;"),
              call("CREATE DATABASE IF NOT EXISTS db2;"),
-             call("GRANT ALL ON db2.* to '%s'@'%%';",('user',)),
-             call("GRANT ALL ON db2.* to '%s'@'%%';",('user',))],
+             call("GRANT ALL ON db2.* to %s@'%%';",('user',)),
+             call("GRANT ALL ON db2.* to %s@'%%';",('user',))],
             connect.return_value.cursor.return_value.execute.call_args_list
         )
 
