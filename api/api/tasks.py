@@ -2,16 +2,17 @@
 
 from django.conf import settings
 from logging import getLogger
-from celery.task import task
+from celery.task import Task, task
 from time import sleep
-from .models import Cluster
+from .models import Node, Cluster
 import datetime
 from django.dispatch.dispatcher import receiver
 from django.db import models
 from django.contrib.auth import get_user_model
 from pyzabbix import ZabbixAPI
-from django.core.mail import mail_admins
-from celery.result import AsyncResult
+from api.exceptions import BackendNotReady
+from boto.route53.exception import DNSServerError
+from boto.exception import BotoClientError, BotoServerError
 
 logger = getLogger(__name__)
 
@@ -23,24 +24,82 @@ if hasattr(settings, 'BUGSNAG'):
     after_setup_logger.connect(add_logger)
     after_setup_task_logger.connect(add_logger)
 
-@task()
-def install_node(node):
-    for i in xrange(10, 0, -1):
-        try:
-            return node.do_install()
-        except:
-            if i == 1:
-                node.status = node.ERROR
-                node.save()
-                raise
-            else:
-                logger.info("Retrying cloudfabric install")
-                sleep(15)
+class NodeTask(Task):
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        args[0].status = Node.ERROR
+        args[0].save()
+        args[0].cluster.status = Cluster.ERROR
+        args[0].cluster.save()
 
+class ClusterTask(Task):
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        args[0].status = Cluster.ERROR
+        args[0].save()
+
+# Tasks name <OBJECT>_<VERB>_<STEP>
+
+@task(base=NodeTask)
+def node_launch_provision(node):
+    node.launch_async_provision()
+@task(base=NodeTask, max_retries=40)
+def node_launch_update(node):
+    try:
+        node.launch_async_update()
+    except BackendNotReady as e:
+        node_launch_update.retry(exc=e, countdown=15)
+@task(base=NodeTask, max_retries=10)
+def node_launch_dns(node):
+    try:
+        node.launch_async_dns()
+    except DNSServerError as e:
+        node_launch_dns.retry(exc=e, countdown=15)
+@task(base=NodeTask)
+def node_launch_zabbix(node):
+    node.launch_async_zabbix()
+@task(base=NodeTask)
+def node_launch_complete(node):
+    node.launch_complete()
 
 @task()
-def install_region(region):
-    region.do_launch()
+def region_launch(region):
+    region.launch_async()
+
+@task(base=ClusterTask,max_retries=10)
+def cluster_launch(cluster):
+    try:
+        cluster.launch_async()
+    except (BotoClientError, BotoServerError) as e:
+        cluster_launch.retry(exc=e, countdown=15)
+
+@task(base=ClusterTask)
+def cluster_launch_complete(cluster):
+    cluster.launch_complete()
+
+@task(base=NodeTask)
+def node_pause(node):
+    node.pause_async()
+@task(base=NodeTask,max_retries=20)
+def node_pause_complete(node):
+    try:
+        node.pause_complete()
+    except BackendNotReady as e:
+        node_pause_complete.retry(exc=e, countdown=15)
+
+@task(base=NodeTask)
+def node_resume_provider(node):
+    node.resume_async_provider()
+@task(base=NodeTask,max_retries=20)
+def node_resume_dns(node):
+    try:
+        node.resume_async_dns()
+    except BackendNotReady as e:
+        node_resume_dns.retry(exc=e, countdown=15)
+@task(base=NodeTask,max_retries=20)
+def node_resume_complete(node):
+    try:
+        node.resume_complete()
+    except BackendNotReady as e:
+        node_resume_complete.retry(exc=e, countdown=15)
 
 @task()
 def launch_email(cluster):
@@ -59,13 +118,7 @@ def launch_email(cluster):
     }
     cluster.user.email_user_template('confirmation_email', ctx_dict)
 
-@task()
-def error_email(task_id):
-    result = AsyncResult(task_id)
-    exc = result.get(propagate=False)
-    mail_admins('Task Failure occured', 'Task: %s\nException: %s\n%s'%(task_id, exc, result.traceback))
-
-@task()
+@task(base=ClusterTask)
 def wait_zabbix(cluster):
     nodes = cluster.nodes.all()
 
@@ -81,27 +134,6 @@ def wait_zabbix(cluster):
             sleep(5)
         else:
             raise AssertionError("Unable to confirm that Host %s is executing before sending email notification." % (node.dns_name,))
-
-@task()
-def launch_cluster(cluster):
-    cluster.launch()
-
-@task()
-def cluster_ready(cluster):
-    cluster.status = Cluster.RUNNING
-    cluster.save()
-
-@task()
-def complete_pause_node(node):
-    while node.pausing():
-        sleep(15)
-    node.complete_pause()
-
-@task()
-def complete_resume_node(node):
-    while node.resuming():
-        sleep(15)
-    node.complete_resume()
 
 @task()
 def send_reminder(user, reminder):

@@ -4,35 +4,42 @@ Created on 9 Oct 2013
 @author: david
 '''
 
-from celery import group, chain
+from celery import group
 from .models import Node
 from . import tasks
 
+# Controller functions named <VERB>_<OBJECT>
+
 def launch_cluster(cluster):
-    for node in cluster.nodes.all():
-        if node.status == Node.INITIAL:
-            node.do_launch()
+    cluster.launch_sync()
+    for node in cluster.nodes.filter(status=Node.INITIAL):
+        node.launch_sync()
     install_nodes = cluster.nodes.filter(status=Node.STARTING)
     lbr_regions = cluster.lbr_regions.filter(launched=False)
-    task_list = (
-        tasks.launch_cluster.si(cluster),
-        group([tasks.install_node.si(node) for node in install_nodes]),
-        group([tasks.install_region.si(lbr_region) for lbr_region in lbr_regions]),
-        tasks.wait_zabbix.si(cluster),
-        tasks.launch_email.si(cluster),
-        tasks.cluster_ready.si(cluster),
-    )
-    for task in task_list:
-        task.link_error(tasks.error_email)
-    return chain(*task_list).delay()
+    task = tasks.cluster_launch.si(cluster) \
+         | group([tasks.node_launch_provision.si(node) for node in install_nodes]) \
+         | group([tasks.node_launch_update.si(node) for node in install_nodes]) \
+         | group([tasks.node_launch_dns.si(node) for node in install_nodes]) \
+         | group([tasks.node_launch_zabbix.si(node) for node in install_nodes] \
+                +[tasks.region_launch.si(lbr_region) for lbr_region in lbr_regions]) \
+         | tasks.wait_zabbix.si(cluster) \
+         | group([tasks.node_launch_complete.si(node) for node in install_nodes]) \
+         | tasks.launch_email.si(cluster) \
+         | tasks.cluster_launch_complete.si(cluster)
+    return task.delay()
 
 def pause_node(node):
-    node.pause()
-    tasks.complete_pause_node.delay(node)
+    node.pause_sync()
+    task = tasks.node_pause.si(node) \
+         | tasks.node_pause_complete.si(node)
+    return task.delay()
 
 def resume_node(node):
-    node.resume()
-    tasks.complete_resume_node.delay(node)
+    node.resume_sync()
+    task = tasks.node_resume_provider.si(node) \
+         | tasks.node_resume_dns.si(node) \
+         | tasks.node_resume_complete.si(node)
+    return task.delay()
 
 def add_database(cluster, dbname):
     cluster.dbname += ','+dbname

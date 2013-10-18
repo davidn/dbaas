@@ -9,6 +9,11 @@ from django.test import TestCase
 from mock import MagicMock, patch, call
 from django.conf import settings
 from textwrap import dedent
+from itertools import chain, repeat
+from boto.exception import S3CreateError, S3PermissionsError, BotoClientError,\
+    S3ResponseError, BotoServerError
+from boto.route53.exception import DNSServerError
+from django.test.utils import override_settings
 
 def connect_iam():
     connect_iam = MagicMock()
@@ -45,8 +50,10 @@ class ClusterTest(TestCase):
     def test_launch(self, connect_s3, connect_iam):
 
         cluster = Cluster.objects.create(user=self.user)
-        cluster.launch()
+        cluster.launch_sync()
+        self.assertEqual(Cluster.PROVISIONING, cluster.status)
 
+        cluster.launch_async()
         connect_iam.assert_called_once_with(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         connect_iam.return_value.create_user.assert_called_once_with(cluster.uuid)
         connect_iam.return_value.create_access_key.assert_called_once_with(cluster.uuid)
@@ -61,21 +68,17 @@ class ClusterTest(TestCase):
     @patch('api.models.connect_iam', new_callable=connect_iam)
     @patch('api.models.connect_s3', new_callable=connect_s3)
     def test_launch_setpolicy_failure(self, connect_s3, connect_iam):
-        connect_s3.return_value.create_bucket.return_value.set_policy.side_effect = (Exception("Fail once"),True)
+        connect_s3.return_value.create_bucket.return_value.set_policy.side_effect = Exception("Fail once")
 
         cluster = Cluster.objects.create(user=self.user)
-        cluster.launch()
+        cluster.launch_sync()
+        with self.assertRaises(Exception):
+            cluster.launch_async()
 
-        connect_iam.assert_called_once_with(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-        connect_iam.return_value.create_user.assert_called_once_with(cluster.uuid)
-        connect_iam.return_value.create_access_key.assert_called_once_with(cluster.uuid)
-        connect_s3.assert_called_once_with(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-        connect_s3.return_value.lookup.assert_called_once_with(cluster.uuid)
-        self.assertEqual(connect_s3.return_value.create_bucket.return_value.set_policy.call_count,2)
-        self.assertEqual('NEW_ARN', cluster.iam_arn)
-        self.assertEqual('NEW_AKI', cluster.iam_key)
-        self.assertEqual('NEW_SAK', cluster.iam_secret)
-        self.assertEqual(Cluster.PROVISIONING, cluster.status)
+    def test_launch_complete(self):
+        cluster = Cluster.objects.create(user=self.user)
+        cluster.launch_complete()
+        self.assertEqual(Cluster.RUNNING, cluster.status)
 
     @patch('api.models.connect_iam', new_callable=connect_iam)
     @patch('api.models.connect_s3', new_callable=lambda: connect_s3(False))
@@ -112,6 +115,152 @@ class ClusterTest(TestCase):
         self.assertEqual(nodes[1].nid, 2)
         self.assertEqual(nodes[2].nid, 5)
         self.assertEqual(nodes[3].nid, 6)
+
+from controller import launch_cluster
+@patch('api.models.ZabbixAPI')
+@patch('api.tasks.ZabbixAPI')
+@patch('api.models.Cloud')
+@patch('api.models.connect_iam', new_callable=connect_iam)
+@patch('api.models.connect_s3', new_callable=connect_s3)
+class LaunchClusterControllerTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(email='test@example.com')
+        cluster = Cluster.objects.create(user=self.user,
+                                              dbname='db',
+                                              dbusername='user',
+                                              dbpassword='dbpass')
+        self.nodes = [Node.objects.create(
+            cluster=cluster,
+            storage=10,
+            region=Region.objects.get(code='test-1'),
+            flavor=Flavor.objects.get(code='test-small')) for _ in xrange(3)]
+        for node in self.nodes:
+            node.launch_sync = MagicMock(wraps=node.launch_sync)
+            node.launch_async_provision = MagicMock(wraps=node.launch_async_provision)
+            node.launch_async_update = MagicMock(wraps=node.launch_async_update)
+            node.launch_async_dns = MagicMock(wraps=node.launch_async_dns)
+            node.launch_async_zabbix = MagicMock(wraps=node.launch_async_zabbix)
+            node.launch_complete = MagicMock(wraps=node.launch_complete)
+        self.cluster = MagicMock(wraps=cluster)
+        def get_status(self):
+            return cluster.status
+        def set_status(self,status):
+            cluster.status = status
+        type(self.cluster).status = property(get_status, set_status)
+        self.cluster.uuid = cluster.uuid
+        self.cluster.nodes.all.return_value = self.nodes
+        self.cluster.nodes.filter.return_value = self.nodes
+    
+    def assertCallCounts(self, node_update=1, node_dns=1, cluster=1):
+        self.assertEquals(1, self.cluster.launch_sync.call_count)
+        self.assertEquals(cluster, self.cluster.launch_async.call_count)
+        self.assertEquals(1, self.cluster.launch_complete.call_count)
+        self.assertItemsEqual([1,2,3], [node.nid for node in self.cluster.nodes.all()])
+        for node in self.nodes:
+            self.assertEquals(1, node.launch_sync.call_count)
+            self.assertEquals(1, node.launch_async_provision.call_count)
+            self.assertEquals(node_update, node.launch_async_update.call_count)
+            self.assertEquals(node_dns, node.launch_async_dns.call_count)
+            self.assertEquals(1, node.launch_async_zabbix.call_count)
+            self.assertEquals(1, node.launch_complete.call_count)
+
+    @override_settings(CELERY_EAGER_PROPAGATES_EXCEPTIONS=False)
+    def test_no_exceptions(self, connect_s3, connect_iam, Cloud, ZabbixAPI, ZabbixAPI2):
+        ZabbixAPI.return_code.item.get.return_code=True
+        ZabbixAPI2.return_code.item.get.return_code=True
+        for node in self.nodes:
+            node.pending = lambda: Cloud.launch.called
+        launch_cluster(self.cluster)
+        self.assertCallCounts()
+
+    @override_settings(CELERY_EAGER_PROPAGATES_EXCEPTIONS=False)
+    def test_retry_on_pending(self, connect_s3, connect_iam, Cloud, ZabbixAPI, ZabbixAPI2):
+        ZabbixAPI.return_code.item.get.return_code=True
+        ZabbixAPI2.return_code.item.get.return_code=True
+        for node in self.nodes:
+            # 30 * 15s = 7m30s
+            node.pending = MagicMock(side_effect=chain(repeat(True,30),repeat(False)))
+        launch_cluster(self.cluster)
+        self.assertCallCounts(node_update=31)
+
+    @override_settings(CELERY_EAGER_PROPAGATES_EXCEPTIONS=False)
+    def test_retry_on_iam_error(self, connect_s3, connect_iam, Cloud, ZabbixAPI, ZabbixAPI2):
+        errors = (BotoClientError(""), S3CreateError(400,""), S3PermissionsError(400,""), S3ResponseError(400,""))
+        ZabbixAPI.return_code.item.get.return_code=True
+        ZabbixAPI2.return_code.item.get.return_code=True
+        for node in self.nodes:
+            node.pending = lambda: Cloud.launch.called
+        connect_iam.return_value.create_user.side_effect=errors+(connect_iam.return_value.create_user.return_value,)
+        launch_cluster(self.cluster)
+        self.assertCallCounts(cluster=len(errors)+1)
+
+    @override_settings(CELERY_EAGER_PROPAGATES_EXCEPTIONS=False)
+    def test_retry_on_s3_error(self, connect_s3, connect_iam, Cloud, ZabbixAPI, ZabbixAPI2):
+        errors = (BotoClientError(""), BotoServerError(400,""),)
+        ZabbixAPI.return_code.item.get.return_code=True
+        ZabbixAPI2.return_code.item.get.return_code=True
+        for node in self.nodes:
+            node.pending = lambda: Cloud.launch.called
+        connect_s3.return_value.lookup.side_effect=errors+(connect_s3.return_value.lookup.return_value,)
+        launch_cluster(self.cluster)
+        self.assertCallCounts(cluster=len(errors)+1)
+
+    @override_settings(CELERY_EAGER_PROPAGATES_EXCEPTIONS=False)
+    def test_retry_on_setup_dns_error(self, connect_s3, connect_iam, Cloud, ZabbixAPI, ZabbixAPI2):
+        ZabbixAPI.return_code.item.get.return_code=True
+        ZabbixAPI2.return_code.item.get.return_code=True
+        for node in self.nodes:
+            node.pending = lambda: Cloud.launch.called
+            node.setup_dns = MagicMock(side_effect=(DNSServerError(400,"whatever"),True))
+        launch_cluster(self.cluster)
+        self.assertCallCounts(node_dns=2)
+
+    @override_settings(CELERY_EAGER_PROPAGATES_EXCEPTIONS=False)
+    def test_launch_error(self, connect_s3, connect_iam, Cloud, ZabbixAPI, ZabbixAPI2):
+        ZabbixAPI.return_code.item.get.return_code=True
+        ZabbixAPI2.return_code.item.get.return_code=True
+        for node in self.nodes:
+            node.pending = lambda: False
+            node.region.connection.launch = MagicMock(side_effect=Exception("whatever"))
+        with self.assertRaisesMessage(Exception, "whatever"):
+            launch_cluster(self.cluster)
+        self.assertEqual(Cluster.objects.get(uuid=self.cluster.uuid).status, Cluster.ERROR)
+        for node in self.nodes:
+            self.assertEqual(node.region.connection.launch.call_count, 3)
+            self.assertEqual(node.launch_async_update.call_count, 0)
+            self.assertEqual(Node.objects.get(pk=node.pk).status, Node.ERROR)
+
+    @override_settings(CELERY_EAGER_PROPAGATES_EXCEPTIONS=False)
+    def test_constant_iam_error(self, connect_s3, connect_iam, Cloud, ZabbixAPI, ZabbixAPI2):
+        ZabbixAPI.return_code.item.get.return_code=True
+        ZabbixAPI2.return_code.item.get.return_code=True
+        for node in self.nodes:
+            node.pending = lambda: Cloud.launch.called
+        connect_iam.return_value.create_user.side_effect = BotoClientError("whatever")
+        with self.assertRaisesMessage(BotoClientError, "whatever"):
+            launch_cluster(self.cluster)
+        self.assertEqual(Cluster.objects.get(uuid=self.cluster.uuid).status, Cluster.ERROR)
+        self.assertGreater(self.cluster.launch_async.call_count, 1)
+        for node in self.nodes:
+            self.assertEqual(node.launch_async_provision.call_count, 0)
+            self.assertEqual(node.launch_async_update.call_count, 0)
+
+    @override_settings(CELERY_EAGER_PROPAGATES_EXCEPTIONS=False)
+    def test_constant_dns_error(self, connect_s3, connect_iam, Cloud, ZabbixAPI, ZabbixAPI2):
+        ZabbixAPI.return_code.item.get.return_code=True
+        ZabbixAPI2.return_code.item.get.return_code=True
+        for node in self.nodes:
+            node.pending = lambda: Cloud.launch.called
+            node.setup_dns = MagicMock(side_effect=DNSServerError(400,"whatever"))
+        with self.assertRaisesMessage(DNSServerError, "whatever"):
+            launch_cluster(self.cluster)
+        self.assertEqual(Cluster.objects.get(uuid=self.cluster.uuid).status, Cluster.ERROR)
+        self.assertEqual(self.cluster.launch_async.call_count, 1)
+        for node in self.nodes:
+            self.assertEqual(node.launch_async_provision.call_count, 1)
+            self.assertEqual(node.launch_async_update.call_count, 1)
+            self.assertGreater(node.launch_async_dns.call_count, 1)
+            self.assertEqual(Node.objects.get(pk=node.pk).status, Node.ERROR)
 
 from controller import add_database
 class AddDatabaseControllerTest(TestCase):

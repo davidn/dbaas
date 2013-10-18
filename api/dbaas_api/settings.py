@@ -195,6 +195,11 @@ AUTH_USER_MODEL = 'api.User'
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunnerStoringResult'
+CELERY_EAGER_PROPAGATES_EXCEPTIONS=False
+CELERY_CHORD_PROPAGATES=True
+CELERY_SEND_TASK_ERROR_EMAILS=True
+
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.
