@@ -10,7 +10,7 @@ angular.module('geniedb', ['ui.keypress', 'ui.bootstrap.tooltipX', 'ngRoute', 'n
             when('/forgot', {templateUrl: 'partial/forgot/forgot.html'}).
             when('/impersonate/:token', {templateUrl: 'partial/impersonate/impersonate.html'}).
             when('/list', {templateUrl: 'partial/list/list.html'}).
-            when('/logout', {templateUrl: 'partial/logout/logout.html', controller: 'LogoutCntl'}).
+            when('/logout', {templateUrl: 'partial/welcome/welcome.html', controller: 'LogoutCtrl'}).
             when('/monitor', {templateUrl: 'partial/monitor/monitor.html'}).
             when('/quickstart', {templateUrl: 'partial/quickstart/quickstart.html'}).
             when('/thankyou', {templateUrl: 'partial/thanks/thanks.html'}).

@@ -1,4 +1,4 @@
-angular.module('geniedb').directive('Jqsparkline', function () {
+angular.module('geniedb').directive('jqSparkline', function () {
     return {
         restrict: 'A',
         require: 'ngModel',
