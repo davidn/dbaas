@@ -715,39 +715,23 @@ class Node(models.Model):
 
     def addToHostGroup(self):
         hostName = self.dns_name
-        logger.debug("%s.addToHostGroup: using customerName='%s', hostName='%s'" % (str(self), self.customerName, hostName))
-        logger.debug(
-            "%s: visibleName='%s', ip='%s', label='%s'" % (str(self), self.visible_name(), self.ip, self.cluster.label))
-        # Be sure there is a HostGroup for the customerName so we can add a hostname to it
-        # and add a hostname for the Node just launched.
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
         z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
-        tid = None
-        gdbTemplates = z.template.getobjects(host='Template App GenieDB V2 Monitoring')
-        if gdbTemplates:
-            tid = gdbTemplates[0]['templateid']
+        templates = z.template.getobjects(host='Template App GenieDB V2 Monitoring')
+        if templates:
+            logger.info("%s: Using zabbix template %s",
+                        self, 'Template App GenieDB V2 Monitoring')
+        else:
+            logger.info("%s: Not using a zabbix template")
+
         hostGroups = z.hostgroup.getobjects(name=self.customerName)
         if not hostGroups:
-            try:
-                z.hostgroup.create(name=self.customerName)
-                logger.info("Created Zabbix HostGroup %s" % (self.customerName))
-                hostGroups = z.hostgroup.getobjects(name=self.customerName)
-            except:
-                logger.warning("Failed to create Zabbix HostGroup %s" % (self.customerName))
-        if not hostGroups:
-            return
-        zabbixHostGroup = hostGroups[0]
-        try:
-            if tid is not None:
-                z.host.create(host=hostName, groups=[{"groupid": zabbixHostGroup["groupid"]}], name=self.visible_name(),
-                              interfaces={"type": '1', "main": '1', "useip": '1', "ip": self.ip, "dns": hostName, "port": "10050"},
-                              templates={"templateid": tid})
-            else:
-                z.host.create(host=hostName, groups=[{"groupid": zabbixHostGroup["groupid"]}], name=self.visible_name(),
-                              interfaces={"type": '1', "main": '1', "useip": '1', "ip": self.ip, "dns": hostName, "port": "10050"})
-            logger.info("Created Zabbix Host %s" % (hostName))
-        except:
-            logger.warning("Failed to create Zabbix Host %s" % (hostName))
+            logger.info("%s: Creating Zabbix HostGroup %s", self, self.customerName)
+            hostGroups = z.hostgroup.create(name=self.customerName)
+
+        logger.info("%s: Creating Zabbix Host with visible name: %s", self, self.visible_name())
+        z.host.create(host=hostName, groups=hostGroups, name=self.visible_name(), templates=templates,
+                      interfaces={"type": '1', "main": '1', "useip": '1', "ip": self.ip, "dns": hostName, "port": "10050"})
 
     def removeFromHostGroup(self):
         hostName = self.dns_name
