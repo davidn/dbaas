@@ -708,7 +708,7 @@ class Node(models.Model):
         return self.cluster.user.email
 
     def visible_name(self):
-        return self.dns_name
+        return "{customerName}-{label}-{node}".format(customerName=self.customerName, label=self.cluster.label, node=self.nid)
 
     def addToHostGroup(self):
         hostName = self.dns_name
