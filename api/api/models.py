@@ -526,13 +526,6 @@ class Node(models.Model):
         return settings.NODE_DNS_TEMPLATE.format(cluster=self.cluster.pk, node=self.nid)
 
     @property
-    def customerName(self):
-        return self.cluster.user.email
-
-    def visible_name(self, labelText):
-        return "{customerName}-{label}-{node}".format(customerName=self.customerName, label=labelText, node=self.nid)
-
-    @property
     def public_key(self):
         return KeyPair(self.tinc_private_key).public_key
 
@@ -710,11 +703,18 @@ class Node(models.Model):
         cloud_config.add_command(["mkdir", "-p", "/var/backup"])
         return str(cloud_config)
 
+    @property
+    def customerName(self):
+        return self.cluster.user.email
+
+    def visible_name(self):
+        return self.dns_name
+
     def addToHostGroup(self):
         hostName = self.dns_name
         logger.debug("%s.addToHostGroup: using customerName='%s', hostName='%s'" % (str(self), self.customerName, hostName))
         logger.debug(
-            "%s: visibleName='%s', ip='%s', label='%s'" % (str(self), self.visible_name(self.cluster.label), self.ip, self.cluster.label))
+            "%s: visibleName='%s', ip='%s', label='%s'" % (str(self), self.visible_name(), self.ip, self.cluster.label))
         # Be sure there is a HostGroup for the customerName so we can add a hostname to it
         # and add a hostname for the Node just launched.
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
@@ -736,11 +736,11 @@ class Node(models.Model):
         zabbixHostGroup = hostGroups[0]
         try:
             if tid is not None:
-                z.host.create(host=hostName, groups=[{"groupid": zabbixHostGroup["groupid"]}], name=self.visible_name(self.cluster.label),
+                z.host.create(host=hostName, groups=[{"groupid": zabbixHostGroup["groupid"]}], name=self.visible_name(),
                               interfaces={"type": '1', "main": '1', "useip": '1', "ip": self.ip, "dns": hostName, "port": "10050"},
                               templates={"templateid": tid})
             else:
-                z.host.create(host=hostName, groups=[{"groupid": zabbixHostGroup["groupid"]}], name=self.visible_name(self.cluster.label),
+                z.host.create(host=hostName, groups=[{"groupid": zabbixHostGroup["groupid"]}], name=self.visible_name(),
                               interfaces={"type": '1', "main": '1', "useip": '1', "ip": self.ip, "dns": hostName, "port": "10050"})
             logger.info("Created Zabbix Host %s" % (hostName))
         except:
