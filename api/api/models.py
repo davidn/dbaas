@@ -188,6 +188,9 @@ class Cluster(models.Model):
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
     history = HistoricalRecords()
 
+    class Meta:
+        unique_together=(("user","label"),)
+
     def __repr__(self):
         return "Cluster(uuid={uuid}, user={user})".format(uuid=repr(self.uuid), user=repr(self.user))
 
