@@ -40,25 +40,25 @@ class ClusterTask(Task):
 
 @task(base=NodeTask)
 def node_launch_provision(node):
-    node.launch_async_provision()
+    Node.objects.get(pk=node.pk).launch_async_provision()
 @task(base=NodeTask, max_retries=40)
 def node_launch_update(node):
     try:
-        node.launch_async_update()
+        Node.objects.get(pk=node.pk).launch_async_update()
     except BackendNotReady as e:
         node_launch_update.retry(exc=e, countdown=15)
 @task(base=NodeTask, max_retries=10)
 def node_launch_dns(node):
     try:
-        node.launch_async_dns()
+        Node.objects.get(pk=node.pk).launch_async_dns()
     except DNSServerError as e:
         node_launch_dns.retry(exc=e, countdown=15)
 @task(base=NodeTask)
 def node_launch_zabbix(node):
-    node.launch_async_zabbix()
+    Node.objects.get(pk=node.pk).launch_async_zabbix()
 @task(base=NodeTask)
 def node_launch_complete(node):
-    node.launch_complete()
+    Node.objects.get(pk=node.pk).launch_complete()
 
 @task()
 def region_launch(region):
@@ -67,37 +67,37 @@ def region_launch(region):
 @task(base=ClusterTask,max_retries=10)
 def cluster_launch(cluster):
     try:
-        cluster.launch_async()
+        Cluster.objects.get(pk=cluster.pk).launch_async()
     except (BotoClientError, BotoServerError) as e:
         cluster_launch.retry(exc=e, countdown=15)
 
 @task(base=ClusterTask)
 def cluster_launch_complete(cluster):
-    cluster.launch_complete()
+    Cluster.objects.get(pk=cluster.pk).launch_complete()
 
 @task(base=NodeTask)
 def node_pause(node):
-    node.pause_async()
+    Node.objects.get(pk=node.pk).pause_async()
 @task(base=NodeTask,max_retries=20)
 def node_pause_complete(node):
     try:
-        node.pause_complete()
+        Node.objects.get(pk=node.pk).pause_complete()
     except BackendNotReady as e:
         node_pause_complete.retry(exc=e, countdown=15)
 
 @task(base=NodeTask)
 def node_resume_provider(node):
-    node.resume_async_provider()
+    Node.objects.get(pk=node.pk).resume_async_provider()
 @task(base=NodeTask,max_retries=20)
 def node_resume_dns(node):
     try:
-        node.resume_async_dns()
+        Node.objects.get(pk=node.pk).resume_async_dns()
     except BackendNotReady as e:
         node_resume_dns.retry(exc=e, countdown=15)
 @task(base=NodeTask,max_retries=20)
 def node_resume_complete(node):
     try:
-        node.resume_complete()
+        Node.objects.get(pk=node.pk).resume_complete()
     except BackendNotReady as e:
         node_resume_complete.retry(exc=e, countdown=15)
 
