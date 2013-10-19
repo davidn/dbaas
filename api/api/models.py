@@ -444,7 +444,7 @@ class Node(models.Model):
     PAUSED = 9
     PAUSING = 10
     RESUMING = 11
-    CONFIGURING_DNS = 12
+    CONFIGURING_DNS = 14
     CONFIGURING_MONITORING = 13
     ERROR = 1000
     STATUSES = (
