@@ -798,7 +798,8 @@ class Node(models.Model):
                     raise
 
     def launch_sync(self):
-        assert (self.status != Node.OVER)
+        assert self.status != Node.OVER, \
+            'Cannot launch node "%s" as it is in state %s.' % (self, dict(Node.CHOICES)[self.status])
         self.nid = self.cluster.next_nid()
         logger.debug("%s: Assigned NID %s", self, self.nid)
         self.status = self.STARTING
@@ -812,7 +813,8 @@ class Node(models.Model):
         logger.info("%s: provisioning node done", self)
 
     def launch_async_update(self):
-        assert self.status == self.PROVISIONING
+        assert self.status == self.PROVISIONING, \
+            'Cannot update node "%s" as it is in state %s.' % (self, dict(Node.CHOICES)[self.status])
         if self.pending():
             raise BackendNotReady()
         self.update({
@@ -840,12 +842,14 @@ class Node(models.Model):
         self.save()
 
     def pause_sync(self):
-        assert (self.status == Node.RUNNING)
+        assert self.status == Node.RUNNING, \
+            'Cannot pause node "%s" as it is in state %s.' % (self, dict(Node.CHOICES)[self.status])
         self.status = Node.PAUSING
         self.save()
 
     def pause_async(self):
-        assert self.status == Node.PAUSING
+        assert self.status == Node.PAUSING, \
+            'Cannot continue pausing node "%s" as it is in state %s.' % (self, dict(Node.CHOICES)[self.status])
         self.region.connection.pause(self)
         self.remove_dns()
 
@@ -856,7 +860,8 @@ class Node(models.Model):
         self.save()
 
     def resume_sync(self):
-        assert (self.status == Node.PAUSED)
+        assert self.status == Node.PAUSED, \
+            'Cannot resume node "%s" as it is in state %s.' % (self, dict(Node.CHOICES)[self.status])
         self.status = Node.RESUMING
         self.save()
 
@@ -864,7 +869,8 @@ class Node(models.Model):
         self.region.connection.resume(self)
 
     def resume_async_dns(self):
-        assert self.status == Node.RESUMING
+        assert self.status == Node.RESUMING, \
+            'Cannot continue resuming node "%s" as it is in state %s.' % (self, dict(Node.CHOICES)[self.status])
         if self.resuming():
             raise BackendNotReady()
         self.update()
