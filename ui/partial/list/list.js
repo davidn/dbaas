@@ -55,6 +55,13 @@ angular.module('geniedb').controller('ListCtrl', function ($scope, $location, $t
 
     $scope.db = {name: ''};
     $scope.addDatabase = function (cluster) {
+        if (_.contains(cluster.dbnames, $scope.db.name)){
+            growl.warning({body: "Database name must be unique"});
+
+            return;
+        }
+
+
         $scope.isLoading = true;
         $http.post(cluster.url + '/add_database', {dbname: $scope.db.name}).success(function () {
             growl.success({body: "Database " + $scope.db.name + " added to " + cluster.label + " cluster."});
