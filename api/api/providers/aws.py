@@ -2,7 +2,7 @@ from logging import getLogger
 from time import sleep
 from django.conf import settings
 from django.contrib.sites.models import Site
-from api.cloud import Cloud
+from .cloud import Cloud
 from api.utils import remove_trail_slash, retry
 
 import boto.ec2

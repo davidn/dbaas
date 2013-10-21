@@ -24,11 +24,7 @@ from django.contrib.sites.models import Site
 from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception, catch_dns_exists, catch_dns_not_found
 from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
-from .cloud import Cloud
-from providers.aws import EC2
-from providers.gce import GoogleComputeEngine
-from providers.openstack import Rackspace, RackspaceLondon
-from providers.pb import ProfitBrick
+import providers
 from .crypto import KeyPair, SslPair, CertificateAuthority
 from .utils import retry, split_every, cron_validator, mysql_database_validator, CloudConfig
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -331,21 +327,7 @@ class Region(models.Model):
     @property
     def connection(self):
         if not hasattr(self, '_connection'):
-            if self.provider.code == "az":
-                self._connection = EC2(self)
-            elif self.provider.code == "gce":
-                self._connection = GoogleComputeEngine(self)
-            elif self.provider.code == "rs":
-                if self.code == "lon":
-                    self._connection = RackspaceLondon(self)
-                else:
-                    self._connection = Rackspace(self)
-            elif self.provider.code == "pb":
-                self._connection = ProfitBrick(self)
-            elif self.provider.code == "test":
-                self._connection = Cloud(self)
-            else:
-                raise KeyError("Unknown provider '%s'" % self.provider.name)
+            self._connection = getattr(providers, self.provider.code)(self)
         return self._connection
 
     def __getstate__(self):

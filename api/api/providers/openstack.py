@@ -1,7 +1,7 @@
 from logging import getLogger
 from django.conf import settings
 from django.contrib.sites.models import Site
-from api.cloud import Cloud
+from .cloud import Cloud
 from api.utils import remove_trail_slash
 
 import novaclient.v1_1

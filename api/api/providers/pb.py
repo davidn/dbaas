@@ -1,7 +1,7 @@
 from logging import getLogger
 from time import sleep
 from django.conf import settings
-from api.cloud import Cloud
+from .cloud import Cloud
 from api.utils import retry
 
 try:
