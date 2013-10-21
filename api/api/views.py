@@ -14,12 +14,13 @@ There are several aspects to the API, each with their own class (a viewset):
 
 """
 
+import re
 from time import sleep
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.mail import mail_admins
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from rest_framework import viewsets, mixins, status, permissions
 from .models import Cluster, Node, Region, Provider, Flavor
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
@@ -114,6 +115,25 @@ def upgrade(request):
     mail_admins("User wants to upgrade", "User %s wants to upgrade" % request.user)
     serializer = UserSerializer(request.user)
     return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+@api_view(('GET',))
+@permission_classes((permissions.AllowAny,))
+def cloud_config_by_hostname(request, hostname):
+    regex = re.compile(settings.CLUSTER_NID_TEMPLATE)
+    r = regex.match(hostname)
+    if r:
+        cluster = r.group('cluster')
+        nid = r.group('nid')
+        try:
+            n = Node.objects.get(id=nid, cluster_id=cluster)
+        except ObjectDoesNotExist:
+            n = None
+        if n:
+            for node in n.cluster.nodes.filter(status=Node.PROVISIONING):
+                while node.pending():
+                    sleep(15)
+            return HttpResponse(n.cloud_config, content_type='text/cloud-config')
+    return HttpResponse("Unrecognized Hostname: %s\n" % hostname, content_type='text/cloud-config')
 
 
 class ClusterViewSet(mixins.CreateModelMixin,

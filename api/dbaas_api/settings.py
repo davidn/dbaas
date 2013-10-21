@@ -53,6 +53,7 @@ ROUTE53_ZONE = ""
 CLUSTER_DNS_TEMPLATE = "{cluster}.dbaas.example.com"
 REGION_DNS_TEMPLATE = "{cluster}-{lbr_region}.dbaas.example.com"
 NODE_DNS_TEMPLATE = "{cluster}-{node}.dbaas.example.com"
+CLUSTER_NID_TEMPLATE = "^(?P<cluster>[-a-f0-9A-F]+)-(?P<nid>\d+)(?:.*)"
 import datetime
 
 TRIAL_LENGTH = datetime.timedelta(weeks=1)
