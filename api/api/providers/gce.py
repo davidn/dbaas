@@ -3,7 +3,8 @@ from time import sleep
 from django.conf import settings
 from django.contrib.sites.models import Site
 import httplib2
-from api.cloud import Cloud, remove_trail_slash, retry
+from api.cloud import Cloud
+from api.utils import remove_trail_slash
 
 try:
     from apiclient import discovery

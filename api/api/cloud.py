@@ -1,18 +1,6 @@
 from logging import getLogger
-from time import sleep
-from django.conf import settings
-from django.contrib.sites.models import Site
-import httplib2
-from .utils import retry
 
 logger = getLogger(__name__)
-
-
-def remove_trail_slash(s):
-    if s.endswith('/'):
-        s = s[:-1]
-    return s
-
 
 class Cloud(object):
     def __init__(self, region):

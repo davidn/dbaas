@@ -7,6 +7,11 @@ from django.core.exceptions import ValidationError
 
 logger = getLogger(__name__)
 
+def remove_trail_slash(s):
+    if s.endswith('/'):
+        s = s[:-1]
+    return s
+
 def retry(func, initialDelay=50, maxRetries=12):
     """func must return truthy value"""
     delay = initialDelay
