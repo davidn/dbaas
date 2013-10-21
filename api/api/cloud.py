@@ -10,19 +10,19 @@ class Cloud(object):
         pass
 
     def pending(self, node):
-        pass
+        return False
 
     def shutting_down(self, node):
-        pass
+        return False
 
     def pausing(self, node):
-        pass
+        return False
 
     def resuming(self, node):
-        pass
+        return False
 
     def update(self, node, tags={}):
-        pass
+        self.ip = "192.0.2.%d" % node.nid
 
     def terminate(self, node):
         pass
@@ -32,6 +32,3 @@ class Cloud(object):
 
     def resume(self, node):
         pass
-
-
-
