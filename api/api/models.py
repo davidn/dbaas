@@ -726,7 +726,7 @@ class Node(models.Model):
         hostGroups = z.hostgroup.getobjects(name=self.customerName)
         if not hostGroups:
             logger.info("%s: Creating Zabbix HostGroup %s", self, self.customerName)
-            hostGroups = z.hostgroup.create(name=self.customerName)
+            hostGroups = [{'groupid':gid} for gid in z.hostgroup.create(name=self.customerName)['groupids']]
 
         existingHosts = z.host.getobjects(name=self.visible_name())
         if existingHosts:
