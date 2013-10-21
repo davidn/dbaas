@@ -36,6 +36,10 @@ class ClusterTask(Task):
         args[0].status = Cluster.ERROR
         args[0].save()
 
+@task
+def null_task():
+    pass
+
 # Tasks name <OBJECT>_<VERB>_<STEP>
 
 @task(base=NodeTask)

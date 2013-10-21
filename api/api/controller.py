@@ -18,8 +18,11 @@ def launch_cluster(cluster):
     lbr_regions = cluster.lbr_regions.filter(launched=False)
     task = tasks.cluster_launch.si(cluster) \
          | group([tasks.node_launch_provision.si(node) for node in install_nodes]) \
+         | tasks.null_task.si() \
          | group([tasks.node_launch_update.si(node) for node in install_nodes]) \
+         | tasks.null_task.si() \
          | group([tasks.node_launch_dns.si(node) for node in install_nodes]) \
+         | tasks.null_task.si() \
          | group([tasks.node_launch_zabbix.si(node) for node in install_nodes] \
                 +[tasks.region_launch.si(lbr_region) for lbr_region in lbr_regions]) \
          | tasks.wait_zabbix.si(cluster) \
