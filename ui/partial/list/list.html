@@ -100,15 +100,15 @@
 
 					<div class="row">
 						<div class="col-lg-1 info-popover-label">DNS</div>
-						<div class="col-lg-11">{{cluster.dns_name}}</div>
+						<div class="col-lg-11" select-on-click>{{cluster.dns_name}}</div>
 					</div>
 					<div class="row">
 						<div class="col-lg-1 info-popover-label">Port</div>
-						<div class="col-lg-11">{{cluster.port}}</div>
+						<div class="col-lg-11" select-on-click>{{cluster.port}}</div>
 					</div>
 					<div class="row">
 						<div class="col-lg-1 info-popover-label">User</div>
-						<div class="col-lg-11">{{cluster.dbusername}}</div>
+						<div class="col-lg-11" select-on-click> {{cluster.dbusername}}</div>
 					</div>
 				</tab>
 				<tab disabled="!cluster.hasKeys">
@@ -121,8 +121,7 @@
 					<a class="btn btn-primary" download="client-cert.pem" ng-href="{{ cluster.client_cert_url }}"><i class="icon-download-alt"></i> &nbsp; Client Cert</a>
 					<a class="btn btn-primary" download="client-key.pem" ng-href="{{ cluster.client_key_url }}"><i class="icon-download-alt"></i> &nbsp; Client Key</a>
 
-					<br/>
-					<br/>
+					<br/> <br/>
 
 					<p class="lead">
 						For information on configuring your connection please see
@@ -147,8 +146,7 @@
 					<div class="btn-group">
 						<button type="button" class="btn btn-primary disabled pad5" ng-repeat="database in cluster.dbnames">{{ database }}</button>
 					</div>
-					<br/>
-					<input class="form-control-min" ng-model="db.name" size="40" type="text" focus-me/>
+					<br/> <input class="form-control-min" ng-model="db.name" size="40" type="text" focus-me/>
 					<button ng-if="!cluster.canLaunch" class="btn btn-success btn-small" btn-loading="isLoading" data-loading-text="Adding..." ng-click="addDatabase(cluster)">ADD</button>
 
 				</tab>
@@ -156,7 +154,7 @@
 		</div>
 		<p ng-if="clusters.$resolved && clusters.length < 1" class="lead clusters-empty">You don't have any clusters yet. Use our
 			<button class="btn btn-success" rel="tooltip" title="Creates 2 node cluster for easy testing of GenieDB on Amazon EC2" ng-click="quickStart()">QUICK START</button>
-			which builds a cluster with two small Amazon EC2 or Rackspace nodes.
+																						 which builds a cluster with two small Amazon EC2 or Rackspace nodes.
 		</p>
 		<p ng-if="!clusters.$resolved" class="lead clusters-empty">Loading... </p>
 	</div>

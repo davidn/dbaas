@@ -1,4 +1,4 @@
-angular.module('geniedb').controller('ListCtrl', function ($scope, $location, $timeout, apiModel, dbaasConfig, $http, growl, User, messageBox, $modal) {
+angular.module('geniedb').controller('ListCtrl', function ($scope, $location, $timeout, apiModel, dbaasConfig, $http, growl, User, messageBox) {
     //    TODO Disable UI while processing update on cluster
     if (!User.user.token) {
         $location.path("/");

@@ -1,14 +1,14 @@
-<div id="register-div" class="modal-dialog login" ng-controller="WelcomeCtrl">
-	<div class="modal-content login">
-		<form name="loginForm" ng novalidate class="form-login">
+<div class="modal-dialog small-modal" ng-controller="WelcomeCtrl">
+	<div class="modal-content">
+		<form name="loginForm" novalidate>
 			<div class="modal-header">Account Login</div>
 			<div class="modal-body">
 				<p>
-					<input class="input-login" type="email" name="email" required ng-model="form.email" placeholder="Email" ng-class="{'form-invalid': showValidationMessages && loginForm.email.$invalid}">
+					<input class="form-control" type="email" name="email" required ng-model="form.email" placeholder="Email" ng-class="{'form-invalid': showValidationMessages && loginForm.email.$invalid}">
 				</p>
 
 				<p>
-					<input class="input-login" type="password" name="passwd" required ng-model="form.password" placeholder="Password" ng-class="{'form-invalid': showValidationMessages && loginForm.passwd.$invalid}">
+					<input class="form-control" type="password" name="passwd" required ng-model="form.password" placeholder="Password" ng-class="{'form-invalid': showValidationMessages && loginForm.passwd.$invalid}">
 				</p>
 
 				<div>
