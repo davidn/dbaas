@@ -1,8 +1,13 @@
 angular.module('geniedb').constant('dbaasConfig', (function () {
     // TODO: Make conditional parameters for grunt.js to package the deployments
     var versionTag = "0.8";
+
 //        var serviceUrl = "http://localhost:8000";
     var serviceUrl = "https://dbaas-test.geniedb.com:4000";
+
+    var posDash = serviceUrl.indexOf('-');
+    var environmentLabel = posDash > 0 ? serviceUrl.substring(posDash+1,serviceUrl.indexOf('.')).toUpperCase():'';
+
     var userVoiceSubdomain = "geniedb";
     var userVoiceClientKey = "GyAUbnphymL97STPKy379g";
 
@@ -11,6 +16,7 @@ angular.module('geniedb').constant('dbaasConfig', (function () {
     var authPath = "/api-token-auth/";
     var apiPath = "/api/";
     var registrationPath = "/register/";
+
     var quickStartCluster = {
         label: "Quick Start Cluster",
         dbname: "quickstart",
@@ -40,6 +46,7 @@ angular.module('geniedb').constant('dbaasConfig', (function () {
 
     return {
         version: versionTag,
+        environment: environmentLabel,
         defaultRefresh: defaultRefresh,
 
         authUrl: serviceUrl + authPath,
@@ -51,7 +58,7 @@ angular.module('geniedb').constant('dbaasConfig', (function () {
         userVoiceClientKey: userVoiceClientKey,
 
 
-        // TODO: Only used for $resource - purge if migrated off
+        // TODO: Only used for $resource - purge once migrated off
         authUrlEscaped: escapedUrl + authPath,
         apiUrlEscaped: escapedUrl + apiPath,
         registerUrlEscaped: escapedUrl + registrationPath

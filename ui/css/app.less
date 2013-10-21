@@ -1,10 +1,8 @@
-@import "../bower_components/bootstrap/less/bootstrap.less";
+//@import "../bower_components/bootstrap/less/bootstrap.less";
 //@import "../bower_components/font-awesome/less/font-awesome.less";
 //@FontAwesomePath:   "../bower_components/font-awesome/build/assets/font-awesome/font";
-
 /* Directive LESS */
 /* Add Directive LESS Above */
-
 /* Partial LESS */
 @import "../partial/activate/activate.less";
 @import "../partial/forgot/forgot.less";
@@ -19,368 +17,167 @@
 @import "../partial/main/main.less";
 @import "../partial/navigation/navigation.less";
 @import "../partial/welcome/welcome.less";
+
 /* Add Partial LESS Above */
 
+@lightBackground: #ebebeb;
+@darkBackground: #5c5c5c;
+@lightText: #d7d7d7;
+@alertColor: #ce7a7b;
 
-
-
-html{
-    background: url(../img/MapBkg.png) no-repeat center center fixed;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    background-size: cover;
-    font-family: 'Lato', sans-serif;
-}
 
 .alert-danger{
-    margin-top: 10px;
-    color: #fff;
-    background-color: #ce7a7b;
-    border-color: #ce7a7b;
-}
-
-body{
-    background: transparent;
-    font-family: 'Lato', sans-serif;
-    padding-top: 100px;
-}
-
-#main{
-    padding-top: 30px;
-    padding-bottom: 100px;
-}
-
-#main > h3{
-    color: #fff;
-}
-
-#dbaasHeader{
-    padding-top: 15px;
-    padding-left: 10%;
-}
-
-#gdbHeader{
-}
-
-#logout{
-    position: relative;
-    top: 15px;
-    left: 20%;
-    color: #6f6f6f;
-}
-
-.navbar-default{
-    background-color: #313131;
-    background-color: rgba(49, 49, 49, 0.9);
-    border-color: #313131;
-    padding-top: 10px;
-    padding-bottom: 10px;
+  margin-top: 10px;
+  color: #fff;
+  background-color: @alertColor;
+  border-color: @alertColor;
 }
 
 .modal-header{
-    background-color: #39559f;
-    font-size: 15pt;
-    color: #99b1f3;
-    padding-left: 20px;
-    padding-top: 15px;
-    padding-bottom: 15px;
-    border-radius: 2px 2px 0px 0px;
+  background-color: #39559f;
+  font-size: 15pt;
+  color: #99b1f3;
+  padding-left: 20px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  border-radius: 2px 2px 0px 0px;
 }
 
 .popover-title{
-    background-color: #505050;
+  background-color: #505050;
 }
 
 .modal-footer{
-    background-color: #c1c1c1;
-    padding: 15px;
-    margin: 0px;
-    border-radius: 0px 0px 2px 2px;
-    border: 0;
-    text-align: left;
-    vertical-align: middle;
-    line-height: 2em;
+  background-color: #c1c1c1;
+  padding: 15px;
+  margin: 0px;
+  border-radius: 0px 0px 2px 2px;
+  border: 0;
+  text-align: left;
+  vertical-align: middle;
+  line-height: 2em;
 }
 
 .btn{
-    border-radius: 2px;
+  border-radius: 2px;
 }
 
 .btn-success{
-    background-color: #26bd38;
+  background-color: #26bd38;
 }
 
 .btn-primary{
-    background-color: #5473c4;
-    border: 0;
+  background-color: #5473c4;
+  border: 0;
 }
 
-.min-controls{
-    margin-left: 20px;
+.small-modal{
+  margin-top: 50px;
+  width: 350px;
 }
 
-.login{
-    margin-top: 50px;
-    width: 350px;
-}
-
-.summary{
-    margin-top: 75px;
-}
-
-.add-cluster-btn{
-    margin-left: 60px;
-}
-
-.node-popup{
-    background-color: #707070;
-    padding: 15px 0px;
-}
-
-.input-login{
-    width: 100%;
-    height: 40px;
-    margin-bottom: 5px;
-    background-color: #ebebeb;
-    border-radius: 2px;
-    border-width: 0;
-    padding-left: 15px;
-}
-
-.form-login{
-    margin: 0px;
-}
-
-.modal{
-    display: block;
-    height: 0;
-    overflow: visible;
-}
-
-.modal-content{
-    border: 0px;
-    background: #dadada;
-}
-
-.cluster-box{
-    background: #ebebeb;
-}
-
-.cluster-group{
-    background: #dadada;
-    border-radius: 0px 0px 4px 4px;
-}
-
-.cluster-panel{
-    margin-top: 15px;
-    padding: 15px;
-}
-
-.cluster-title{
-    color: #8b8b8b;
-    font-size: 24px;
-}
-
-.cluster-heading{
-    border-bottom: 0;
-}
-
-#nodeTable > tbody > tr .row0{
-    border-top: 0;
-}
-
-.node-header{
-    color: #afafaf;
-}
-
-#nodeTable > .node-header > tr > th{
-    border-bottom: 0;
-}
-
-.node-region{
-    display: block;
-}
-
-.node-dns{
-    font-size: small;
-    display: block;
-}
-
-.node-status-marker{
-    text-align: center;
-    width: 24px;
-}
-
-.node-status{
-    color: #afafaf;
-    font-style: italic;
-}
-
-.node-status-running{
-    color: green;
-}
-
-.node-status-error{
-    color: red;
-}
-
-.table-nodes{
-    margin-bottom: 0;
-}
-
-a.dropdown-toggle{
-    color: #333;
-}
-
-a.dropdown-toggle:hover{
-    text-decoration: none;
-}
-
-#jqstooltip{
-    box-sizing: content-box;
-}
-
-.form-invalid{
-    border: 1px #f00;
-}
-
-.node-popup > li > a{
-    color: #ebebeb;
-    padding: 0px 30px;
-}
-
-.clusters-empty{
-    padding: 15px;
-}
-
-.version-tag{
-    text-align: right;
-    font-size: 8pt;
-    color: #888;
-}
-
-.list-sparkline{
-    width: 180px;
-}
-
-.help-block{
-    font-style: italic;
-    color: #a4a4a4;
-    font-size: 9pt;
-}
-
-label{
-    color: #707070;
-    font-weight: normal;
+.form-control-basic () {
+  height: 40px;
+  margin-bottom: 5px;
+  background-color: @lightBackground;
+  border-radius: 2px;
+  border-width: 0;
+  padding-left: 15px;
 }
 
 input.form-control{
-    width: 100%;
-    height: 40px;
-    margin-bottom: 5px;
-    background-color: #ebebeb;
-    border-radius: 2px;
-    border-width: 0;
-    padding-left: 15px;
+  width: 100%;
+  .form-control-basic
 }
 
 input.form-control-min{
-    height: 40px;
-    margin-bottom: 5px;
-    background-color: #ebebeb;
-    border-radius: 2px;
-    border-width: 0;
-    padding-left: 15px;
+  .form-control-basic
 }
 
-.cluster-dialog{
-    width: 350px
+.modal{
+  display: block;
+  height: 0;
+  overflow: visible;
+}
+
+.modal-content{
+  border: 0px;
+  background: #dadada;
+}
+
+a.dropdown-toggle{
+  color: #333;
+}
+
+a.dropdown-toggle:hover{
+  text-decoration: none;
+}
+
+#jqstooltip{
+  box-sizing: content-box;
+}
+
+.form-invalid{
+  border: 1px #f00 !important;
+}
+
+.version-tag{
+  text-align: right;
+  font-size: 8pt;
+  color: #888;
+}
+
+.environment-tag{
+  font-size: 12pt;
+  color: #ff0;
+}
+
+.list-sparkline{
+  width: 180px;
+}
+
+.help-block{
+  font-style: italic;
+  color: #a4a4a4;
+  font-size: 9pt;
+}
+
+label{
+  color: #707070;
+  font-weight: normal;
 }
 
 .modal-header .modal-close-button{
-    margin-top: 1px;
+  margin-top: 1px;
 }
 
 .two-column-form-left{
-    border-right: 1px solid #c1c1c1;
-    padding-right: 30px;
-    padding-left: 30px;
+  border-right: 1px solid #c1c1c1;
+  padding-right: 30px;
+  padding-left: 30px;
 }
 
 .two-column-form-right{
-    padding-left: 30px;
-    padding-right: 30px;
+  padding-left: 30px;
+  padding-right: 30px;
 }
 
-.list-popover{
-    max-width: 750px;
-}
 
 .messagebox-container{
-    max-width: 350px;
-}
-
-.popover{
-    background-color: #5c5c5c;
-    color: #d7d7d7;
-}
-
-.popover.bottom .arrow:after{
-    border-bottom-color: #5c5c5c;
-}
-
-.popover.right .arrow:after{
-    border-right-color: #5c5c5c;
-}
-
-.info-popover{
-    color: #c7c7c7;
-}
-
-.info-popover-label{
-    color: #a0a0a0;
+  max-width: 350px;
 }
 
 button.close-sm{
-    font-size: 10pt;
-    padding-right: 10px;
-    padding-top: 10px;
-}
-
-.paid-user{
-    color: #999;
-}
-
-.tab-pane{
-    background-color: #5c5c5c;
-    color: #d7d7d7;
-    padding: 15px;
-}
-
-.nav-tabs > li.active > a,
-.nav-tabs > li.active > a:hover,
-.nav-tabs > li.active > a:focus{
-    background-color: #5c5c5c;
-    color: #d7d7d7;
+  font-size: 10pt;
+  padding-right: 10px;
+  padding-top: 10px;
 }
 
 .pad5{
-    margin: 5px;
-    padding: 5px 15px;
+  margin: 5px;
+  padding: 5px 15px;
 }
 
 .margin-left-10{
-    margin-left: 10px;
-}
-
-/* Hack for tabset embedding in repeat */
-.tabbable {
-    position: relative;
-    padding-top: 42px; /* height of the tabs */
-}
-
-.tabbable .nav-tabs {
-    position: absolute;
-    top: 0;
+  margin-left: 10px;
 }

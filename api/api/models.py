@@ -12,10 +12,8 @@ partition the Nodes in a cluster. See `the wiki`_ for more info.
 
 """
 
-import re
 from hashlib import sha1
 from logging import getLogger
-from time import sleep
 from textwrap import dedent
 
 import MySQLdb
@@ -40,6 +38,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext as _
 from simple_history.models import HistoricalRecords
 from pyzabbix import ZabbixAPI
+from api.exceptions import BackendNotReady
 
 
 logger = getLogger(__name__)
@@ -210,10 +209,10 @@ class Cluster(models.Model):
         self.server_key = server.private_key
         self.ca_cert = ca.certificate
 
-    def launch(self):
-        """Set up an IAM user and S3 bucket for nodes in this cluster to send backups to."""
+    def launch_sync(self):
         self.status = Cluster.PROVISIONING
         self.save()
+    def launch_async(self):
         self.generate_keys()
         if self.iam_key == "":
             iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
@@ -229,23 +228,22 @@ class Cluster(models.Model):
         bucket = s3.lookup(self.uuid)
         if bucket is None:
             bucket = s3.create_bucket(self.uuid)
-            # S3 takes a while to treat new ARN as valid
-        def attempt_bucket_policy():
-                bucket.set_policy("""{
-                  "Version": "2008-10-17",
-                  "Id": "S3PolicyId1",
-                  "Statement": [
-                    {
-                      "Sid": "IPAllow",
-                      "Effect": "Allow",
-                      "Principal": {
-                        "AWS": "%(iam)s"
-                      },
-                      "Action": "s3:*",
-                      "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
-                }]}""" % {'iam': self.iam_arn, 'bucket': self.uuid})
-                return True
-        retry(attempt_bucket_policy)
+        bucket.set_policy("""{
+          "Version": "2008-10-17",
+          "Id": "S3PolicyId1",
+          "Statement": [
+            {
+              "Sid": "IPAllow",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "%(iam)s"
+              },
+              "Action": "s3:*",
+              "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
+        }]}""" % {'iam': self.iam_arn, 'bucket': self.uuid})
+    def launch_complete(self):
+        self.status = Cluster.RUNNING
+        self.save()
 
     def terminate(self):
         """Clean up the S3 bucket and IAM user associated with this cluster."""
@@ -397,16 +395,13 @@ class LBRRegionNodeSet(models.Model):
     def dns_name(self):
         return settings.REGION_DNS_TEMPLATE.format(cluster=self.cluster.pk, lbr_region=self.lbr_region)
 
-    def do_launch(self):
+    def launch_async(self):
         logger.debug("%s: setting up dns for lbr region %s, cluster %s", self, self.lbr_region, self.cluster.pk)
         if self.lbr_region != 'test':
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-            def try_add_dns():
-                rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-                rrs.add_change_record('CREATE', self.record)
-                catch_dns_exists(rrs)
-                return True
-            retry(try_add_dns)
+            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+            rrs.add_change_record('CREATE', self.record)
+            catch_dns_exists(rrs)
         self.launched = True
         self.save()
 
@@ -449,11 +444,15 @@ class Node(models.Model):
     PAUSED = 9
     PAUSING = 10
     RESUMING = 11
+    CONFIGURING_DNS = 14
+    CONFIGURING_MONITORING = 13
     ERROR = 1000
     STATUSES = (
         (INITIAL, 'not yet started'),
         (STARTING, 'Starting launch'),
         (PROVISIONING, 'Provisioning Instances'),
+        (CONFIGURING_DNS, 'configuring DNS'),
+        (CONFIGURING_MONITORING, 'configuring monitoring'),
         (RUNNING, 'running'),
         (PAUSED, 'paused'),
         (PAUSING, 'pausing'),
@@ -764,14 +763,6 @@ class Node(models.Model):
             except:
                 logger.warning("Failed to delete Zabbix HostGroup %s" % (self.customerName))
 
-    def do_launch(self):
-        """Do the initial, fast part of launching this node."""
-        assert (self.status != Node.OVER)
-        self.nid = self.cluster.next_nid()
-        logger.debug("%s: Assigned NID %s", self, self.nid)
-        self.status = self.STARTING
-        self.save()
-
     @property
     def health_check_reference(self):
         return str(self.id)+"-"+self.ip
@@ -779,59 +770,51 @@ class Node(models.Model):
     def setup_dns(self):
         if self.region.provider.code != 'test':
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-            def try_setup_health_check():
-                health_check = HealthCheck(connection=r53, caller_reference=self.health_check_reference,
-                                           ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
-                self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
-                return True
-            retry(try_setup_health_check)
-            def try_setup_dns():
-                rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-                rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-                                                                      type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
-                                                                      weight=1))
-                rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
-                                                              resource_records=[self.ip]))
-                catch_dns_exists(rrs)
-                return True
-            retry(try_setup_dns)
+            health_check = HealthCheck(connection=r53, caller_reference=self.health_check_reference,
+                                       ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
+            self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
+            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+            rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
+                                                                  type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
+                                                                  weight=1))
+            rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
+                                                          resource_records=[self.ip]))
+            catch_dns_exists(rrs)
 
     def remove_dns(self):
         if self.region.provider.code != 'test':
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-            def try_remove_dns():
-                rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-                rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-                                                                      type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
-                                                                      weight=1))
-                rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
-                                                              resource_records=[self.ip]))
-                catch_dns_not_found(rrs)
-                return True
-            retry(try_remove_dns)
-            def try_remove_health_check():
-                try:
-                    r53.delete_health_check(self.health_check)
-                except exception.DNSServerError, e:
-                    if e.status != 404:
-                        raise
-                return True
-            retry(try_remove_health_check)
+            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+            rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
+                                                                  type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
+                                                                  weight=1))
+            rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
+                                                          resource_records=[self.ip]))
+            catch_dns_not_found(rrs)
+            try:
+                r53.delete_health_check(self.health_check)
+            except exception.DNSServerError, e:
+                if e.status != 404:
+                    raise
 
-    def do_install(self):
-        """Do slower parts of launching this node."""
+    def launch_sync(self):
         assert (self.status != Node.OVER)
+        self.nid = self.cluster.next_nid()
+        logger.debug("%s: Assigned NID %s", self, self.nid)
+        self.status = self.STARTING
+        self.save()
+
+    def launch_async_provision(self):
+        self.status = self.PROVISIONING
         logger.info("%s: provisioning node", self)
-        try:
-            self.status = self.PROVISIONING
-            self.region.connection.launch(self)
-            self.save()
-        except:
-            self.status = self.ERROR
-            self.save()
-            raise
-        while self.pending():
-            sleep(15)
+        self.region.connection.launch(self)
+        self.save()
+        logger.info("%s: provisioning node done", self)
+
+    def launch_async_update(self):
+        assert self.status == self.PROVISIONING
+        if self.pending():
+            raise BackendNotReady()
         self.update({
             'Name': 'dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),
             'username': self.cluster.user.email,
@@ -839,36 +822,58 @@ class Node(models.Model):
             'node': str(self.pk),
             'url': 'https://' + Site.objects.get_current().domain + self.get_absolute_url(),
         })
+        self.save()
+
+    def launch_async_dns(self):
+        self.status = self.CONFIGURING_DNS
+        self.save()
         self.setup_dns()
-        self.status = self.RUNNING
+        self.save()
+
+    def launch_async_zabbix(self):
+        self.status = self.CONFIGURING_MONITORING
         self.save()
         self.addToHostGroup()
-        #... wait until node has fetched config and installed and tests run...
-        # self.status = self.RUNNING
-        # self.save()
 
-    def pause(self):
-        """Suspend this node."""
+    def launch_complete(self):
+        self.status = self.RUNNING
+        self.save()
+
+    def pause_sync(self):
         assert (self.status == Node.RUNNING)
-        self.region.connection.pause(self)
-        self.remove_dns()
         self.status = Node.PAUSING
         self.save()
 
-    def complete_pause(self):
+    def pause_async(self):
+        assert self.status == Node.PAUSING
+        self.region.connection.pause(self)
+        self.remove_dns()
+
+    def pause_complete(self):
+        if self.pausing():
+            raise BackendNotReady()
         self.status = Node.PAUSED
         self.save()
 
-    def resume(self):
-        """Resume this node."""
+    def resume_sync(self):
         assert (self.status == Node.PAUSED)
-        self.region.connection.resume(self)
         self.status = Node.RESUMING
         self.save()
 
-    def complete_resume(self):
+    def resume_async_provider(self):
+        self.region.connection.resume(self)
+
+    def resume_async_dns(self):
+        assert self.status == Node.RESUMING
+        if self.resuming():
+            raise BackendNotReady()
         self.update()
         self.setup_dns()
+        self.save()
+
+    def resume_complete(self):
+        if self.resuming():
+            raise BackendNotReady()
         self.status = Node.RUNNING
         self.save()
 

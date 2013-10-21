@@ -1,4 +1,4 @@
-angular.module('geniedb').controller('ListCtrl', function ($scope, $location, $timeout, apiModel, dbaasConfig, $http, growl, User, messageBox, $modal) {
+angular.module('geniedb').controller('ListCtrl', function ($scope, $location, $timeout, apiModel, dbaasConfig, $http, growl, User, messageBox) {
     //    TODO Disable UI while processing update on cluster
     if (!User.user.token) {
         $location.path("/");
@@ -38,11 +38,7 @@ angular.module('geniedb').controller('ListCtrl', function ($scope, $location, $t
         cluster.isLaunching = true;
 
         var title = 'Launching Cluster';
-        var providers = _.uniq(_.pluck(cluster.nodes, 'provider'));
-        var launchTime = _.max(providers,function (provider) {
-            return provider.launchTime;
-        }).launchTime;
-        var msg = 'We are now spinning up the cluster you requested.  You will receive an email with <strong>connection instructions</strong> when the cluster is available.  <br /><br />In general ' + _.pluck(providers, 'name').join(' and ') + ' take' + (providers.length > 1 ? '' : 's') + ' about ' + launchTime + ' minutes to provision and launch their nodes.';
+        var msg = apiModel.getLaunchMessage(_.pluck(cluster.nodes, 'provider'));
         var btns = [
             {result: 'ok', label: 'Ok', cssClass: 'btn-success'}
         ];

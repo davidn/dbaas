@@ -6,16 +6,13 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
     var regions = [];
     var flavors = [];
 
-    function getProviderByFlavor(flavorCode) {
-        var flavor = _.findWhere(flavors, {code: flavorCode});
-        return flavor && flavor.provider;
-    }
-
     var statuses = [
         {index: 0, code: 'initial', label: 'not yet started', isAction: false},
         {index: 12, code: 'starting', label: 'Starting launch', isAction: true},
         {index: 1, code: 'provisioning', label: 'Provisioning Instances', isAction: true},
         {index: 2, code: 'installing_cf', label: 'Installing GenieDB CloudFabric', isAction: true},
+        {index: 13, code: 'configuring_monitoring', label: 'Configuring performance monitor', isAction: true},
+        {index: 14, code: 'configuring_dns', label: 'Configuring DNS', isAction: true},
         {index: 3, code: 'running', label: 'running', isAction: false},
         {index: 4, code: 'paused', label: 'paused', isAction: false},
         {index: 5, code: 'pausing', label: 'pausing', isAction: true},
@@ -24,6 +21,21 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
         {index: 8, code: 'over', label: 'over', isAction: false},
         {index: 9, code: 'error', label: 'An error occurred', isAction: false}
     ];
+
+    function getLaunchMessage(providerList) {
+        var providers = _.uniq(providerList);
+        var launchTime = _.max(providers,function (provider) {
+            return provider.launchTime;
+        }).launchTime;
+        var msg = 'We are now spinning up the cluster you requested.  You will receive an email with <strong>connection instructions</strong> when the cluster is available.  <br /><br />In general ' +
+            _.pluck(providers, 'name').join(' and ') + ' take' + (providers.length > 1 ? '' : 's') + ' about ' + launchTime + ' minutes to provision and launch their nodes.';
+
+        return msg;
+    }
+
+    function isUniqueClusterLabel(clusterLabel){
+        return _.findWhere(clusters, {label: clusterLabel}) === undefined;
+    }
 
     function getStatusByLabel(statusLabel) {
         return _.findWhere(statuses, {label: statusLabel});
@@ -130,6 +142,7 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
         }
     );
 
+
     return {
         getProviders: function () {
             providers = providers || Provider.query({}, hydrateProviderData);
@@ -144,6 +157,8 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
             }
             return clusters;
         },
+        getLaunchMessage: getLaunchMessage,
+        isUniqueClusterLabel: isUniqueClusterLabel,
         Cluster: Cluster,
         flavors: flavors,
         regions: regions

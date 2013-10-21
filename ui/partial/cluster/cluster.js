@@ -2,8 +2,14 @@ angular.module('geniedb').controller('ClusterCtrl', function ($scope, $location,
     $scope.providers = apiModel.getProviders();
 
     $scope.cluster = angular.copy(dbaasConfig.quickStart);
+    $scope.showValidationMessages = false;
 
     $scope.save = function () {
+        $scope.showValidationMessages = true;
+        if (!apiModel.isUniqueClusterLabel($scope.cluster.label)) {
+            growl.warning({body: "Cluster Name must be unique"});
+            return;
+        }
         $scope.isLoading = true;
         apiModel.Cluster.save($scope.cluster, function () {
             growl.success({body: "Cluster " + $scope.cluster.label + " created"});
