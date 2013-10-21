@@ -15,6 +15,7 @@ angular.module('geniedb').directive('selectOnClick', function () {
                         }
                     });
                 });
-            }        }
+            }
+        };
     }
 );
