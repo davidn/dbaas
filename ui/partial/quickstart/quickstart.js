@@ -1,8 +1,10 @@
 angular.module('geniedb').controller('QuickstartCtrl', function ($scope, $location, apiModel, $http, growl, dbaasConfig, messageBox) {
     $scope.providers = apiModel.getProviders();
     $scope.regions = apiModel.regions;
+    $scope.showValidationMessages = false;
 
     $scope.launch = function () {
+        $scope.showValidationMessages = true;
         $scope.isLoading = true;
 
         function generateKey(length) {
@@ -27,13 +29,8 @@ angular.module('geniedb').controller('QuickstartCtrl', function ($scope, $locati
             $http.post(cluster.url, nodes).success(function () {
                 growl.success({body: 'Quick start nodes created'});
                 $http.post(cluster.url + '/launch_all/').success(function () {
-
                     var title = 'Launching Cluster';
-                    var providers = _.uniq([$scope.region1.provider, $scope.region2.provider]);
-                    var launchTime = _.max(providers,function (provider) {
-                        return provider.launchTime;
-                    }).launchTime;
-                    var msg = 'We are now spinning up the cluster you requested.   You will receive an email with <strong>connection instructions</strong> when the cluster is available.  <br /><br />In general ' + _.pluck(providers, 'name').join(' and ') + ' take' + (providers.length > 1 ? '' : 's') + ' about ' + launchTime + ' minutes to provision and launch their nodes.';
+                    var msg = apiModel.getLaunchMessage([$scope.region1.provider, $scope.region2.provider]);
                     var btns = [
                         {result: 'ok', label: 'Ok', cssClass: 'btn-success'}
                     ];

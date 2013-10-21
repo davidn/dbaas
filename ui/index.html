@@ -22,6 +22,12 @@
 	<link href="css/app.less" type="text/css" rel="stylesheet/less">
 
 	<link rel="shortcut icon" href="favicon.ico">
+
+	<style type="text/css" media=screen>
+		[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+		  display: none !important;
+		}
+	</style>
 </head>
 <body ng-app="geniedb">
 
@@ -37,7 +43,8 @@
 			<div class="navbar-header">
 				<a id="dbaasHeader" class="navbar-brand" href="#"> <img src="img/DBaaSConsole_Logo.png"/> </a>
 			</div>
-			<div id="logout" class="navbar-header" ng-if="user.token">
+			<div id="logout" ng-cloak class="ng-cloak navbar-header" ng-if="user.token">
+				<span class="environment-tag" app-environment></span>
 				Welcome {{ user.email }}&nbsp;
 				<i class="icon-user" ng-class="{'paid-user': user.isPaid}"></i> &nbsp;&nbsp;
 				<button class="btn btn-primary btn-sm" ng-click="logout()">LOGOUT</button>
@@ -48,7 +55,7 @@
 	</div>
 
 	<div ng-view></div>
-	<div class="version-tag" ng-right-click="showInfo(event)">GenieDB DBaaS v<span app-version></span></div>
+	<div ng-cloak class="ng-cloak version-tag" ng-right-click="showInfo(event)">GenieDB DBaaS v<span app-version></span></div>
 </div>
 
 <!--[if lt IE 9]>
@@ -104,6 +111,7 @@
 <script src="directive/pwCheck.js"></script>
 <script src="directive/btnLoading.js"></script>
 <script src="directive/appVersion.js"></script>
+<script src="directive/appEnvironment.js"></script>
 <script src="directive/jqSparkline.js"></script>
 <script src="directive/focusMe.js"></script>
 <script src="directive/popoverTemplate.js"></script>
