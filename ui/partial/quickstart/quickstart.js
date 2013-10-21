@@ -5,6 +5,11 @@ angular.module('geniedb').controller('QuickstartCtrl', function ($scope, $locati
 
     $scope.launch = function () {
         $scope.showValidationMessages = true;
+        if (!$scope.region1 || !$scope.region2) {
+            growl.warning({body: 'Please select two regions for your Quick Start Cluster'});
+            return;
+        }
+
         $scope.isLoading = true;
 
         function generateKey(length) {

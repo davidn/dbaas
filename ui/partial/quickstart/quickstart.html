@@ -6,8 +6,8 @@
 			<h3>Creating Quick Start Cluster</h3>
 		</div>
 		<div class="modal-body" style="max-height:80%">
-			<p>
-				Getting started with a test cluster is as easy as choosing two data centers. There is no cost to you when running on your choice of Rackspace or Amazon EC2 for 7 days. </p>
+			<p >
+				Getting started with a test cluster is as easy as choosing two data centers. There is no cost to you when running on Amazon EC2, Google Compute Engine, or Rackspace for 7 days. </p>
 
 			<div class="form-group">
 				<label> Node 1 Region</label><br/>
@@ -17,6 +17,9 @@
 				<label> Node 2 Region</label><br/>
 				<select ui-select2 ng-model="region2" data-placeholder="Pick a region" ng-options="region as region.name group by region.provider.name for region in regions" style="width: 80%"></select>
 			</div>
+			<br/>
+			<p >
+				While the cluster is launching you can check the status from the dashboard, an email with connection information will be sent as soon as your cluster is available. </p>
 		</div>
 		<div class="modal-footer">
 			<button class="btn btn-success" btn-loading="isLoading" data-loading-text="Launching..." ng-click="launch()">LAUNCH</button>
