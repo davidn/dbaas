@@ -80,6 +80,16 @@ def cluster_launch_complete(cluster):
     Cluster.objects.get(pk=cluster.pk).launch_complete()
 
 @task(base=NodeTask)
+def node_reinstantiate(node):
+    Node.objects.get(pk=node.pk).reinstantiate_async()
+@task(base=NodeTask,max_retries=20)
+def node_reinstantiate_complete(node):
+    try:
+        Node.objects.get(pk=node.pk).reinstantiate_complete()
+    except BackendNotReady as e:
+        node_reinstantiate_complete.retry(exc=e, countdown=15)
+
+@task(base=NodeTask)
 def node_pause(node):
     Node.objects.get(pk=node.pk).pause_async()
 @task(base=NodeTask,max_retries=20)

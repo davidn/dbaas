@@ -208,6 +208,7 @@ class Cluster(models.Model):
     def launch_sync(self):
         self.status = Cluster.PROVISIONING
         self.save()
+
     def launch_async(self):
         self.generate_keys()
         if self.iam_key == "":
@@ -237,6 +238,7 @@ class Cluster(models.Model):
               "Action": "s3:*",
               "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
         }]}""" % {'iam': self.iam_arn, 'bucket': self.uuid})
+
     def launch_complete(self):
         self.status = Cluster.RUNNING
         self.save()
@@ -827,9 +829,31 @@ class Node(models.Model):
         self.status = self.RUNNING
         self.save()
 
+    def reinstantiate_sync(self):
+        assert self.status == Node.RUNNING, \
+            'Cannot reinstantiate node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+        self.status = self.PROVISIONING
+        self.save()
+
+    def reinstantiate_async(self):
+        """Reinstantiate the node using its current flavor settings."""
+        assert self.status == Node.PROVISIONING, \
+            'Cannot continue reinstantiating node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+        self.region.connection.reinstantiate(self)
+        self.remove_dns()
+        self.update()
+        self.setup_dns()
+        self.save()
+
+    def reinstantiate_complete(self):
+        if self.pending():
+            raise BackendNotReady()
+        self.status = self.RUNNING
+        self.save()
+
     def pause_sync(self):
         assert self.status == Node.RUNNING, \
-            'Cannot pause node "%s" as it is in state %s.' % (self, dict(Node.STATUES)[self.status])
+            'Cannot pause node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
         self.status = Node.PAUSING
         self.save()
 

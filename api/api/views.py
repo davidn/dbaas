@@ -125,7 +125,7 @@ def cloud_config_by_hostname(request, hostname):
         cluster = r.group('cluster')
         nid = r.group('nid')
         try:
-            n = Node.objects.get(id=nid, cluster_id=cluster)
+            n = Node.objects.get(nid=nid, cluster_id=cluster)
         except ObjectDoesNotExist:
             n = None
         if n:
