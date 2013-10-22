@@ -183,7 +183,6 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    'livesettings',
     'registration',
     'rest_registration',
     'simple_history',
