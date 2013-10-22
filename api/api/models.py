@@ -754,7 +754,11 @@ class Node(models.Model):
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             health_check = HealthCheck(connection=r53, caller_reference=self.health_check_reference,
                                        ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
-            self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
+            try:
+                self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
+            except exception.DNSServerError, e:
+                if e.status != 409:
+                    raise
             rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
             rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
                                                                   type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
