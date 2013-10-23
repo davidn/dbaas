@@ -5,6 +5,8 @@ Created on 9 Oct 2013
 '''
 
 from celery import group
+from salt.utils.event import SaltEvent
+from django.conf import settings
 from .models import Node
 from . import tasks
 
@@ -22,6 +24,8 @@ def launch_cluster(cluster):
          | group([tasks.node_launch_update.si(node) for node in install_nodes]) \
          | tasks.null_task.si() \
          | group([tasks.node_launch_dns.si(node) for node in install_nodes]) \
+         | tasks.null_task.si() \
+         | group([tasks.node_launch_salt.si(node) for node in install_nodes]) \
          | tasks.null_task.si() \
          | group([tasks.node_launch_zabbix.si(node) for node in install_nodes] \
                 +[tasks.region_launch.si(lbr_region) for lbr_region in lbr_regions]) \
@@ -45,4 +49,14 @@ def resume_node(node):
     return task.delay()
 
 def add_database(cluster, dbname):
-    # TODO... trigger salt
+    event = SaltEvent('master', settings.SALT_IPC_PATH)
+    event.fire_event({
+            'cluster':cluster.uuid,
+            'dbname': dbname,
+            'nodes': [{
+                'id': n.id,
+                'nid': n.nid,
+                'dns_name': n.dns_name
+            } for n in cluster.nodes]
+        },
+        'add_database')

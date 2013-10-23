@@ -58,6 +58,9 @@ def node_launch_dns(node):
     except DNSServerError as e:
         node_launch_dns.retry(exc=e, countdown=15)
 @task(base=NodeTask)
+def node_launch_salt(node):
+    Node.objects.get(pk=node.pk).launch_async_salt()
+@task(base=NodeTask)
 def node_launch_zabbix(node):
     Node.objects.get(pk=node.pk).launch_async_zabbix()
 @task(base=NodeTask)

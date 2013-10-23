@@ -27,6 +27,7 @@ ZABBIX_USER = ""
 ZABBIX_PASSWORD = ""
 
 SALT_MASTER="salt.example.com"
+SALT_IPC_PATH='/var/run/salt/master'
 
 AWS_ACCESS_KEY = ""
 AWS_SECRET_KEY = ""

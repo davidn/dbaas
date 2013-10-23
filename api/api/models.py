@@ -30,6 +30,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext as _
 from simple_history.models import HistoricalRecords
 from pyzabbix import ZabbixAPI
+from salt.utils.event import SaltEvent
 from api.exceptions import BackendNotReady
 
 
@@ -424,12 +425,14 @@ class Node(models.Model):
     RESUMING = 11
     CONFIGURING_DNS = 14
     CONFIGURING_MONITORING = 13
+    CONFIGURING_NODE = 15
     ERROR = 1000
     STATUSES = (
         (INITIAL, 'not yet started'),
         (STARTING, 'Starting launch'),
         (PROVISIONING, 'Provisioning Instances'),
         (CONFIGURING_DNS, 'configuring DNS'),
+        (CONFIGURING_NODE, 'configuring node'),
         (CONFIGURING_MONITORING, 'configuring monitoring'),
         (RUNNING, 'running'),
         (PAUSED, 'paused'),
@@ -647,6 +650,17 @@ class Node(models.Model):
         self.save()
         self.setup_dns()
         self.save()
+
+    def launch_async_salt(self):
+        self.status = self.CONFIGURING_NODE
+        event = SaltEvent('master', settings.SALT_IPC_PATH)
+        event.fire_event({
+            'id': self.id,
+            'cluster': self.cluster.uuid,
+            'nid': self.nid,
+            'dns_name': self.dns_name,
+        },
+        'launch_node')
 
     def launch_async_zabbix(self):
         self.status = self.CONFIGURING_MONITORING
