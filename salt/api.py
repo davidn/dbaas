@@ -135,10 +135,9 @@ def ext_pillar(minion_id,
         for field in ('uuid','port','dbname', 'dbusername', 'dbpassword','ca_cert', 'server_cert', 'server_key', 'subscriptions', 'backup_count', 'backup_schedule', 'iam_key','iam_secret'):
             django_pillar['cluster'][field] = getattr(cluster, field)
         django_pillar['cluster']['backup_parts'] = cluster.backup_schedule.split()
+        django_pillar['cluster']['dbname_parts'] = cluster.backup_schedule.split(',')
         django_pillar['settings'] = {
             'zabbix_server':settings.ZABBIX_SERVER,
-            'mysql_user':settings.MYSQL_USER,
-            'mysql_password':settings.MYSQL_PASSWORD
         }
 
         return {pillar_name: django_pillar}

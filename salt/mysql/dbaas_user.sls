@@ -7,12 +7,14 @@ db_user:
     - host: '%'
     - password: {{ pillar['dbaas_api']['cluster']['dbpassword'] }}
 
-database:
+{% for database in pillar['dbaas_api']['cluster']['dbname_parts'] %}
+database_{{database}}:
   mysql_database.present:
-    - name: {{ pillar['dbaas_api']['cluster']['dbname'] }}
+    - name: {{ database }}
 
-user_to_db:
+user_to_db_{{database}}:
   mysql_grants.present:
     - grant: all privileges
-    - database: {{ pillar['dbaas_api']['cluster']['dbname'] }}.*
+    - database: {{ database }}.*
     - user: {{ pillar['dbaas_api']['cluster']['dbusername'] }}
+{% endfor %}
