@@ -13,7 +13,6 @@ partition the Nodes in a cluster. See `the wiki`_ for more info.
 """
 
 from logging import getLogger
-import MySQLdb
 from django.db import models
 from django.dispatch.dispatcher import receiver
 from django.conf import settings
@@ -23,7 +22,7 @@ from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
 import providers
 from .crypto import KeyPair, SslPair, CertificateAuthority
-from .utils import retry, split_every, cron_validator, mysql_database_validator
+from .utils import retry, split_every, cron_validator
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -699,31 +698,6 @@ class Node(models.Model):
             raise BackendNotReady()
         self.status = Node.RUNNING
         self.save()
-
-    def add_database(self, dbname):
-        """Create a new MySQL database on this node and grant the user permission to it."""
-        mysql_database_validator(dbname)
-        con = MySQLdb.connect(host=self.dns_name,
-                              user=settings.MYSQL_USER,
-                              passwd=settings.MYSQL_PASSWORD,
-                              port=self.cluster.port)
-        try:
-            cur = con.cursor()
-            try:
-                try:
-                    # Note we don't use real placeholder syntax as CREATE DATABASE fails
-                    # if quotes are present
-                    cur.execute("CREATE DATABASE IF NOT EXISTS " + dbname + ";")
-                except Warning:
-                    pass
-                try:
-                    cur.execute("GRANT ALL ON " + dbname + ".* to %s@'%%';", (self.cluster.dbusername,))
-                except Warning:
-                    pass
-            finally:
-                cur.close()
-        finally:
-            con.close()
 
     def on_terminate(self):
         """Shutdown the node and remove DNS entries."""

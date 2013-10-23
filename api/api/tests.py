@@ -275,36 +275,6 @@ class AddDatabaseControllerTest(TestCase):
             region=Region.objects.get(code='test-1'),
             flavor=Flavor.objects.get(code='test-small')) for _ in xrange(3)]
 
-    @patch('MySQLdb.connect')
-    def test_add_database(self, connect):
-        self.nodes[0].status = Node.PROVISIONING
-        self.nodes[0].nid = self.cluster.next_nid()
-        self.nodes[0].save()
-        self.nodes[1].nid = self.cluster.next_nid()
-        self.nodes[1].status = Node.RUNNING
-        self.nodes[1].save()
-        self.nodes[2].nid = self.cluster.next_nid()
-        self.nodes[2].status = Node.RUNNING
-        self.nodes[2].save()
-        add_database(self.cluster, 'db2')
-        self.assertItemsEqual(
-            [call(host=self.nodes[1].dns_name,
-                  user=settings.MYSQL_USER,
-                  passwd=settings.MYSQL_PASSWORD,
-                  port=self.cluster.port),
-             call(host=self.nodes[2].dns_name,
-                  user=settings.MYSQL_USER,
-                  passwd=settings.MYSQL_PASSWORD,
-                  port=self.cluster.port)],
-            connect.call_args_list)
-        self.assertItemsEqual(
-            [call("CREATE DATABASE IF NOT EXISTS db2;"),
-             call("CREATE DATABASE IF NOT EXISTS db2;"),
-             call("GRANT ALL ON db2.* to %s@'%%';",('user',)),
-             call("GRANT ALL ON db2.* to %s@'%%';",('user',))],
-            connect.return_value.cursor.return_value.execute.call_args_list
-        )
-
 class NodeTest(TestCase):
     def setUp(self):
         self.user = User.objects.create(email='test@example.com')

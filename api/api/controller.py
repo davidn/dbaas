@@ -45,7 +45,4 @@ def resume_node(node):
     return task.delay()
 
 def add_database(cluster, dbname):
-    cluster.dbname += ','+dbname
-    for node in cluster.nodes.filter(status=Node.RUNNING):
-        node.add_database(dbname)
-    cluster.save()
+    # TODO... trigger salt
