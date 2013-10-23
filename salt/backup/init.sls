@@ -1,0 +1,22 @@
+/etc/mysqlbackup.logrotate:
+  file.managed:
+    - source: salt://backup/mysqlbackup.logrotate
+    - user: root
+    - group: root
+    - mode: 644
+    - template: jinja
+
+/usr/local/bin/backup:
+  cron.present:
+    - user: root
+    - minute: '{{ pillar['dbaas_api']['cluster']['backup_parts'][0] }}'
+    - hour: '{{ pillar['dbaas_api']['cluster']['backup_parts'][1] }}'
+    - daymonth: '{{ pillar['dbaas_api']['cluster']['backup_parts'][2] }}'
+    - month: '{{ pillar['dbaas_api']['cluster']['backup_parts'][3] }}'
+    - dayweek: '{{ pillar['dbaas_api']['cluster']['backup_parts'][4] }}'
+  file.managed:
+    - source: salt://backup/backup.sh
+    - user: root
+    - group: root
+    - mode: 644
+    - template: jinja

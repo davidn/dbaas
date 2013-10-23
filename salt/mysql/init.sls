@@ -1,0 +1,4 @@
+mysqld:
+  service:
+    - running
+
