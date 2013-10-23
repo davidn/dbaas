@@ -3,6 +3,4 @@ auto_increment_offset={{ pillar['dbaas_api']['node']['nid'] }}
 auto_increment_increment=255
 geniedb_my_node_id={{ pillar['dbaas_api']['node']['nid'] }}
 geniedb_subscriptions={{ pillar['dbaas_api']['node']['nid'] }}:192.168.33.{{ pillar['dbaas_api']['node']['nid'] }}:5502,2:192.168.33.2:5502
-geniedb_buffer_pool_size={{ pillar['dbaas_api']['node']['buffer_pool_size'] }}
 default_storage_engine=GenieDB
-port=3306
