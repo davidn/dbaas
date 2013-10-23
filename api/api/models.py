@@ -12,10 +12,7 @@ partition the Nodes in a cluster. See `the wiki`_ for more info.
 
 """
 
-from hashlib import sha1
 from logging import getLogger
-from textwrap import dedent
-
 import MySQLdb
 from django.db import models
 from django.dispatch.dispatcher import receiver
@@ -26,7 +23,7 @@ from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
 import providers
 from .crypto import KeyPair, SslPair, CertificateAuthority
-from .utils import retry, split_every, cron_validator, mysql_database_validator, CloudConfig
+from .utils import retry, split_every, cron_validator, mysql_database_validator
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -518,174 +515,8 @@ class Node(models.Model):
         return int(max(self.flavor.ram * 0.7, self.flavor.ram - 2048) * 2 ** 20)
 
     @property
-    def cloud_config(self):
-        """Return a string to be passed to cloud-init on a newly provisioned node."""
-        cloud_config=CloudConfig()
-
-        # Configure MySQL
-        cloud_config.add_file(
-            "/etc/mysql/conf.d/geniedb.cnf",
-            dedent("""\
-                [mysqld]
-                auto_increment_offset={nid}
-                auto_increment_increment=255
-                geniedb_my_node_id={nid}
-                geniedb_subscriptions={subscriptions}
-                geniedb_buffer_pool_size={buffer_pool_size}
-                default_storage_engine=GenieDB
-                port={port}
-                ssl_ca=/etc/mysql/ca.cert
-                ssl_cert=/etc/mysql/server.cert
-                ssl_key=/etc/mysql/server.pem
-                """),
-            nid=self.nid, subscriptions=self.cluster.subscriptions,
-            port=self.cluster.port,
-            buffer_pool_size=self.buffer_pool_size
-        )
-        cloud_config.add_file(
-            "/etc/mysql/ca.cert",
-            owner="mysql:mysql",
-            permissions="0600",
-            content=self.cluster.ca_cert+"\n"
-        )
-        cloud_config.add_file(
-            "/etc/mysql/server.cert",
-            owner="mysql:mysql",
-            permissions="0600",
-            content=self.cluster.server_cert+"\n"
-        )
-        cloud_config.add_file(
-            "/etc/mysql/server.pem",
-            owner="mysql:mysql",
-            permissions="0600",
-            content=self.cluster.server_key+"\n"
-        )
-        cloud_config.add_file(
-            "/etc/mysqld-grants",
-            dedent("""\
-                CREATE USER '{dbusername}'@'%' IDENTIFIED BY PASSWORD '{dbpassword}';
-                CREATE USER '{mysql_user}'@'%' IDENTIFIED BY PASSWORD '{mysql_password}';
-                GRANT ALL ON *.* to '{mysql_user}'@'%' WITH GRANT OPTION;
-                """) + "".join(
-                    "CREATE DATABASE {dbname};\nGRANT ALL ON {dbname}.* to '{{dbusername}}'@'%';\n".format(
-                        dbname=dbname,
-                    ) for dbname in self.cluster.dbname.split(',')),
-            dbusername=self.cluster.dbusername,
-            dbpassword='*' + sha1(sha1(self.cluster.dbpassword).digest()).hexdigest().upper(),
-            mysql_user=settings.MYSQL_USER,
-            mysql_password='*' + sha1(sha1(settings.MYSQL_PASSWORD).digest()).hexdigest().upper(),
-        )
-
-        # Configure Tinc
-        cloud_config.add_file(
-            "/etc/tinc/cf/tinc.conf",
-            dedent("""\
-                Name = node_{nid}
-                Device = /dev/net/tun
-                """) + "\n".join("ConnectTo = node_" + str(node.nid) for node in self.cluster.nodes.all())+"\n",
-            nid=self.nid
-        )
-        cloud_config.add_file(
-            "/etc/tinc/cf/tinc-up",
-            permissions="0755",
-            content=dedent("""\
-                #!/bin/sh
-                ip addr flush cf
-                ip addr add 192.168.33.{nid}/24 dev cf
-                ip link set cf up
-                """),
-            nid=self.nid
-        )
-        cloud_config.add_file(
-            "/etc/tinc/cf/rsa_key.priv",
-            permissions="0600",
-            content=self.tinc_private_key+"\n"
-        )
-        for node in self.cluster.nodes.all():
-            cloud_config.add_file(
-                "/etc/tinc/cf/hosts/node_{nid}".format(nid=node.nid),
-                dedent("""\
-                    Address={address}
-                    Subnet=192.168.33.{nid}/32
-                    """)+node.public_key+"\n",
-                nid=node.nid,
-                address=node.dns_name
-            )
-
-        # Configure Zabbix
-        cloud_config.add_file(
-            "/etc/zabbix/zabbix_agentd.conf",
-            dedent("""\
-                PidFile=/var/run/zabbix/zabbix_agentd.pid
-                LogFile=/var/log/zabbix/zabbix_agentd.log
-                LogFileSize=0
-                Server={zabbix_server}
-                ServerActive={zabbix_server}
-                Hostname={dns_name}
-                Include=/etc/zabbix/zabbix_agentd.d/
-                EnableRemoteCommands=1
-                """),
-            dns_name=self.dns_name, zabbix_server=settings.ZABBIX_SERVER
-        )
-
-        # Configure backups
-        cloud_config.add_file(
-            "/etc/mysqlbackup.logrotate",
-            dedent("""\
-                compress
-                /var/backup/mysqlbackup.sql {{
-                    dateext
-                    dateformat -%Y%m%d.%s
-                    rotate {backup_count}
-                }}
-                """),
-            backup_count=self.cluster.backup_count
-        )
-        cloud_config.add_file(
-            "/etc/cron.d/backup",
-            "{backup_schedule} root /usr/local/bin/backup\n",
-            backup_schedule=self.cluster.backup_schedule
-        )
-        cloud_config.add_file(
-            "/root/.s3cfg",
-            permissions="0600",
-            content=dedent("""\
-                access_key = {iam_key}
-                secret_key = {iam_secret}
-                """),
-            iam_key=self.cluster.iam_key,
-            iam_secret=self.cluster.iam_secret
-        )
-        cloud_config.add_file(
-            "/usr/local/bin/backup",
-            permissions="0755",
-            content=dedent("""\
-                #!/bin/sh
-                /usr/bin/mysqldump --all-databases > /var/backup/mysqlbackup.sql
-                /usr/sbin/logrotate -fs /etc/mysqlbackup.state /etc/mysqlbackup.logrotate
-                /usr/bin/s3cmd sync --delete-removed /var/backup/ s3://{cluster}/{nid}/
-                /usr/bin/curl {set_backup_url} -X POST -H "Content-type: application/json" -d "$(
-                  c=false
-                  cd /var/backup/
-                  printf '[\\n'
-                  for i in *; do
-                    if $c; then
-                      printf ',\\n'
-                    else
-                      c=true
-                    fi
-                    stat --printf '  {{"filename":"%n", "time":"%y", "size":"%s"}}' "$i"
-                  done
-                  printf '\\n]\\n'
-                )"
-            """),
-            nid=self.nid, cluster=self.cluster.pk,
-            set_backup_url='https://' + Site.objects.get_current().domain + reverse('node-set-backups', args=[self.cluster.pk, self.pk])
-        )
-
-        cloud_config.add_command(["lokkit", "-p", "{port}:tcp".format(port=self.cluster.port)])
-        cloud_config.add_command(["mkdir", "-p", "/var/backup"])
-        return str(cloud_config)
+    def set_backup_url(self):
+        return 'https://' + Site.objects.get_current().domain + reverse('node-set-backups', args=[self.cluster.pk, self.pk])
 
     @property
     def customerName(self):

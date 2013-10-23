@@ -16,4 +16,3 @@ pycrypto
 google-api-python-client
 git+https://github.com/treyhunner/django-simple-history
 mock
-pyyaml

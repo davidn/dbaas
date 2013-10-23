@@ -1,9 +1,8 @@
 from logging import getLogger
 from time import sleep
 from django.conf import settings
-from django.contrib.sites.models import Site
 from .cloud import Cloud
-from api.utils import remove_trail_slash, retry
+from api.utils import retry
 
 import boto.ec2
 
@@ -78,8 +77,7 @@ class EC2(Cloud):
                 instance_type=node.flavor.code,
                 block_device_map=self._create_block_device_map(node),
                 security_groups=sgs,
-                user_data='#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(
-                    node.get_absolute_url()) + '/cloud_config/\n',
+                user_data=self.cloud_init(node),
             )
 
         try:

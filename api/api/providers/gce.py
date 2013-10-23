@@ -1,10 +1,8 @@
 from logging import getLogger
 from time import sleep
 from django.conf import settings
-from django.contrib.sites.models import Site
 import httplib2
 from .cloud import Cloud
-from api.utils import remove_trail_slash
 
 try:
     from apiclient import discovery
@@ -148,9 +146,7 @@ class GoogleComputeEngine(Cloud):
              }],
             'network': 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/networks/default' % self.gce,
           }]
-        user_data = \
-            '#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(node.get_absolute_url()) + '/cloud_config/\n'
-        metadata_items = [{"key": "user-data", "value": user_data}]
+        metadata_items = [{"key": "user-data", "value": self.cloud_init(node)}]
         body = {
           'name': self.gce['name'],
           'kernel': 'https://www.googleapis.com/compute/v1beta16/projects/%(kernel)s' % self.gce,

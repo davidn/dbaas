@@ -116,26 +116,6 @@ def upgrade(request):
     serializer = UserSerializer(request.user)
     return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
-@api_view(('GET',))
-@permission_classes((permissions.AllowAny,))
-def cloud_config_by_hostname(request, hostname):
-    regex = re.compile(settings.CLUSTER_NID_TEMPLATE)
-    r = regex.match(hostname)
-    if r:
-        cluster = r.group('cluster')
-        nid = r.group('nid')
-        try:
-            n = Node.objects.get(id=nid, cluster_id=cluster)
-        except ObjectDoesNotExist:
-            n = None
-        if n:
-            for node in n.cluster.nodes.filter(status=Node.PROVISIONING):
-                while node.pending():
-                    sleep(15)
-            return HttpResponse(n.cloud_config, content_type='text/cloud-config')
-    return HttpResponse("Unrecognized Hostname: %s\n" % hostname, content_type='text/cloud-config')
-
-
 class ClusterViewSet(mixins.CreateModelMixin,
                      mixins.ListModelMixin,
                      mixins.RetrieveModelMixin,
@@ -256,15 +236,6 @@ class NodeViewSet(mixins.ListModelMixin,
 
     def get_queryset(self):
         return Node.objects.filter(cluster=self.kwargs["cluster"])
-
-    @link(permission_classes=[permissions.AllowAny])
-    def cloud_config(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        for node in self.object.cluster.nodes.filter(status__in=(Node.PROVISIONING, Node.STARTING)):
-            n = Node.objects.get(id=node.id)
-            while n.status == Node.STARTING or n.pending():
-                sleep(15)
-        return HttpResponse(self.object.cloud_config, content_type='text/cloud-config')
 
     def zabbix_history(self, node, key, count=120):
         if node.region.provider.code == 'test':

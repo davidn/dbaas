@@ -29,6 +29,8 @@ ZABBIX_ENDPOINT = "http://%s/zabbix/" % ZABBIX_SERVER
 ZABBIX_USER = ""
 ZABBIX_PASSWORD = ""
 
+SALT_MASTER="salt.example.com"
+
 AWS_ACCESS_KEY = ""
 AWS_SECRET_KEY = ""
 

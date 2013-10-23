@@ -1,8 +1,6 @@
 from logging import getLogger
 from django.conf import settings
-from django.contrib.sites.models import Site
 from .cloud import Cloud
-from api.utils import remove_trail_slash
 
 import novaclient.v1_1
 
@@ -37,8 +35,7 @@ class Openstack(Cloud):
             key_name=self.region.key_name,
             availability_zone=self.region.code,
             files={
-                '/var/lib/cloud/seed/nocloud-net/user-data': '#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(
-                    node.get_absolute_url()) + '/cloud_config/\n',
+                '/var/lib/cloud/seed/nocloud-net/user-data': self.cloud_init(node),
                 '/var/lib/cloud/seed/nocloud-net/meta-data': 'instance-id: iid-local01',
             },
         )

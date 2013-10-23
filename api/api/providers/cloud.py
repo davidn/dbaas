@@ -1,4 +1,6 @@
 from logging import getLogger
+from textwrap import dedent
+from django.conf import settings
 
 logger = getLogger(__name__)
 
@@ -32,3 +34,10 @@ class Cloud(object):
 
     def resume(self, node):
         pass
+
+    def cloud_init(self, node):
+        return dedent("""\
+            #!/bin/sh
+            sed -i 's/#master: salt/master: {salt_master}/' /etc/salt/minion
+            sed -i 's/#id:/id: {dns_name}/' /etc/salt/minion
+            """.format(dns_name=node.dns_name, salt_master=settings.SALT_MASTER))

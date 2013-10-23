@@ -2,15 +2,9 @@ import re
 from time import sleep
 from logging import getLogger
 from itertools import islice
-import yaml
 from django.core.exceptions import ValidationError
 
 logger = getLogger(__name__)
-
-def remove_trail_slash(s):
-    if s.endswith('/'):
-        s = s[:-1]
-    return s
 
 def retry(func, initialDelay=50, maxRetries=12):
     """func must return truthy value"""
@@ -85,26 +79,3 @@ def split_every(n, iterable):
     while piece:
         yield piece
         piece = list(islice(i, n))
-
-class CloudConfig(object):
-    def __init__(self, obj=None, yaml_data=None):
-        if obj is not None:
-            self._object = obj
-        elif yaml_data is not None:
-            self._object = yaml.load(yaml_data)
-        else:
-            self._object = {'write_files':[], 'runcmd':[]}
-
-    def add_file(self, path, content, permissions='0644', owner='root:root', *args, **kwargs):
-        self._object['write_files'].append({
-            'path': path,
-            'permissions': permissions,
-            'owner': owner,
-            'content': content.format(*args, **kwargs)
-        })
-
-    def add_command(self, command):
-        self._object['runcmd'].append(command)
-
-    def __str__(self):
-        return "#cloud-config\n" + yaml.dump(self._object)
