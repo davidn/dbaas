@@ -125,7 +125,7 @@ def ext_pillar(minion_id,
 
         models = importlib.import_module(django_app + '.models')
         from django.conf import settings
-        r = re.match(settings.CLUSTER_NID_TEMPLATE, __grains__['fqdn'])
+        r = re.match(settings.CLUSTER_NID_TEMPLATE, __grains__['id'])
         node = models.Node.objects.get(cluster_id=r.group('cluster'), nid=r.group('nid'))
         django_pillar['node'] = {}
         django_pillar['cluster'] = {}
