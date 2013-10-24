@@ -2,6 +2,7 @@ base:
   '*':
     - geniedb.config
     - backup
+    - tinc
     - security.selinux
     - users.aladdin
     - zabbix.config
