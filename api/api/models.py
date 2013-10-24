@@ -781,6 +781,49 @@ class Node(models.Model):
                 if e.status != 404:
                     raise
 
+    def modify_dns(self):
+        if self.region.provider.code != 'test':
+            # Get old IP address and de-register it.
+            dnsname = self.dns_name
+            # Sometimes the address lookup isn't available without a trailing dot '.',
+            # and it doesn't hurt to include the trailing dot whether it is or isn't.
+            if dnsname[-1] != '.':
+                dnsname += '.'
+            try:
+                old_ip = socket.gethostbyname(dnsname)
+            except:
+                old_ip = ''
+
+            # If the IP address didn't change then we don't need to do anything
+            if old_ip and old_ip != self.ip:
+                r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+
+                # De-register the old IP address
+                rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+                rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
+                                                                      type='A', ttl=60, resource_records=[old_ip], identifier=self.instance_id,
+                                                                      weight=1))
+                rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
+                                                              resource_records=[old_ip]))
+                catch_dns_not_found(rrs)
+                try:
+                    r53.delete_health_check(self.health_check)
+                except exception.DNSServerError, e:
+                    if e.status != 404:
+                        raise
+
+                # Now register the new IP address
+                health_check = HealthCheck(connection=r53, caller_reference=self.health_check_reference,
+                                           ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
+                self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
+                rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+                rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
+                                                                      type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
+                                                                      weight=1))
+                rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
+                                                              resource_records=[self.ip]))
+                catch_dns_exists(rrs)
+
     def launch_sync(self):
         assert self.status != Node.OVER, \
             'Cannot launch node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
@@ -835,9 +878,7 @@ class Node(models.Model):
         """Reinstantiate the node using its current flavor settings."""
         assert self.status == Node.PROVISIONING, \
             'Cannot continue reinstantiating node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
-        self.remove_dns()
         self.region.connection.reinstantiate(self)
-        self.save()
 
     def reinstantiate_update(self):
         assert self.status == self.PROVISIONING, \
@@ -851,7 +892,7 @@ class Node(models.Model):
             'node': str(self.pk),
             'url': 'https://' + Site.objects.get_current().domain + self.get_absolute_url(),
         })
-        self.setup_dns()
+        self.modify_dns()
         self.save()
 
     def reinstantiate_complete(self):
@@ -870,7 +911,6 @@ class Node(models.Model):
         assert self.status == Node.PAUSING, \
             'Cannot continue pausing node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
         self.region.connection.pause(self)
-        self.remove_dns()
 
     def pause_complete(self):
         if self.pausing():
@@ -893,7 +933,7 @@ class Node(models.Model):
         if self.resuming():
             raise BackendNotReady()
         self.update()
-        self.setup_dns()
+        self.modify_dns()
         self.save()
 
     def resume_complete(self):
