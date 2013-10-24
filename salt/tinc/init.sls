@@ -16,15 +16,17 @@
     - source: salt://tinc/rsa_key.priv
     - template: jinja
 
-{% foreach node in pillar['dbaas_api']['cluster']['nodes'] %}
-/etc/tinc/cf/node_:
+{% for node in pillar['dbaas_api']['cluster']['nodes'] %}
+/etc/tinc/cf/node_{{ node['nid'] }}:
   file.managed:
     - makedirs: True
     - source: salt://tinc/node_
     - template: jinja
+    - defaults:
+        node: {{ node }}
 {% endfor %}
 
-tincd:
+tinc:
   service:
     - running
   package:
