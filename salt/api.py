@@ -57,7 +57,7 @@ def __virtual__():
     return 'api'
 
 def node_dict(node):
-    return dict((field, getattr(node, field)) field in
+    return dict((field, getattr(node, field)) for field in
         ('id','nid','dns_name', 'buffer_pool_size', 'tinc_private_key', 'public_key', 'set_backup_url'))
 
 def cluster_dict(cluster):

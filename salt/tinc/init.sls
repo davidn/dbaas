@@ -10,7 +10,7 @@
     - source: salt://tinc/tinc-up
     - template: jinja
 
-/etc/tinc/cf/rsa_key.priv
+/etc/tinc/cf/rsa_key.priv:
   file.managed:
     - makedirs: True
     - source: salt://tinc/rsa_key.priv
