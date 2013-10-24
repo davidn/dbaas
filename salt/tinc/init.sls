@@ -29,5 +29,5 @@
 tinc:
   service:
     - running
-  package:
+  pkg:
     - installed

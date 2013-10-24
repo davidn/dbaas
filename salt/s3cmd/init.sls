@@ -1,5 +1,5 @@
 s3cmd:
-  package.installed
+  pkg.installed
 
 /root/.s3cfg:
   file.managed:
