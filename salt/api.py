@@ -56,6 +56,17 @@ def __virtual__():
         return False
     return 'api'
 
+def node_dict(node):
+    return dict((field, getattr(node, field)) field in
+        ('id','nid','dns_name', 'buffer_pool_size', 'tinc_private_key', 'public_key', 'set_backup_url'))
+
+def cluster_dict(cluster):
+    ret = dict((field, getattr(cluster, field)) for field in
+               ('uuid','port','dbname', 'dbusername', 'dbpassword','ca_cert', 'server_cert', 'server_key', 'subscriptions', 'backup_count', 'backup_schedule', 'iam_key','iam_secret'))
+    ret['nodes'] = [node_dict(node) for node in cluster.nodes.all()]
+    ret['backup_parts'] = cluster.backup_schedule.split()
+    ret['dbname_parts'] = cluster.dbname.split(',')
+    return ret
 
 def ext_pillar(minion_id,
                pillar,
@@ -121,26 +132,16 @@ def ext_pillar(minion_id,
     try:
         import importlib
 
-        django_pillar = {}
-
         models = importlib.import_module(django_app + '.models')
         from django.conf import settings
         r = re.match(settings.CLUSTER_NID_TEMPLATE, __grains__['id'])
         node = models.Node.objects.get(cluster_id=r.group('cluster'), nid=r.group('nid'))
-        django_pillar['node'] = {}
-        django_pillar['cluster'] = {}
-        for field in ('id','nid','dns_name', 'buffer_pool_size', 'tinc_private_key', 'public_key', 'set_backup_url'):
-           django_pillar['node'][field] = getattr(node, field)
-        cluster = node.cluster
-        for field in ('uuid','port','dbname', 'dbusername', 'dbpassword','ca_cert', 'server_cert', 'server_key', 'subscriptions', 'backup_count', 'backup_schedule', 'iam_key','iam_secret'):
-            django_pillar['cluster'][field] = getattr(cluster, field)
-        django_pillar['cluster']['backup_parts'] = cluster.backup_schedule.split()
-        django_pillar['cluster']['dbname_parts'] = cluster.backup_schedule.split(',')
-        django_pillar['settings'] = {
-            'zabbix_server':settings.ZABBIX_SERVER,
-        }
-
-        return {pillar_name: django_pillar}
+        return {pillar_name: {
+            'node': node_dict(node),
+            'cluster': cluster_dict(node.cluster),
+            'settings': {
+                'zabbix_server':settings.ZABBIX_SERVER,
+        }}}
     except ImportError, e:
         log.error('Failed to import library: {}'.format(e.message))
         return {}
