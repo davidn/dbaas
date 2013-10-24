@@ -749,18 +749,14 @@ class Node(models.Model):
 
     @property
     def health_check_reference(self):
-        return str(self.id)+"-"+self.ip
+        return str(self.cluster.pk)+str(self.id)+"-"+self.ip
 
     def setup_dns(self):
         if self.region.provider.code != 'test':
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             health_check = HealthCheck(connection=r53, caller_reference=self.health_check_reference,
                                        ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
-            try:
-                self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
-            except exception.DNSServerError, e:
-                if e.status != 409:
-                    raise
+            self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
             rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
             rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
                                                                   type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
@@ -839,9 +835,22 @@ class Node(models.Model):
         """Reinstantiate the node using its current flavor settings."""
         assert self.status == Node.PROVISIONING, \
             'Cannot continue reinstantiating node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
-        self.region.connection.reinstantiate(self)
         self.remove_dns()
-        self.update()
+        self.region.connection.reinstantiate(self)
+        self.save()
+
+    def reinstantiate_update(self):
+        assert self.status == self.PROVISIONING, \
+            'Cannot update reinstantiated node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+        if self.pending():
+            raise BackendNotReady()
+        self.update({
+            'Name': 'dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),
+            'username': self.cluster.user.email,
+            'cluster': str(self.cluster.pk),
+            'node': str(self.pk),
+            'url': 'https://' + Site.objects.get_current().domain + self.get_absolute_url(),
+        })
         self.setup_dns()
         self.save()
 

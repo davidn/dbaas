@@ -32,8 +32,8 @@ class EC2(Cloud):
         else:
             return 'io1'
 
-    def _create_security_group(self, node):
-        sg = self.ec2.create_security_group(str(node), 'Security group for ' + str(node))
+    def _create_security_group(self, node, sgName):
+        sg = self.ec2.create_security_group(sgName, 'Security group for ' + sgName)
         node.security_group = sg.id
 
         def ec2_authorize_security_group():
@@ -61,26 +61,28 @@ class EC2(Cloud):
         bdm['/dev/sda1'] = dev_sda1
         return bdm
 
+    def _run_instances(self, node, sgs):
+        return self.ec2.run_instances(
+            self.region.image,
+            key_name=self.region.key_name,
+            instance_type=node.flavor.code,
+            block_device_map=self._create_block_device_map(node),
+            security_groups=sgs,
+            user_data='#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(
+                node.get_absolute_url()) + '/cloud_config/\n',
+        )
+
     def launch(self, node):
         logger.debug("%s: Assigned NID %s", node, node.nid)
-        sg = self._create_security_group(node)
+        sg = self._create_security_group(node, str(node))
         # EC2 Instance
         if self.region.security_group == "":
             sgs = [sg.name]
         else:
             sgs = [sg.name, self.region.security_group]
 
-
         def ec2_run_instances():
-            return self.ec2.run_instances(
-                self.region.image,
-                key_name=self.region.key_name,
-                instance_type=node.flavor.code,
-                block_device_map=self._create_block_device_map(node),
-                security_groups=sgs,
-                user_data='#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(
-                    node.get_absolute_url()) + '/cloud_config/\n',
-            )
+            return self._run_instances(node, sgs)
 
         try:
             res = retry(ec2_run_instances)
@@ -128,6 +130,15 @@ class EC2(Cloud):
                 sleep(15)
             logger.debug("%s: terminating security group %s", node, node.security_group)
             self.ec2.delete_security_group(group_id=node.security_group)
+
+    def reinstantiate(self, node):
+        # Note: this command stops the server and then restarts it as a new instance
+        self.ec2.stop_instances([node.instance_id])
+        while node.pausing():
+            sleep(15)
+        self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].modify_attribute('instanceType', node.flavor.code)
+        self.ec2.start_instances([node.instance_id])
+        logger.info("Reinstantiating the AWS Instance %s" % (node.dns_name))
 
     def pause(self, node):
         self.ec2.stop_instances([node.instance_id])

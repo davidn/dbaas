@@ -205,7 +205,7 @@ class GoogleComputeEngine(Cloud):
         user_data = \
             '#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(node.get_absolute_url()) + '/cloud_config/\n'
         self._createInstance(userData=user_data)
-        logger.info("Created the GCE Instance %(name)s" % (self.gce))
+        logger.info("Creating the GCE Instance %(name)s" % (self.gce))
         node.instance_id = self.gce['name']
         node.security_group = self.gce['zone']
         node.status = node.PROVISIONING
@@ -302,7 +302,11 @@ class GoogleComputeEngine(Cloud):
         user_data = \
             '#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(node.get_absolute_url()) + '/cloud_config/\n'
         self._createInstance(userData=user_data)
-        logger.info("Reinstantiated the GCE Instance %(name)s" % (self.gce))
+        logger.info("Reinstantiating the GCE Instance %(name)s" % (self.gce))
+        #node.instance_id = self.gce['name']
+        #node.security_group = self.gce['zone']
+        node.status = node.PROVISIONING
+        node.save()
 
 
     #def pause(self, node):

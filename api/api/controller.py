@@ -34,6 +34,7 @@ def launch_cluster(cluster):
 def reinstantiate_node(node):
     node.reinstantiate_sync()
     task = tasks.node_reinstantiate.si(node) \
+         | tasks.node_reinstantiate_update.si(node) \
          | tasks.node_reinstantiate_complete.si(node)
     return task.delay()
 

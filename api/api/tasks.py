@@ -83,6 +83,12 @@ def cluster_launch_complete(cluster):
 def node_reinstantiate(node):
     Node.objects.get(pk=node.pk).reinstantiate_async()
 @task(base=NodeTask,max_retries=20)
+def node_reinstantiate_update(node):
+    try:
+        Node.objects.get(pk=node.pk).reinstantiate_update()
+    except BackendNotReady as e:
+        node_reinstantiate_update.retry(exc=e, countdown=15)
+@task(base=NodeTask,max_retries=20)
 def node_reinstantiate_complete(node):
     try:
         Node.objects.get(pk=node.pk).reinstantiate_complete()
