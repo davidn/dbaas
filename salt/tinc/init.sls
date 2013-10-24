@@ -27,7 +27,16 @@
 {% endfor %}
 
 tinc:
-  service:
-    - running
   pkg:
     - installed
+  service:
+    - running
+    - require:
+      - pkg: tinc
+    - watch:
+      - file: /etc/tinc/cf/tinc.conf
+      - file: /etc/tinc/cf/tinc-up
+      - file: /etc/tinc/cf/rsa_key.priv
+{% for node in pillar['dbaas_api']['cluster']['nodes'] %}
+      - file: /etc/tinc/cf/node_{{ node['nid'] }}
+{% endfor %}

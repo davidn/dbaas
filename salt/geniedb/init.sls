@@ -12,8 +12,6 @@ GenieDB:
     - humanname:  GenieDB Packages
     - baseurl: http://packages.geniedb.com/v2/centos/stable
     - gpgcheck: 0
-    - require_in:
-      -pkg: cloudfabric2
 
 cloudfabric2:
   pkg:

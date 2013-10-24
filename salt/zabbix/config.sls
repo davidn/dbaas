@@ -8,3 +8,5 @@ include:
     - mode: 644
     - source:  salt://zabbix/zabbix_agentd.conf
     - template: jinja
+    - watch_in:
+      - service: zabbix-agent
