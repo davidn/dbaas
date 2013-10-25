@@ -22,7 +22,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 from .controller import launch_cluster, pause_node, resume_node, add_database
 
 csrf_protect_m = method_decorator(csrf_protect)
-
+sensitive_post_parameters_m = method_decorator(sensitive_post_parameters())
 
 class NodeInline(admin.StackedInline):
     model = Node
@@ -171,7 +171,7 @@ class UserAdmin(admin.ModelAdmin):
             return False
         return super(UserAdmin, self).lookup_allowed(lookup, value)
 
-    @sensitive_post_parameters()
+    @sensitive_post_parameters_m
     @csrf_protect_m
     @transaction.commit_on_success
     def add_view(self, request, form_url='', extra_context=None):
@@ -202,7 +202,7 @@ class UserAdmin(admin.ModelAdmin):
         return super(UserAdmin, self).add_view(request, form_url,
                                                extra_context)
 
-    @sensitive_post_parameters()
+    @sensitive_post_parameters_m
     def user_change_password(self, request, id, form_url=''):
         if not self.has_change_permission(request):
             raise PermissionDenied
