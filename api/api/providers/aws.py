@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 #!/usr/bin/python
 from __future__ import unicode_literals
+=======
+import re
+>>>>>>> c380c8c... api.aws: create security groups more robustly
 from logging import getLogger
 from time import sleep
 from django.conf import settings
@@ -8,6 +12,7 @@ from .cloud import Cloud
 from api.utils import remove_trail_slash, retry
 
 import boto.ec2
+from boto.exception import EC2ResponseError
 
 logger = getLogger(__name__)
 
@@ -35,19 +40,25 @@ class EC2(Cloud):
             return 'io1'
 
     def _create_security_group(self, node, sgName):
-        sg = self.ec2.create_security_group(sgName, 'Security group for ' + sgName)
+        try:
+            sg = self.ec2.create_security_group(sgName, 'Security group for ' + sgName)
+        except EC2ResponseError, e:
+            if re.search('InvalidGroup.Duplicate', e.body) is None:
+                raise
+            sg = self.ec2.get_all_security_groups([str(node)])[0]
         node.security_group = sg.id
 
-        def ec2_authorize_security_group():
+        try:
             self.ec2.authorize_security_group(
                 group_id=sg.id,
                 ip_protocol='tcp',
                 cidr_ip='0.0.0.0/0',
                 from_port=node.cluster.port,
                 to_port=node.cluster.port)
-            return True
+        except EC2ResponseError, e:
+            if re.search('InvalidPermission.Duplicate', e.body) is None:
+                raise
 
-        retry(ec2_authorize_security_group)
         logger.debug("%s: Created Security Group %s (named %s) with port %s open", node, sg.id, sg.name, node.cluster.port)
         node.save()
         return sg
@@ -76,7 +87,7 @@ class EC2(Cloud):
 
     def launch(self, node):
         logger.debug("%s: Assigned NID %s", node, node.nid)
-        sg = self._create_security_group(node, str(node))
+        sg = retry(lambda: self._create_security_group(node, str(node)))
         # EC2 Instance
         if self.region.security_group == "":
             sgs = [sg.name]
