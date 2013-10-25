@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """
 WSGI config for dbaas_api project.
 
@@ -13,6 +14,7 @@ middleware here, or combine a Django application with an application of another
 framework.
 
 """
+from __future__ import unicode_literals
 import os
 import djcelery
 djcelery.setup_loader()

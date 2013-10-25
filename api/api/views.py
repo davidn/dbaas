@@ -14,6 +14,7 @@ There are several aspects to the API, each with their own class (a viewset):
 
 """
 
+from __future__ import unicode_literals
 import re
 from time import sleep
 from django.contrib.auth import get_user_model

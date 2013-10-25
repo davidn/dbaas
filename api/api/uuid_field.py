@@ -1,5 +1,7 @@
+#!/usr/bin/python
 #Copied from django-extensions
 
+from __future__ import unicode_literals
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import CharField
 try:

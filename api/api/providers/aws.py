@@ -1,3 +1,5 @@
+#!/usr/bin/python
+from __future__ import unicode_literals
 from logging import getLogger
 from time import sleep
 from django.conf import settings

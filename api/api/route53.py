@@ -1,3 +1,5 @@
+#!/usr/bin/python
+from __future__ import unicode_literals
 import re
 import boto
 from boto.route53 import *

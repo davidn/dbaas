@@ -1,3 +1,5 @@
+#!/usr/bin/python
+from __future__ import unicode_literals
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from .models import Cluster, Node, Flavor, Provider, Region, Backup

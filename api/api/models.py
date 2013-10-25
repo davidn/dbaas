@@ -12,6 +12,7 @@ partition the Nodes in a cluster. See `the wiki`_ for more info.
 
 """
 
+from __future__ import unicode_literals
 from hashlib import sha1
 from logging import getLogger
 from textwrap import dedent

@@ -1,4 +1,6 @@
+#!/usr/bin/python
 
+from __future__ import unicode_literals
 from aws import EC2 as az
 from cloud import Cloud as test
 from pb import ProfitBrick as pb

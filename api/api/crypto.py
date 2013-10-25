@@ -1,3 +1,5 @@
+#!/usr/bin/python
+from __future__ import unicode_literals
 import datetime
 import OpenSSL
 from Crypto.PublicKey import RSA
