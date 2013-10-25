@@ -280,8 +280,11 @@ class NodeViewSet(mixins.ListModelMixin,
         else:
             history = [
                 float(h['value']) for h in
-                z.history.get(itemids=items[0]['itemid'], limit=count, output="extend", history=0)
+                z.history.get(itemids=items[0]['itemid'], limit=count,
+                              output="extend", history=0, sortorder="DESC",
+                              sortfield="clock")
             ]
+            history.reverse()
         return Response(data=history, status=status.HTTP_200_OK)
 
     @link()
@@ -318,8 +321,11 @@ class NodeViewSet(mixins.ListModelMixin,
             if len(items) != 0:
                 res[key_name] = [
                     float(h['value']) for h in
-                    z.history.get(itemids=items[0]['itemid'], limit=120, output="extend", history=0)
+                    z.history.get(itemids=items[0]['itemid'], limit=120,
+                                  output="extend", history=0, sortorde="DESC",
+                                  sortfield="clock")
                 ]
+                res[key_name].reverse()
         return Response(data=res, status=status.HTTP_200_OK)
 
     @link()
