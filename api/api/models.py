@@ -27,7 +27,7 @@ from .uuid_field import UUIDField
 import providers
 from .crypto import KeyPair, SslPair, CertificateAuthority
 from .utils import retry, split_every, cron_validator, mysql_database_validator, CloudConfig
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, MaxLengthValidator
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
@@ -165,7 +165,7 @@ class Cluster(models.Model):
     label = models.CharField(max_length=255, blank=True, default="")
     port = models.PositiveIntegerField("MySQL Port", default=settings.DEFAULT_PORT)
     dbname = models.CharField("Database Name", max_length=255)
-    dbusername = models.CharField("Database Username", max_length=255)
+    dbusername = models.CharField("Database Username", max_length=255, validators=[MaxLengthValidator(16)])
     dbpassword = models.CharField("Database Password", max_length=255)
     backup_count = models.PositiveIntegerField("Number of backups to keep", default=24)
     backup_schedule = models.CharField("Cron-style backup schedule", max_length=255, validators=[cron_validator], default="3 */2 * * *")
