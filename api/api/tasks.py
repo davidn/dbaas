@@ -46,12 +46,12 @@ def null_task():
 @task(base=NodeTask)
 def node_launch_provision(node):
     Node.objects.get(pk=node.pk).launch_async_provision()
-@task(base=NodeTask, max_retries=40)
+@task(base=NodeTask, max_retries=90)
 def node_launch_update(node):
     try:
         Node.objects.get(pk=node.pk).launch_async_update()
     except BackendNotReady as e:
-        node_launch_update.retry(exc=e, countdown=15)
+        node_launch_update.retry(exc=e, countdown=20)
 @task(base=NodeTask, max_retries=10)
 def node_launch_dns(node):
     try:
