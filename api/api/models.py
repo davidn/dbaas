@@ -573,9 +573,9 @@ class Node(models.Model):
                         dbname=dbname,
                     ) for dbname in self.cluster.dbname.split(',')),
             dbusername=self.cluster.dbusername,
-            dbpassword='*' + sha1(sha1(self.cluster.dbpassword).digest()).hexdigest().upper(),
+            dbpassword='*' + sha1(sha1(self.cluster.dbpassword.encode('utf-8')).digest()).hexdigest().upper(),
             mysql_user=settings.MYSQL_USER,
-            mysql_password='*' + sha1(sha1(settings.MYSQL_PASSWORD).digest()).hexdigest().upper(),
+            mysql_password='*' + sha1(sha1(settings.MYSQL_PASSWORD.encode('utf-8')).digest()).hexdigest().upper(),
         )
 
         # Configure Tinc
