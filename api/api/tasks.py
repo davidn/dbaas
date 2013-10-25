@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from __future__ import unicode_literals
 from django.conf import settings
 from logging import getLogger
 from celery.task import Task, task

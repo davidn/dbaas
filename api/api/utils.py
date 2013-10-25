@@ -1,3 +1,5 @@
+#!/usr/bin/python
+from __future__ import unicode_literals
 import re
 from time import sleep
 from logging import getLogger

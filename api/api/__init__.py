@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """Manage clusters of GenieDB nodes on cloud instances via an API.
 
 This package does all the heavy lifting of GenieDB's DBaaS offering. It has
@@ -30,3 +31,5 @@ This package's depencies are:
     Rackspace)
 
 """
+
+from __future__ import unicode_literals

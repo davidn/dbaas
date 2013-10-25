@@ -1,3 +1,5 @@
+#!/usr/bin/python
+from __future__ import unicode_literals
 from logging import getLogger
 
 logger = getLogger(__name__)

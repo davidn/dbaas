@@ -1,5 +1,7 @@
 # Django settings for dbaas_api project.
 
+from __future__ import unicode_literals
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 

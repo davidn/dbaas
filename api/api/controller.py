@@ -1,9 +1,11 @@
+#!/usr/bin/python
 '''
 Created on 9 Oct 2013
 
 @author: david
 '''
 
+from __future__ import unicode_literals
 from celery import group
 from .models import Node
 from . import tasks
