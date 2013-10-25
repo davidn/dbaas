@@ -1,9 +1,6 @@
-<<<<<<< HEAD
 #!/usr/bin/python
 from __future__ import unicode_literals
-=======
 import re
->>>>>>> c380c8c... api.aws: create security groups more robustly
 from logging import getLogger
 from time import sleep
 from django.conf import settings
