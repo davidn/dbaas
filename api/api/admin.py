@@ -17,7 +17,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
-from .controller import launch_cluster, pause_node, resume_node, add_database
+from .controller import launch_cluster, pause_node, resume_node, reinstantiate_node, add_database
 
 csrf_protect_m = method_decorator(csrf_protect)
 
@@ -87,7 +87,7 @@ class ClusterAdmin(SimpleHistoryAdmin):
 
 class NodeAdmin(SimpleHistoryAdmin):
     exclude = ('lbr_region',)
-    actions = ('pause', 'resume')
+    actions = ('pause', 'resume', 'resize')
 
     def pause(self, request, queryset):
         for node in queryset:
@@ -96,6 +96,10 @@ class NodeAdmin(SimpleHistoryAdmin):
     def resume(self, request, queryset):
         for node in queryset:
             resume_node(node)
+
+    def resize(self, request, queryset):
+        for node in queryset:
+            reinstantiate_node(node)
 
 
 class RegionInline(admin.StackedInline):

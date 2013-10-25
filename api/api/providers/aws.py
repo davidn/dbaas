@@ -112,7 +112,14 @@ class EC2(Cloud):
         return self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'stopping'
 
     def resuming(self, node):
-        return self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'pending'
+        return self.pending(node)
+
+    def reinstantiating(self, node):
+        return self.pending(node)
+
+    def getIP(self, node):
+        instance = self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0]
+        return instance.ip_address
 
     def update(self, node, tags={}):
         instance = self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0]

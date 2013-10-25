@@ -236,6 +236,19 @@ class GoogleComputeEngine(Cloud):
     def resuming(self, node):
         return self.pending(node)
 
+    def reinstantiating(self, node):
+        return self.pending(node)
+
+    def getIP(self, node):
+        ip = ''
+        items = self._getInstanceObjects(node.instance_id)
+        if items:
+            try:
+                ip = items[0]['networkInterfaces'][0]['accessConfigs'][0]['natIP']
+            except:
+                pass
+        return ip
+
     def update(self, node, tags=None):
         self.gce['name'] = node.instance_id
         self.gce['zone'] = node.security_group
@@ -254,13 +267,7 @@ class GoogleComputeEngine(Cloud):
             request = self.gce['service'].instances().setMetadata(project=self.gce['project'], zone=self.gce['zone'], instance=self.gce['name'], body=body)
             response = request.execute(http=self.gce['auth_http'])
 
-        items = self._getInstanceObjects(self.gce['name'])
-        if items:
-            try:
-                self.gce['ip'] = items[0]['networkInterfaces'][0]['accessConfigs'][0]['natIP']
-            except:
-                pass
-        node.ip = self.gce['ip']
+        node.ip = self.gce['ip'] = self.getIP(node)
         node.save()
 
     def terminate(self, node):

@@ -45,12 +45,12 @@ def null_task():
 @task(base=NodeTask)
 def node_launch_provision(node):
     Node.objects.get(pk=node.pk).launch_async_provision()
-@task(base=NodeTask, max_retries=40)
+@task(base=NodeTask, max_retries=90)
 def node_launch_update(node):
     try:
         Node.objects.get(pk=node.pk).launch_async_update()
     except BackendNotReady as e:
-        node_launch_update.retry(exc=e, countdown=15)
+        node_launch_update.retry(exc=e, countdown=20)
 @task(base=NodeTask, max_retries=10)
 def node_launch_dns(node):
     try:
@@ -82,12 +82,12 @@ def cluster_launch_complete(cluster):
 @task(base=NodeTask)
 def node_reinstantiate(node):
     Node.objects.get(pk=node.pk).reinstantiate_async()
-@task(base=NodeTask,max_retries=20)
+@task(base=NodeTask,max_retries=180)    # This supports a max of 3 hrs!
 def node_reinstantiate_update(node):
     try:
         Node.objects.get(pk=node.pk).reinstantiate_update()
     except BackendNotReady as e:
-        node_reinstantiate_update.retry(exc=e, countdown=15)
+        node_reinstantiate_update.retry(exc=e, countdown=60)
 @task(base=NodeTask,max_retries=20)
 def node_reinstantiate_complete(node):
     try:

@@ -57,6 +57,12 @@ class Openstack(Cloud):
     def resuming(self, node):
         return False
 
+    def reinstantiating(self, node):
+        return self.nova.servers.get(node.instance_id).status == u'RESIZE'
+
+    def getIP(self, node):
+        return self.nova.servers.get(node.instance_id).accessIPv4
+
     def update(self, node, tags=None):
         if tags is None:
             tags = {}
@@ -67,6 +73,16 @@ class Openstack(Cloud):
 
     def terminate(self, node):
         self.nova.servers.delete(node.instance_id)
+
+    def reinstantiate(self, node):
+        self.nova.servers.resize(node.instance_id, flavor=node.flavor.code)
+        logger.info("Reinstantiating the Openstack Instance %s" % (node.dns_name))
+        node.status = node.PROVISIONING
+        node.save()
+
+    def reinstantiation_complete(self, node):
+        # Free up the original image before the resize snapshot.
+        self.nova.servers.confirm_resize(node.instance_id)
 
     def pause(self, node):
         self.nova.servers.suspend(node.instance_id)
@@ -81,8 +97,14 @@ class Rackspace(Openstack):
     TENANT = settings.RACKSPACE_TENANT
     AUTH_URL = settings.RACKSPACE_AUTH_URL
 
+    # Rackspace doesn't support pause unless Server is shutdown itself first
+    def pause(self, node):
+        pass
+    def resume(self, node):
+        pass
 
-class RackspaceLondon(Openstack):
+
+class RackspaceLondon(Rackspace):
     USER = settings.RACKSPACELONDON_USER
     PASS = settings.RACKSPACELONDON_PASS
     TENANT = settings.RACKSPACELONDON_TENANT

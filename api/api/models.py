@@ -500,6 +500,10 @@ class Node(models.Model):
         """Return True if the underlying cloud provider is in the process of resuming the instance."""
         return self.region.connection.resuming(self)
 
+    def reinstantiating(self):
+        """Return True if the underlying cloud provider is in the process of reinstantiating the instance."""
+        return self.region.connection.reinstantiating(self)
+
     def update(self, tags={}):
         return self.region.connection.update(self, tags)
 
@@ -883,21 +887,16 @@ class Node(models.Model):
     def reinstantiate_update(self):
         assert self.status == self.PROVISIONING, \
             'Cannot update reinstantiated node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
-        if self.pending():
+        if self.reinstantiating():
             raise BackendNotReady()
-        self.update({
-            'Name': 'dbaas-cluster-{c}-node-{n}'.format(c=self.cluster.pk, n=self.nid),
-            'username': self.cluster.user.email,
-            'cluster': str(self.cluster.pk),
-            'node': str(self.pk),
-            'url': 'https://' + Site.objects.get_current().domain + self.get_absolute_url(),
-        })
+        self.ip = self.region.connection.getIP(self)
         self.modify_dns()
         self.save()
 
     def reinstantiate_complete(self):
-        if self.pending():
+        if self.reinstantiating():
             raise BackendNotReady()
+        self.region.connection.reinstantiation_complete(self)
         self.status = self.RUNNING
         self.save()
 

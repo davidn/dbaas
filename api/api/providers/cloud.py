@@ -24,6 +24,9 @@ class Cloud(object):
     def resuming(self, node):
         return False
 
+    def getIP(self, node):
+        return ''
+
     def update(self, node, tags={}):
         self.ip = "192.0.2.%d" % node.nid
 
@@ -32,6 +35,10 @@ class Cloud(object):
 
     def reinstantiate(self, node):
         # Note: this command reboots the server as a new instance
+        pass
+
+    def reinstantiation_complete(self, node):
+        # Allow for any clean up now that the reinstantiation is complete
         pass
 
     def pause(self, node):

@@ -347,7 +347,7 @@
         "fields": {
             "provider": 8,
             "code": "NORTH_AMERICA",
-            "name": "Las Vegas, NV, USA",
+            "name": "PB Nevada, USA",
             "image": "dbaas-image.img",
             "lbr_region": "us-west-1",
             "key_name": "dbaas",
@@ -362,7 +362,7 @@
         "fields": {
             "provider": 8,
             "code": "EUROPE",
-            "name": "Germany",
+            "name": "PB Germany",
             "image": "dbaas-image.img",
             "lbr_region": "eu-west-1",
             "key_name": "dbaas",

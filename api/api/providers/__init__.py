@@ -1,7 +1,7 @@
 
 from aws import EC2 as az
 from cloud import Cloud as test
-from pb import ProfitBrick as pb
+from profitbricks import ProfitBrick as pb
 from gce import GoogleComputeEngine as gce
 
 def rs(region):
