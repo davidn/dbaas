@@ -93,7 +93,7 @@ class CloudConfig(object):
         if obj is not None:
             self._object = obj
         elif yaml_data is not None:
-            self._object = yaml.load(yaml_data)
+            self._object = yaml.safe_load(yaml_data)
         else:
             self._object = {'write_files':[], 'runcmd':[]}
 
@@ -109,4 +109,4 @@ class CloudConfig(object):
         self._object['runcmd'].append(command)
 
     def __str__(self):
-        return "#cloud-config\n" + yaml.dump(self._object)
+        return "#cloud-config\n" + yaml.safe_dump(self._object)
