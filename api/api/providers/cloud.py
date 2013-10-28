@@ -17,22 +17,10 @@ class Cloud(object):
     def shutting_down(self, node):
         return False
 
-    def pausing(self, node):
-        return False
-
-    def resuming(self, node):
-        return False
-
     def update(self, node, tags={}):
         self.ip = "192.0.2.%d" % node.nid
 
     def terminate(self, node):
-        pass
-
-    def pause(self, node):
-        pass
-
-    def resume(self, node):
         pass
 
     def cloud_init(self, node):

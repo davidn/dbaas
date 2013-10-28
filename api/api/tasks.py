@@ -86,32 +86,6 @@ def cluster_launch_complete(cluster):
 def cluster_refresh_salt(cluster, *args):
     Cluster.objects.get(pk=cluster.pk).refresh_salt(*args)
 
-@task(base=NodeTask)
-def node_pause(node):
-    Node.objects.get(pk=node.pk).pause_async()
-@task(base=NodeTask,max_retries=20)
-def node_pause_complete(node):
-    try:
-        Node.objects.get(pk=node.pk).pause_complete()
-    except BackendNotReady as e:
-        node_pause_complete.retry(exc=e, countdown=15)
-
-@task(base=NodeTask)
-def node_resume_provider(node):
-    Node.objects.get(pk=node.pk).resume_async_provider()
-@task(base=NodeTask,max_retries=20)
-def node_resume_dns(node):
-    try:
-        Node.objects.get(pk=node.pk).resume_async_dns()
-    except BackendNotReady as e:
-        node_resume_dns.retry(exc=e, countdown=15)
-@task(base=NodeTask,max_retries=20)
-def node_resume_complete(node):
-    try:
-        Node.objects.get(pk=node.pk).resume_complete()
-    except BackendNotReady as e:
-        node_resume_complete.retry(exc=e, countdown=15)
-
 @task()
 def launch_email(cluster):
     nodes = cluster.nodes.all()

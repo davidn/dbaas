@@ -241,18 +241,6 @@ class GoogleComputeEngine(Cloud):
             response = request.execute(self.gce['auth_http'])
             node.instance_id = ""
 
-    #def pause(self, node):
-    #    # Note: this command halts, doesn't suspend, the server
-    #    self.gce['name'] = node.instance_id
-    #    self.gce['zone'] = node.security_group
-    #    self.pb.stopServer(node.instance_id)
-
-    #def resume(self, node):
-    #    self.gce['name'] = node.instance_id
-    #    self.gce['zone'] = node.security_group
-    #    self.pb.startServer(node.instance_id)
-
-
 def make_gce_valid_name(name):
     MAX_VALID_NAME_LEN  = 63    # GCE Instance Names must be <= this length
     FIRST_ALPHA         = "g"   # GCE Name must start with an alpha char

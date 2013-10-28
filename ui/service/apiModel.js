@@ -15,8 +15,6 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
         {index: 14, code: 'configuring_dns', label: 'Configuring DNS', isAction: true},
         {index: 3, code: 'running', label: 'running', isAction: false},
         {index: 4, code: 'paused', label: 'paused', isAction: false},
-        {index: 5, code: 'pausing', label: 'pausing', isAction: true},
-        {index: 6, code: 'resuming', label: 'resuming', isAction: true},
         {index: 7, code: 'shutting_down', label: 'shutting down', isAction: true},
         {index: 8, code: 'over', label: 'over', isAction: false},
         {index: 9, code: 'error', label: 'An error occurred', isAction: false}

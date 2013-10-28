@@ -435,8 +435,6 @@ class Node(models.Model):
     SHUTTING_DOWN = 7
     OVER = 8
     PAUSED = 9
-    PAUSING = 10
-    RESUMING = 11
     CONFIGURING_DNS = 14
     CONFIGURING_MONITORING = 13
     CONFIGURING_NODE = 15
@@ -450,8 +448,6 @@ class Node(models.Model):
         (CONFIGURING_MONITORING, 'configuring monitoring'),
         (RUNNING, 'running'),
         (PAUSED, 'paused'),
-        (PAUSING, 'pausing'),
-        (RESUMING, 'resuming'),
         (SHUTTING_DOWN, 'shutting down'),
         (OVER, 'over'),
         (ERROR, 'An error occurred')
@@ -502,14 +498,6 @@ class Node(models.Model):
     def shutting_down(self):
         """Return True if the underlying cloud provider is in the process of shutting down the instance."""
         return self.region.connection.shutting_down(self)
-
-    def pausing(self):
-        """Return True if the instance is being paused by the underlying cloud provider."""
-        return self.region.connection.pausing(self)
-
-    def resuming(self):
-        """Return True if the underlying cloud provider is in the process of resuming the instance."""
-        return self.region.connection.resuming(self)
 
     def update(self, tags={}):
         return self.region.connection.update(self, tags)
@@ -685,47 +673,22 @@ class Node(models.Model):
         self.status = self.RUNNING
         self.save()
 
-    def pause_sync(self):
+    def refresh_salt(self):
+        self.cluster.refresh_salt([self])
+
+    def pause(self):
         assert self.status == Node.RUNNING, \
             'Cannot pause node "%s" as it is in state %s.' % (self, dict(Node.STATUES)[self.status])
-        self.status = Node.PAUSING
-        self.save()
-
-    def pause_async(self):
-        assert self.status == Node.PAUSING, \
-            'Cannot continue pausing node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
-        self.region.connection.pause(self)
-        self.remove_dns()
-
-    def pause_complete(self):
-        if self.pausing():
-            raise BackendNotReady()
         self.status = Node.PAUSED
         self.save()
+        self.refresh_salt()
 
-    def resume_sync(self):
+    def resume(self):
         assert self.status == Node.PAUSED, \
             'Cannot resume node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
-        self.status = Node.RESUMING
-        self.save()
-
-    def resume_async_provider(self):
-        self.region.connection.resume(self)
-
-    def resume_async_dns(self):
-        assert self.status == Node.RESUMING, \
-            'Cannot continue resuming node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
-        if self.resuming():
-            raise BackendNotReady()
-        self.update()
-        self.setup_dns()
-        self.save()
-
-    def resume_complete(self):
-        if self.resuming():
-            raise BackendNotReady()
         self.status = Node.RUNNING
         self.save()
+        self.refresh_salt()
 
     def on_terminate(self):
         """Shutdown the node and remove DNS entries."""

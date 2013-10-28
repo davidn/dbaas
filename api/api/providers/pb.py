@@ -97,12 +97,6 @@ class ProfitBrick(Cloud):
             dcExists = False
         return dcExists
 
-    def pausing(self, node):
-        return False
-
-    def resuming(self, node):
-        return False
-
     def update(self, node, tags=None):
         updateProperties = ['serverName', 'cores', 'ram', 'bootFromImageId', 'availabilityZone', 'bootFromStorageId', 'osType']
         if tags is None:

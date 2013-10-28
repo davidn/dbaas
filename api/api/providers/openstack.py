@@ -48,12 +48,6 @@ class Openstack(Cloud):
     def shutting_down(self, node):
         return self.nova.servers.get(node.instance_id).status == u'STOPPING'
 
-    def pausing(self, node):
-        return False
-
-    def resuming(self, node):
-        return False
-
     def update(self, node, tags=None):
         if tags is None:
             tags = {}
@@ -64,13 +58,6 @@ class Openstack(Cloud):
 
     def terminate(self, node):
         self.nova.servers.delete(node.instance_id)
-
-    def pause(self, node):
-        self.nova.servers.suspend(node.instance_id)
-
-    def resume(self, node):
-        self.nova.servers.resume(node.instance_id)
-
 
 class Rackspace(Openstack):
     USER = settings.RACKSPACE_USER

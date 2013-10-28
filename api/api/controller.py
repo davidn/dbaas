@@ -35,17 +35,10 @@ def launch_cluster(cluster):
     return task.delay()
 
 def pause_node(node):
-    node.pause_sync()
-    task = tasks.node_pause.si(node) \
-         | tasks.node_pause_complete.si(node)
-    return task.delay()
+    node.pause()
 
 def resume_node(node):
-    node.resume_sync()
-    task = tasks.node_resume_provider.si(node) \
-         | tasks.node_resume_dns.si(node) \
-         | tasks.node_resume_complete.si(node)
-    return task.delay()
+    node.resume()
 
 def add_database(cluster, dbname):
     cluster.dbname += ','+dbname

@@ -104,12 +104,6 @@ class EC2(Cloud):
     def shutting_down(self, node):
         return self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'shutting-down'
 
-    def pausing(self, node):
-        return self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'stopping'
-
-    def resuming(self, node):
-        return self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'pending'
-
     def update(self, node, tags={}):
         instance = self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0]
         node.ip = instance.ip_address
@@ -127,10 +121,5 @@ class EC2(Cloud):
             logger.debug("%s: terminating security group %s", node, node.security_group)
             self.ec2.delete_security_group(group_id=node.security_group)
 
-    def pause(self, node):
-        self.ec2.stop_instances([node.instance_id])
-
-    def resume(self, node):
-        self.ec2.start_instances([node.instance_id])
 
 

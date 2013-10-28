@@ -3,7 +3,11 @@ mysql-server:
     - installed
 mysqld:
   service:
+{% if pillar['dbaas_api']['node']['status'] == 9 %}
+    - dead
+{% else %}
     - running
+{% endif %}
     - enable: True
     - require:
       - pkg: mysql-server

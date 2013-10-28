@@ -58,7 +58,7 @@ def __virtual__():
 
 def node_dict(node):
     return dict((field, getattr(node, field)) for field in
-        ('id','nid','dns_name', 'buffer_pool_size', 'tinc_private_key', 'public_key', 'set_backup_url'))
+        ('id','nid','dns_name', 'buffer_pool_size', 'tinc_private_key', 'public_key', 'set_backup_url', 'status'))
 
 def cluster_dict(cluster):
     ret = dict((field, getattr(cluster, field)) for field in
