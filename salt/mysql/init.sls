@@ -4,6 +4,7 @@ mysql-server:
 mysqld:
   service:
     - running
+    - enable: True
     - require:
       - pkg: mysql-server
 

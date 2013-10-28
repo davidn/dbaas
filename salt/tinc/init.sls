@@ -32,6 +32,7 @@ tinc:
     - installed
   service:
     - running
+    - enable: True
     - require:
       - pkg: tinc
     - watch:
