@@ -204,12 +204,13 @@ class ClusterViewSet(mixins.CreateModelMixin,
             return Response({'dbname': list(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
 
     @action()
-    def launch_all(self, request, *args, **kwargs):
+    def launch(self, request, *args, **kwargs):
         self.object = self.get_object()
         launch_cluster(self.object)
         serializer = self.get_serializer(self.object)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
+    launch_all = launch
 
 
 def random_walk(initial_value=0, min_value=0, max_value=100, step=2):
