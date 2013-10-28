@@ -6,3 +6,5 @@ include:
     - makedirs: True
     - source: salt://geniedb/geniedb.cnf
     - template: jinja
+    - watch_in:
+      - service: mysqld
