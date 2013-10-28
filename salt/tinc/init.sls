@@ -14,6 +14,7 @@
   file.managed:
     - makedirs: True
     - source: salt://tinc/rsa_key.priv
+    - mode: 600
     - template: jinja
 
 {% for node in pillar['dbaas_api']['cluster']['nodes'] %}
