@@ -82,6 +82,10 @@ def cluster_launch(cluster):
 def cluster_launch_complete(cluster):
     Cluster.objects.get(pk=cluster.pk).launch_complete()
 
+@task(base=ClusterTask)
+def cluster_refresh_salt(cluster, *args):
+    Cluster.objects.get(pk=cluster.pk).refresh_salt(*args)
+
 @task(base=NodeTask)
 def node_pause(node):
     Node.objects.get(pk=node.pk).pause_async()

@@ -51,3 +51,15 @@ def add_database(cluster, dbname):
     cluster.dbname += ','+dbname
     cluster.save()
     cluster.refresh_salt()
+
+def add_node(node):
+    node.launch_sync()
+    task = tasks.node_launch_provision.si(node) \
+         | tasks.node_launch_update.si(node) \
+         | tasks.node_launch_dns.si(node) \
+         | tasks.node_launch_salt.si(node) \
+         | group((tasks.node_launch_zabbix.si(node),
+                tasks.region_launch.si(node.lbr_region))) \
+         | tasks.cluster_refresh_salt.si(node.cluster) \
+         | tasks.node_launch_complete.si(node)
+    return task.delay()
