@@ -700,7 +700,7 @@ class Node(models.Model):
         return str(cloud_config)
 
     def visible_name(self):
-        return "{email}-{label}-{node}".format(email=self.user.email, label=self.cluster.label, node=self.nid)
+        return "{email}-{label}-{node}".format(email=self.cluster.user.email, label=self.cluster.label, node=self.nid)
 
     def addToHostGroup(self):
         hostName = self.dns_name
@@ -712,7 +712,7 @@ class Node(models.Model):
                         self, 'Template App GenieDB V2 Monitoring')
         else:
             logger.info("%s: Not using a zabbix template")
-        hostGroups = z.hostgroup.getobjects(name=self.user.email)
+        hostGroups = z.hostgroup.getobjects(name=self.cluster.user.email)
         existingHosts = z.host.getobjects(name=self.visible_name())
         if existingHosts:
             logger.warning('%s: Cleaning up old zabbix host with same visible name "%s" and id "%s".',
@@ -730,7 +730,7 @@ class Node(models.Model):
         # Find the Zabbix HostGroup and Host IDs
         # then delete the Host node,
         # and if the HostGroup is now empty, remove it too.
-        hostGroups = z.hostgroup.getobjects(name=self.user.email)
+        hostGroups = z.hostgroup.getobjects(name=self.cluster.user.email)
         if not hostGroups:
             return
         zabbixHostGroup = hostGroups[0]
@@ -742,11 +742,11 @@ class Node(models.Model):
                 hosts = z.host.get(groupids=zabbixHostGroup["groupid"], output='extend')
                 break
         if not hosts:
-            logger.info("Zabbix HostGroup %s being removed." % (self.user.email))
+            logger.info("Zabbix HostGroup %s being removed." % (self.cluster.user.email))
             try:
                 z.hostgroup.delete(zabbixHostGroup["groupid"])
             except:
-                logger.warning("Failed to delete Zabbix HostGroup %s" % (self.user.email))
+                logger.warning("Failed to delete Zabbix HostGroup %s" % (self.cluster.user.email))
 
     @property
     def health_check_reference(self):
