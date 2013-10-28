@@ -210,7 +210,7 @@ class Cluster(models.Model):
         self.status = Cluster.PROVISIONING
         self.save()
 
-    def launch_async(self):
+    def launch_async_s3(self):
         self.generate_keys()
         if self.iam_key == "":
             iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
@@ -239,6 +239,15 @@ class Cluster(models.Model):
               "Action": "s3:*",
               "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
         }]}""" % {'iam': self.iam_arn, 'bucket': self.uuid})
+
+    def launch_async_zabbix(self):
+        z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
+        z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
+        hostGroups = z.hostgroup.getobjects(name=self.user.email)
+        if not hostGroups:
+            logger.info("%s: Creating Zabbix HostGroup %s", self, self.user.email)
+            hostGroups = [{'groupid':gid} for gid in z.hostgroup.create(name=self.user.email)['groupids']]
+
 
     def launch_complete(self):
         self.status = Cluster.RUNNING
@@ -690,12 +699,8 @@ class Node(models.Model):
         cloud_config.add_command(["mkdir", "-p", "/var/backup"])
         return str(cloud_config)
 
-    @property
-    def customerName(self):
-        return self.cluster.user.email
-
     def visible_name(self):
-        return "{customerName}-{label}-{node}".format(customerName=self.customerName, label=self.cluster.label, node=self.nid)
+        return "{email}-{label}-{node}".format(email=self.user.email, label=self.cluster.label, node=self.nid)
 
     def addToHostGroup(self):
         hostName = self.dns_name
@@ -707,12 +712,7 @@ class Node(models.Model):
                         self, 'Template App GenieDB V2 Monitoring')
         else:
             logger.info("%s: Not using a zabbix template")
-
-        hostGroups = z.hostgroup.getobjects(name=self.customerName)
-        if not hostGroups:
-            logger.info("%s: Creating Zabbix HostGroup %s", self, self.customerName)
-            hostGroups = [{'groupid':gid} for gid in z.hostgroup.create(name=self.customerName)['groupids']]
-
+        hostGroups = z.hostgroup.getobjects(name=self.user.email)
         existingHosts = z.host.getobjects(name=self.visible_name())
         if existingHosts:
             logger.warning('%s: Cleaning up old zabbix host with same visible name "%s" and id "%s".',
@@ -730,7 +730,7 @@ class Node(models.Model):
         # Find the Zabbix HostGroup and Host IDs
         # then delete the Host node,
         # and if the HostGroup is now empty, remove it too.
-        hostGroups = z.hostgroup.getobjects(name=self.customerName)
+        hostGroups = z.hostgroup.getobjects(name=self.user.email)
         if not hostGroups:
             return
         zabbixHostGroup = hostGroups[0]
@@ -742,11 +742,11 @@ class Node(models.Model):
                 hosts = z.host.get(groupids=zabbixHostGroup["groupid"], output='extend')
                 break
         if not hosts:
-            logger.info("Zabbix HostGroup %s being removed." % (self.customerName))
+            logger.info("Zabbix HostGroup %s being removed." % (self.user.email))
             try:
                 z.hostgroup.delete(zabbixHostGroup["groupid"])
             except:
-                logger.warning("Failed to delete Zabbix HostGroup %s" % (self.customerName))
+                logger.warning("Failed to delete Zabbix HostGroup %s" % (self.user.email))
 
     @property
     def health_check_reference(self):
