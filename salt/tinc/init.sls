@@ -18,7 +18,7 @@
     - template: jinja
 
 {% for node in pillar['dbaas_api']['cluster']['nodes'] %}
-/etc/tinc/cf/node_{{ node['nid'] }}:
+/etc/tinc/cf/hosts/node_{{ node['nid'] }}:
   file.managed:
     - makedirs: True
     - source: salt://tinc/node_
