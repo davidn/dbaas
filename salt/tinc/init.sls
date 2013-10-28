@@ -8,6 +8,7 @@
   file.managed:
     - makedirs: True
     - source: salt://tinc/tinc-up
+    - mode: 755
     - template: jinja
 
 /etc/tinc/cf/rsa_key.priv:
