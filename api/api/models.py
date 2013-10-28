@@ -13,6 +13,7 @@ partition the Nodes in a cluster. See `the wiki`_ for more info.
 """
 
 from __future__ import unicode_literals
+from socket import gethostbyname
 from hashlib import sha1
 from logging import getLogger
 from textwrap import dedent
@@ -795,7 +796,7 @@ class Node(models.Model):
             if dnsname[-1] != '.':
                 dnsname += '.'
             try:
-                old_ip = socket.gethostbyname(dnsname)
+                old_ip = gethostbyname(dnsname)
             except:
                 old_ip = ''
 
