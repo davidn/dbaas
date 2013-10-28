@@ -5,7 +5,6 @@ Created on 9 Oct 2013
 '''
 
 from celery import group
-from salt.utils.event import SaltEvent
 from django.conf import settings
 from .models import Node
 from . import tasks
@@ -49,14 +48,6 @@ def resume_node(node):
     return task.delay()
 
 def add_database(cluster, dbname):
-    event = SaltEvent('master', settings.SALT_IPC_PATH)
-    event.fire_event({
-            'cluster':cluster.uuid,
-            'dbname': dbname,
-            'nodes': [{
-                'id': n.id,
-                'nid': n.nid,
-                'dns_name': n.dns_name
-            } for n in cluster.nodes]
-        },
-        'add_database')
+    cluster.dbname += ','+dbname
+    cluster.save()
+    cluster.refresh_salt()

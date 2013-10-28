@@ -238,6 +238,20 @@ class Cluster(models.Model):
         self.status = Cluster.RUNNING
         self.save()
 
+    def refresh_salt(self, qs=None):
+        if qs is None:
+            qs = self.nodes.filter(status=Node.RUNNING)
+        event = SaltEvent('master', settings.SALT_IPC_PATH)
+        event.fire_event({
+                'cluster':self.uuid,
+                'nodes': [{
+                    'id': n.id,
+                    'nid': n.nid,
+                    'dns_name': n.dns_name
+                } for n in qs]
+            },
+            'refresh')
+
     def terminate(self):
         """Clean up the S3 bucket and IAM user associated with this cluster."""
         self.status = Cluster.SHUTTING_DOWN
