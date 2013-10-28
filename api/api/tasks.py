@@ -74,7 +74,7 @@ def cluster_launch_s3(cluster):
     try:
         Cluster.objects.get(pk=cluster.pk).launch_async_s3()
     except (BotoClientError, BotoServerError) as e:
-        cluster_launch.retry(exc=e, countdown=15)
+        cluster_launch_s3.retry(exc=e, countdown=15)
 @task(base=ClusterTask)
 def cluster_launch_zabbix(cluster):
     Cluster.objects.get(pk=cluster.pk).launch_async_zabbix()
