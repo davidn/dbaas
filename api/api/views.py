@@ -24,7 +24,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from rest_framework import viewsets, mixins, status, permissions
 from .models import Cluster, Node, Region, Provider, Flavor
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
-from .controller import launch_cluster, pause_node, resume_node, add_database
+from .controller import launch_cluster, pause_node, resume_node, add_database, add_node
 from rest_framework.response import Response
 from rest_framework.decorators import action, link, api_view, permission_classes
 from django.http.response import HttpResponse
@@ -323,6 +323,14 @@ class NodeViewSet(mixins.ListModelMixin,
             return Response(serializer.data, status=status.HTTP_201_CREATED,
                             headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action()
+    def add(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        add_node(self.object)
+        serializer = self.get_serializer(self.object)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
 
     @action()
     def pause(self, request, *args, **kwargs):
