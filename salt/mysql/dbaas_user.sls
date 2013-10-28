@@ -21,6 +21,7 @@ user_to_db_{{database}}:
     - grant: all privileges
     - database: {{ database }}.*
     - user: {{ pillar['dbaas_api']['cluster']['dbusername'] }}
+    - host: '%'
     - require:
       - service: mysqld
 {% endfor %}
