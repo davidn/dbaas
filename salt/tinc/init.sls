@@ -34,6 +34,7 @@ tinc:
   service:
     - running
     - enable: True
+    - reload: True
     - require:
       - pkg: tinc
     - watch:
