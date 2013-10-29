@@ -693,7 +693,7 @@ class Node(models.Model):
     def on_terminate(self):
         """Shutdown the node and remove DNS entries."""
         self.removeFromHostGroup()
-        if self.status in (self.PROVISIONING, self.RUNNING, self.PAUSED, self.ERROR):
+        if self.status not in (self.INITIAL, self.OVER):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
             self.remove_dns()
             self.region.connection.terminate(self)
