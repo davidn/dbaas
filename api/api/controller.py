@@ -5,7 +5,6 @@ Created on 9 Oct 2013
 '''
 
 from celery import group
-from django.conf import settings
 from .models import Node
 from . import tasks
 
