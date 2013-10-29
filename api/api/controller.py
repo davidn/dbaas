@@ -20,7 +20,7 @@ def launch_cluster(cluster):
     task = tasks.cluster_launch.si(cluster) \
          | group([tasks.node_launch_provision.si(node) for node in install_nodes]) \
          | tasks.null_task.si() \
-         | group([tasks.node_launch_update.si(node) for node in install_nodes]) \
+         | group([tasks.node_launch_update.si(node) for node in install_nodes]).set(countdown=1) \
          | tasks.null_task.si() \
          | group([tasks.node_launch_dns.si(node) for node in install_nodes]) \
          | tasks.null_task.si() \
