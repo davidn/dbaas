@@ -10,7 +10,7 @@ from django.dispatch.dispatcher import receiver
 from django.db import models
 from django.contrib.auth import get_user_model
 from pyzabbix import ZabbixAPI
-from api.exceptions import BackendNotReady
+from api.exceptions import BackendNotReady, SaltError
 from boto.route53.exception import DNSServerError
 from boto.exception import BotoClientError, BotoServerError
 
@@ -57,9 +57,14 @@ def node_launch_dns(node):
         Node.objects.get(pk=node.pk).launch_async_dns()
     except DNSServerError as e:
         node_launch_dns.retry(exc=e, countdown=15)
-@task(base=NodeTask)
+@task(base=NodeTask, max_retries=10)
 def node_launch_salt(node):
-    Node.objects.get(pk=node.pk).launch_async_salt()
+    try:
+        Node.objects.get(pk=node.pk).launch_async_salt()
+    except SaltError as e:
+        if not e.missing:
+            raise
+        node_launch_salt.retry(exc=e, countdown=15)
 @task(base=NodeTask)
 def node_launch_zabbix(node):
     Node.objects.get(pk=node.pk).launch_async_zabbix()
