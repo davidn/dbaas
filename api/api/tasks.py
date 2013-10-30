@@ -67,7 +67,6 @@ def node_launch_complete(node):
 
 @task(max_retries=10)
 def region_launch(region):
-    region.launch_async()
     try:
         region.launch_async()
     except DNSServerError as e:
