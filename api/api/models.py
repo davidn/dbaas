@@ -30,8 +30,8 @@ from django.utils import timezone
 from django.utils.translation import ugettext as _
 from simple_history.models import HistoricalRecords
 from pyzabbix import ZabbixAPI
-from salt.utils.event import SaltEvent
-from api.exceptions import BackendNotReady
+from salt.client import LocalClient
+from api.exceptions import BackendNotReady, check_for_salt_error
 
 
 logger = getLogger(__name__)
@@ -241,16 +241,9 @@ class Cluster(models.Model):
     def refresh_salt(self, qs=None):
         if qs is None:
             qs = self.nodes.filter(status=Node.RUNNING)
-        event = SaltEvent('master', settings.SALT_IPC_PATH)
-        event.fire_event({
-                'cluster':self.uuid,
-                'nodes': [{
-                    'id': n.id,
-                    'nid': n.nid,
-                    'dns_name': n.dns_name
-                } for n in qs]
-            },
-            'refresh')
+        client = LocalClient()
+        result = client.cmd([n.dns_name for n in qs], 'state.highstate')
+        check_for_salt_error(result, [n.dns_name for n in qs])
 
     def terminate(self):
         """Clean up the S3 bucket and IAM user associated with this cluster."""
@@ -655,14 +648,10 @@ class Node(models.Model):
 
     def launch_async_salt(self):
         self.status = self.CONFIGURING_NODE
-        event = SaltEvent('master', settings.SALT_IPC_PATH)
-        event.fire_event({
-            'id': self.id,
-            'cluster': self.cluster.uuid,
-            'nid': self.nid,
-            'dns_name': self.dns_name,
-        },
-        'launch_node')
+        self.save()
+        client = LocalClient()
+        result = client.cmd(self.dns_name, 'state.highstate')
+        check_for_salt_error(result, [self.dns_name])
 
     def launch_async_zabbix(self):
         self.status = self.CONFIGURING_MONITORING
