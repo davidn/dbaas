@@ -27,7 +27,7 @@ def launch_cluster(cluster):
          | tasks.null_task.si() \
          | group([tasks.node_launch_zabbix.si(node) for node in install_nodes] \
                 +[tasks.region_launch.si(lbr_region) for lbr_region in lbr_regions]) \
-         | tasks.wait_zabbix.si(cluster) \
+         | tasks.null_task.si() \
          | group([tasks.node_launch_complete.si(node) for node in install_nodes]) \
          | tasks.launch_email.si(cluster) \
          | tasks.cluster_launch_complete.si(cluster)
@@ -58,7 +58,7 @@ def add_nodes(nodes):
          | tasks.null_task.si() \
          | group([tasks.node_launch_zabbix.si(node) for node in nodes] \
                 +[tasks.region_launch.si(lbr_region) for lbr_region in set(node.lbr_region for node in nodes)]) \
-         | tasks.wait_zabbix.si(cluster) \
+         | tasks.null_task.si() \
          | tasks.cluster_refresh_salt.si(cluster) \
          | group([tasks.node_launch_complete.si(node) for node in nodes])
     return task.delay()

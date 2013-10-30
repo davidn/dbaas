@@ -103,23 +103,6 @@ def launch_email(cluster):
     }
     cluster.user.email_user_template('confirmation_email', ctx_dict)
 
-@task(base=ClusterTask)
-def wait_zabbix(cluster):
-    nodes = cluster.nodes.all()
-
-    z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
-    z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
-    for node in nodes:
-        if node.region.provider.code == 'test':
-            continue
-        for _ in xrange(50):
-            if z.item.get(host=node.dns_name, filter={"key_": "system.cpu.util[]"}):
-                break
-            logger.info("Retrying Zabbix registration for Host %s." % (node.dns_name,))
-            sleep(5)
-        else:
-            raise AssertionError("Unable to confirm that Host %s is executing before sending email notification." % (node.dns_name,))
-
 @task()
 def send_reminder(user, reminder):
     if user.is_paid:
