@@ -242,7 +242,7 @@ class Cluster(models.Model):
         if qs is None:
             qs = self.nodes.filter(status=Node.RUNNING)
         client = LocalClient()
-        result = client.cmd([n.dns_name for n in qs], 'state.highstate')
+        result = list(client.cmd_iter([n.dns_name for n in qs], 'state.highstate'))
         check_for_salt_error(result, [n.dns_name for n in qs])
 
     def terminate(self):
@@ -650,7 +650,7 @@ class Node(models.Model):
         self.status = self.CONFIGURING_NODE
         self.save()
         client = LocalClient()
-        result = client.cmd(self.dns_name, 'state.highstate')
+        result = list(client.cmd_iter(self.dns_name, 'state.highstate'))
         check_for_salt_error(result, [self.dns_name])
 
     def launch_async_zabbix(self):
