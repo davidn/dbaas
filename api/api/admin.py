@@ -89,7 +89,8 @@ class ClusterAdmin(SimpleHistoryAdmin):
 
 class NodeAdmin(SimpleHistoryAdmin):
     exclude = ('lbr_region',)
-    actions = ('pause', 'resume', 'resize')
+    #actions = ('pause', 'resume', 'resize')
+    actions = ('pause', 'resume')
 
     def pause(self, request, queryset):
         for node in queryset:
@@ -101,7 +102,8 @@ class NodeAdmin(SimpleHistoryAdmin):
 
     def resize(self, request, queryset):
         for node in queryset:
-            reinstantiate_node(node)
+            new_flavor = node.flavor
+            reinstantiate_node(node, new_flavor)
 
 
 class RegionInline(admin.StackedInline):
