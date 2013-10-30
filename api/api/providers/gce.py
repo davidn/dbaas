@@ -269,9 +269,6 @@ class GoogleComputeEngine(Cloud):
             request = self.gce['service'].instances().setMetadata(project=self.gce['project'], zone=self.gce['zone'], instance=self.gce['name'], body=body)
             response = request.execute(http=self.gce['auth_http'])
 
-        node.ip = self.gce['ip'] = self.getIP(node)
-        node.save()
-
     def terminate(self, node):
         self.gce['name'] = node.instance_id
         self.gce['zone'] = node.security_group

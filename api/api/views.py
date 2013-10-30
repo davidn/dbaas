@@ -25,7 +25,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from rest_framework import viewsets, mixins, status, permissions
 from .models import Cluster, Node, Region, Provider, Flavor
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
-from .controller import launch_cluster, pause_node, resume_node, add_database
+from .controller import launch_cluster, reinstantiate_node, pause_node, resume_node, add_database
 from rest_framework.response import Response
 from rest_framework.decorators import action, link, api_view, permission_classes
 from django.http.response import HttpResponse
@@ -286,6 +286,29 @@ class NodeViewSet(mixins.ListModelMixin,
             ]
             history.reverse()
         return Response(data=history, status=status.HTTP_200_OK)
+
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        new_object = self.get_object()
+        serializer = self.get_serializer(new_object, data=request.DATA, partial=True)
+        if serializer.is_valid():
+            if not new_object.flavor.provider:
+                new_object.flavor.provider = self.object.flavor.provider
+            elif new_object.flavor.provider != self.object.flavor.provider:
+                return Response({'dbname': ["Cannot change provider from %s (attempted to change to %s)" % (self.object.flavor.provider, new_object.flavor.provider)]}, status=status.HTTP_400_BAD_REQUEST)
+            if not new_object.flavor.code:
+                new_object.flavor.code = self.object.flavor.code
+            if not new_object.flavor.name:
+                new_object.flavor.name = self.object.flavor.name
+            if not new_object.flavor.free_allowed:
+                new_object.flavor.free_allowed = self.object.flavor.free_allowed
+            elif new_object.flavor.free_allowed != self.object.flavor.free_allowed:
+                return Response({'dbname': ["Cannot change free users allowed status from %s (attempted to change to %s)" % (self.object.flavor.free_allowed, new_object.flavor.free_allowed)]}, status=status.HTTP_400_BAD_REQUEST)
+            if new_object.flavor.code != self.object.flavor.code:
+                reinstantiate_node(self.object, new_object.flavor)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @link()
     def cpu(self, request, *args, **kwargs):

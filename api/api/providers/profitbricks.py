@@ -131,9 +131,6 @@ class ProfitBrick(Cloud):
             tags['serverId'] = node.instance_id
             logger.debug("PB.update: tags=%s" % (str(tags)))
             self.pbp.updateServer(tags)
-        s = self.pbp.getServer(node.instance_id)
-        node.ip = s.ips[0]
-        node.save()
 
     def terminate(self, node):
         if node.instance_id != "":

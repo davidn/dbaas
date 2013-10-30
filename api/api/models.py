@@ -518,6 +518,9 @@ class Node(models.Model):
     def update(self, tags={}):
         return self.region.connection.update(self, tags)
 
+    def getIP(self):
+        return self.region.connection.getIP(self)
+
     @models.permalink
     def get_absolute_url(self):
         return ('node-detail', [self.cluster.pk, self.pk])
@@ -787,31 +790,24 @@ class Node(models.Model):
                 if e.status != 404:
                     raise
 
-    def modify_dns(self):
+    def modify_dns(self, old_ip):
         if self.region.provider.code != 'test':
-            # Get old IP address and de-register it.
-            dnsname = self.dns_name
-            # Sometimes the address lookup isn't available without a trailing dot '.',
-            # and it doesn't hurt to include the trailing dot whether it is or isn't.
-            if dnsname[-1] != '.':
-                dnsname += '.'
-            try:
-                old_ip = gethostbyname(dnsname)
-            except:
-                old_ip = ''
-
+            # De-register the old address.
             # If the IP address didn't change then we don't need to do anything
             if old_ip and old_ip != self.ip:
+                logger.info("Deregistering the old IP=%s to the new IP=%s" % (old_ip, self.ip))
                 r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
 
                 # De-register the old IP address
                 rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
                 rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-                                                                      type='A', ttl=60, resource_records=[old_ip], identifier=self.instance_id,
+                                                                      type='A', ttl=60, resource_records=[old_ip],
+                                                                      identifier=self.instance_id,
                                                                       weight=1))
                 rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
                                                               resource_records=[old_ip]))
                 catch_dns_not_found(rrs)
+
                 try:
                     r53.delete_health_check(self.health_check)
                 except exception.DNSServerError, e:
@@ -824,7 +820,8 @@ class Node(models.Model):
                 self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
                 rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
                 rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-                                                                      type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
+                                                                      type='A', ttl=60, resource_records=[self.ip],
+                                                                      identifier=self.instance_id,
                                                                       weight=1))
                 rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
                                                               resource_records=[self.ip]))
@@ -857,6 +854,7 @@ class Node(models.Model):
             'node': str(self.pk),
             'url': 'https://' + Site.objects.get_current().domain + self.get_absolute_url(),
         })
+        self.ip = self.getIP()
         self.save()
 
     def launch_async_dns(self):
@@ -874,11 +872,17 @@ class Node(models.Model):
         self.status = self.RUNNING
         self.save()
 
-    def reinstantiate_sync(self):
+    def reinstantiate_sync(self, new_flavor):
         assert self.status == Node.RUNNING, \
             'Cannot reinstantiate node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
-        self.status = self.PROVISIONING
-        self.save()
+        if self.flavor.provider == new_flavor.provider \
+            and self.flavor.free_allowed == new_flavor.free_allowed \
+            and self.flavor.code != new_flavor.code:
+            self.flavor = new_flavor
+            self.status = self.PROVISIONING
+            self.save()
+            return True
+        return False
 
     def reinstantiate_async(self):
         """Reinstantiate the node using its current flavor settings."""
@@ -891,8 +895,9 @@ class Node(models.Model):
             'Cannot update reinstantiated node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
         if self.reinstantiating():
             raise BackendNotReady()
-        self.ip = self.region.connection.getIP(self)
-        self.modify_dns()
+        old_ip = self.ip
+        self.ip = self.getIP()
+        self.modify_dns(old_ip)
         self.save()
 
     def reinstantiate_complete(self):
@@ -933,8 +938,9 @@ class Node(models.Model):
             'Cannot continue resuming node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
         if self.resuming():
             raise BackendNotReady()
-        self.update()
-        self.modify_dns()
+        old_ip = self.ip
+        self.ip = self.getIP()
+        self.modify_dns(old_ip)
         self.save()
 
     def resume_complete(self):

@@ -133,8 +133,6 @@ class EC2(Cloud):
 
     def update(self, node, tags={}):
         instance = self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0]
-        node.ip = instance.ip_address
-        node.save()
         for k, v in tags.items():
             instance.add_tag(k, v)
 

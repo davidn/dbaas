@@ -27,18 +27,20 @@ def launch_cluster(cluster):
          | tasks.cluster_launch_zabbix.si(cluster) \
          | group([tasks.node_launch_zabbix.si(node) for node in install_nodes] \
                 +[tasks.region_launch.si(lbr_region) for lbr_region in lbr_regions]) \
-         | tasks.wait_zabbix.si(cluster) \
+         | tasks.wait_zabbix_cluster.si(cluster) \
          | group([tasks.node_launch_complete.si(node) for node in install_nodes]) \
-         | tasks.launch_email.si(cluster) \
+         | tasks.launch_email.si(cluster, 'confirmation_email') \
          | tasks.cluster_launch_complete.si(cluster)
     return task.delay()
 
-def reinstantiate_node(node):
-    node.reinstantiate_sync()
-    task = tasks.node_reinstantiate.si(node) \
-         | tasks.node_reinstantiate_update.si(node) \
-         | tasks.node_reinstantiate_complete.si(node)
-    return task.delay()
+def reinstantiate_node(node, flavor):
+    if node.reinstantiate_sync(flavor):
+        task = tasks.node_reinstantiate.si(node) \
+             | tasks.node_reinstantiate_update.si(node) \
+             | tasks.node_reinstantiate_complete.si(node) \
+             | tasks.wait_zabbix_node.si(node) \
+             | tasks.launch_email.si(node.cluster, 'resize_confirmation_email')
+        return task.delay()
 
 def pause_node(node):
     node.pause_sync()

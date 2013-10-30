@@ -126,7 +126,7 @@ def node_resume_complete(node):
         node_resume_complete.retry(exc=e, countdown=15)
 
 @task()
-def launch_email(cluster):
+def launch_email(cluster, email_message='confirmation_email'):
     nodes = cluster.nodes.all()
     ctx_dict = {
         'nodes': nodes,
@@ -140,24 +140,33 @@ def launch_email(cluster):
         'dbpassword': cluster.dbpassword,
         'regions': ' and '.join(node.region.name for node in nodes)
     }
-    cluster.user.email_user_template('confirmation_email', ctx_dict)
+    cluster.user.email_user_template(email_message, ctx_dict)
 
-@task(base=ClusterTask)
-def wait_zabbix(cluster):
-    nodes = cluster.nodes.all()
-
-    z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
-    z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
-    for node in nodes:
-        if node.region.provider.code == 'test':
-            continue
+def _wait_zabbix(node, zabbixConnection=None):
+    if zabbixConnection is None:
+        zabbixConnection = ZabbixAPI(settings.ZABBIX_ENDPOINT)
+        zabbixConnection.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
+    if node.region.provider.code != 'test':
         for _ in xrange(50):
-            if z.item.get(host=node.dns_name, filter={"key_": "system.cpu.util[]"}):
+            if zabbixConnection.item.get(host=node.dns_name, filter={"key_": "system.cpu.util[]"}):
                 break
             logger.info("Retrying Zabbix registration for Host %s." % (node.dns_name,))
             sleep(5)
         else:
             raise AssertionError("Unable to confirm that Host %s is executing before sending email notification." % (node.dns_name,))
+
+@task(base=ClusterTask)
+def wait_zabbix_cluster(cluster):
+    nodes = cluster.nodes.all()
+
+    z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
+    z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
+    for node in nodes:
+        _wait_zabbix(node, z)
+
+@task(base=NodeTask)
+def wait_zabbix_node(node):
+    _wait_zabbix(node)
 
 @task()
 def send_reminder(user, reminder):

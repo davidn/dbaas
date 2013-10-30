@@ -67,9 +67,6 @@ class Openstack(Cloud):
         if tags is None:
             tags = {}
         tags['id'] = node.instance_id
-        s = self.nova.servers.set_meta(node.instance_id, tags)
-        node.ip = s.accessIPv4
-        node.save()
 
     def terminate(self, node):
         self.nova.servers.delete(node.instance_id)
