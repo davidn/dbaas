@@ -31,7 +31,7 @@ def main(baseUrl, filename):
     #print response.info()
     html = response.read()
     if filename:
-        open(filename, 'w').write(html)
+        open(filename, 'wb').write(html)
     else:
         print html
     response.close()  # best practice to close the file
