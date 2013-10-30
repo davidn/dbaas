@@ -29,7 +29,7 @@
 				<div class=" pull-right">
 					<button ng-if="cluster.canLaunch" class="btn add-node btn-success btn-small" ng-click="addNode(cluster)">ADD NODE</button>
 					<button ng-if="cluster.canLaunch" class="btn launch-cluster btn-success btn-small" ng-disabled="cluster.isLaunching" ng-click="launchCluster(cluster)" data-loading-text="Launching...">LAUNCH</button>
-					<button class="btn delete-cluster btn-danger btn-small" ng-click="deleteCluster(cluster)" data-loading-text="Deleting...">DELETE</button>
+					<button class="btn delete-cluster btn-danger btn-small" ng-click="deleteCluster(cluster)" btn-loading="cluster.isDeleting" data-loading-text="Deleting...">DELETE</button>
 				</div>
 			</div>
 			<table id="nodeTable" class="table table-hover table-condensed table-nodes">
