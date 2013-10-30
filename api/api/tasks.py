@@ -3,13 +3,11 @@
 from django.conf import settings
 from logging import getLogger
 from celery.task import Task, task
-from time import sleep
 from .models import Node, Cluster
 import datetime
 from django.dispatch.dispatcher import receiver
 from django.db import models
 from django.contrib.auth import get_user_model
-from pyzabbix import ZabbixAPI
 from api.exceptions import BackendNotReady, SaltError
 from boto.route53.exception import DNSServerError
 from boto.exception import BotoClientError, BotoServerError
