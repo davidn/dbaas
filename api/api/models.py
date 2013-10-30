@@ -289,7 +289,7 @@ class Cluster(models.Model):
 
     @property
     def subscriptions(self):
-        return ",".join(":".join([str(node.nid), '192.168.33.' + str(node.nid), "5502"]) for node in self.nodes.all())
+        return ",".join(":".join([str(node.nid), '192.168.33.' + str(node.nid), "5502"]) for node in self.nodes.exclude(status__in=[Node.INITIAL, Node.OVER]))
 
     def get_lbr_region_set(self, region):
         """Given a Region object, return the LBRRegionNodeSet for that region in this cluster, creating one if needed."""
