@@ -1,7 +1,7 @@
 include:
   - mysql
 
-{% if pillar['dbaas_api']['node']['status'] in [9,10] %}
+{% if pillar['dbaas_api']['node']['status'] not in [9,10] %}
 db_user:
   mysql_user.present:
     - name: {{ pillar['dbaas_api']['cluster']['dbusername'] }}
