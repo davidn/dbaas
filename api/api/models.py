@@ -428,6 +428,8 @@ class Node(models.Model):
     SHUTTING_DOWN = 7
     OVER = 8
     PAUSED = 9
+    PAUSING = 10
+    RESUMING = 11
     CONFIGURING_DNS = 14
     CONFIGURING_MONITORING = 13
     CONFIGURING_NODE = 15
@@ -441,6 +443,8 @@ class Node(models.Model):
         (CONFIGURING_MONITORING, 'configuring monitoring'),
         (RUNNING, 'running'),
         (PAUSED, 'paused'),
+        (PAUSING, 'pausing'),
+        (RESUMING, 'resuming'),
         (SHUTTING_DOWN, 'shutting down'),
         (OVER, 'over'),
         (ERROR, 'An error occurred')
@@ -665,19 +669,30 @@ class Node(models.Model):
     def refresh_salt(self):
         self.cluster.refresh_salt([self])
 
-    def pause(self):
+    def pause_sync(self):
         assert self.status == Node.RUNNING, \
             'Cannot pause node "%s" as it is in state %s.' % (self, dict(Node.STATUES)[self.status])
+        self.status = Node.PAUSING
+        self.save()
+
+    def pause_async(self):
+        assert self.status == Node.PAUSING, \
+            'Cannot pause node "%s" as it is in state %s.' % (self, dict(Node.STATUES)[self.status])
+        self.refresh_salt()
         self.status = Node.PAUSED
         self.save()
-        self.refresh_salt()
 
-    def resume(self):
+    def resume_sync(self):
         assert self.status == Node.PAUSED, \
             'Cannot resume node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+        self.status = Node.RESUMING
+        self.save()
+    def resume_async(self):
+        assert self.status == Node.RESUMING, \
+            'Cannot resume node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+        self.refresh_salt()
         self.status = Node.RUNNING
         self.save()
-        self.refresh_salt()
 
     def on_terminate(self):
         """Shutdown the node and remove DNS entries."""

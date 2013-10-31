@@ -34,10 +34,12 @@ def launch_cluster(cluster):
     return task.delay()
 
 def pause_node(node):
-    node.pause()
+    node.pause_sync()
+    return tasks.node_pause.delay(node)
 
 def resume_node(node):
-    node.resume()
+    node.resume_sync()
+    return tasks.node_resume.delay(node)
 
 def add_database(cluster, dbname):
     cluster.dbname += ','+dbname

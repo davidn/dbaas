@@ -3,7 +3,7 @@ mysql-server:
     - installed
 mysqld:
   service:
-{% if pillar['dbaas_api']['node']['status'] == 9 %}
+{% if pillar['dbaas_api']['node']['status'] in [9,10] %}
     - dead
 {% else %}
     - running

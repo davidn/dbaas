@@ -70,6 +70,13 @@ def node_launch_zabbix(node):
 def node_launch_complete(node):
     Node.objects.get(pk=node.pk).launch_complete()
 
+@task(base=NodeTask)
+def node_pause(node):
+    Node.objects.get(pk=node.pk).pause_async()
+@task(base=NodeTask)
+def node_resume(node):
+    Node.objects.get(pk=node.pk).resume_async()
+
 @task()
 def region_launch(region):
     region.launch_async()
