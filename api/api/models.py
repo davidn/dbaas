@@ -615,9 +615,12 @@ class Node(models.Model):
                 if e.status != 404:
                     raise
 
-    def launch_sync(self):
-        assert self.status != Node.OVER, \
+    def assert_state(self, state, equal=True):
+        assert equal == (self.status == state), \
             'Cannot launch node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+
+    def launch_sync(self):
+        self.assert_state(Node.OVER, False)
         self.nid = self.cluster.next_nid()
         logger.debug("%s: Assigned NID %s", self, self.nid)
         self.status = self.STARTING
@@ -631,8 +634,7 @@ class Node(models.Model):
         logger.info("%s: provisioning node done", self)
 
     def launch_async_update(self):
-        assert self.status == self.PROVISIONING, \
-            'Cannot update node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+        self.assert_state(self.PROVISIONING)
         if self.pending():
             raise BackendNotReady()
         self.update({
@@ -670,26 +672,22 @@ class Node(models.Model):
         self.cluster.refresh_salt([self])
 
     def pause_sync(self):
-        assert self.status == Node.RUNNING, \
-            'Cannot pause node "%s" as it is in state %s.' % (self, dict(Node.STATUES)[self.status])
+        self.assert_state(Node.RUNNING)
         self.status = Node.PAUSING
         self.save()
 
     def pause_async(self):
-        assert self.status == Node.PAUSING, \
-            'Cannot pause node "%s" as it is in state %s.' % (self, dict(Node.STATUES)[self.status])
+        self.assert_state(Node.PAUSING)
         self.refresh_salt()
         self.status = Node.PAUSED
         self.save()
 
     def resume_sync(self):
-        assert self.status == Node.PAUSED, \
-            'Cannot resume node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+        self.assert_state(Node.PAUSED)
         self.status = Node.RESUMING
         self.save()
     def resume_async(self):
-        assert self.status == Node.RESUMING, \
-            'Cannot resume node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+        self.assert_state(Node.RESUMING)
         self.refresh_salt()
         self.status = Node.RUNNING
         self.save()
