@@ -13,9 +13,12 @@ class SaltError(Exception):
     def __str__(self):
         errors = []
         if self.missing:
-            errors.append("The following nodes did not respond: %s." % ", ".join(self.missing))
+            errors.extend("Node %s did not reply." % n for n in self.missing)
         if self.failed:
-            errors.append("The following errors occurred: %s." % ", ".join("node %s - %s" % (n,f["comment"]) for n,f in self.failed.iteritems()))
+            errors.extend(
+                "Node %s failed to configure %s: %s." % (dns, name, s_o['comment'])
+                    for dns,fail in self.failed.iteritems()
+                    for name,s_o in fail.iteritems())
         return " ".join(errors)
 
 def check_for_salt_error(result, node_dns_names):
