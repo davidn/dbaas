@@ -654,10 +654,8 @@ class Node(models.Model):
 
     def launch_async_salt(self):
         self.status = self.CONFIGURING_NODE
+        self.refresh_salt()
         self.save()
-        client = LocalClient()
-        result = client.cmd(self.dns_name, 'state.highstate', timeout=settings.SALT_TIMEOUT)
-        check_for_salt_error(result, [self.dns_name])
 
     def launch_async_zabbix(self):
         self.status = self.CONFIGURING_MONITORING
