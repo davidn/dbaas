@@ -65,9 +65,13 @@ def node_launch_zabbix(node):
 def node_launch_complete(node):
     Node.objects.get(pk=node.pk).launch_complete()
 
-@task()
+@task(max_retries=10)
 def region_launch(region):
-    region.launch_async()
+    try:
+        region.launch_async()
+    except DNSServerError as e:
+        region_launch.retry(exc=e,countdown=5)
+
 
 @task(base=ClusterTask,max_retries=10)
 def cluster_launch_s3(cluster):
