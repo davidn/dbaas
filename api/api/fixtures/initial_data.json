@@ -888,6 +888,138 @@
     },
     {
         "model": "api.flavor",
+        "pk": 48,
+        "fields": {
+            "provider": 7,
+            "code": "n1-highmem-2-d",
+            "name": "n1-highmem-2-d",
+            "ram": 13000,
+            "cpus": 2
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 49,
+        "fields": {
+            "provider": 7,
+            "code": "n1-highmem-4-d",
+            "name": "n1-highmem-4-d",
+            "ram": 26000,
+            "cpus": 4
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 50,
+        "fields": {
+            "provider": 7,
+            "code": "n1-highmem-8-d",
+            "name": "n1-highmem-8-d",
+            "ram": 52000,
+            "cpus": 8
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 51,
+        "fields": {
+            "provider": 7,
+            "code": "n1-highmem-2",
+            "name": "n1-highmem-2",
+            "ram": 13000,
+            "cpus": 2
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 52,
+        "fields": {
+            "provider": 7,
+            "code": "n1-highmem-4",
+            "name": "n1-highmem-4",
+            "ram": 26000,
+            "cpus": 4
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 53,
+        "fields": {
+            "provider": 7,
+            "code": "n1-highmem-8",
+            "name": "n1-highmem-8",
+            "ram": 52000,
+            "cpus": 8
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 54,
+        "fields": {
+            "provider": 7,
+            "code": "n1-highcpu-2-d",
+            "name": "n1-highcpu-2-d",
+            "ram": 1800,
+            "cpus": 2
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 55,
+        "fields": {
+            "provider": 7,
+            "code": "n1-highcpu-4-d",
+            "name": "n1-highcpu-4-d",
+            "ram": 3600,
+            "cpus": 4
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 56,
+        "fields": {
+            "provider": 7,
+            "code": "n1-highcpu-8-d",
+            "name": "n1-highcpu-8-d",
+            "ram": 7200,
+            "cpus": 8
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 57,
+        "fields": {
+            "provider": 7,
+            "code": "n1-highcpu-2",
+            "name": "n1-highcpu-2",
+            "ram": 1800,
+            "cpus": 2
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 58,
+        "fields": {
+            "provider": 7,
+            "code": "n1-highcpu-4",
+            "name": "n1-highcpu-4",
+            "ram": 3600,
+            "cpus": 4
+        }
+    },
+    {
+        "model": "api.flavor",
+        "pk": 59,
+        "fields": {
+            "provider": 7,
+            "code": "n1-highcpu-8",
+            "name": "n1-highcpu-8",
+            "ram": 7200,
+            "cpus": 8
+        }
+    },
+    {
+        "model": "api.flavor",
         "pk": 43,
         "fields": {
             "provider": 8,
