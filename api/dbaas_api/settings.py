@@ -49,6 +49,8 @@ RACKSPACELONDON_AUTH_URL = "https://lon.identity.api.rackspacecloud.com/v2.0/"
 PROFITBRICK_USER = ""
 PROFITBRICK_PASS = ""
 
+SALT_TIMEOUT = 300
+
 ROUTE53_ZONE = ""
 CLUSTER_DNS_TEMPLATE = "{cluster}.dbaas.example.com"
 REGION_DNS_TEMPLATE = "{cluster}-{lbr_region}.dbaas.example.com"
