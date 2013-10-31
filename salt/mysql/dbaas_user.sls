@@ -1,6 +1,7 @@
 include:
   - mysql
 
+{% if pillar['dbaas_api']['node']['status'] in [9,10] %}
 db_user:
   mysql_user.present:
     - name: {{ pillar['dbaas_api']['cluster']['dbusername'] }}
@@ -25,3 +26,4 @@ user_to_db_{{database}}:
     - require:
       - service: mysqld
 {% endfor %}
+{% endif %}
