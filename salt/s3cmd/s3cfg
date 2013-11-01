@@ -1,0 +1,2 @@
+access_key = {{ pillar['dbaas_api']['cluster']['iam_key'] }}
+access_secret = {{ pillar['dbaas_api']['cluster']['iam_secret'] }}

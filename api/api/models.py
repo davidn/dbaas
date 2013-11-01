@@ -13,12 +13,7 @@ partition the Nodes in a cluster. See `the wiki`_ for more info.
 """
 
 from __future__ import unicode_literals
-from socket import gethostbyname
-from hashlib import sha1
 from logging import getLogger
-from textwrap import dedent
-
-import MySQLdb
 from django.db import models
 from django.dispatch.dispatcher import receiver
 from django.conf import settings
@@ -28,7 +23,7 @@ from boto import connect_route53, connect_s3, connect_iam
 from .uuid_field import UUIDField
 import providers
 from .crypto import KeyPair, SslPair, CertificateAuthority
-from .utils import retry, split_every, cron_validator, mysql_database_validator, CloudConfig
+from .utils import retry, split_every, cron_validator
 from django.core.validators import MinValueValidator, MaxValueValidator, MaxLengthValidator
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -36,7 +31,8 @@ from django.utils import timezone
 from django.utils.translation import ugettext as _
 from simple_history.models import HistoricalRecords
 from pyzabbix import ZabbixAPI
-from api.exceptions import BackendNotReady
+from salt.client import LocalClient
+from api.exceptions import BackendNotReady, check_for_salt_error
 
 
 logger = getLogger(__name__)
@@ -254,6 +250,14 @@ class Cluster(models.Model):
         self.status = Cluster.RUNNING
         self.save()
 
+    def refresh_salt(self, qs=None):
+        if qs is None:
+            qs = self.nodes.filter(status=Node.RUNNING)
+        client = LocalClient()
+        result = client.cmd([n.dns_name for n in qs], 'state.highstate',
+                            expr_form='list', timeout=settings.SALT_TIMEOUT)
+        check_for_salt_error(result, [n.dns_name for n in qs])
+
     def terminate(self):
         """Clean up the S3 bucket and IAM user associated with this cluster."""
         self.status = Cluster.SHUTTING_DOWN
@@ -291,7 +295,7 @@ class Cluster(models.Model):
 
     @property
     def subscriptions(self):
-        return ",".join(":".join([str(node.nid), '192.168.33.' + str(node.nid), "5502"]) for node in self.nodes.all())
+        return ",".join(":".join([str(node.nid), '192.168.33.' + str(node.nid), "5502"]) for node in self.nodes.exclude(status__in=[Node.INITIAL, Node.OVER]))
 
     def get_lbr_region_set(self, region):
         """Given a Region object, return the LBRRegionNodeSet for that region in this cluster, creating one if needed."""
@@ -441,12 +445,14 @@ class Node(models.Model):
     RESUMING = 11
     CONFIGURING_DNS = 14
     CONFIGURING_MONITORING = 13
+    CONFIGURING_NODE = 15
     ERROR = 1000
     STATUSES = (
         (INITIAL, 'not yet started'),
         (STARTING, 'Starting launch'),
         (PROVISIONING, 'Provisioning Instances'),
         (CONFIGURING_DNS, 'Configuring DNS'),
+        (CONFIGURING_NODE, 'Configuring node'),
         (CONFIGURING_MONITORING, 'Configuring performance monitor'),
         (RUNNING, 'running'),
         (PAUSED, 'paused'),
@@ -503,14 +509,6 @@ class Node(models.Model):
         """Return True if the underlying cloud provider is in the process of shutting down the instance."""
         return self.region.connection.shutting_down(self)
 
-    def pausing(self):
-        """Return True if the instance is being paused by the underlying cloud provider."""
-        return self.region.connection.pausing(self)
-
-    def resuming(self):
-        """Return True if the underlying cloud provider is in the process of resuming the instance."""
-        return self.region.connection.resuming(self)
-
     def reinstantiating(self):
         """Return True if the underlying cloud provider is in the process of reinstantiating the instance."""
         return self.region.connection.reinstantiating(self)
@@ -538,174 +536,8 @@ class Node(models.Model):
         return int(max(self.flavor.ram * 0.7, self.flavor.ram - 2048) * 2 ** 20)
 
     @property
-    def cloud_config(self):
-        """Return a string to be passed to cloud-init on a newly provisioned node."""
-        cloud_config=CloudConfig()
-
-        # Configure MySQL
-        cloud_config.add_file(
-            "/etc/mysql/conf.d/geniedb.cnf",
-            dedent("""\
-                [mysqld]
-                auto_increment_offset={nid}
-                auto_increment_increment=255
-                geniedb_my_node_id={nid}
-                geniedb_subscriptions={subscriptions}
-                geniedb_buffer_pool_size={buffer_pool_size}
-                default_storage_engine=GenieDB
-                port={port}
-                ssl_ca=/etc/mysql/ca.cert
-                ssl_cert=/etc/mysql/server.cert
-                ssl_key=/etc/mysql/server.pem
-                """),
-            nid=self.nid, subscriptions=self.cluster.subscriptions,
-            port=self.cluster.port,
-            buffer_pool_size=self.buffer_pool_size
-        )
-        cloud_config.add_file(
-            "/etc/mysql/ca.cert",
-            owner="mysql:mysql",
-            permissions="0600",
-            content=self.cluster.ca_cert+"\n"
-        )
-        cloud_config.add_file(
-            "/etc/mysql/server.cert",
-            owner="mysql:mysql",
-            permissions="0600",
-            content=self.cluster.server_cert+"\n"
-        )
-        cloud_config.add_file(
-            "/etc/mysql/server.pem",
-            owner="mysql:mysql",
-            permissions="0600",
-            content=self.cluster.server_key+"\n"
-        )
-        cloud_config.add_file(
-            "/etc/mysqld-grants",
-            dedent("""\
-                CREATE USER '{dbusername}'@'%' IDENTIFIED BY PASSWORD '{dbpassword}';
-                CREATE USER '{mysql_user}'@'%' IDENTIFIED BY PASSWORD '{mysql_password}';
-                GRANT ALL ON *.* to '{mysql_user}'@'%' WITH GRANT OPTION;
-                """) + "".join(
-                    "CREATE DATABASE {dbname};\nGRANT ALL ON {dbname}.* to '{{dbusername}}'@'%';\n".format(
-                        dbname=dbname,
-                    ) for dbname in self.cluster.dbname.split(',')),
-            dbusername=self.cluster.dbusername,
-            dbpassword='*' + sha1(sha1(self.cluster.dbpassword.encode('utf-8')).digest()).hexdigest().upper(),
-            mysql_user=settings.MYSQL_USER,
-            mysql_password='*' + sha1(sha1(settings.MYSQL_PASSWORD.encode('utf-8')).digest()).hexdigest().upper(),
-        )
-
-        # Configure Tinc
-        cloud_config.add_file(
-            "/etc/tinc/cf/tinc.conf",
-            dedent("""\
-                Name = node_{nid}
-                Device = /dev/net/tun
-                """) + "\n".join("ConnectTo = node_" + str(node.nid) for node in self.cluster.nodes.all())+"\n",
-            nid=self.nid
-        )
-        cloud_config.add_file(
-            "/etc/tinc/cf/tinc-up",
-            permissions="0755",
-            content=dedent("""\
-                #!/bin/sh
-                ip addr flush cf
-                ip addr add 192.168.33.{nid}/24 dev cf
-                ip link set cf up
-                """),
-            nid=self.nid
-        )
-        cloud_config.add_file(
-            "/etc/tinc/cf/rsa_key.priv",
-            permissions="0600",
-            content=self.tinc_private_key+"\n"
-        )
-        for node in self.cluster.nodes.all():
-            cloud_config.add_file(
-                "/etc/tinc/cf/hosts/node_{nid}".format(nid=node.nid),
-                dedent("""\
-                    Address={address}
-                    Subnet=192.168.33.{nid}/32
-                    """)+node.public_key+"\n",
-                nid=node.nid,
-                address=node.dns_name
-            )
-
-        # Configure Zabbix
-        cloud_config.add_file(
-            "/etc/zabbix/zabbix_agentd.conf",
-            dedent("""\
-                PidFile=/var/run/zabbix/zabbix_agentd.pid
-                LogFile=/var/log/zabbix/zabbix_agentd.log
-                LogFileSize=0
-                Server={zabbix_server}
-                ServerActive={zabbix_server}
-                Hostname={dns_name}
-                Include=/etc/zabbix/zabbix_agentd.d/
-                EnableRemoteCommands=1
-                """),
-            dns_name=self.dns_name, zabbix_server=settings.ZABBIX_SERVER
-        )
-
-        # Configure backups
-        cloud_config.add_file(
-            "/etc/mysqlbackup.logrotate",
-            dedent("""\
-                compress
-                /var/backup/mysqlbackup.sql {{
-                    dateext
-                    dateformat -%Y%m%d.%s
-                    rotate {backup_count}
-                }}
-                """),
-            backup_count=self.cluster.backup_count
-        )
-        cloud_config.add_file(
-            "/etc/cron.d/backup",
-            "{backup_schedule} root /usr/local/bin/backup\n",
-            backup_schedule=self.cluster.backup_schedule
-        )
-        cloud_config.add_file(
-            "/root/.s3cfg",
-            permissions="0600",
-            content=dedent("""\
-                access_key = {iam_key}
-                secret_key = {iam_secret}
-                """),
-            iam_key=self.cluster.iam_key,
-            iam_secret=self.cluster.iam_secret
-        )
-        cloud_config.add_file(
-            "/usr/local/bin/backup",
-            permissions="0755",
-            content=dedent("""\
-                #!/bin/sh
-                /usr/bin/mysqldump --all-databases > /var/backup/mysqlbackup.sql
-                /usr/sbin/logrotate -fs /etc/mysqlbackup.state /etc/mysqlbackup.logrotate
-                /usr/bin/s3cmd sync --delete-removed /var/backup/ s3://{cluster}/{nid}/
-                /usr/bin/curl {set_backup_url} -X POST -H "Content-type: application/json" -d "$(
-                  c=false
-                  cd /var/backup/
-                  printf '[\\n'
-                  for i in *; do
-                    if $c; then
-                      printf ',\\n'
-                    else
-                      c=true
-                    fi
-                    stat --printf '  {{"filename":"%n", "time":"%y", "size":"%s"}}' "$i"
-                  done
-                  printf '\\n]\\n'
-                )"
-            """),
-            nid=self.nid, cluster=self.cluster.pk,
-            set_backup_url='https://' + Site.objects.get_current().domain + reverse('node-set-backups', args=[self.cluster.pk, self.pk])
-        )
-
-        cloud_config.add_command(["lokkit", "-p", "{port}:tcp".format(port=self.cluster.port)])
-        cloud_config.add_command(["mkdir", "-p", "/var/backup"])
-        return str(cloud_config)
+    def set_backup_url(self):
+        return 'https://' + Site.objects.get_current().domain + reverse('node-set-backups', args=[self.cluster.pk, self.pk])
 
     def visible_name(self):
         return "{email}-{label}-{node}".format(email=self.cluster.user.email, label=self.cluster.label, node=self.nid)
@@ -827,9 +659,12 @@ class Node(models.Model):
                                                               resource_records=[self.ip]))
                 catch_dns_exists(rrs)
 
-    def launch_sync(self):
-        assert self.status != Node.OVER, \
+    def assert_state(self, state, equal=True):
+        assert equal == (self.status == state), \
             'Cannot launch node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+
+    def launch_sync(self):
+        self.assert_state(Node.OVER, False)
         self.nid = self.cluster.next_nid()
         logger.debug("%s: Assigned NID %s", self, self.nid)
         self.status = self.STARTING
@@ -843,8 +678,7 @@ class Node(models.Model):
         logger.info("%s: provisioning node done", self)
 
     def launch_async_update(self):
-        assert self.status == self.PROVISIONING, \
-            'Cannot update node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+        self.assert_state(self.PROVISIONING)
         if self.pending():
             raise BackendNotReady()
         self.update({
@@ -863,6 +697,11 @@ class Node(models.Model):
         self.setup_dns()
         self.save()
 
+    def launch_async_salt(self):
+        self.status = self.CONFIGURING_NODE
+        self.save()
+        self.refresh_salt()
+
     def launch_async_zabbix(self):
         self.status = self.CONFIGURING_MONITORING
         self.save()
@@ -872,9 +711,11 @@ class Node(models.Model):
         self.status = self.RUNNING
         self.save()
 
+    def refresh_salt(self):
+	        self.cluster.refresh_salt([self])
+
     def reinstantiate_sync(self, new_flavor):
-        assert self.status == Node.RUNNING, \
-            'Cannot reinstantiate node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+        self.assert_state(Node.RUNNING)
         if self.flavor.provider == new_flavor.provider \
             and self.flavor.free_allowed == new_flavor.free_allowed \
             and self.flavor.code != new_flavor.code:
@@ -886,13 +727,11 @@ class Node(models.Model):
 
     def reinstantiate_async(self):
         """Reinstantiate the node using its current flavor settings."""
-        assert self.status == Node.PROVISIONING, \
-            'Cannot continue reinstantiating node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+        self.assert_state(Node.PROVISIONING)
         self.region.connection.reinstantiate(self)
 
     def reinstantiate_update(self):
-        assert self.status == self.PROVISIONING, \
-            'Cannot update reinstantiated node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+        self.assert_state(self.PROVISIONING)
         if self.reinstantiating():
             raise BackendNotReady()
         old_ip = self.ip
@@ -908,76 +747,30 @@ class Node(models.Model):
         self.save()
 
     def pause_sync(self):
-        assert self.status == Node.RUNNING, \
-            'Cannot pause node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+        self.assert_state(Node.RUNNING)
         self.status = Node.PAUSING
         self.save()
 
     def pause_async(self):
-        assert self.status == Node.PAUSING, \
-            'Cannot continue pausing node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
-        self.region.connection.pause(self)
-
-    def pause_complete(self):
-        if self.pausing():
-            raise BackendNotReady()
+        self.assert_state(Node.PAUSING)
+        self.remove_dns()
         self.status = Node.PAUSED
         self.save()
 
     def resume_sync(self):
-        assert self.status == Node.PAUSED, \
-            'Cannot resume node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
+        self.assert_state(Node.PAUSED)
         self.status = Node.RESUMING
         self.save()
-
-    def resume_async_provider(self):
-        self.region.connection.resume(self)
-
-    def resume_async_dns(self):
-        assert self.status == Node.RESUMING, \
-            'Cannot continue resuming node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
-        if self.resuming():
-            raise BackendNotReady()
-        old_ip = self.ip
-        self.ip = self.getIP()
-        self.modify_dns(old_ip)
-        self.save()
-
-    def resume_complete(self):
-        if self.resuming():
-            raise BackendNotReady()
+    def resume_async(self):
+        self.assert_state(Node.RESUMING)
+        self.refresh_salt()
         self.status = Node.RUNNING
         self.save()
-
-    def add_database(self, dbname):
-        """Create a new MySQL database on this node and grant the user permission to it."""
-        mysql_database_validator(dbname)
-        con = MySQLdb.connect(host=self.dns_name,
-                              user=settings.MYSQL_USER,
-                              passwd=settings.MYSQL_PASSWORD,
-                              port=self.cluster.port)
-        try:
-            cur = con.cursor()
-            try:
-                try:
-                    # Note we don't use real placeholder syntax as CREATE DATABASE fails
-                    # if quotes are present
-                    cur.execute("CREATE DATABASE IF NOT EXISTS " + dbname + ";")
-                except Warning:
-                    pass
-                try:
-                    cur.execute("GRANT ALL ON " + dbname + ".* to %s@'%%';", (self.cluster.dbusername,))
-                except Warning:
-                    pass
-            finally:
-                cur.close()
-        finally:
-            con.close()
 
     def on_terminate(self):
         """Shutdown the node and remove DNS entries."""
         self.removeFromHostGroup()
-        if self.status in (self.PROVISIONING, self.RUNNING, self.PAUSED, self.ERROR):
+        if self.status not in (self.INITIAL, self.OVER):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
             self.remove_dns()
             self.region.connection.terminate(self)

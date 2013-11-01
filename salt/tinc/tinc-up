@@ -1,0 +1,4 @@
+#!/bin/sh
+ip addr flush cf
+ip addr add 192.168.33.{{ pillar['dbaas_api']['node']['nid'] }}/24 dev cf
+ip link set cf up

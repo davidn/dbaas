@@ -1,8 +1,6 @@
 from logging import getLogger
 from django.conf import settings
-from django.contrib.sites.models import Site
 from .cloud import Cloud
-from api.utils import remove_trail_slash
 
 import novaclient.v1_1
 
@@ -37,8 +35,7 @@ class Openstack(Cloud):
             key_name=self.region.key_name,
             availability_zone=self.region.code,
             files={
-                '/var/lib/cloud/seed/nocloud-net/user-data': '#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(
-                    node.get_absolute_url()) + '/cloud_config/\n',
+                '/var/lib/cloud/seed/nocloud-net/user-data': self.cloud_init(node),
                 '/var/lib/cloud/seed/nocloud-net/meta-data': 'instance-id: iid-local01',
             },
         )
@@ -50,12 +47,6 @@ class Openstack(Cloud):
 
     def shutting_down(self, node):
         return self.nova.servers.get(node.instance_id).status == u'STOPPING'
-
-    def pausing(self, node):
-        return False
-
-    def resuming(self, node):
-        return False
 
     def reinstantiating(self, node):
         return self.nova.servers.get(node.instance_id).status == u'RESIZE'
@@ -81,25 +72,11 @@ class Openstack(Cloud):
         # Free up the original image before the resize snapshot.
         self.nova.servers.confirm_resize(node.instance_id)
 
-    def pause(self, node):
-        self.nova.servers.suspend(node.instance_id)
-
-    def resume(self, node):
-        self.nova.servers.resume(node.instance_id)
-
-
 class Rackspace(Openstack):
     USER = settings.RACKSPACE_USER
     PASS = settings.RACKSPACE_PASS
     TENANT = settings.RACKSPACE_TENANT
     AUTH_URL = settings.RACKSPACE_AUTH_URL
-
-    # Rackspace doesn't support pause unless Server is shutdown itself first
-    def pause(self, node):
-        pass
-    def resume(self, node):
-        pass
-
 
 class RackspaceLondon(Rackspace):
     USER = settings.RACKSPACELONDON_USER

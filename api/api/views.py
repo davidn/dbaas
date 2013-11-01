@@ -117,26 +117,6 @@ def upgrade(request):
     serializer = UserSerializer(request.user)
     return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
-@api_view(('GET',))
-@permission_classes((permissions.AllowAny,))
-def cloud_config_by_hostname(request, hostname):
-    regex = re.compile(settings.CLUSTER_NID_TEMPLATE)
-    r = regex.match(hostname)
-    if r:
-        cluster = r.group('cluster')
-        nid = r.group('nid')
-        try:
-            n = Node.objects.get(nid=nid, cluster_id=cluster)
-        except ObjectDoesNotExist:
-            n = None
-        if n:
-            for node in n.cluster.nodes.filter(status=Node.PROVISIONING):
-                while node.pending():
-                    sleep(15)
-            return HttpResponse(n.cloud_config, content_type='text/cloud-config')
-    return HttpResponse("Unrecognized Hostname: %s\n" % hostname, content_type='text/cloud-config')
-
-
 class ClusterViewSet(mixins.CreateModelMixin,
                      mixins.ListModelMixin,
                      mixins.RetrieveModelMixin,
@@ -207,6 +187,8 @@ class ClusterViewSet(mixins.CreateModelMixin,
 
         if serializer.is_valid():
             serializer.save(force_insert=True)
+            if self.object.status == Cluster.RUNNING:
+                add_nodes(serializer.object if isinstance(serializer.object, list) else [serializer.object])
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED,
                             headers=headers)
@@ -225,12 +207,13 @@ class ClusterViewSet(mixins.CreateModelMixin,
             return Response({'dbname': list(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
 
     @action()
-    def launch_all(self, request, *args, **kwargs):
+    def launch(self, request, *args, **kwargs):
         self.object = self.get_object()
         launch_cluster(self.object)
         serializer = self.get_serializer(self.object)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
+    launch_all = launch
 
 
 def random_walk(initial_value=0, min_value=0, max_value=100, step=2):
@@ -257,15 +240,6 @@ class NodeViewSet(mixins.ListModelMixin,
 
     def get_queryset(self):
         return Node.objects.filter(cluster=self.kwargs["cluster"])
-
-    @link(permission_classes=[permissions.AllowAny])
-    def cloud_config(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        for node in self.object.cluster.nodes.filter(status__in=(Node.PROVISIONING, Node.STARTING)):
-            n = Node.objects.get(id=node.id)
-            while n.status == Node.STARTING or n.pending():
-                sleep(15)
-        return HttpResponse(self.object.cloud_config, content_type='text/cloud-config')
 
     def zabbix_history(self, node, key, count=120):
         if node.region.provider.code == 'test':

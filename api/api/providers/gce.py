@@ -3,10 +3,8 @@ from __future__ import unicode_literals
 from logging import getLogger
 from time import sleep
 from django.conf import settings
-from django.contrib.sites.models import Site
 import httplib2
 from .cloud import Cloud
-from api.utils import remove_trail_slash
 
 try:
     from apiclient import discovery
@@ -204,9 +202,7 @@ class GoogleComputeEngine(Cloud):
         #
         # Create the Instance
         #
-        user_data = \
-            '#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(node.get_absolute_url()) + '/cloud_config/\n'
-        self._createInstance(userData=user_data)
+        self._createInstance(userData=self.cloud_init(node))
         logger.info("Creating the GCE Instance %(name)s" % (self.gce))
         node.instance_id = self.gce['name']
         node.security_group = self.gce['zone']
@@ -231,12 +227,6 @@ class GoogleComputeEngine(Cloud):
         self.gce['zone'] = node.security_group
         items = self._getInstanceObjects(self.gce['name'])
         return items != []
-
-    def pausing(self, node):
-        return self.shutting_down(node)
-
-    def resuming(self, node):
-        return self.pending(node)
 
     def reinstantiating(self, node):
         return self.pending(node)
@@ -319,47 +309,6 @@ class GoogleComputeEngine(Cloud):
         #node.security_group = self.gce['zone']
         node.status = node.PROVISIONING
         node.save()
-
-
-    def pause(self, node):
-        # Note: this command halts, doesn't suspend, the server
-        self.gce['name'] = node.instance_id
-        self.gce['zone'] = node.security_group
-        diskName = self.getDiskName()
-        self.gce['diskName'] = diskName
-        self.gce['nid'] = node.nid
-        self.gce['machineType'] = node.flavor.code
-        self.gce['imageName'] = node.region.image
-        sourceImage = 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/images/%(imageName)s' % self.gce
-        self.gce['sourceImage'] = sourceImage
-        #
-        # Delete the instance
-        #
-        self._deleteInstance()
-
-    def resume(self, node):
-        # Note: this command halts, doesn't suspend, the server
-        self.gce['name'] = node.instance_id
-        self.gce['zone'] = node.security_group
-        diskName = self.getDiskName()
-        self.gce['diskName'] = diskName
-        self.gce['nid'] = node.nid
-        self.gce['machineType'] = node.flavor.code
-        self.gce['imageName'] = node.region.image
-        sourceImage = 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/images/%(imageName)s' % self.gce
-        self.gce['sourceImage'] = sourceImage
-        #
-        # Reinstantiate the instance with its new configuration
-        #
-        user_data = \
-            '#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(node.get_absolute_url()) + '/cloud_config/\n'
-        self._createInstance(userData=user_data)
-        logger.info("Reinstantiating the GCE Instance %(name)s" % (self.gce))
-        #node.instance_id = self.gce['name']
-        #node.security_group = self.gce['zone']
-        node.status = node.PROVISIONING
-        node.save()
-
 
 def make_gce_valid_name(name):
     MAX_VALID_NAME_LEN  = 63    # GCE Instance Names must be <= this length

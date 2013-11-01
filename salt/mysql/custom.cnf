@@ -1,0 +1,6 @@
+[mysqld]
+port={{ pillar['dbaas_api']['cluster']['port'] }}
+geniedb_buffer_pool_size={{ pillar['dbaas_api']['node']['buffer_pool_size'] }}
+ssl_ca=/etc/mysql/ca.cert
+ssl_cert=/etc/mysql/server.cert
+ssl_key=/etc/mysql/server.pem

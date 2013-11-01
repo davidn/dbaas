@@ -23,13 +23,13 @@ DATABASES = {
     }
 }
 
-MYSQL_USER = "dbaas"
-MYSQL_PASSWORD = ""
-
 ZABBIX_SERVER = "zabbix.example.com"
 ZABBIX_ENDPOINT = "http://%s/zabbix/" % ZABBIX_SERVER
 ZABBIX_USER = ""
 ZABBIX_PASSWORD = ""
+
+SALT_MASTER="salt.example.com"
+SALT_IPC_PATH='/var/run/salt/master'
 
 AWS_ACCESS_KEY = ""
 AWS_SECRET_KEY = ""
@@ -50,6 +50,8 @@ RACKSPACELONDON_AUTH_URL = "https://lon.identity.api.rackspacecloud.com/v2.0/"
 
 PROFITBRICK_USER = ""
 PROFITBRICK_PASS = ""
+
+SALT_TIMEOUT = 300
 
 ROUTE53_ZONE = ""
 CLUSTER_DNS_TEMPLATE = "{cluster}.dbaas.example.com"

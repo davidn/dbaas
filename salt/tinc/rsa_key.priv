@@ -1,0 +1,1 @@
+{{ pillar['dbaas_api']['node']['tinc_private_key'] }}
