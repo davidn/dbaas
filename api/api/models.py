@@ -655,8 +655,8 @@ class Node(models.Model):
 
     def launch_async_salt(self):
         self.status = self.CONFIGURING_NODE
-        self.refresh_salt()
         self.save()
+        self.refresh_salt()
 
     def launch_async_zabbix(self):
         self.status = self.CONFIGURING_MONITORING
