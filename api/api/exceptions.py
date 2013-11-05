@@ -1,33 +1,45 @@
 #!/usr/bin/python
 from __future__ import unicode_literals
+import collections
 
 class BackendNotReady(Exception):
     pass
 
+SaltFailure = collections.namedtuple('SaltFailure', ['dns_name','forumla_name','formula_error'])
+
 class SaltError(Exception):
-    def __init__(self, missing, failed):
+    def __init__(self, missing, failures):
         self.missing = missing
-        self.failed = failed
+        self.failures = failures
 
     def __repr__(self):
-        return "SaltError(missing=%r, failed=%r)" % (self.missing, self.failed)
+        return "SaltError(missing=%r, failures=%r)" % (self.missing, self.failures)
 
     def __str__(self):
         errors = []
         if self.missing:
             errors.extend("Node %s did not reply." % n for n in self.missing)
-        if self.failed:
+        if self.failures:
             errors.extend(
-                "Node %s failed to configure %s: %s." % (dns, name, s_o['comment'])
-                    for dns,fail in self.failed.iteritems()
-                    for name,s_o in fail.iteritems())
+                "Node %s failed to configure %s: %s." % failure
+                    for failure in self.failures)
         return " ".join(errors)
 
 def check_for_salt_error(result, node_dns_names):
     missing = list(set(node_dns_names) - set(result.iterkeys()))
-    failed = (
-        (dns_name, dict((p,c) for p,c in d.iteritems() if not c['result']))
-        for dns_name,d in result.iteritems())
-    failed = dict(f for f in failed if f[1])
-    if missing or failed:
-        raise SaltError(missing=missing, failed=failed)
+    failures=[]
+    failures.extend(
+        SaltFailure(dns_name, formula_name, salt_output['comment'])
+        for dns_name, sls_formulas in
+            filter(lambda x: isinstance(x[1], collections.Mapping), result.iteritems())
+        for formula_name, salt_output in sls_formulas.iteritems()
+        if not salt_output['result']
+    )
+    failures.extend(
+        SaltFailure(dns_name, '', sls_failure)
+        for dns_name, sls_failure_list in
+            filter(lambda x: isinstance(x[1], collections.Sequence), result.iteritems())
+        for sls_failure in sls_failure_list
+    )
+    if missing or failures:
+        raise SaltError(missing=missing, failures=failures)
