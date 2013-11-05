@@ -13,10 +13,9 @@
 
 	<!-- CSS from Bower components  -->
 	<link href="bower_components/bootstrap/dist/css/bootstrap.css" data-cdn="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.0/css/bootstrap.css" rel="stylesheet">
-	<link href="bower_components/font-awesome/css/font-awesome.css" data-cdn="//cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css" rel="stylesheet">
+	<link href="bower_components/font-awesome/css/font-awesome.css" data-cdn="//netdna.bootstrapcdn.com/font-awesome/4.0.2/css/font-awesome.min.css" rel="stylesheet">
 	<link href="bower_components/toastr/toastr.css"  data-cdn="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet">
 	<link href="bower_components/select2/select2.css" data-cdn="//cdnjs.cloudflare.com/ajax/libs/select2/3.4.1/select2.min.css" rel="stylesheet">
-
 
 	<!-- App LESS -->
 	<link href="css/app.less" type="text/css" rel="stylesheet/less">
@@ -43,7 +42,7 @@
 			</div>
 			<div id="logout" ng-cloak class="ng-cloak navbar-header" ng-if="user.token">
 				<span class="environment-tag" app-environment></span> Welcome {{ user.email }}&nbsp;
-				<i class="icon-user" ng-class="{'paid-user': user.isPaid}"></i> &nbsp;&nbsp;
+				<i class="fa fa-user" ng-class="{'paid-user': user.isPaid}"></i> &nbsp;&nbsp;
 				<button class="btn btn-primary btn-sm" ng-click="logout()">LOGOUT</button>
 				<button class="btn btn-success btn-sm" ng-if="!user.isPaid" ng-click="upgrade()" analytics-on="click" analytics-event="Upgrade">UPGRADE</button>
 			</div>
@@ -81,6 +80,7 @@
 <script src="bower_components/select2/select2.js" data-cdn="//cdnjs.cloudflare.com/ajax/libs/select2/3.4.1/select2.min.js" data-build="exclude" data-remove="exclude"></script>
 <script src="bower_components/sparkline/dist/jquery.sparkline.js" data-cdn="//cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.min.js" data-build="exclude" data-remove="exclude"></script>
 <script src="bower_components/toastr/toastr.js" data-cdn="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js" data-build="exclude" data-remove="exclude"></script>
+<script src="bower_components/numeral/numeral.js" data-cdn="//cdnjs.cloudflare.com/ajax/libs/numeral.js/1.5.0/numeral.min.js" data-build="exclude" data-remove="exclude"></script>
 
 
 <script src="bower_components/angular-ui-utils/modules/keypress/keypress.js"></script>

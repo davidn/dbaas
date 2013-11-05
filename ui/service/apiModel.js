@@ -34,7 +34,7 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
         return msg;
     }
 
-    function isUniqueClusterLabel(clusterLabel){
+    function isUniqueClusterLabel(clusterLabel) {
         return _.findWhere(clusters, {label: clusterLabel}) === undefined;
     }
 
@@ -63,6 +63,17 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
                     node.cpu = data.cpu ? data.cpu : [0];
                     node.iops = {read: data.riops, write: data.wiops};
                 });
+
+                if (!node.backups) {
+                    node.backups = [];
+                    $http.get(node.url + '/backups/').success(function (data) {
+                        node.backups = data.reverse();
+                        node.backups.forEach(function (backup) {
+                            backup.size = numeral(backup.size).format('0.0b');
+                            backup.time = moment(backup.time).calendar();
+                        });
+                    });
+                }
             }
         });
         return data;
