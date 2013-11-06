@@ -301,9 +301,7 @@ class GoogleComputeEngine(Cloud):
         #
         # Reinstantiate the instance with its new configuration
         #
-        user_data = \
-            '#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(node.get_absolute_url()) + '/cloud_config/\n'
-        self._createInstance(userData=user_data)
+        self._createInstance(userData=self.cloud_init(node))
         logger.info("Reinstantiating the GCE Instance %(name)s" % (self.gce))
         #node.instance_id = self.gce['name']
         #node.security_group = self.gce['zone']
