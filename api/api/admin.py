@@ -104,11 +104,15 @@ class NodeAdmin(SimpleHistoryAdmin):
 
     def save_model(self, request, obj, form, change):
         node = Node.objects.get(pk=obj.pk)
-        if obj.flavor.code != node.flavor.code:
-            logger.info("Resizing node %s from %s to %s" % (str(node), node.flavor.name, obj.flavor.name))
-            reinstantiate_node(node, obj.flavor)
-        else:
-            obj.save()
+        # Persist everything but the flavor,
+        # the flavor will be modified as a result of resizing the Node.
+        new_flavor = obj.flavor
+        obj.flavor = node.flavor
+        obj.save()
+        # Apply the Node resizing if the flavor changed.
+        if new_flavor.code != node.flavor.code:
+            logger.info("Resizing node %s from %s to %s" % (str(obj), obj.flavor.name, new_flavor.name))
+            reinstantiate_node(obj, new_flavor)
 
 
 class RegionInline(admin.StackedInline):
