@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 from rest_framework.authtoken.admin import TokenAdmin
 from rest_framework.authtoken.models import Token
-from .models import Node, Cluster, Provider, Region, Flavor, User
+from .models import Node, Cluster, Provider, Region, Flavor, User, Backup
 from rest_registration.models import RegistrationProfile
 from simple_history.admin import SimpleHistoryAdmin
 from django.contrib import admin
@@ -283,6 +283,7 @@ class TokenImpersonationAdmin(TokenAdmin):
     impersonate.allow_tags = True
 
 
+admin.site.register(Backup)
 admin.site.register(User, UserAdmin)
 admin.site.register(Cluster, ClusterAdmin)
 admin.site.register(Node, NodeAdmin)

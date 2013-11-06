@@ -20,6 +20,7 @@
         "moment": true,
         "toastr": true,
         "UserVoice": true,
+        "numeral": true,
         "SnapEngage": true
     }
 }

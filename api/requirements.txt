@@ -7,7 +7,6 @@ djangorestframework>=2.3.6
 django-cors-headers
 django-keyedcache
 pyzabbix
-MySQL-python
 django-registration
 python-dateutil
 suds
@@ -16,4 +15,4 @@ pycrypto
 google-api-python-client
 git+https://github.com/treyhunner/django-simple-history
 mock
-pyyaml
+salt==0.17.1

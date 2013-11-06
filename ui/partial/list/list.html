@@ -1,5 +1,6 @@
 <div ng-controller="ListCtrl">
 	<script id="node-detail.html" type="text/ng-template">
+		<!--suppress CheckValidXmlInScriptTagBody -->
 		<div class="row">
 			<div class="col-lg-1 info-popover-label">DNS</div>
 			<div class="col-lg-11">{{node.dns_name}}</div>
@@ -15,10 +16,10 @@
 	</script>
 	<div class="box summary">
 		<div class="modal-header">Cluster Summary
-			<button class="btn btn-primary add-cluster-btn" ng-click="addCluster()"><i class="icon-plus"></i> ADD CLUSTER</button>
+			<button class="btn btn-primary add-cluster-btn" ng-click="addCluster()"><i class="fa fa-plus"></i> ADD CLUSTER</button>
 			<button class="btn btn-primary" ng-click="refresh()" id="refresh" ng-class="{disabled: isRefreshing}">
-				<i class="icon-refresh" ng-class="{'icon-spin': isRefreshing}"></i></button>
-			<button type="submit" class="btn btn-primary pull-right disabled"><i class="icon-bar-chart"></i> CLUSTER STATS</button>
+				<i class="fa fa-refresh" ng-class="{'fa-spin': isRefreshing}"></i></button>
+			<button type="submit" class="btn btn-primary pull-right disabled"><i class="fa fa-bar-chart-o"></i> CLUSTER STATS</button>
 		</div>
 	</div>
 	<div class="panel container cluster-group">
@@ -29,10 +30,10 @@
 				<div class=" pull-right">
 					<button ng-if="cluster.canLaunch" class="btn add-node btn-success btn-small" ng-click="addNode(cluster)">ADD NODE</button>
 					<button ng-if="cluster.canLaunch" class="btn launch-cluster btn-success btn-small" ng-disabled="cluster.isLaunching" ng-click="launchCluster(cluster)" data-loading-text="Launching...">LAUNCH</button>
-					<button class="btn delete-cluster btn-danger btn-small" ng-click="deleteCluster(cluster)" data-loading-text="Deleting...">DELETE</button>
+					<button class="btn delete-cluster btn-danger btn-small" ng-click="deleteCluster(cluster)" btn-loading="cluster.isDeleting" data-loading-text="Deleting...">DELETE</button>
 				</div>
 			</div>
-			<table id="nodeTable" class="table table-hover table-condensed table-nodes">
+			<table id="nodeTable" class="table table-condensed table-nodes">
 				<thead class="node-header">
 				<tr>
 					<th></th>
@@ -48,14 +49,14 @@
 				</thead>
 				<tbody>
 				<tr ng-repeat="node in cluster.nodes">
-					<td ng-class="{row0: $first}" class="node-status-marker"><i class="icon-circle {{node.statusClass}}"></i></td>
+					<td ng-class="{row0: $first}" class="node-status-marker"><i class="fa fa-circle {{node.statusClass}}"></i></td>
 					<td ng-class="{row0: $first}">{{node.label}}
-						<a popover-placement="right" popover-template="node-detail.html" popover-title="Node Info" class="btn btn-xs info-popover"><i class="icon-info-sign"></i></a>
+						<a popover-placement="right" popover-template="node-detail.html" popover-title="Node Info" class="btn btn-xs info-popover"><i class="fa fa-lg fa-info-circle"></i></a>
 					</td>
 					<td ng-class="{row0: $first}">{{node.$region.name}}</td>
 					<td ng-class="{row0: $first}">{{node.provider.name}}</td>
 					<td ng-class="{row0: $first}">{{node.$flavor.name}}</td>
-					<td ng-class="{row0: $first}" class="node-status {{node.statusClass}}">{{node.status}}<i class="icon-refresh icon-spin margin-left-10" ng-if="node.isAction"></i>
+					<td ng-class="{row0: $first}" class="node-status {{node.statusClass}}">{{node.status}}<i class="fa fa-refresh fa-spin margin-left-10" ng-if="node.isAction"></i>
 					</td>
 					<td ng-if="cluster.hasRunning" ng-class="{row0: $first}" class="list-sparkline">
 						<span ng-if="node.isRunning" jq-sparkline ng-model="node.cpu" opts='{"width":150}'>Loading...</span></td>
@@ -64,21 +65,21 @@
 					</td>
 					<td ng-class="{row0: $first}">
 						<div class="btn-group">
-							<a class="dropdown-toggle" data-hover="dropdown" data-toggle="dropdown"> <i class="icon-reorder"></i> </a>
+							<a class="dropdown-toggle" data-hover="dropdown" data-toggle="dropdown"> <i class="fa fa-lg fa-reorder"></i></a>
 							<ul class="dropdown-menu node-popup pull-right">
 								<li class="disabled">
-									<a tabindex="-1"><i class="icon-bar-chart"></i> &nbsp; Detailed Stats</a>
+									<a tabindex="-1"><i class="fa fa-bar-chart-o"></i> &nbsp; Detailed Stats</a>
 								</li>
 								<li class="divider"></li>
 								<li ng-if="node.isRunning">
-									<a tabindex="-1" ng-click="nodePause(node)"><i class="icon-pause "></i> &nbsp; Pause Node</a></li>
+									<a tabindex="-1" ng-click="nodePause(node)"><i class="fa fa-pause "></i> &nbsp; Pause Node</a></li>
 								<li ng-if="node.isPaused">
-									<a tabindex="-1" ng-click="nodeResume(node)"><i class="icon-play"></i> &nbsp; Resume Node</a></li>
+									<a tabindex="-1" ng-click="nodeResume(node)"><i class="fa fa-play"></i> &nbsp; Resume Node</a></li>
 								<li class="divider"></li>
-								<li class="disabled"><a tabindex="-1" href="#"><i class="icon-plus"></i> &nbsp; Clone Node</a></li>
-								<li class="disabled"><a tabindex="-1"><i class="icon-chevron-up"></i> &nbsp; Upgrade Node</a></li>
+								<li class="disabled"><a tabindex="-1" href="#"><i class="fa fa-plus"></i> &nbsp; Clone Node</a></li>
+								<li class="disabled"><a tabindex="-1"><i class="fa fa-bolt"></i> &nbsp; Upgrade Node</a></li>
 								<li class="divider"></li>
-								<li><a tabindex="-1" ng-click="nodeDelete(node)"><i class="icon-remove"></i> &nbsp; Delete Node</a>
+								<li><a tabindex="-1" ng-click="nodeDelete(node)"><i class="fa fa-minus"></i> &nbsp; Delete Node</a>
 								</li>
 							</ul>
 						</div>
@@ -95,7 +96,7 @@
 			<tabset>
 				<tab>
 					<tab-heading>
-						<i class="icon-gear"></i> Details
+						<i class="fa fa-gear"></i> Details
 					</tab-heading>
 
 					<div class="row">
@@ -113,13 +114,13 @@
 				</tab>
 				<tab disabled="!cluster.hasKeys">
 					<tab-heading>
-						<i class="icon-lock"></i> SSL Certs
+						<i class="fa fa-lock"></i> SSL Certs
 					</tab-heading>
 					<br/>
 
-					<a class="btn btn-primary" download="ca-cert.pem" ng-href="{{ cluster.ca_cert_url }}"><i class="icon-download-alt"></i> &nbsp; CA Cert</a>
-					<a class="btn btn-primary" download="client-cert.pem" ng-href="{{ cluster.client_cert_url }}"><i class="icon-download-alt"></i> &nbsp; Client Cert</a>
-					<a class="btn btn-primary" download="client-key.pem" ng-href="{{ cluster.client_key_url }}"><i class="icon-download-alt"></i> &nbsp; Client Key</a>
+					<a class="btn btn-primary" download="ca-cert.pem" ng-href="{{ cluster.ca_cert_url }}"><i class="fa fa-download"></i> &nbsp; CA Cert</a>
+					<a class="btn btn-primary" download="client-cert.pem" ng-href="{{ cluster.client_cert_url }}"><i class="fa fa-download"></i> &nbsp; Client Cert</a>
+					<a class="btn btn-primary" download="client-key.pem" ng-href="{{ cluster.client_key_url }}"><i class="fa fa-download"></i> &nbsp; Client Key</a>
 
 					<br/> <br/>
 
@@ -129,17 +130,51 @@
 					</p>
 
 				</tab>
-				<tab>
+				<tab disabled="true">
 					<tab-heading>
-						<i class="icon-share-sign"></i> Backups
+						<i class="fa fa-share-square"></i> Backups
 					</tab-heading>
-					<p class="lead">
-						<i>Coming soon</i></p>
-					Check back here soon for information on controlling your backup schedule and downloading your available backups.
+
+					<h3>Schedule</h3>
+
+					<div class="btn-group">
+						<button type="button" class="btn btn-xs disabled">Hourly</button>
+						<button type="button" class="btn btn-xs dropdown-toggle" data-toggle="dropdown">
+							<span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu" role="menu">
+							<li><a href="">Hourly</a></li>
+							<li><a href="">Daily</a></li>
+							<li><a href="">Weekly</a></li>
+							<li class="divider"></li>
+							<li><a href="">Disable Backups</a></li>
+						</ul>
+					</div>
+					<h3>Available Downloads</h3>
+
+					<table id="backupTable" class=" table-hover table-condensed table-nodes">
+						<thead class="node-header">
+						<td>Node</td>
+						<td>Time</td>
+						<td>Size</td>
+						</thead>
+						<tbody ng-repeat="node in cluster.nodes">
+						<tr>
+							<td class="lead">{{ node.label }}</td>
+						</tr>
+						<tr ng-repeat="backup in node.backups">
+							<td></td>
+							<td>{{ backup.time }}</td>
+							<td>{{ backup.size }}</td>
+							<td><a class="btn btn-primary btn-xs" ng-href="{{ backup.url }}"><i class="fa fa-download"></i></a></td>
+						</tr>
+						</tbody>
+					</table>
+
 				</tab>
 				<tab disabled="!cluster.isRunning">
 					<tab-heading>
-						<i class="icon-medkit"></i> Databases
+						<i class="fa fa-medkit"></i> Databases
 					</tab-heading>
 					<p class="lead"> Current {{cluster.dbnamesLabel}}</p>
 
@@ -154,7 +189,7 @@
 		</div>
 		<p ng-if="clusters.$resolved && clusters.length < 1" class="lead clusters-empty">You don't have any clusters yet. Use our
 			<button class="btn btn-success" rel="tooltip" title="Creates 2 node cluster for easy testing of GenieDB on Amazon EC2" ng-click="quickStart()">QUICK START</button>
-																						 which builds a cluster with two small Amazon EC2 or Rackspace nodes.
+			which builds a cluster with two small Amazon EC2 or Rackspace nodes.
 		</p>
 		<p ng-if="!clusters.$resolved" class="lead clusters-empty">Loading... </p>
 	</div>

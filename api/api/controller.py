@@ -21,13 +21,15 @@ def launch_cluster(cluster):
     task = tasks.cluster_launch_s3.si(cluster) \
          | group([tasks.node_launch_provision.si(node) for node in install_nodes]) \
          | tasks.null_task.si() \
-         | group([tasks.node_launch_update.si(node) for node in install_nodes]) \
+         | group([tasks.node_launch_update.si(node) for node in install_nodes]).set(countdown=1) \
          | tasks.null_task.si() \
          | group([tasks.node_launch_dns.si(node) for node in install_nodes]) \
          | tasks.cluster_launch_zabbix.si(cluster) \
+         | group([tasks.node_launch_salt.si(node) for node in install_nodes]) \
+         | tasks.null_task.si() \
          | group([tasks.node_launch_zabbix.si(node) for node in install_nodes] \
                 +[tasks.region_launch.si(lbr_region) for lbr_region in lbr_regions]) \
-         | tasks.wait_zabbix_cluster.si(cluster) \
+         | tasks.null_task.si() \
          | group([tasks.node_launch_complete.si(node) for node in install_nodes]) \
          | tasks.launch_email.si(cluster, 'confirmation_email') \
          | tasks.cluster_launch_complete.si(cluster)
@@ -38,25 +40,37 @@ def reinstantiate_node(node, flavor):
         task = tasks.node_reinstantiate.si(node) \
              | tasks.node_reinstantiate_update.si(node) \
              | tasks.node_reinstantiate_complete.si(node) \
-             | tasks.wait_zabbix_node.si(node) \
              | tasks.launch_email.si(node.cluster, 'resize_confirmation_email')
         return task.delay()
 
 def pause_node(node):
     node.pause_sync()
-    task = tasks.node_pause.si(node) \
-         | tasks.node_pause_complete.si(node)
-    return task.delay()
+    return tasks.node_pause.delay(node)
 
 def resume_node(node):
     node.resume_sync()
-    task = tasks.node_resume_provider.si(node) \
-         | tasks.node_resume_dns.si(node) \
-         | tasks.node_resume_complete.si(node)
-    return task.delay()
+    return tasks.node_resume.delay(node)
 
 def add_database(cluster, dbname):
     cluster.dbname += ','+dbname
-    for node in cluster.nodes.filter(status=Node.RUNNING):
-        node.add_database(dbname)
     cluster.save()
+    cluster.refresh_salt()
+
+def add_nodes(nodes):
+    for node in nodes:
+        node.launch_sync()
+    cluster = nodes[0].cluster
+    task = group([tasks.node_launch_provision.si(node) for node in nodes]) \
+         | tasks.null_task.si() \
+         | group([tasks.node_launch_update.si(node) for node in nodes]) \
+         | tasks.null_task.si() \
+         | group([tasks.node_launch_dns.si(node) for node in nodes]) \
+         | tasks.null_task.si() \
+         | group([tasks.node_launch_salt.si(node) for node in nodes]) \
+         | tasks.null_task.si() \
+         | group([tasks.node_launch_zabbix.si(node) for node in nodes] \
+                +[tasks.region_launch.si(lbr_region) for lbr_region in set(node.lbr_region for node in nodes)]) \
+         | tasks.null_task.si() \
+         | tasks.cluster_refresh_salt.si(cluster) \
+         | group([tasks.node_launch_complete.si(node) for node in nodes])
+    return task.delay()

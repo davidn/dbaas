@@ -30,6 +30,7 @@
     "jquery-jsonp": "latest",
     "es5-shim": "latest",
     "json3": "latest",
+    "numeral": "latest",
     "sparkline": "latest"
   },
   "resolutions": {

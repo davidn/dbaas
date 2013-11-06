@@ -106,6 +106,7 @@ angular.module('ui.bootstrap.tooltipX', [ 'ui.bootstrap.position', 'ui.bootstrap
                         'placement="' + startSym + 'tt_placement' + endSym + '" ' +
                         'animation="tt_animation()" ' +
                         'is-open="tt_isOpen"' +
+                        'hide="Hide()"' +
                         '>' +
                         '</' + directiveName + '-popup>';
 

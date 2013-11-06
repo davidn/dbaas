@@ -95,12 +95,6 @@ class ProfitBrick(Cloud):
             dcExists = False
         return dcExists
 
-    def pausing(self, node):
-        return False
-
-    def resuming(self, node):
-        return False
-
     def reinstantiating(self, node):
         svr = self.pbp.getServer(node.instance_id)
         if svr and svr.provisioningState == 'AVAILABLE' and svr.cores == node.flavor.cpus and svr.ram == node.flavor.ram:
@@ -149,18 +143,6 @@ class ProfitBrick(Cloud):
             node.security_group = ""
         while node.shutting_down():
             sleep(15)
-
-    def pause(self, node):
-        return # Remove this line when shutdown can be orderly.
-        # NOTE!!! This does a HARD stop!
-        # The Profitbricks recommendation is to do an orderly shutdown on the Server
-        # and then once it has shutdown to do a stopServer() (to stop billing).
-        self.pbp.stopServer(node.instance_id)
-
-    def resume(self, node):
-        return # Remove this line when pause() is enabled
-        # No point in doing this until pause() works
-        self.pbp.startServer(node.instance_id)
 
 def provisioningStateAvailable(obj):
     if obj.provisioningState=='AVAILABLE':

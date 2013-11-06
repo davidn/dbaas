@@ -4,9 +4,8 @@ import re
 from logging import getLogger
 from time import sleep
 from django.conf import settings
-from django.contrib.sites.models import Site
 from .cloud import Cloud
-from api.utils import remove_trail_slash, retry
+from api.utils import retry
 
 import boto.ec2
 from boto.exception import EC2ResponseError
@@ -78,8 +77,7 @@ class EC2(Cloud):
             instance_type=node.flavor.code,
             block_device_map=self._create_block_device_map(node),
             security_groups=sgs,
-            user_data='#include\nhttps://' + Site.objects.get_current().domain + remove_trail_slash(
-                node.get_absolute_url()) + '/cloud_config/\n',
+            user_data=self.cloud_init(node),
         )
 
     def launch(self, node):
@@ -118,19 +116,12 @@ class EC2(Cloud):
     def shutting_down(self, node):
         return self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'shutting-down'
 
-    def pausing(self, node):
-        return self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'stopping'
-
-    def resuming(self, node):
-        return self.pending(node)
-
     def reinstantiating(self, node):
         return self.pending(node)
 
     def getIP(self, node):
         instance = self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0]
         return instance.ip_address
-
     def update(self, node, tags={}):
         instance = self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0]
         for k, v in tags.items():
@@ -149,16 +140,8 @@ class EC2(Cloud):
     def reinstantiate(self, node):
         # Note: this command stops the server and then restarts it as a new instance
         self.ec2.stop_instances([node.instance_id])
-        while node.pausing():
+        while self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'stopping':
             sleep(15)
         self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].modify_attribute('instanceType', node.flavor.code)
         self.ec2.start_instances([node.instance_id])
         logger.info("Reinstantiating the AWS Instance %s" % (node.dns_name))
-
-    def pause(self, node):
-        self.ec2.stop_instances([node.instance_id])
-
-    def resume(self, node):
-        self.ec2.start_instances([node.instance_id])
-
-

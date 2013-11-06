@@ -16,7 +16,7 @@ angular.module('geniedb').run(function ($templateCache) {
         return {
             restrict: 'EA',
             replace: true,
-            scope: { title: '@', content: '@', placement: '@', animation: '&', isOpen: '&' },
+            scope: { title: '@', content: '@', placement: '@', animation: '&', isOpen: '&', hide: '&' },
             templateUrl: 'template/popover/popover-template.html',
             link: function (scope, iElement) {
                 var content = angular.fromJson(scope.content),
@@ -30,6 +30,11 @@ angular.module('geniedb').run(function ($templateCache) {
                     }
                 });
                 iElement.find('div.popover-content').html($compile(template)(templateScope));
+            },
+            controller: function ($scope) {
+                $scope.Hide = function () {
+                    $scope.hide();
+                }
             }
         };
     })

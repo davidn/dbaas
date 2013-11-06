@@ -1,0 +1,6 @@
+compress
+/var/backup/mysqlbackup.sql {
+    dateext
+    dateformat -%Y%m%d.%s
+    rotate {{ pillar['dbaas_api']['cluster']['backup_count'] }}
+}

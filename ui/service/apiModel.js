@@ -13,6 +13,7 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
         {index: 2, code: 'installing_cf', label: 'Installing GenieDB CloudFabric', isAction: true},
         {index: 13, code: 'configuring_monitoring', label: 'Configuring performance monitor', isAction: true},
         {index: 14, code: 'configuring_dns', label: 'Configuring DNS', isAction: true},
+        {index: 15, code: 'configuring_node', label: 'Configuring node', isAction: true},
         {index: 3, code: 'running', label: 'running', isAction: false},
         {index: 4, code: 'paused', label: 'paused', isAction: false},
         {index: 5, code: 'pausing', label: 'pausing', isAction: true},
@@ -33,7 +34,7 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
         return msg;
     }
 
-    function isUniqueClusterLabel(clusterLabel){
+    function isUniqueClusterLabel(clusterLabel) {
         return _.findWhere(clusters, {label: clusterLabel}) === undefined;
     }
 
@@ -62,6 +63,17 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
                     node.cpu = data.cpu ? data.cpu : [0];
                     node.iops = {read: data.riops, write: data.wiops};
                 });
+
+                if (!node.backups) {
+                    node.backups = [];
+                    $http.get(node.url + '/backups/').success(function (data) {
+                        node.backups = data.reverse();
+                        node.backups.forEach(function (backup) {
+                            backup.size = numeral(backup.size).format('0.0b');
+                            backup.time = moment(backup.time).calendar();
+                        });
+                    });
+                }
             }
         });
         return data;
