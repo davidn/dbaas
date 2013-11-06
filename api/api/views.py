@@ -15,13 +15,11 @@ There are several aspects to the API, each with their own class (a viewset):
 """
 
 from __future__ import unicode_literals
-import re
-from time import sleep
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.mail import mail_admins
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.exceptions import ValidationError
 from rest_framework import viewsets, mixins, status, permissions
 from .models import Cluster, Node, Region, Provider, Flavor
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
