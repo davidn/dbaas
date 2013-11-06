@@ -25,7 +25,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from rest_framework import viewsets, mixins, status, permissions
 from .models import Cluster, Node, Region, Provider, Flavor
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
-from .controller import launch_cluster, reinstantiate_node, pause_node, resume_node, add_database
+from .controller import launch_cluster, reinstantiate_node, pause_node, resume_node, add_database, add_node
 from rest_framework.response import Response
 from rest_framework.decorators import action, link, api_view, permission_classes
 from django.http.response import HttpResponse
