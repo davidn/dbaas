@@ -712,7 +712,7 @@ class Node(models.Model):
         self.save()
 
     def refresh_salt(self):
-	        self.cluster.refresh_salt([self])
+        self.cluster.refresh_salt([self])
 
     def reinstantiate_sync(self, new_flavor):
         self.assert_state(Node.RUNNING)
