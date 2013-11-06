@@ -753,7 +753,7 @@ class Node(models.Model):
 
     def pause_async(self):
         self.assert_state(Node.PAUSING)
-        self.remove_dns()
+        self.refresh_salt()
         self.status = Node.PAUSED
         self.save()
 
