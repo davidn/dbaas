@@ -712,7 +712,7 @@ class Node(models.Model):
         self.save()
 
     def refresh_salt(self):
-	        self.cluster.refresh_salt([self])
+        self.cluster.refresh_salt([self])
 
     def reinstantiate_sync(self, new_flavor):
         self.assert_state(Node.RUNNING)
@@ -753,7 +753,7 @@ class Node(models.Model):
 
     def pause_async(self):
         self.assert_state(Node.PAUSING)
-        self.remove_dns()
+        self.refresh_salt()
         self.status = Node.PAUSED
         self.save()
 

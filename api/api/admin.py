@@ -20,6 +20,9 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from .controller import launch_cluster, pause_node, resume_node, reinstantiate_node, add_database
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 csrf_protect_m = method_decorator(csrf_protect)
 sensitive_post_parameters_m = method_decorator(sensitive_post_parameters())
@@ -89,7 +92,6 @@ class ClusterAdmin(SimpleHistoryAdmin):
 
 class NodeAdmin(SimpleHistoryAdmin):
     exclude = ('lbr_region',)
-    #actions = ('pause', 'resume', 'resize')
     actions = ('pause', 'resume')
 
     def pause(self, request, queryset):
@@ -100,10 +102,17 @@ class NodeAdmin(SimpleHistoryAdmin):
         for node in queryset:
             resume_node(node)
 
-    def resize(self, request, queryset):
-        for node in queryset:
-            new_flavor = node.flavor
-            reinstantiate_node(node, new_flavor)
+    def save_model(self, request, obj, form, change):
+        node = Node.objects.get(pk=obj.pk)
+        # Persist everything but the flavor,
+        # the flavor will be modified as a result of resizing the Node.
+        new_flavor = obj.flavor
+        obj.flavor = node.flavor
+        obj.save()
+        # Apply the Node resizing if the flavor changed.
+        if new_flavor.code != node.flavor.code:
+            logger.info("Resizing node %s from %s to %s" % (str(obj), obj.flavor.name, new_flavor.name))
+            reinstantiate_node(obj, new_flavor)
 
 
 class RegionInline(admin.StackedInline):
