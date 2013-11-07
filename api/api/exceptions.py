@@ -5,6 +5,9 @@ import collections
 class BackendNotReady(Exception):
     pass
 
+class DiskNotAvailableException(Exception):
+    pass
+
 SaltFailure = collections.namedtuple('SaltFailure', ['dns_name','forumla_name','formula_error'])
 
 class SaltError(Exception):

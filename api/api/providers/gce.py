@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from logging import getLogger
 from time import sleep
 from django.conf import settings
+from api.exceptions import DiskNotAvailableException
 import httplib2
 from .cloud import Cloud
 
@@ -167,11 +168,15 @@ class GoogleComputeEngine(Cloud):
             # Ensure that the persistent disk is ready to use
             #
             sleep(2)
+            diskIsReady = False
             for i in xrange(GoogleComputeEngine.MAX_DELAY_RETRIES):
                 disks = self._getDiskObjects(self.gce["diskName"])
                 if disks and disks[0]['status'] == 'READY':
+                    diskIsReady = True
                     break
                 sleep(GoogleComputeEngine.RETRY_DELAY)
+            if not diskIsReady:
+                raise DiskNotAvailableException
 
         return response
 
