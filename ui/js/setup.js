@@ -1,4 +1,4 @@
-angular.module('geniedb', ['ui.keypress', 'jaydata', 'ui.bootstrap.tooltipX', 'ngRoute', 'ngSanitize', 'ngResource', 'ngStorage', 'ui.select2', 'ui.bootstrap', 'angulartics', 'angulartics.google.analytics', 'messageBox'])
+angular.module('geniedb', ['ui.keypress', 'ui.bootstrap.tooltipX', 'ngRoute', 'ngSanitize', 'ngResource', 'ngStorage', 'ui.select2', 'ui.bootstrap', 'angulartics', 'angulartics.google.analytics', 'messageBox'])
 
     .config(function ($routeProvider, $httpProvider, $compileProvider) {
 
@@ -15,7 +15,7 @@ angular.module('geniedb', ['ui.keypress', 'jaydata', 'ui.bootstrap.tooltipX', 'n
             when('/quickstart', {templateUrl: 'partial/quickstart/quickstart.html'}).
             when('/thankyou', {templateUrl: 'partial/thanks/thanks.html'}).
             when('/try', {templateUrl: 'partial/try/try.html'}).
-            when('drawing',{templateUrl: 'partial/drawing/drawing.html'}).
+            when('/drawing',{templateUrl: 'partial/drawing/drawing.html'}).
 	/* Add New Routes Above */
             otherwise({redirectTo: '/'});
 
