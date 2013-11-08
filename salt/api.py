@@ -134,14 +134,16 @@ def ext_pillar(minion_id,
 
         models = importlib.import_module(django_app + '.models')
         from django.conf import settings
+        from django.db.transaction import commit_on_success
         r = re.match(settings.CLUSTER_NID_TEMPLATE, __grains__['id'])
-        node = models.Node.objects.get(cluster_id=r.group('cluster'), nid=r.group('nid'))
-        return {pillar_name: {
-            'node': node_dict(node),
-            'cluster': cluster_dict(node.cluster),
-            'settings': {
-                'zabbix_server':settings.ZABBIX_SERVER,
-        }}}
+        with commit_on_success():
+            node = models.Node.objects.get(cluster_id=r.group('cluster'), nid=r.group('nid'))
+            return {pillar_name: {
+                'node': node_dict(node),
+                'cluster': cluster_dict(node.cluster),
+                'settings': {
+                    'zabbix_server':settings.ZABBIX_SERVER,
+            }}}
     except ImportError, e:
         log.error('Failed to import library: {}'.format(e.message))
         return {}
