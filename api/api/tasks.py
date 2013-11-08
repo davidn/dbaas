@@ -89,6 +89,7 @@ def cluster_launch_s3(cluster):
 @task(base=ClusterTask)
 def cluster_launch_zabbix(cluster):
     Cluster.objects.get(pk=cluster.pk).launch_async_zabbix()
+@task(base=ClusterTask)
 def cluster_launch_salt(cluster):
     try:
         Cluster.objects.get(pk=cluster.pk).launch_async_salt()
