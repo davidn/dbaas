@@ -34,7 +34,7 @@ angular.module('geniedb').run(function ($templateCache) {
             controller: function ($scope) {
                 $scope.Hide = function () {
                     $scope.hide();
-                }
+                };
             }
         };
     })
