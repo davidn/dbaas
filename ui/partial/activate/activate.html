@@ -18,6 +18,9 @@
 					<input type="password" class="form-control" ng-model="verifyPassword" placeholder="Verify Password" pw-check="pw1" required ng-class="{'form-invalid': showValidationMessages && !activateForm.passwd.$valid}"/>
 					<span ng-show="verifyPassword.$error.pwmatch">Passwords don't match.</span>
 				</p>
+				<p>
+					<input id="promo" class="form-control" ng-model="promo" placeholder="Promo Code" />
+				</p>
 			</div>
 		</div>
 		<div class="modal-footer" ng-hide="!email">

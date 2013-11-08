@@ -130,7 +130,8 @@
 <script src="partial/main/main.js"></script>
 <script src="partial/navigation/navigation.js"></script>
 <script src="partial/welcome/welcome.js"></script>
-<!-- Add New Partial JS Above -->
+<script src="partial/drawing/drawing.js"></script>
+  <!-- Add New Partial JS Above -->
 
 
 <script type="text/javascript" data-remove="exclude" data-build="exclude">
@@ -169,8 +170,6 @@
 
 	UserVoice.push(['addTrigger', { mode: 'contact', trigger_position: 'bottom-right' }]);
 
-	UserVoice.push(['autoprompt', {}]);
-
 	//  SnapEngage
 	(function () {
 		var se = document.createElement('script');
@@ -181,28 +180,9 @@
 		se.onload = se.onreadystatechange = function () {
 			if (!done && (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete')) {
 				done = true;
-				SnapEngage.setUserEmail(window.userEmail);
 				SnapEngage.setCallback('Open', function (status) {
 					SnapEngage.setUserEmail(window.userEmail);
 				});
-
-				var tid;
-
-				function checkChatStatus() {
-					SnapEngage.getAgentStatusAsync(function (online) {
-						if (online) {
-							SnapEngage.showButton();
-						}
-						else {
-							SnapEngage.hideButton();
-						}
-					});
-					// Recursive call.
-					clearTimeout(tid);
-					tid = setTimeout(checkChatStatus, 1 * 60 * 1000);
-				}
-
-				checkChatStatus();
 
 			}
 		};

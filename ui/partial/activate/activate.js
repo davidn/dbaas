@@ -7,18 +7,22 @@ angular.module('geniedb').controller('ActivateCtrl', function ($scope, $location
     }, function (err) {
         $scope.statusText = "Activation code is not valid";
         console.log(err);
-        growl.error({body: 'Activation code is not valid'});
+        growl.error({body: "Activation code is not valid"});
     });
 
     $scope.activate = function () {
         User.activate($routeParams.activationHash, $scope.password).$then(function (response) {
-            growl.success({body: 'Account activated!'});
+            growl.success({body: "Account activated!"});
             User.login($scope.email, $scope.password).$then(function () {
-                $location.path("/quickstart");
+                if ($scope.promo.toUpperCase() === 'reinvent'){
+                    $location.path("/drawing");
+                } else {
+                    $location.path("/quickstart");
+                }
             });
         }, function (err) {
             console.log(err);
-            growl.error({body: 'Unable to activate account'});
+            growl.error({body: "Unable to activate account"});
         });
     };
 });
