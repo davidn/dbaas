@@ -30,6 +30,7 @@ def launch_cluster(cluster):
          | group([tasks.node_launch_zabbix.si(node) for node in install_nodes] \
                 +[tasks.region_launch.si(lbr_region) for lbr_region in lbr_regions]) \
          | tasks.null_task.si() \
+         | tasks.cluster_launch_salt.si(cluster) \
          | group([tasks.node_launch_complete.si(node) for node in install_nodes]) \
          | tasks.launch_email.si(cluster, 'confirmation_email') \
          | tasks.cluster_launch_complete.si(cluster)

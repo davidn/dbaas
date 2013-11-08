@@ -58,12 +58,7 @@ def node_launch_dns(node):
         node_launch_dns.retry(exc=e, countdown=15)
 @task(base=NodeTask, max_retries=10)
 def node_launch_salt(node):
-    try:
-        Node.objects.get(pk=node.pk).launch_async_salt()
-    except SaltError as e:
-        if not e.missing:
-            raise
-        node_launch_salt.retry(exc=e, countdown=15)
+    Node.objects.get(pk=node.pk).launch_async_salt()
 @task(base=NodeTask)
 def node_launch_zabbix(node):
     Node.objects.get(pk=node.pk).launch_async_zabbix()
@@ -94,7 +89,13 @@ def cluster_launch_s3(cluster):
 @task(base=ClusterTask)
 def cluster_launch_zabbix(cluster):
     Cluster.objects.get(pk=cluster.pk).launch_async_zabbix()
-
+def cluster_launch_salt(cluster):
+    try:
+        Cluster.objects.get(pk=cluster.pk).launch_async_salt()
+    except SaltError as e:
+        if not e.missing:
+            raise
+        cluster_launch_salt.retry(exc=e, countdown=15)
 @task(base=ClusterTask)
 def cluster_launch_complete(cluster):
     Cluster.objects.get(pk=cluster.pk).launch_complete()
