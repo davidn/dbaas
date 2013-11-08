@@ -243,7 +243,7 @@
             "provider": 2,
             "code": "lon",
             "name": "Rackspace London",
-            "image": "d2ed78c9-1817-4530-a929-1a7a0f80b58c",
+            "image": "c605e3cc-016b-4f61-b1b2-304f052a66e6",
             "lbr_region": "eu-west-1",
             "key_name": "dbaas",
             "security_group": "",
