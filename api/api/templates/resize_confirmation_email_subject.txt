@@ -1,1 +1,1 @@
-Your GenieDB Cluster is ready!
+Your GenieDB Node has been resized!
