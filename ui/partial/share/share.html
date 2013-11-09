@@ -1,0 +1,22 @@
+<div class="container modal-dialog smaxll-modal" ng-controller="ShareCtrl">
+	<div class="modal-content">
+		<div class="modal-header">Thanks for signing up!</div>
+		<div class="modal-body">
+			<div>
+				<p ng-if="showDrawing" class="lead">
+					You're now entered in our iPad Air 64GB drawing! Improve your chances at winning by tweeting about #GenieDB and by following us on twitter @GenieDB! </p>
+				<p>
+				<p ng-if="!showDrawing" class="lead">
+					Keep up to date with the latest from GenieDB by following us on twitter @GenieDB! </p>
+				<p>
+					<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://geniedb.com" data-text="Just Signed up for a geo distributed cluster at " data-size="large" data-count="none" data-dnt="true">Tweet</a>
+					<a href="https://twitter.com/geniedb" class="twitter-follow-button pull-right" data-show-count="false" data-size="large">Follow @GenieDB</a>
+				</p>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-success" ng-click="done()">DONE</button>
+		</div>
+	</div>
+
+</div>

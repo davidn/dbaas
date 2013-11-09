@@ -14,11 +14,7 @@ angular.module('geniedb').controller('ActivateCtrl', function ($scope, $location
         User.activate($routeParams.activationHash, $scope.password).$then(function (response) {
             growl.success({body: "Account activated!"});
             User.login($scope.email, $scope.password).$then(function () {
-                if ($scope.promo.toUpperCase() === 'reinvent'){
-                    $location.path("/drawing");
-                } else {
-                    $location.path("/quickstart");
-                }
+                $location.path("/drawing/" + $scope.promo);
             });
         }, function (err) {
             console.log(err);

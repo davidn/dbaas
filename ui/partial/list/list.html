@@ -1,6 +1,5 @@
 <div ng-controller="ListCtrl">
 	<script id="node-detail.html" type="text/ng-template">
-		<!--suppress CheckValidXmlInScriptTagBody -->
 		<div class="row">
 			<div class="col-lg-1 info-popover-label">DNS</div>
 			<div class="col-lg-11">{{node.dns_name}}</div>
@@ -87,7 +86,7 @@
 				</tr>
 				<tr ng-if="cluster.nodes.length < 1">
 					<td colspan="8" style="line-height: 6em;">Your cluster currently has no nodes.
-						<button class="btn add-node btn-success btn-small" ng-click="addNode({{cluster}})">ADD NODE</button>
+						<button class="btn add-node btn-success btn-small" ng-click="addNode(cluster)">ADD NODE</button>
 					</td>
 				</tr>
 				</tbody>
