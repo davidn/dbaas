@@ -23,6 +23,9 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
         {index: 9, code: 'error', label: 'An error occurred', isAction: false}
     ];
 
+    var allowedNodeStatesForAddNode = [0, 3, 4, 5, 7, 8];
+
+
     function getLaunchMessage(providerList) {
         var providers = _.uniq(providerList);
         var launchTime = _.max(providers,function (provider) {
@@ -45,6 +48,7 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
     function hydrateNodeData(clusterIndex, data) {
         data.maxStatus = 0;
         data.hasRunning = false;
+        data.canAddNode = true;
         data.forEach(function (node, i) {
             node.label = node.label ? node.label : node.region ? node.region : 'Node' + i;
             node.$flavor = _.findWhere(flavors, {code: node.flavor});
@@ -58,6 +62,7 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
             node.isAction = status.isAction;
 
             data.hasRunning = data.hasRunning || node.isRunning;
+            data.canAddNode = data.canAddNode && (allowedNodeStatesForAddNode.indexOf(status.index) >= 0);
             if (node.isRunning) {
                 $http.get(node.url + '/stats/').success(function (data) {
                     node.cpu = data.cpu ? data.cpu : [0];
@@ -101,6 +106,7 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
             cluster.hasRunning = cluster.nodes.hasRunning;
             cluster.isRunning = cluster.status_code === 6;
             cluster.label = cluster.label || cluster.dbname;
+            cluster.canAddNode = cluster.status_code === 0 || (cluster.status_code === 6 && cluster.nodes.canAddNode);
         });
         return data;
     }
