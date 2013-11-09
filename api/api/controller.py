@@ -68,7 +68,7 @@ def add_nodes(nodes):
          | group([tasks.node_launch_dns.si(node) for node in nodes]) \
          | tasks.null_task.si() \
          | group([tasks.node_launch_salt.si(node) for node in nodes]) \
-         | tasks.cluster_refresh_salt.si(cluster, nodes) \
+         | tasks.cluster_add_node_salt.si(cluster, nodes) \
          | group([tasks.node_launch_zabbix.si(node) for node in nodes] \
                 +[tasks.region_launch.si(lbr_region) for lbr_region in set(node.lbr_region for node in nodes)]) \
          | tasks.null_task.si() \

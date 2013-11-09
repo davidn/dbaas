@@ -121,6 +121,15 @@ def node_reinstantiate_complete(node):
 def cluster_refresh_salt(cluster, *args):
     Cluster.objects.get(pk=cluster.pk).refresh_salt(*args)
 
+@task(base=ClusterTask, max_retries=10)
+def cluster_add_node_salt(cluster, *args):
+    try:
+        Cluster.objects.get(pk=cluster.pk).refresh_salt(*args)
+    except SaltError as e:
+        if not e.missing:
+            raise
+        cluster_add_node_salt.retry(exc=e, countdown=15)
+
 @task()
 def launch_email(cluster, email_message='confirmation_email'):
     nodes = cluster.nodes.all()
