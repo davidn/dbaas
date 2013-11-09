@@ -63,7 +63,7 @@ def node_launch_salt(node):
     except SaltError as e:
         if not e.missing:
             raise
-        node_launch_salt.retry(exc=e, coundown=15)
+        node_launch_salt.retry(exc=e, countdown=15)
 @task(base=NodeTask)
 def node_launch_zabbix(node):
     Node.objects.get(pk=node.pk).launch_async_zabbix()
