@@ -6,6 +6,7 @@ angular.module('geniedb').controller('ShareCtrl', function ($scope, $location, $
         $location.path("/quickstart");
     };
 
+
     // Taken from the Twitter Embed code
     !function (d, s, id) {
         var js, fjs = d.getElementsByTagName(s)[0], p = /^http:/.test(d.location) ? 'http' : 'https';
