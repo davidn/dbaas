@@ -245,9 +245,6 @@ class Cluster(models.Model):
             logger.info("%s: Creating Zabbix HostGroup %s", self, self.user.email)
             hostGroups = [{'groupid':gid} for gid in z.hostgroup.create(name=self.user.email)['groupids']]
 
-    def launch_async_salt(self):
-        self.refresh_salt(self.nodes.filter(status=Node.CONFIGURING_NODE))
-
     def launch_complete(self):
         self.status = Cluster.RUNNING
         self.save()
@@ -702,6 +699,7 @@ class Node(models.Model):
     def launch_async_salt(self):
         self.status = self.CONFIGURING_NODE
         self.save()
+        self.refresh_salt()
 
     def launch_async_zabbix(self):
         self.status = self.CONFIGURING_MONITORING

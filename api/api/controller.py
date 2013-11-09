@@ -27,7 +27,6 @@ def launch_cluster(cluster):
          | tasks.cluster_launch_zabbix.si(cluster) \
          | group([tasks.node_launch_salt.si(node) for node in install_nodes]) \
          | tasks.null_task.si() \
-         | tasks.cluster_launch_salt.si(cluster) \
          | group([tasks.node_launch_zabbix.si(node) for node in install_nodes] \
                 +[tasks.region_launch.si(lbr_region) for lbr_region in lbr_regions]) \
          | tasks.null_task.si() \
@@ -68,7 +67,7 @@ def add_nodes(nodes):
          | group([tasks.node_launch_dns.si(node) for node in nodes]) \
          | tasks.null_task.si() \
          | group([tasks.node_launch_salt.si(node) for node in nodes]) \
-         | tasks.cluster_add_node_salt.si(cluster, nodes) \
+         | tasks.null_task.si() \
          | group([tasks.node_launch_zabbix.si(node) for node in nodes] \
                 +[tasks.region_launch.si(lbr_region) for lbr_region in set(node.lbr_region for node in nodes)]) \
          | tasks.null_task.si() \
