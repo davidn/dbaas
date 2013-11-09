@@ -56,7 +56,7 @@ def node_launch_dns(node):
         Node.objects.get(pk=node.pk).launch_async_dns()
     except DNSServerError as e:
         node_launch_dns.retry(exc=e, countdown=15)
-@task(base=NodeTask, max_retries=10)
+@task(base=NodeTask)
 def node_launch_salt(node):
     Node.objects.get(pk=node.pk).launch_async_salt()
 @task(base=NodeTask)
@@ -89,7 +89,7 @@ def cluster_launch_s3(cluster):
 @task(base=ClusterTask)
 def cluster_launch_zabbix(cluster):
     Cluster.objects.get(pk=cluster.pk).launch_async_zabbix()
-@task(base=ClusterTask)
+@task(base=ClusterTask, max_retries=10)
 def cluster_launch_salt(cluster):
     try:
         Cluster.objects.get(pk=cluster.pk).launch_async_salt()
