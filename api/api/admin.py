@@ -35,7 +35,8 @@ class NodeInline(admin.StackedInline):
 
 class ClusterAdmin(SimpleHistoryAdmin):
     inlines = [NodeInline]
-    list_display = ('__unicode__', 'user', 'cluster_size')
+    list_display = ('__unicode__', 'user', 'cluster_size','status')
+    list_filter = ('user', 'status')
     actions = ('launch',)
 
     def get_urls(self):
@@ -93,6 +94,11 @@ class ClusterAdmin(SimpleHistoryAdmin):
 class NodeAdmin(SimpleHistoryAdmin):
     exclude = ('lbr_region',)
     actions = ('pause', 'resume')
+    list_display = ('__unicode__', 'cluster_user', 'region', 'flavor','status','ip')
+    list_filter = ('region', 'cluster', 'status')
+
+    def cluster_user(self, node):
+        return node.cluster.user
 
     def pause(self, request, queryset):
         for node in queryset:
