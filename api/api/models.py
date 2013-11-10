@@ -18,21 +18,21 @@ from django.db import models
 from django.dispatch.dispatcher import receiver
 from django.conf import settings
 from django.contrib.sites.models import Site
-from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception, catch_dns_exists, catch_dns_not_found
-from boto import connect_route53, connect_s3, connect_iam
-from .uuid_field import UUIDField
-import providers
-from .crypto import KeyPair, SslPair, CertificateAuthority
-from .utils import retry, split_every, cron_validator
 from django.core.validators import MinValueValidator, MaxValueValidator, MaxLengthValidator
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
 from django.utils.translation import ugettext as _
+from boto import connect_route53, connect_s3, connect_iam
 from simple_history.models import HistoricalRecords
 from pyzabbix import ZabbixAPI
-from salt.client import LocalClient
-from api.exceptions import BackendNotReady, check_for_salt_error
+from salt_jobs.models import send_salt_cmd, get_highstate_result
+from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception, catch_dns_exists, catch_dns_not_found
+from .uuid_field import UUIDField
+from .crypto import KeyPair, SslPair, CertificateAuthority
+from .utils import retry, split_every, cron_validator
+from .exceptions import BackendNotReady
+import providers
 
 
 logger = getLogger(__name__)
@@ -249,16 +249,17 @@ class Cluster(models.Model):
         self.status = Cluster.RUNNING
         self.save()
 
+    def add_database_sync(self, dbname):
+        self.dbname += ','+dbname
+        self.save()
+
     def refresh_salt(self, qs=None):
         if qs is None:
             qs = self.nodes.filter(status=Node.RUNNING)
-        client = LocalClient()
-        result = client.cmd([n.dns_name for n in qs], 'test.ping',
-                            expr_form='list', timeout=settings.SALT_TIMEOUT)
-        check_for_salt_error(result, [n.dns_name for n in qs])
-        result = client.cmd([n.dns_name for n in qs], 'state.highstate',
-                            expr_form='list', timeout=settings.SALT_TIMEOUT)
-        check_for_salt_error(result, [n.dns_name for n in qs])
+        jid = send_salt_cmd([n.dns_name for n in qs], 'state.highstate')
+        for n in qs:
+            n.last_salt_jid = jid
+            n.save()
 
     def terminate(self):
         """Clean up the S3 bucket and IAM user associated with this cluster."""
@@ -478,6 +479,7 @@ class Node(models.Model):
     iops = models.IntegerField("Provisioned IOPS", default=None, blank=True, null=True)
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
     tinc_private_key = models.TextField("Tinc Private Key", default=gen_private_key)
+    last_salt_jid = models.CharField(max_length=255, blank=True, default="")
 
     history = HistoricalRecords()
 
@@ -702,7 +704,7 @@ class Node(models.Model):
     def launch_async_salt(self):
         self.status = self.CONFIGURING_NODE
         self.save()
-        self.refresh_salt()
+        get_highstate_result(id=self.dns_name)
 
     def launch_async_zabbix(self):
         self.status = self.CONFIGURING_MONITORING
@@ -715,6 +717,9 @@ class Node(models.Model):
 
     def refresh_salt(self):
         self.cluster.refresh_salt([self])
+
+    def refresh_salt_complete(self):
+        get_highstate_result(id=self.dns_name, jid=self.last_salt_jid)
 
     def reinstantiate_sync(self, new_flavor):
         self.assert_state(Node.RUNNING)
@@ -752,10 +757,12 @@ class Node(models.Model):
         self.assert_state(Node.RUNNING)
         self.status = Node.PAUSING
         self.save()
-
-    def pause_async(self):
+    def pause_async_salt(self):
         self.assert_state(Node.PAUSING)
         self.refresh_salt()
+    def pause_complete(self):
+        self.assert_state(Node.PAUSING)
+        self.refresh_salt_complete()
         self.status = Node.PAUSED
         self.save()
 
@@ -763,9 +770,12 @@ class Node(models.Model):
         self.assert_state(Node.PAUSED)
         self.status = Node.RESUMING
         self.save()
-    def resume_async(self):
+    def resume_async_salt(self):
         self.assert_state(Node.RESUMING)
         self.refresh_salt()
+    def resume_complete(self):
+        self.assert_state(Node.RESUMING)
+        self.refresh_salt_complete()
         self.status = Node.RUNNING
         self.save()
 

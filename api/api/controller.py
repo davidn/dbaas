@@ -45,16 +45,21 @@ def reinstantiate_node(node, flavor):
 
 def pause_node(node):
     node.pause_sync()
-    return tasks.node_pause.delay(node)
+    task = tasks.node_pause_salt.si(node) \
+         | tasks.node_pause_complete.si(node)
+    return task.delay()
 
 def resume_node(node):
     node.resume_sync()
-    return tasks.node_resume.delay(node)
+    task = tasks.node_resume_salt.si(node) \
+         | tasks.node_resume_complete.si(node)
+    return task.delay()
 
 def add_database(cluster, dbname):
-    cluster.dbname += ','+dbname
-    cluster.save()
-    cluster.refresh_salt()
+    cluster.add_database_sync()
+    task = tasks.cluster_refresh_salt.si(cluster) \
+         | group([tasks.node_refresh_complete.si(node) for node in cluster.nodes.filter(status=Node.RUNNING)])
+    task.delay()
 
 def add_nodes(nodes):
     for node in nodes:
@@ -72,5 +77,7 @@ def add_nodes(nodes):
                 +[tasks.region_launch.si(lbr_region) for lbr_region in set(node.lbr_region for node in nodes)]) \
          | tasks.null_task.si() \
          | tasks.cluster_refresh_salt.si(cluster) \
+         | group([tasks.node_refresh_complete.si(node) for node in cluster.nodes.filter(status=Node.RUNNING)]) \
+         | tasks.null_task.si() \
          | group([tasks.node_launch_complete.si(node) for node in nodes])
     return task.delay()

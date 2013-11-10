@@ -1,17 +1,18 @@
 #!/usr/bin/python
 
 from __future__ import unicode_literals
-from django.conf import settings
-from logging import getLogger
-from celery.task import Task, task
-from .models import Node, Cluster
 import datetime
+from logging import getLogger
+from django.conf import settings
 from django.dispatch.dispatcher import receiver
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import get_user_model
-from api.exceptions import BackendNotReady, SaltError
 from boto.route53.exception import DNSServerError
 from boto.exception import BotoClientError, BotoServerError
+from celery.task import Task, task
+from .models import Node, Cluster
+from .exceptions import BackendNotReady
 
 logger = getLogger(__name__)
 
@@ -56,13 +57,11 @@ def node_launch_dns(node):
         Node.objects.get(pk=node.pk).launch_async_dns()
     except DNSServerError as e:
         node_launch_dns.retry(exc=e, countdown=15)
-@task(base=NodeTask, max_retries=10)
+@task(base=NodeTask, max_retries=30)
 def node_launch_salt(node):
     try:
         Node.objects.get(pk=node.pk).launch_async_salt()
-    except SaltError as e:
-        if not e.missing:
-            raise
+    except ObjectDoesNotExist as e:
         node_launch_salt.retry(exc=e, countdown=15)
 @task(base=NodeTask)
 def node_launch_zabbix(node):
@@ -72,11 +71,23 @@ def node_launch_complete(node):
     Node.objects.get(pk=node.pk).launch_complete()
 
 @task(base=NodeTask)
-def node_pause(node):
-    Node.objects.get(pk=node.pk).pause_async()
+def node_pause_salt(node):
+    Node.objects.get(pk=node.pk).pause_async_salt()
 @task(base=NodeTask)
-def node_resume(node):
-    Node.objects.get(pk=node.pk).resume_async()
+def node_pause_complete(node):
+    try:
+        Node.objects.get(pk=node.pk).pause_complete()
+    except ObjectDoesNotExist, e:
+        node_resume_complete.retry(exc=e, countdown=15)
+@task(base=NodeTask)
+def node_resume_salt(node):
+    Node.objects.get(pk=node.pk).resume_async_salt()
+@task(base=NodeTask, max_retries=30)
+def node_resume_complete(node):
+    try:
+        Node.objects.get(pk=node.pk).resume_complete
+    except ObjectDoesNotExist, e:
+        node_resume_complete.retry(exc=e, countdown=15)
 
 @task(max_retries=10)
 def region_launch(region):
@@ -117,6 +128,9 @@ def node_reinstantiate_complete(node):
 @task(base=ClusterTask)
 def cluster_refresh_salt(cluster, *args):
     Cluster.objects.get(pk=cluster.pk).refresh_salt(*args)
+@task(base=NodeTask, max_retries=30)
+def node_refresh_complete(node):
+    Node.objects.get(pk=node.pk).refresh_salt_complete()
 
 @task()
 def launch_email(cluster, email_message='confirmation_email'):
