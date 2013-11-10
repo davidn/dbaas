@@ -25,16 +25,21 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
 
     var allowedNodeStatesForAddNode = [0, 3, 4, 5, 7, 8];
 
+    function serialComma(arr) {
+        if (arr.length <= 2){
+            return arr.join(' and ');
+        }
+        arr[arr.length-1] = 'and ' + arr[arr.length-1];
+        return arr.join(', ');
+    }
 
     function getLaunchMessage(providerList) {
         var providers = _.uniq(providerList);
         var launchTime = _.max(providers,function (provider) {
             return provider.launchTime;
         }).launchTime;
-        var msg = 'We are now spinning up the cluster you requested.  You will receive an email with <strong>connection instructions</strong> when the cluster is available.  <br /><br />In general ' +
-            _.pluck(providers, 'name').join(' and ') + ' take' + (providers.length > 1 ? '' : 's') + ' about ' + launchTime + ' minutes to provision and launch their nodes.';
-
-        return msg;
+        return 'We are now spinning up the cluster you requested.  You will receive an email with <strong>connection instructions</strong> when the cluster is available.  <br /><br />In general ' +
+            serialComma(_.pluck(providers, 'name')) + ' take' + (providers.length > 1 ? '' : 's') + ' about ' + launchTime + ' minutes to provision and launch their nodes.';
     }
 
     function isUniqueClusterLabel(clusterLabel) {
@@ -45,7 +50,7 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
         return _.findWhere(statuses, {label: statusLabel});
     }
 
-    function hydrateNodeData(clusterIndex, data) {
+    function hydrateNodeData(data) {
         data.maxStatus = 0;
         data.hasRunning = false;
         data.canAddNode = true;
@@ -89,8 +94,8 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
     }
 
     function hydrateClusterData(data) {
-        data.forEach(function (cluster, i) {
-            hydrateNodeData(i, cluster.nodes);
+        data.forEach(function (cluster) {
+            hydrateNodeData(cluster.nodes);
             if (cluster.ca_cert !== '') {
                 cluster.hasKeys = true;
                 cluster.ca_cert_url = formatDataUrl(cluster.ca_cert);

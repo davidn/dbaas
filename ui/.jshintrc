@@ -21,6 +21,7 @@
         "toastr": true,
         "UserVoice": true,
         "numeral": true,
+        "twttr": true,
         "SnapEngage": true
     }
 }
