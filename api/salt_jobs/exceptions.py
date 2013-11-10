@@ -18,7 +18,7 @@ def check_highstate_error(result):
                      result.iteritems() if not salt_output['result']]
     elif isinstance(result, collections.Sequence):
         failures = [('', sls_failure) for sls_failure in result]
-    else
+    else:
         raise TypeError('Expected Mapping or Sequence got %s', result.__class__)
     if failures:
         raise SaltError(failures=failures)
