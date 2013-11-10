@@ -253,6 +253,9 @@ class Cluster(models.Model):
         if qs is None:
             qs = self.nodes.filter(status=Node.RUNNING)
         client = LocalClient()
+        result = client.cmd([n.dns_name for n in qs], 'test.ping',
+                            expr_form='list', timeout=settings.SALT_TIMEOUT)
+        check_for_salt_error(result, [n.dns_name for n in qs])
         result = client.cmd([n.dns_name for n in qs], 'state.highstate',
                             expr_form='list', timeout=settings.SALT_TIMEOUT)
         check_for_salt_error(result, [n.dns_name for n in qs])
