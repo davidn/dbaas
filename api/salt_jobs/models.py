@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from django.db import models
+from south.modelsinspector import add_introspection_rules
 from salt.client import LocalClient
 from .exceptions import check_highstate_error
 
@@ -19,6 +20,7 @@ class MediumText(models.TextField):
             return 'mediumtext'
         else:
             return super(MediumText, self).db_type(connection)
+add_introspection_rules([], ["^salt_jobs.models.MediumText"])
 
 class SaltJob(models.Model):
     jid = models.CharField(max_length=255, primary_key=True)
