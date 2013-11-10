@@ -8,7 +8,7 @@ angular.module('geniedb').controller('ShareCtrl', function ($scope, $location, $
 
 
     // Taken from the Twitter Embed code
-    !function (d, s, id) {
+    function twitterLoader(d, s, id) {
         var js, fjs = d.getElementsByTagName(s)[0], p = /^http:/.test(d.location) ? 'http' : 'https';
         if (!d.getElementById(id)) {
             js = d.createElement(s);
@@ -16,7 +16,9 @@ angular.module('geniedb').controller('ShareCtrl', function ($scope, $location, $
             js.src = p + '://platform.twitter.com/widgets.js';
             fjs.parentNode.insertBefore(js, fjs);
         }
-    }(document, 'script', 'twitter-wjs');
+    }
+
+    twitterLoader(document, 'script', 'twitter-wjs');
 
 
     // Re-render buttons
