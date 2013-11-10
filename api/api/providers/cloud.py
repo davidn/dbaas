@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from logging import getLogger
 from textwrap import dedent
 from django.conf import settings
+from django.db import connection
 
 logger = getLogger(__name__)
 
@@ -42,6 +43,17 @@ class Cloud(object):
     def cloud_init(self, node):
         return dedent("""\
             #!/bin/sh
-            sed -i 's/#master: salt/master: {salt_master}/' /etc/salt/minion
-            sed -i 's/#id:/id: {dns_name}/' /etc/salt/minion
-            """.format(dns_name=node.dns_name, salt_master=settings.SALT_MASTER))
+            cat >>/etc/salt/minion <<END
+            master: {salt_master}
+            id: {dns_name}
+            mysql.host: '{salt_master}'
+            mysql.port: 3306
+            mysql.user: '{salt_minion_sql_user}'
+            mysql.pass: '{salt_minion_sql_pass}'
+            mysql.db: '{mysql_db}'
+            END
+            """.format(dns_name=node.dns_name,
+                       salt_master=settings.SALT_MASTER,
+                       mysql_db=getattr(settings, 'SALT_MINION_SQL_DB', connection.settings_dict['NAME']),
+                       salt_minion_sql_user=getattr(settings, 'SALT_MINION_SQL_USER', connection.settings_dict['USER']),
+                       salt_minion_sql_pass=getattr(settings, 'SALT_MINION_SQL_PASSWORD', connection.settings_dict['PASSWORD'])))

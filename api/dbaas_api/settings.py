@@ -30,6 +30,9 @@ ZABBIX_PASSWORD = ""
 
 SALT_MASTER="salt.example.com"
 SALT_IPC_PATH='/var/run/salt/master'
+# These should only have INSERT perms on the salt_returns table.
+SALT_MINION_SQL_USER=''
+SALT_MINION_SQL_PASSWORD=''
 
 AWS_ACCESS_KEY = ""
 AWS_SECRET_KEY = ""
