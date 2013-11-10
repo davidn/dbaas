@@ -190,6 +190,7 @@ INSTALLED_APPS = (
     'registration',
     'rest_registration',
     'simple_history',
+    'salt_jobs',
     'api'
 )
 
