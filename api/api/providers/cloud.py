@@ -32,8 +32,11 @@ class Cloud(object):
     def terminate(self, node):
         pass
 
+    def reinstantiate_setup(self, node):
+        pass
+
     def reinstantiate(self, node):
-        # Note: this command reboots the server as a new instance
+        # Note: this command can be re-tried
         pass
 
     def reinstantiation_complete(self, node):

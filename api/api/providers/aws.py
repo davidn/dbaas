@@ -137,17 +137,18 @@ class EC2(Cloud):
             logger.debug("%s: terminating security group %s", node, node.security_group)
             self.ec2.delete_security_group(group_id=node.security_group)
 
-    def reinstantiate(self, node):
+    def reinstantiate_setup(self, node):
         # Note: this command stops the server and then restarts it as a new instance
         self.ec2.stop_instances([node.instance_id])
         while self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'stopping':
             sleep(15)
         self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].modify_attribute('instanceType', node.flavor.code)
-        while True:
-            try:
-                self.ec2.start_instances([node.instance_id])
-                break
-            except:
-                logger.warning("Error attempting to reinstantiate the AWS Instance %s to %s" % (node.dns_name, str(node.flavor.code)))
-                sleep(15)
+
+    def reinstantiate(self, node):
+        try:
+            self.ec2.start_instances([node.instance_id])
+        except:
+            logger.error("resizing attempt to %s failed, Node:%s", (node.flavor.code, node.dns_name))
+            raise
         logger.info("Reinstantiating the AWS Instance %s" % (node.dns_name))
+

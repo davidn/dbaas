@@ -734,9 +734,13 @@ class Node(models.Model):
             return True
         return False
 
-    def reinstantiate_async(self):
+    def reinstantiate_async_setup(self):
         """Reinstantiate the node using its current flavor settings."""
         self.assert_state(Node.PROVISIONING)
+        self.region.connection.reinstantiate_setup(self)
+
+    def reinstantiate_async(self):
+        """This part of the operation can be retried"""
         self.region.connection.reinstantiate(self)
 
     def reinstantiate_update(self):
