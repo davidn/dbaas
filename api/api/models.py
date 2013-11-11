@@ -722,6 +722,10 @@ class Node(models.Model):
         get_highstate_result(id=self.dns_name, jid=self.last_salt_jid)
 
     def reinstantiate_sync(self, new_flavor):
+        if self.status == self.INITIAL:
+            self.flavor = new_flavor
+            self.save()
+            return False
         self.assert_state(Node.RUNNING)
         if self.flavor.provider == new_flavor.provider \
             and self.flavor.free_allowed == new_flavor.free_allowed \
