@@ -143,5 +143,11 @@ class EC2(Cloud):
         while self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'stopping':
             sleep(15)
         self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].modify_attribute('instanceType', node.flavor.code)
-        self.ec2.start_instances([node.instance_id])
+        while True:
+            try:
+                self.ec2.start_instances([node.instance_id])
+                break
+            except:
+                logger.warning("Error attempting to reinstantiate the AWS Instance %s to %s" % (node.dns_name, str(node.flavor.code)))
+                sleep(15)
         logger.info("Reinstantiating the AWS Instance %s" % (node.dns_name))
