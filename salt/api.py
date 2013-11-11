@@ -142,6 +142,7 @@ def ext_pillar(minion_id,
                 'node': node_dict(node),
                 'cluster': cluster_dict(node.cluster),
                 'settings': {
+                    'BUCKET_NAME': models.BUCKET_NAME,
                     'zabbix_server':settings.ZABBIX_SERVER,
             }}}
     except ImportError, e:

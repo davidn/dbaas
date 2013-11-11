@@ -14,6 +14,7 @@ partition the Nodes in a cluster. See `the wiki`_ for more info.
 
 from __future__ import unicode_literals
 from logging import getLogger
+import json
 from django.db import models
 from django.dispatch.dispatcher import receiver
 from django.conf import settings
@@ -34,6 +35,7 @@ from .utils import retry, split_every, cron_validator
 from .exceptions import BackendNotReady
 import providers
 
+BUCKET_NAME = getattr(settings, 'S3_BUCKET', 'dbaas-backups')
 
 logger = getLogger(__name__)
 
@@ -220,10 +222,10 @@ class Cluster(models.Model):
             self.iam_secret = res['create_access_key_response']['create_access_key_result']['access_key']['secret_access_key']
             self.save()
         s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-        bucket = s3.lookup(self.uuid)
+        bucket = s3.lookup(BUCKET_NAME)
         if bucket is None:
-            bucket = s3.create_bucket(self.uuid)
-        bucket.set_policy("""{
+            bucket = s3.create_bucket(BUCKET_NAME)
+        bucket.set_policy(json.dumps({
           "Version": "2008-10-17",
           "Id": "S3PolicyId1",
           "Statement": [
@@ -231,11 +233,14 @@ class Cluster(models.Model):
               "Sid": "IPAllow",
               "Effect": "Allow",
               "Principal": {
-                "AWS": "%(iam)s"
+                "AWS": cluster.iam_arn
               },
               "Action": "s3:*",
-              "Resource": ["arn:aws:s3:::%(bucket)s","arn:aws:s3:::%(bucket)s/*"]
-        }]}""" % {'iam': self.iam_arn, 'bucket': self.uuid})
+              "Resource": ["arn:aws:s3:::%s/%s" % (BUCKET_NAME, cluster.uuid),
+                           "arn:aws:s3:::%s/%s/*" % (BUCKET_NAME,cluster.uuid)]
+            }
+          for cluster in Cluster.objects.exclude(iam_arn='')]
+        }))
 
     def launch_async_zabbix(self):
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
@@ -265,13 +270,6 @@ class Cluster(models.Model):
         """Clean up the S3 bucket and IAM user associated with this cluster."""
         self.status = Cluster.SHUTTING_DOWN
         self.save()
-        s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-        bucket = s3.lookup(self.uuid)
-        if bucket is not None:
-            # Must empty bucket before delete
-            for keys in split_every(1000, bucket):
-                bucket.delete_keys(keys)
-            bucket.delete()
         if self.iam_arn != "":
             iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             if self.iam_key != "":
