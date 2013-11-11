@@ -22,7 +22,7 @@ class Migration(SchemaMigration):
             ('jid', self.gf('django.db.models.fields.CharField')(max_length=255, db_index=True)),
             ('s_return', self.gf('salt_jobs.models.MediumText')(db_column=u'return')),
             ('id', self.gf('django.db.models.fields.CharField')(max_length=255, db_index=True)),
-            ('sucess', self.gf('django.db.models.fields.CharField')(max_length=10)),
+            ('success', self.gf('django.db.models.fields.CharField')(max_length=10)),
             ('full_ret', self.gf('salt_jobs.models.MediumText')()),
         ))
         db.send_create_signal(u'salt_jobs', ['SaltReturn'])
@@ -50,7 +50,7 @@ class Migration(SchemaMigration):
             'jid': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
             'pk': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             's_return': ('salt_jobs.models.MediumText', [], {'db_column': "u'return'"}),
-            'sucess': ('django.db.models.fields.CharField', [], {'max_length': '10'})
+            'success': ('django.db.models.fields.CharField', [], {'max_length': '10'})
         }
     }
 

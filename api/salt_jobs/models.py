@@ -34,7 +34,7 @@ class SaltReturn(models.Model):
     jid = models.CharField(max_length=255, db_index=True)
     s_return = MediumText(db_column='return')
     id = models.CharField(max_length=255, db_index=True)
-    sucess = models.CharField(max_length=10)
+    success = models.CharField(max_length=10)
     full_ret = MediumText()
     class Meta:
         db_table = 'salt_returns'
