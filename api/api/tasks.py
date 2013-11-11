@@ -27,14 +27,14 @@ if hasattr(settings, 'BUGSNAG'):
 class NodeTask(Task):
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         args[0].status = Node.ERROR
-        args[0].save()
+        args[0].save(update_fields=['status'])
         args[0].cluster.status = Cluster.ERROR
-        args[0].cluster.save()
+        args[0].cluster.save(update_fields=['status'])
 
 class ClusterTask(Task):
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         args[0].status = Cluster.ERROR
-        args[0].save()
+        args[0].save(update_fields=['status'])
 
 @task
 def null_task():
