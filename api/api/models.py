@@ -23,11 +23,11 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
 from django.utils.translation import ugettext as _
-from boto import connect_route53, connect_s3, connect_iam
+from boto import connect_s3, connect_iam
 from simple_history.models import HistoricalRecords
 from pyzabbix import ZabbixAPI
 from salt_jobs.models import send_salt_cmd, get_highstate_result
-from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception, catch_dns_exists, catch_dns_not_found
+from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception, catch_dns_exists, catch_dns_not_found, connect_route53
 from .uuid_field import UUIDField
 from .crypto import KeyPair, SslPair, CertificateAuthority
 from .utils import retry, split_every, cron_validator
