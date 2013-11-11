@@ -52,6 +52,7 @@ class Cloud(object):
             mysql.pass: '{salt_minion_sql_pass}'
             mysql.db: '{mysql_db}'
             startup_states: highstate
+            ext_job_cache: mysql
             END
             """.format(dns_name=node.dns_name,
                        salt_master=settings.SALT_MASTER,
