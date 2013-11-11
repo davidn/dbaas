@@ -1,11 +1,15 @@
 <div class="modal-dialog" ng-controller="ResizeCtrl">
 	<div class="modal-content">
 		<div class="modal-header">
-			<h3>Resize Node</h3>
+			<h3>Upgrade Node</h3>
 		</div>
 		<div class="modal-body">
 			<div class="form-group">
-				<label style="width: 20%"> Node Type</label>
+				<label style="width: 20%"> Current Type</label>
+				{{ flavor.name }}
+			</div>
+			<div class="form-group">
+				<label style="width: 20%"> New Node Type</label>
 				<select ui-select2 ng-model="node.flavor" data-placeholder="Pick a type" ng-options="flavor as flavor.name for flavor in flavors" style="width: 70%"></select>
 			</div>
 		</div>

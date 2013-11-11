@@ -3,8 +3,8 @@ angular.module('geniedb').controller('ResizeCtrl', function ($scope, $routeParam
     $scope.providers = apiModel.getProviders();
     var node = apiModel.findNodeById($routeParams.clusterId, $routeParams.nodeId);
     if (node){
-//        node.$flavor = _.findWhere(apiModel.flavors, {code: node.flavor});
-        $scope.flavors = node.provider.flavors;
+        $scope.flavor = node.$flavor;
+        $scope.flavors = _.without(node.provider.flavors, node.$flavor);
         $scope.node = {flavor: node.$flavor};
     }
 
