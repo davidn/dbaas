@@ -7,7 +7,7 @@ angular.module('geniedb').controller('ListCtrl', function ($scope, $location, $t
     }
 
     User.identify();
-
+    $scope.user = User.user;
     $scope.providers = apiModel.getProviders();
 
     $scope.addCluster = function () {
@@ -106,6 +106,11 @@ angular.module('geniedb').controller('ListCtrl', function ($scope, $location, $t
             $scope.refresh();
             growl.success({body: "Node " + node.label + " resumed"});
         }).error(handleError);
+    };
+
+    $scope.nodeUpgrade = function (node) {
+
+        $location.path("/resize/" + node.id);
     };
 
     $scope.nodeDelete = function (node) {

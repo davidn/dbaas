@@ -15,9 +15,10 @@ angular.module('geniedb', ['ui.keypress', 'ui.bootstrap.tooltipX', 'ngRoute', 'n
             when('/quickstart', {templateUrl: 'partial/quickstart/quickstart.html'}).
             when('/thankyou', {templateUrl: 'partial/thanks/thanks.html'}).
             when('/try', {templateUrl: 'partial/try/try.html'}).
-            when('/share/:promo',{templateUrl: 'partial/share/share.html'}).
-            when('/share',{templateUrl: 'partial/share/share.html'}).
-	/* Add New Routes Above */
+            when('/share/:promo', {templateUrl: 'partial/share/share.html'}).
+            when('/share', {templateUrl: 'partial/share/share.html'}).
+            when('/resize/:clusterId/:nodeId', {templateUrl: 'partial/resize/resize.html'}).
+            /* Add New Routes Above */
             otherwise({redirectTo: '/'});
 
 

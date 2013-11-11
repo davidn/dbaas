@@ -1,0 +1,17 @@
+<div class="modal-dialog" ng-controller="ResizeCtrl">
+	<div class="modal-content">
+		<div class="modal-header">
+			<h3>Resize Node</h3>
+		</div>
+		<div class="modal-body">
+			<div class="form-group">
+				<label style="width: 20%"> Node Type</label>
+				<select ui-select2 ng-model="node.flavor" data-placeholder="Pick a type" ng-options="flavor as flavor.name for flavor in flavors" style="width: 70%"></select>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-success" btn-loading="isLoading" data-loading-text="Adding..." ng-click="save()">SAVE</button>
+			<button class="btn btn-primary pull-right" ng-click="cancel()">CANCEL</button>
+		</div>
+	</div>
+</div>
