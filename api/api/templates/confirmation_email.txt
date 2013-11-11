@@ -42,7 +42,9 @@ Node Details
 ---------------
 {% for node in nodes %}
 Node {{node.nid}}
+Provider: {{node.region.provider.name}}
 Location: {{node.region.name}}
+Type: {{node.flavor.name}}
 DNS: {{node.dns_name}}
 IP: {{node.ip}}
 

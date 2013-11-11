@@ -81,56 +81,7 @@
 
 				<p>Hi {{ username }}, </p><br/>
 
-				<p>Thanks for visiting our website and signing up to test our exciting GenieDB DBaaS offering.
-					{% if is_paid %}
-					We've created your GenieDB cluster environment for your use, deployed on instances distributed across {{ regions }} datacenters.
-					{% else %}
-					You're now set to begin your free trial.
-					We've created a two node replicating cluster environment for your use, deployed on two small instances distributed across {{ regions }} datacenters.
-					While this basic test environment will allow you to see all the GenieDB functionality, it's not intended for demonstrating performance under load.
-					Once you're satisfied GenieDB's feature set will meet your requirements, we are happy to setup a high performance cluster for additional testing.
-					{% endif %}
-					The connectivity details can be found below. Here are a couple tips to help you get started:</p>
-
-
-				<table cellpadding="2" cellspacing="2" border="0">
-					<tr>
-						<td valign="top">1.</td>
-						<td>There is a default database &quot;{{ db }}&quot; created.</td>
-					</tr>
-					<tr>
-						<td valign="top">2.</td>
-						<td>To create any table that you want replicated,
-							<strong>you must add &quot;ENGINE=GenieDB&quot;</strong> to the end of the SQL statement.
-							For example:
-							<pre>CREATE TABLE {{ db }}.foo(a INT PRIMARY KEY, b INT) ENGINE=GenieDB;</pre>
-						</td>
-					</tr>
-					<tr>
-						<td valign="top">3.</td>
-						<td>To create any non-replicated table you can use ENGINE=MyISAM or ENGINE=InnoDB.</td>
-					</tr>
-					<tr>
-						<td valign="top">4.</td>
-						<td>For optimal performance you should host your application servers in the regions you chose.</td>
-					</tr>
-					<tr>
-						<td valign="top">5.</td>
-						<td>The cluster domain name <strong>{{ cluster_dns }}</strong> will automatically find the nearest database node.
-						</td>
-					</tr>
-					<tr>
-						<td valign="top">6.</td>
-						<td>The individual nodes can be directly accessed using the node information listed below.</td>
-					</tr>
-				</table>
-				<br/>
-
-				{% if is_paid %}
-				<p> Please do not hesitate to contact us with any questions or concerns. We are happy to help guide your testing or answer any questions you may have regarding distributed system architecture.</p>
-				{% else %}
-				<p>This cluster will be available for your use until {{trial_end|date:"F jS"}}, at which point we can discuss the results of your trial and how best to proceed. Please do not hesitate to contact us with any questions or concerns. We are happy to help guide your testing or answer any questions you may have regarding distributed system architecture.</p>
-				{% endif %}
+				<p>The requested change to your cluster is now complete.  The new cluster configuration is:</p>
 
 				<br/>
 
@@ -150,10 +101,6 @@
 						<td><strong>{{ dbusername }}</strong></td>
 					</tr>
 					<tr>
-						<td>Password</td>
-						<td><strong>{{ dbpassword }}</strong></td>
-					</tr>
-					<tr>
 						<td>Database</td>
 						<td><strong>{{ db }}</strong></td>
 					</tr>
@@ -162,26 +109,34 @@
 				<h3>Node Details</h3>
 				<table cellpadding="2" cellspacing="2" border="0">
 					{% for node in nodes %}
-					<tr>
-						<td><strong>Node {{ node.nid }}</strong></td>
-						<td></td>
-					</tr>
-					<tr>
-						<td>Location</td>
-						<td><strong>{{ node.region.name }}</strong></td>
-					</tr>
-					<tr>
-						<td>DNS</td>
-						<td><strong>{{ node.dns_name }}</strong></td>
-					</tr>
-					<tr>
-						<td>IP</td>
-						<td><strong>{{ node.ip }}</strong></td>
-					</tr>
-					<tr>
-						<td>&nbsp;</td>
-						<td></td>
-					</tr>
+						<tr>
+							<td><strong>Node {{ node.nid }}</strong></td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>Provider</td>
+							<td><strong>{{ node.region.provider.name }}</strong></td>
+						</tr>
+						<tr>
+							<td>Location</td>
+							<td><strong>{{ node.region.name }}</strong></td>
+						</tr>
+						<tr>
+							<td>DNS</td>
+							<td><strong>{{ node.dns_name }}</strong></td>
+						</tr>
+						<tr>
+							<td>Type</td>
+							<td><strong>{{ node.flavor.name }}</strong></td>
+						</tr>
+						<tr>
+							<td>IP</td>
+							<td><strong>{{ node.ip }}</strong></td>
+						</tr>
+						<tr>
+							<td>&nbsp;</td>
+							<td></td>
+						</tr>
 					{% endfor %}
 				</table>
 				<br/><br/>
@@ -192,8 +147,7 @@
 
 				<p>Don't hesitate to
 					<a href="mailto:support@geniedb.com" target="_blank" title="GenieDB Support" style="color: #7789c1; text-decoration: none; font-weight: bold">contact us</a> with any questions or comments.
-				</p><br/>
-				<br/>
+				</p><br/> <br/>
 			</td>
 			<td width="40"></td>
 		</tr>

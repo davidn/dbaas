@@ -153,21 +153,22 @@ def launch_email(cluster, email_message='confirmation_email'):
 def send_reminder(user, reminder):
     if user.is_paid:
         return
+    #TODO: Load cluster/node info from user object
 
-    dictionary = {
-        'nodes': nodes,
-        'username': str(cluster.user),
-        'is_paid': cluster.user.is_paid,
-        'cluster_dns': cluster.dns_name,
-        'trial_end': datetime.date.today() + settings.TRIAL_LENGTH,
-        'port': cluster.port,
-        'db': cluster.dbname,
-        'dbusername': cluster.dbusername,
-        'dbpassword': cluster.dbpassword,
-        'regions': ' and '.join(node.region.name for node in nodes)
-    }
-
-    user.email_user_template(reminder['template'], ctx_dict)
+    #ctx_dict = {
+    #    'nodes': nodes,
+    #    'username': str(cluster.user),
+    #    'is_paid': cluster.user.is_paid,
+    #    'cluster_dns': cluster.dns_name,
+    #    'trial_end': datetime.date.today() + settings.TRIAL_LENGTH,
+    #    'port': cluster.port,
+    #    'db': cluster.dbname,
+    #    'dbusername': cluster.dbusername,
+    #    'dbpassword': cluster.dbpassword,
+    #    'regions': ' and '.join(node.region.name for node in nodes)
+    #}
+    #
+    #user.email_user_template(reminder['template'], ctx_dict)
 
 
 @receiver(models.signals.post_save, sender=get_user_model())
