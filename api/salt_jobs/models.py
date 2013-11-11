@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import yaml
 from django.db import models
 from south.modelsinspector import add_introspection_rules
 from salt.client import LocalClient
@@ -12,7 +13,7 @@ def get_salt_result(**kwargs):
     return SaltReturn.objects.filter(**kwargs)
 
 def get_highstate_result(**kwargs):
-    return check_highstate_error(SaltReturn.objects.get(**kwargs))
+    return check_highstate_error(yaml.load(SaltReturn.objects.get(**kwargs).s_return))
 
 class MediumText(models.TextField):
     def db_type(self, connection):
