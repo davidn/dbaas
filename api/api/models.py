@@ -726,7 +726,6 @@ class Node(models.Model):
             return False
         self.assert_state(Node.RUNNING)
         if self.flavor.provider == new_flavor.provider \
-            and self.flavor.free_allowed == new_flavor.free_allowed \
             and self.flavor.code != new_flavor.code:
             self.flavor = new_flavor
             self.status = self.PROVISIONING
