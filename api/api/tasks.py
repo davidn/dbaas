@@ -130,7 +130,10 @@ def cluster_refresh_salt(cluster, *args):
     Cluster.objects.get(pk=cluster.pk).refresh_salt(*args)
 @task(base=NodeTask, max_retries=30)
 def node_refresh_complete(node):
-    Node.objects.get(pk=node.pk).refresh_salt_complete()
+    try:
+        Node.objects.get(pk=node.pk).refresh_salt_complete()
+    except ObjectDoesNotExist, e:
+        node_refresh_complete.retry(exc=e, countown=15)
 
 @task()
 def launch_email(cluster, email_message='confirmation_email'):
