@@ -17,7 +17,7 @@ class Migration(SchemaMigration):
 
         # Adding model 'SaltReturn'
         db.create_table(u'salt_returns', (
-            ('pk', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('prim', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('fun', self.gf('django.db.models.fields.CharField')(max_length=50, db_index=True)),
             ('jid', self.gf('django.db.models.fields.CharField')(max_length=255, db_index=True)),
             ('s_return', self.gf('salt_jobs.models.MediumText')(db_column=u'return')),
@@ -48,7 +48,7 @@ class Migration(SchemaMigration):
             'fun': ('django.db.models.fields.CharField', [], {'max_length': '50', 'db_index': 'True'}),
             'id': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
             'jid': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
-            'pk': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'prim': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             's_return': ('salt_jobs.models.MediumText', [], {'db_column': "u'return'"}),
             'success': ('django.db.models.fields.CharField', [], {'max_length': '10'})
         }

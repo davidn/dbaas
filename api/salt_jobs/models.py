@@ -29,7 +29,7 @@ class SaltJob(models.Model):
         db_table = 'jids'
 
 class SaltReturn(models.Model):
-    pk = models.AutoField(primary_key=True)
+    prim = models.AutoField(primary_key=True)
     fun = models.CharField(max_length=50, db_index=True)
     jid = models.CharField(max_length=255, db_index=True)
     s_return = MediumText(db_column='return')
