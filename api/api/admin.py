@@ -95,7 +95,7 @@ class NodeAdmin(SimpleHistoryAdmin):
     exclude = ('lbr_region',)
     actions = ('pause', 'resume')
     list_display = ('__unicode__', 'cluster_user', 'region', 'flavor','status','ip')
-    list_filter = ('region', 'cluster', 'status')
+    list_filter = ('region', 'cluster', 'status', 'region__provider')
 
     def cluster_user(self, node):
         return node.cluster.user
