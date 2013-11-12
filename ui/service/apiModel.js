@@ -112,7 +112,7 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
             cluster.dbnames = _.uniq(cluster.dbname.split(','));
             cluster.dbnamesLabel = cluster.dbnames.length > 1 ? 'Databases' : 'Database';
 
-            cluster.canLaunch = cluster.status_code === 0;
+            cluster.canLaunch = cluster.status_code === 0 && cluster.nodes && cluster.nodes.length > 0;
             cluster.hasRunning = cluster.nodes.hasRunning;
             cluster.isRunning = cluster.status_code === 6;
             cluster.label = cluster.label || cluster.dbname;
