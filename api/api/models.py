@@ -803,8 +803,8 @@ class Backup(models.Model):
     def get_url(self):
         s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         return s3.generate_url(3600,
-                               "GET", self.node.cluster.uuid,
-                               '/%s/%s' % (self.node.nid, self.filename))
+                               "GET", BUCKET_NAME,
+                               '%s/%s/%s' % (self.node.cluster.uuid, self.node.nid, self.filename))
 
 @receiver(models.signals.pre_save, sender=Node)
 def node_pre_save_callback(sender, instance, raw, using, **kwargs):
