@@ -1,5 +1,6 @@
 /etc/mysqlbackup.logrotate:
   file.managed:
+    - show_diff: False
     - source: salt://backup/mysqlbackup.logrotate
     - user: root
     - group: root
@@ -20,6 +21,7 @@
       - pkg: s3cmd
       - file: /root/.s3cfg
   file.managed:
+    - show_diff: False
     - source: salt://backup/backup.sh
     - user: root
     - group: root

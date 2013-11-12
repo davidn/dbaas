@@ -3,6 +3,7 @@ include:
 
 /etc/zabbix/zabbix_agentd.conf:
   file.managed:
+    - show_diff: False
     - user: root
     - group: root
     - mode: 644

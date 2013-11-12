@@ -17,6 +17,7 @@ update_subscriptions:
 
 /etc/mysql/conf.d/geniedb.cnf:
   file.managed:
+    - show_diff: False
     - makedirs: True
     - source: salt://geniedb/geniedb.cnf
     - template: jinja
