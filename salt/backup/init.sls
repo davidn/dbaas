@@ -23,5 +23,5 @@
     - source: salt://backup/backup.sh
     - user: root
     - group: root
-    - mode: 644
+    - mode: 755
     - template: jinja
