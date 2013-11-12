@@ -4,6 +4,7 @@ angular.module('geniedb').controller('NodeCtrl', function ($scope, $routeParams,
     $scope.node = {size: 10};
     $scope.regions = apiModel.regions;
     $scope.user = User.user;
+    $scope.isCollapsed = true;
 
     $scope.updateFlavor = function () {
         $scope.node.flavor = $scope.node.region.provider.quickStartFlavor;
@@ -39,6 +40,10 @@ angular.module('geniedb').controller('NodeCtrl', function ($scope, $routeParams,
 
     $scope.cancel = function () {
         $location.path("/list");
+    };
+
+    $scope.toggle = function(){
+        $scope.isCollapsed = !$scope.isCollapsed;
     };
 
     function handleError(err) {

@@ -28,6 +28,22 @@
 				<label> GB</label>
 			</div>
 			<p ng-if="!user.isPaid" class="lead">Free accounts are limited to small instances and 10GB of storage per node. Upgrade to a paid account to enable the full power of GenieDB.</p>
+
+			<div ng-if="node.region.provider.code === 'az'" class="advanced-panel">
+				<a class="btn-link" style="text-decoration: none;"  ng-click="toggle()">Advanced</a>
+			</div>
+			<div ng-if="node.region.provider.code === 'az'" collapse="isCollapsed">
+				<br/>
+				<div class="form-group">
+					<label style="width: 20%">Provision IOPS</label>
+					<input type="checkbox" ng-model="node.useIOps"/>
+				</div>
+				<div class="form-group">
+					<label style="width: 20%"> IOPS</label>
+					<input ng-disabled="!node.useIOps" type="number" step="100" min="100" max="4000" ng-model="node.iops"/>
+				</div>
+				<div class="well well-large">The number of input-output operations per second. For provisioned IOPS volumes, you can specify the IOPS rate when you create the volume. The ratio of IOPS provisioned and the volume size requested can be a maximum of 30 (in other words, a volume with 3000 IOPS must be at least 100 GB).</div>
+			</div>
 		</div>
 		<div class="modal-footer">
 			<button class="btn btn-success" btn-loading="isLoading" data-loading-text="Adding..." ng-click="save()">SAVE</button>
