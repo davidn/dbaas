@@ -209,7 +209,7 @@ class Cluster(models.Model):
         self.status = Cluster.PROVISIONING
         self.save()
 
-    def launch_async_s3(self):
+    def launch_async_iam(self):
         self.generate_keys()
         if self.iam_key == "":
             iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
@@ -239,10 +239,6 @@ class Cluster(models.Model):
             self.iam_key = res['create_access_key_response']['create_access_key_result']['access_key']['access_key_id']
             self.iam_secret = res['create_access_key_response']['create_access_key_result']['access_key']['secret_access_key']
             self.save()
-        s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-        bucket = s3.lookup(BUCKET_NAME)
-        if bucket is None:
-            bucket = s3.create_bucket(BUCKET_NAME)
 
     def launch_async_zabbix(self):
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)

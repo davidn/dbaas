@@ -97,11 +97,11 @@ def region_launch(region):
         region_launch.retry(exc=e,countdown=5)
 
 @task(base=ClusterTask,max_retries=10)
-def cluster_launch_s3(cluster):
+def cluster_launch_iam(cluster):
     try:
-        Cluster.objects.get(pk=cluster.pk).launch_async_s3()
+        Cluster.objects.get(pk=cluster.pk).launch_async_iam()
     except (BotoClientError, BotoServerError) as e:
-        cluster_launch_s3.retry(exc=e, countdown=15)
+        cluster_launch_iam.retry(exc=e, countdown=15)
 @task(base=ClusterTask)
 def cluster_launch_zabbix(cluster):
     Cluster.objects.get(pk=cluster.pk).launch_async_zabbix()
