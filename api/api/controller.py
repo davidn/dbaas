@@ -57,7 +57,7 @@ def resume_node(node):
     return task.delay()
 
 def add_database(cluster, dbname):
-    cluster.add_database_sync()
+    cluster.add_database_sync(dbname)
     task = tasks.cluster_refresh_salt.si(cluster) \
          | group([tasks.node_refresh_complete.si(node) for node in cluster.nodes.filter(status=Node.RUNNING)])
     task.delay()
