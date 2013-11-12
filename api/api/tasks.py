@@ -78,14 +78,14 @@ def node_pause_complete(node):
     try:
         Node.objects.get(pk=node.pk).pause_complete()
     except ObjectDoesNotExist, e:
-        node_resume_complete.retry(exc=e, countdown=15)
+        node_pause_complete.retry(exc=e, countdown=15)
 @task(base=NodeTask)
 def node_resume_salt(node):
     Node.objects.get(pk=node.pk).resume_async_salt()
 @task(base=NodeTask, max_retries=30)
 def node_resume_complete(node):
     try:
-        Node.objects.get(pk=node.pk).resume_complete
+        Node.objects.get(pk=node.pk).resume_complete()
     except ObjectDoesNotExist, e:
         node_resume_complete.retry(exc=e, countdown=15)
 
