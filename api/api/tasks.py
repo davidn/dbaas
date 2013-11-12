@@ -27,14 +27,14 @@ if hasattr(settings, 'BUGSNAG'):
 class NodeTask(Task):
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         args[0].status = Node.ERROR
-        args[0].save()
+        args[0].save(update_fields=['status'])
         args[0].cluster.status = Cluster.ERROR
-        args[0].cluster.save()
+        args[0].cluster.save(update_fields=['status'])
 
 class ClusterTask(Task):
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         args[0].status = Cluster.ERROR
-        args[0].save()
+        args[0].save(update_fields=['status'])
 
 @task
 def null_task():
@@ -97,11 +97,11 @@ def region_launch(region):
         region_launch.retry(exc=e,countdown=5)
 
 @task(base=ClusterTask,max_retries=10)
-def cluster_launch_s3(cluster):
+def cluster_launch_iam(cluster):
     try:
-        Cluster.objects.get(pk=cluster.pk).launch_async_s3()
+        Cluster.objects.get(pk=cluster.pk).launch_async_iam()
     except (BotoClientError, BotoServerError) as e:
-        cluster_launch_s3.retry(exc=e, countdown=15)
+        cluster_launch_iam.retry(exc=e, countdown=15)
 @task(base=ClusterTask)
 def cluster_launch_zabbix(cluster):
     Cluster.objects.get(pk=cluster.pk).launch_async_zabbix()
@@ -110,8 +110,14 @@ def cluster_launch_complete(cluster):
     Cluster.objects.get(pk=cluster.pk).launch_complete()
 
 @task(base=NodeTask)
+def node_reinstantiate_setup(node):
+    Node.objects.get(pk=node.pk).reinstantiate_async_setup()
+@task(base=NodeTask,max_retries=10)
 def node_reinstantiate(node):
-    Node.objects.get(pk=node.pk).reinstantiate_async()
+    try:
+        Node.objects.get(pk=node.pk).reinstantiate_async()
+    except () as e:
+        node_reinstantiate.retry(exc=e, countdown=15)
 @task(base=NodeTask,max_retries=180)    # This supports a max of 3 hrs!
 def node_reinstantiate_update(node):
     try:
@@ -130,7 +136,10 @@ def cluster_refresh_salt(cluster, *args):
     Cluster.objects.get(pk=cluster.pk).refresh_salt(*args)
 @task(base=NodeTask, max_retries=30)
 def node_refresh_complete(node):
-    Node.objects.get(pk=node.pk).refresh_salt_complete()
+    try:
+        Node.objects.get(pk=node.pk).refresh_salt_complete()
+    except ObjectDoesNotExist, e:
+        node_refresh_complete.retry(exc=e, countown=15)
 
 @task()
 def launch_email(cluster, email_message='confirmation_email'):

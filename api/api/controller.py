@@ -18,7 +18,7 @@ def launch_cluster(cluster):
         node.launch_sync()
     install_nodes = cluster.nodes.filter(status=Node.STARTING)
     lbr_regions = cluster.lbr_regions.filter(launched=False)
-    task = tasks.cluster_launch_s3.si(cluster) \
+    task = tasks.cluster_launch_iam.si(cluster) \
          | group([tasks.node_launch_provision.si(node) for node in install_nodes]) \
          | tasks.null_task.si() \
          | group([tasks.node_launch_update.si(node) for node in install_nodes]).set(countdown=1) \
@@ -37,7 +37,8 @@ def launch_cluster(cluster):
 
 def reinstantiate_node(node, flavor):
     if node.reinstantiate_sync(flavor):
-        task = tasks.node_reinstantiate.si(node) \
+        task = tasks.node_reinstantiate_setup.si(node) \
+             | tasks.node_reinstantiate.si(node) \
              | tasks.node_reinstantiate_update.si(node) \
              | tasks.node_reinstantiate_complete.si(node) \
              | tasks.launch_email.si(node.cluster, 'resize_confirmation_email')
