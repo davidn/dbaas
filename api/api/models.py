@@ -34,6 +34,7 @@ from .crypto import KeyPair, SslPair, CertificateAuthority
 from .utils import retry, split_every, cron_validator
 from .exceptions import BackendNotReady
 import providers
+import types
 
 BUCKET_NAME = getattr(settings, 'S3_BUCKET', 'dbaas-backups')
 
@@ -662,7 +663,9 @@ class Node(models.Model):
                 catch_dns_exists(rrs)
 
     def assert_state(self, state, equal=True):
-        assert equal == (self.status == state), \
+        if type(state) not in (types.ListType, types.TupleType):
+            state = [state]
+        assert equal == (self.status in state), \
             'Cannot launch node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
 
     def launch_sync(self):
@@ -724,7 +727,7 @@ class Node(models.Model):
             self.flavor = new_flavor
             self.save()
             return False
-        self.assert_state(Node.RUNNING)
+        self.assert_state([Node.RUNNING, Node.PAUSED])
         if self.flavor.provider == new_flavor.provider \
             and self.flavor.code != new_flavor.code:
             self.flavor = new_flavor
