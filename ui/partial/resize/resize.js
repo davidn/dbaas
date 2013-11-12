@@ -12,7 +12,7 @@ angular.module('geniedb').controller('ResizeCtrl', function ($scope, $routeParam
 
     $scope.save = function () {
         $scope.isLoading = true;
-        var newNode = {url: node.url, flavor: $scope.node.flavor.name};
+        var newNode = {url: node.url, flavor: $scope.node.flavor.code};
         // TODO Move to service call
         $http.put(dbaasConfig.apiUrl + "clusters/" + node.id, newNode).success(function (data) {
             growl.success({body: "Node resize in progress"});

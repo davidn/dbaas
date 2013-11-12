@@ -24,6 +24,7 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
     ];
 
     var allowedNodeStatesForAddNode = [0, 3, 4, 5, 7, 8];
+    var allowedNodeStatesForUpgradeNode = [0, 3, 4];
 
     function serialComma(arr) {
         if (arr.length <= 2){
@@ -70,6 +71,7 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
             node.isRunning = status.index === 3;
             node.isPaused = status.index === 4;
             node.isAction = status.isAction;
+            node.canUpgrade = allowedNodeStatesForUpgradeNode.indexOf(status.index) >= 0;
 
             data.hasRunning = data.hasRunning || node.isRunning;
             data.canAddNode = data.canAddNode && (allowedNodeStatesForAddNode.indexOf(status.index) >= 0);
@@ -112,7 +114,7 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
             cluster.dbnames = _.uniq(cluster.dbname.split(','));
             cluster.dbnamesLabel = cluster.dbnames.length > 1 ? 'Databases' : 'Database';
 
-            cluster.canLaunch = cluster.status_code === 0;
+            cluster.canLaunch = cluster.status_code === 0 && cluster.nodes && cluster.nodes.length > 0;
             cluster.hasRunning = cluster.nodes.hasRunning;
             cluster.isRunning = cluster.status_code === 6;
             cluster.label = cluster.label || cluster.dbname;

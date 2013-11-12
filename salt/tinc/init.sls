@@ -1,11 +1,13 @@
 /etc/tinc/cf/tinc.conf:
   file.managed:
+    - show_diff: False
     - makedirs: True
     - source: salt://tinc/tinc.conf
     - template: jinja
 
 /etc/tinc/cf/tinc-up:
   file.managed:
+    - show_diff: False
     - makedirs: True
     - source: salt://tinc/tinc-up
     - mode: 755
@@ -13,6 +15,7 @@
 
 /etc/tinc/cf/rsa_key.priv:
   file.managed:
+    - show_diff: False
     - makedirs: True
     - source: salt://tinc/rsa_key.priv
     - mode: 600
@@ -21,6 +24,7 @@
 {% for node in pillar['dbaas_api']['cluster']['nodes'] %}
 /etc/tinc/cf/hosts/node_{{ node['nid'] }}:
   file.managed:
+    - show_diff: False
     - makedirs: True
     - source: salt://tinc/node_
     - template: jinja

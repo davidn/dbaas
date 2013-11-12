@@ -210,7 +210,7 @@ class Cluster(models.Model):
         self.status = Cluster.PROVISIONING
         self.save()
 
-    def launch_async_s3(self):
+    def launch_async_iam(self):
         self.generate_keys()
         if self.iam_key == "":
             iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
@@ -218,30 +218,28 @@ class Cluster(models.Model):
                 res = iam.create_user(self.uuid)
                 self.iam_arn = res['create_user_response']['create_user_result']['user']['arn']
                 self.save()
+            iam.put_user_policy(self.uuid, self.uuid, json.dumps({
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Action": ["s3:ListBucket"],
+                        "Resource": "arn:aws:s3:::%s" % BUCKET_NAME,
+                        "Condition": {"StringLike":{"s3:prefix":"%s/*"%self.uuid}}
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Action": [
+                            "s3:DeleteObject",
+                            "s3:PutObject"],
+                        "Resource": "arn:aws:s3:::%s/%s/*" % (BUCKET_NAME, self.uuid)
+                    }
+                ]
+            }))
             res = iam.create_access_key(self.uuid)
             self.iam_key = res['create_access_key_response']['create_access_key_result']['access_key']['access_key_id']
             self.iam_secret = res['create_access_key_response']['create_access_key_result']['access_key']['secret_access_key']
             self.save()
-        s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
-        bucket = s3.lookup(BUCKET_NAME)
-        if bucket is None:
-            bucket = s3.create_bucket(BUCKET_NAME)
-        bucket.set_policy(json.dumps({
-          "Version": "2008-10-17",
-          "Id": "S3PolicyId1",
-          "Statement": [
-            {
-              "Sid": "IPAllow",
-              "Effect": "Allow",
-              "Principal": {
-                "AWS": cluster.iam_arn
-              },
-              "Action": "s3:*",
-              "Resource": ["arn:aws:s3:::%s/%s" % (BUCKET_NAME, cluster.uuid),
-                           "arn:aws:s3:::%s/%s/*" % (BUCKET_NAME,cluster.uuid)]
-            }
-          for cluster in Cluster.objects.exclude(iam_arn='')]
-        }))
 
     def launch_async_zabbix(self):
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
@@ -267,7 +265,7 @@ class Cluster(models.Model):
             n.last_salt_jid = jid
             n.save()
 
-    def terminate(self):
+    def on_terminate(self):
         """Clean up the S3 bucket and IAM user associated with this cluster."""
         self.status = Cluster.SHUTTING_DOWN
         self.save()
@@ -277,6 +275,7 @@ class Cluster(models.Model):
                 iam.delete_access_key(self.iam_key, self.uuid)
                 self.iam_key = ""
                 self.save()
+            iam.delete_user_policy(self.uuid, self.uuid)
             iam.delete_user(self.uuid)
             self.iam_arn = ""
             self.save()
@@ -794,6 +793,8 @@ class Node(models.Model):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
             self.remove_dns()
             self.region.connection.terminate(self)
+        self.status=Node.OVER
+        self.save()
 
 
 class Backup(models.Model):
@@ -806,8 +807,8 @@ class Backup(models.Model):
     def get_url(self):
         s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         return s3.generate_url(3600,
-                               "GET", self.node.cluster.uuid,
-                               '/%s/%s' % (self.node.nid, self.filename))
+                               "GET", BUCKET_NAME,
+                               '%s/%s/%s' % (self.node.cluster.uuid, self.node.nid, self.filename))
 
 @receiver(models.signals.pre_save, sender=Node)
 def node_pre_save_callback(sender, instance, raw, using, **kwargs):
@@ -838,6 +839,4 @@ def cluster_pre_delete_callback(sender, instance, using, **kwargs):
     """Terminate Clusters when the instances is deleted"""
     if sender != Cluster:
         return
-    instance.terminate()
-
-
+    instance.on_terminate()

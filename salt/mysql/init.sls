@@ -19,6 +19,7 @@ mysqld:
 
 /etc/mysql/conf.d/custom.cnf:
   file.managed:
+    - show_diff: False
     - makedirs: True
     - source: salt://mysql/custom.cnf
     - template: jinja
@@ -27,6 +28,7 @@ mysqld:
 
 /etc/mysql/ca.cert:
   file.managed:
+    - show_diff: False
     - makedirs: True
     - source: salt://mysql/ca.cert
     - template: jinja
@@ -35,6 +37,7 @@ mysqld:
 
 /etc/mysql/server.cert:
   file.managed:
+    - show_diff: False
     - makedirs: True
     - source: salt://mysql/server.cert
     - template: jinja
@@ -43,6 +46,7 @@ mysqld:
 
 /etc/mysql/server.pem:
   file.managed:
+    - show_diff: False
     - makedirs: True
     - source: salt://mysql/server.pem
     - template: jinja
