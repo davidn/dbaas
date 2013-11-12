@@ -274,6 +274,7 @@ class Cluster(models.Model):
                 iam.delete_access_key(self.iam_key, self.uuid)
                 self.iam_key = ""
                 self.save()
+            iam.delete_user_policy(self.uuid, self.uuid)
             iam.delete_user(self.uuid)
             self.iam_arn = ""
             self.save()
