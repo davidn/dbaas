@@ -789,6 +789,8 @@ class Node(models.Model):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
             self.remove_dns()
             self.region.connection.terminate(self)
+        self.status=Node.OVER
+        self.save()
 
 
 class Backup(models.Model):
