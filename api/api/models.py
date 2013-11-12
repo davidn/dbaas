@@ -217,6 +217,24 @@ class Cluster(models.Model):
                 res = iam.create_user(self.uuid)
                 self.iam_arn = res['create_user_response']['create_user_result']['user']['arn']
                 self.save()
+            iam.put_user_policy(self.uuid, self.uuid, json.dumps({
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Action": ["s3:ListBucket"],
+                        "Resource": "arn:aws:s3:::%s" % BUCKET_NAME,
+                        "Condition": {"StringLike":{"s3:prefix":"%s/*"%self.uuid}}
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Action": [
+                            "s3:DeleteObject",
+                            "s3:PutObject"],
+                        "Resource": "arn:aws:s3:::%s/%s/*" % (BUCKET_NAME, self.uuid)
+                    }
+                ]
+            }))
             res = iam.create_access_key(self.uuid)
             self.iam_key = res['create_access_key_response']['create_access_key_result']['access_key']['access_key_id']
             self.iam_secret = res['create_access_key_response']['create_access_key_result']['access_key']['secret_access_key']
@@ -225,22 +243,6 @@ class Cluster(models.Model):
         bucket = s3.lookup(BUCKET_NAME)
         if bucket is None:
             bucket = s3.create_bucket(BUCKET_NAME)
-        bucket.set_policy(json.dumps({
-          "Version": "2008-10-17",
-          "Id": "S3PolicyId1",
-          "Statement": [
-            {
-              "Sid": "IPAllow",
-              "Effect": "Allow",
-              "Principal": {
-                "AWS": cluster.iam_arn
-              },
-              "Action": "s3:*",
-              "Resource": ["arn:aws:s3:::%s/%s" % (BUCKET_NAME, cluster.uuid),
-                           "arn:aws:s3:::%s/%s/*" % (BUCKET_NAME,cluster.uuid)]
-            }
-          for cluster in Cluster.objects.exclude(iam_arn='')]
-        }))
 
     def launch_async_zabbix(self):
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
@@ -836,5 +838,3 @@ def cluster_pre_delete_callback(sender, instance, using, **kwargs):
     if sender != Cluster:
         return
     instance.terminate()
-
-
