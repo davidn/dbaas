@@ -264,7 +264,7 @@ class Cluster(models.Model):
             n.last_salt_jid = jid
             n.save()
 
-    def terminate(self):
+    def on_terminate(self):
         """Clean up the S3 bucket and IAM user associated with this cluster."""
         self.status = Cluster.SHUTTING_DOWN
         self.save()
@@ -836,4 +836,4 @@ def cluster_pre_delete_callback(sender, instance, using, **kwargs):
     """Terminate Clusters when the instances is deleted"""
     if sender != Cluster:
         return
-    instance.terminate()
+    instance.on_terminate()
