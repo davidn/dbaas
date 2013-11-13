@@ -135,7 +135,10 @@ class EC2(Cloud):
             while node.shutting_down():
                 sleep(15)
             logger.debug("%s: terminating security group %s", node, node.security_group)
-            self.ec2.delete_security_group(group_id=node.security_group)
+            try:
+                self.ec2.delete_security_group(group_id=node.security_group)
+            except EC2ResponseError:
+                logger.error("%s: failed to terminate security group %s", node, node.security_group, exc_info=True)
 
     def reinstantiate_setup(self, node):
         # Note: this command stops the server and then restarts it as a new instance
