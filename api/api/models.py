@@ -564,7 +564,7 @@ class Node(models.Model):
         z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
         hostids = z.host.get(filter={'host':self.dns_name})
         assert(len(hostids)==1)
-        status = 0 if enable else 0
+        status = 0 if enable else 1
         z.host.update({'hostid':hostids[0]['hostid'], 'status':status})
 
     def removeFromHostGroup(self):
