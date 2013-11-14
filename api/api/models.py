@@ -559,6 +559,14 @@ class Node(models.Model):
         z.host.create(host=hostName, groups=hostGroups, name=self.visible_name(), templates=templates,
                       interfaces={"type": '1', "main": '1', "useip": '1', "ip": self.ip, "dns": hostName, "port": "10050"})
 
+    def zabbix_monitoring(self, enable=True):
+        z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
+        z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
+        hostids = z.host.get(filter={'host':self.dns_name})
+        assert(len(hostids)==1)
+        status = 0 if enable else 0
+        z.host.update({'hostid':hostids[0]['hostid'], 'status':status})
+
     def removeFromHostGroup(self):
         hostName = self.dns_name
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
@@ -767,6 +775,7 @@ class Node(models.Model):
         self.save()
     def pause_async_salt(self):
         self.assert_state(Node.PAUSING)
+        self.zabbix_monitoring(False)
         self.refresh_salt()
     def pause_complete(self):
         self.assert_state(Node.PAUSING)
@@ -784,6 +793,7 @@ class Node(models.Model):
     def resume_complete(self):
         self.assert_state(Node.RESUMING)
         self.refresh_salt_complete()
+        self.zabbix_monitoring(True)
         self.status = Node.RUNNING
         self.save()
 
