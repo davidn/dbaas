@@ -303,12 +303,6 @@ class Cluster(models.Model):
         obj, _ = self.lbr_regions.get_or_create(cluster=self.pk, lbr_region=region.lbr_region)
         return obj
 
-
-def gen_private_key():
-    """Generate a 2048 bit RSA key, exported as ASCII, suitable for use with tinc."""
-    return KeyPair().private_key
-
-
 class Provider(models.Model):
     """Represent a Cloud Compute provider."""
     name = models.CharField("Name", max_length=255)
@@ -476,7 +470,7 @@ class Node(models.Model):
     ip = models.IPAddressField("Instance IP Address", default="", blank=True)
     iops = models.IntegerField("Provisioned IOPS", default=None, blank=True, null=True)
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
-    tinc_private_key = models.TextField("Tinc Private Key", default=gen_private_key)
+    tinc_private_key = models.TextField("Tinc Private Key", blank=True)
     last_salt_jid = models.CharField(max_length=255, blank=True, default="")
 
     history = HistoricalRecords()
@@ -667,6 +661,12 @@ class Node(models.Model):
         assert equal == (self.status in state), \
             'Cannot launch node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
 
+    def generate_keys(self):
+        # idempotence
+        if len(self.tinc_private_key) != 0:
+            return
+        self.tinc_private_key = KeyPair().private_key
+
     def launch_sync(self):
         self.assert_state(Node.OVER, False)
         self.nid = self.cluster.next_nid()
@@ -675,6 +675,7 @@ class Node(models.Model):
         self.save()
 
     def launch_async_provision(self):
+        self.generate_keys()
         self.status = self.PROVISIONING
         logger.info("%s: provisioning node", self)
         self.region.connection.launch(self)
