@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title>GenieDB DBaaS Cluster Ready</title>
+	<style type="text/css">
+		.ExternalClass{ width: 100%; }
+
+		.ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div{
+			line-height: 100%;
+		}
+
+		body{ -webkit-text-size-adjust: none; -ms-text-size-adjust: none; }
+
+		body{ margin: 0; padding: 0; }
+
+		table td{ border-collapse: collapse; }
+
+		p{ margin: 0; padding: 0; margin-bottom: 0; }
+
+		/* This sets a clean slate for all clients EXCEPT Gmail.
+	   From there it forces you to do all of your spacing inline during the development process.
+	   Be sure to stick to margins because paragraph padding is not supported by Outlook 2007/2010
+	   Remember: Hotmail does not support "margin" nor the "margin-top" properties.
+	   Stick to "margin-bottom", "margin-left", "margin-right" in order to control spacing
+	   It also doesn't hurt to set the inline top-margin to "0" for consistency in Gmail for every instance of a
+	   paragraph tag (see our paragraph example within the body of this template)
+	   Another option:  Use double BRs instead of paragraphs */
+
+		h1, h2, h3, h4, h5, h6{
+			color: #565656;
+			line-height: 100%;
+		}
+
+		a, a:link{
+			color: #7789c1;
+			text-decoration: underline;
+		}
+
+		body, #body_style{
+			background: #ececec;
+			min-height: 1000px;
+			color: #565656;
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 12px;
+		}
+
+		span.yshortcuts{ color: #000; background-color: none; border: none; }
+
+		span.yshortcuts:hover,
+		span.yshortcuts:active,
+		span.yshortcuts:focus{ color: #000; background-color: none; border: none; }
+
+		a:visited{ color: #3c96e2; text-decoration: none }
+
+		a:focus{ color: #3c96e2; text-decoration: underline }
+
+		a:hover{ color: #3c96e2; text-decoration: underline }
+
+		@media only screen and (max-device-width: 480px){
+			body[yahoo] #container1{ display: block !important }
+
+			body[yahoo] p{ font-size: 10px }
+		}
+
+		@media only screen and (min-device-width: 768px) and (max-device-width: 1024px){
+			body[yahoo] #container1{ display: block !important }
+
+			body[yahoo] p{ font-size: 10px }
+		}
+	</style>
+</head>
+<body style="background:#ececec; min-height:1000px; color:#565656;font-family:Arial, Helvetica, sans-serif; font-size:12px" alink="#7789c1" link="#7789c1" bgcolor="#ececec" text="#565656" yahoo="fix">
+<div id="body_style" style="padding:15px">
+	<table cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" width="660" align="center">
+		<tr>
+			<td width="40"></td>
+			<td width="580">
+				<br/>
+				<img src="http://m.geniedb.com/geniedb-logo.white.bkg.png" width="217" height="39" alt="GenieDB Logo" title="GenieDB" style="display:block" border="0"/>
+				<br/>
+
+				<p>Hi {{ username }}, </p><br/>
+
+				<p>The requested change to your cluster is now complete.  The new cluster configuration is:</p>
+
+				<br/>
+
+				<h2>Cluster Details</h2>
+
+				<table cellpadding="2" cellspacing="2" border="0">
+					<tr>
+						<td>Cluster DNS</td>
+						<td><strong>{{ cluster_dns }}</strong></td>
+					</tr>
+					<tr>
+						<td>Port</td>
+						<td><strong>{{ port }}</strong></td>
+					</tr>
+					<tr>
+						<td>Username</td>
+						<td><strong>{{ dbusername }}</strong></td>
+					</tr>
+					<tr>
+						<td>Database</td>
+						<td><strong>{{ db }}</strong></td>
+					</tr>
+				</table>
+
+				<h3>Node Details</h3>
+				<table cellpadding="2" cellspacing="2" border="0">
+					{% for node in nodes %}
+						<tr>
+							<td><strong>Node {{ node.nid }}</strong></td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>Provider</td>
+							<td><strong>{{ node.region.provider.name }}</strong></td>
+						</tr>
+						<tr>
+							<td>Location</td>
+							<td><strong>{{ node.region.name }}</strong></td>
+						</tr>
+						<tr>
+							<td>DNS</td>
+							<td><strong>{{ node.dns_name }}</strong></td>
+						</tr>
+						<tr>
+							<td>Type</td>
+							<td><strong>{{ node.flavor.name }}</strong></td>
+						</tr>
+						<tr>
+							<td>IP</td>
+							<td><strong>{{ node.ip }}</strong></td>
+						</tr>
+						<tr>
+							<td>&nbsp;</td>
+							<td></td>
+						</tr>
+					{% endfor %}
+				</table>
+				<br/><br/>
+
+				<p>Visit us at: <br/>
+					<a href="http://www.geniedb.com" target="_blank" title="GenieDB Homepage" style="color: #7789c1; text-decoration: none; font-weight: bold">www.geniedb.com</a>
+				</p><br/>
+
+				<p>Don't hesitate to
+					<a href="mailto:support@geniedb.com" target="_blank" title="GenieDB Support" style="color: #7789c1; text-decoration: none; font-weight: bold">contact us</a> with any questions or comments.
+				</p><br/> <br/>
+			</td>
+			<td width="40"></td>
+		</tr>
+	</table>
+	<br/>
+	<table cellpadding="0" cellspacing="0" border="0" width="660" align="center">
+		<tr>
+			<td width="40"></td>
+			<td width="580" style="font-size:11px">
+				This is a one-time email. To get the latest on GenieDB news you should follow us on Twitter
+				<a href="http://twitter.com/geniedb" target="_blank" title="GenieDB at Twitter" style="color: #7789c1; text-decoration: none; font-weight: bold">@GenieDB</a>
+			</td>
+			<td width="40"></td>
+		</tr>
+	</table>
+
+
+</div>
+</body>
+</html>

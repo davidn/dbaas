@@ -80,5 +80,6 @@ def add_nodes(nodes):
          | tasks.cluster_refresh_salt.si(cluster) \
          | group([tasks.node_refresh_complete.si(node) for node in cluster.nodes.filter(status=Node.RUNNING)]) \
          | tasks.null_task.si() \
-         | group([tasks.node_launch_complete.si(node) for node in nodes])
+         | group([tasks.node_launch_complete.si(node) for node in nodes]) \
+         | tasks.launch_email.si(node.cluster, 'add_node_confirmation_email')
     return task.delay()

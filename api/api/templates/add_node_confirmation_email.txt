@@ -1,0 +1,41 @@
+
+Hi {{username}},
+
+The requested change to your cluster is now complete.  The new cluster configuration is:
+
+Cluster Details
+---------------
+
+Cluster Domain Name: {{cluster_dns}}
+Port: {{port}}
+
+Database: {{db}}
+Username: {{dbusername}}
+
+
+Node Details
+---------------
+{% for node in nodes %}
+Node {{node.nid}}
+Provider: {{node.region.provider.name}}
+Location: {{node.region.name}}
+Type: {{node.flavor.name}}
+DNS: {{node.dns_name}}
+IP: {{node.ip}}
+
+{% endfor %}
+
+
+
+If you have questions, feel free to reach us at:
+
+    support@geniedb.com
+
+---------
+
+www.geniedb.com
+
+---------
+
+This is a one-time email. To get the latest on GenieDB news you should follow us on Twitter at: http://twitter.com/geniedb
+
