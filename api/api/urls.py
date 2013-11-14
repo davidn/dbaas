@@ -61,6 +61,7 @@ router.register(r'providers', views.ProviderViewSet)
 router.register(r'regions', views.RegionViewSet)
 router.register(r'flavor', views.FlavorViewSet)
 router.register(r'clusters/(?P<cluster>[^/]+)', views.NodeViewSet)
+router.register(r'clusters/(?P<cluster>[^/]+)/(?P<node>[^/]+)/backups', views.BackupViewSet)
 
 urlpatterns = patterns('',
     url(r'', include(router.urls)),

@@ -21,7 +21,7 @@ from django.core.urlresolvers import reverse
 from django.core.mail import mail_admins
 from django.core.exceptions import ValidationError
 from rest_framework import viewsets, mixins, status, permissions
-from .models import Cluster, Node, Region, Provider, Flavor
+from .models import Cluster, Node, Region, Provider, Flavor, Backup
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
 from .controller import launch_cluster, reinstantiate_node, pause_node, resume_node, add_database, add_nodes
 from rest_framework.response import Response
@@ -39,6 +39,8 @@ class Owner(permissions.BasePermission):
             return obj.user == request.user
         if isinstance(obj, Node):
             return obj.cluster.user == request.user
+        if isinstance(obj, Backup):
+            return obj.node.cluster.user == request.user
         return False
 
     def has_permission(self, request, view):
@@ -323,37 +325,6 @@ class NodeViewSet(mixins.ListModelMixin,
                 res[key_name].reverse()
         return Response(data=res, status=status.HTTP_200_OK)
 
-    @link()
-    def backups(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        serializer = BackupReadSerializer(self.object.backups.all())
-        return Response(serializer.data)
-
-    @action(permission_classes=[permissions.AllowAny])
-    def set_backups(self, request, *args, **kwargs):
-        self.object = self.get_object() # The NODE object
-        if isinstance(request.DATA, list):
-            data = []
-            for d in request.DATA:
-                new_d = d.copy()
-                new_d["node"] = self.object.pk
-                data.append(new_d)
-        else:
-            data = request.DATA.copy()
-            data["node"] = self.object.pk
-        serializer = BackupWriteSerializer(data=data, files=request.FILES, context={
-            'request': self.request,
-            'format': self.format_kwarg,
-            'view': self
-        })
-        if serializer.is_valid():
-            self.object.backups.all().delete()
-            serializer.save(force_insert=True)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED,
-                            headers=headers)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     @action()
     def pause(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -369,3 +340,45 @@ class NodeViewSet(mixins.ListModelMixin,
         serializer = self.get_serializer(self.object)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
+
+class OwnerOrCreate(Owner):
+    def has_permission(self, request, view):
+        return view.action == 'create' or not request.user.is_anonymous()
+
+class BackupViewSet(mixins.ListModelMixin,
+                  viewsets.GenericViewSet):
+    model = Backup
+    serializer_class = BackupReadSerializer
+    permission_classes = (OwnerOrCreate,)
+
+    def get_queryset(self):
+        return Backup.objects.filter(node=self.kwargs["node"])
+
+    def get_success_headers(self, data):
+        try:
+            return {'Location': data['url']}
+        except (TypeError, KeyError):
+            return {}
+
+    def create(self, request, *args, **kwargs):
+        if isinstance(request.DATA, list):
+            data = []
+            for d in request.DATA:
+                new_d = d.copy()
+                new_d['node'] = self.kwargs["node"]
+                data.append(new_d)
+        else:
+            data = request.DATA.copy()
+            data['node'] = self.kwargs["node"]
+        serializer = BackupWriteSerializer(data=data, files=request.FILES)
+
+        if serializer.is_valid():
+            self.get_queryset().delete()
+            self.pre_save(serializer.object)
+            self.object = serializer.save(force_insert=True)
+            self.post_save(self.object, created=True)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED,
+                            headers=headers)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

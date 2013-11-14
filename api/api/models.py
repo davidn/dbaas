@@ -533,7 +533,7 @@ class Node(models.Model):
 
     @property
     def set_backup_url(self):
-        return 'https://' + Site.objects.get_current().domain + reverse('node-set-backups', args=[self.cluster.pk, self.pk])
+        return 'https://' + Site.objects.get_current().domain + reverse('backup-list', args=[self.cluster.pk, self.pk])
 
     def visible_name(self):
         return "{email}-{label}-{node}".format(email=self.cluster.user.email, label=self.cluster.label, node=self.nid)
