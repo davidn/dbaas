@@ -69,6 +69,8 @@ def cron_validator(value):
 def mysql_database_validator(value):
     if len(value) > 64:
         raise ValidationError("Database name too long: %s" % value)
+    if len(value) == 0:
+        raise ValidationError("Cannot create database with blank name.")
     if not re.match(r'^[\w$]*[A-Za-z][\w$]*$', value):
         raise ValidationError("Database name must consist of at least one letter and numbers only: %s" % value)
     if value.upper() in ('MYSQL', 'PERFORMANCE_SCHEMA', 'INFORMATION_SCHEMA'):
