@@ -190,6 +190,17 @@
 		var s = document.getElementsByTagName('script')[0];
 		s.parentNode.insertBefore(se, s);
 	})();
+
+	// Mouseflow
+	var _mfq = _mfq || [];
+	(function () {
+		var mf = document.createElement("script");
+		mf.type = "text/javascript";
+		mf.async = true;
+		mf.src = "//cdn.mouseflow.com/projects/3c54f3b7-9eb5-4ed4-b0c1-daf61fc46693.js";
+		document.getElementsByTagName("head")[0].appendChild(mf);
+	})();
+
 </script>
 <!-- begin bugsnag code --><!--<script src="//d2wy8f7a9ursnm.cloudfront.net/bugsnag-1.0.9.min.js" data-releaseStage="development" data-apikey="d32f5b8a58dc32f80a606c354b350d7d"></script>--><!-- begin bugsnag code -->
 
