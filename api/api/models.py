@@ -34,6 +34,7 @@ from .crypto import KeyPair, SslPair, CertificateAuthority
 from .utils import retry, split_every, cron_validator
 from .exceptions import BackendNotReady
 import providers
+import rules.conditions, rules.actions
 import types
 
 BUCKET_NAME = getattr(settings, 'S3_BUCKET', 'dbaas-backups')
@@ -136,6 +137,30 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         self.email_user(subject, message_text, settings.DEFAULT_FROM_EMAIL, message_html)
 
+
+class Rule(models.Model):
+    condition = models.CharField(max_length=255)
+    action = models.CharField(max_length=255)
+    completed = models.ManyToManyField(User, related_name='completed_rules')
+
+    def run(self, user):
+        if getattr(rules.conditions, self.condition)(user):
+            getattr(rules.actions, self.action)(user)
+
+    @classmethod
+    def process_user(cls, user):
+        for rule in cls.objects.exclude(completed=user):
+            rule.run(user)
+            rule.completed.add(user)
+            rule.save()
+
+    @classmethod
+    def process(cls):
+        # The query below would fetch every rule, user pair we need, but I can't find a way to get django to make
+        # pairs of instances from a query :(
+        # select api_user.id, api_rule.id from api_rule, api_user left join api_rule_completed on api_rule_completed.rule_id=api_rule.id and api_rule_completed.user_id=api_User.id where api_rule_completed.id is not null;
+        for user in User.objects.all():
+            cls.process_user(user)
 
 class Cluster(models.Model):
     """Manage a cluster.
