@@ -1072,5 +1072,29 @@
             "ram": 16384,
             "cpus": 8
         }
+    },
+    {
+        "model": "api.rule",
+        "pk": 1,
+        "fields": {
+            "condition": "not_launched_after_2days",
+            "action": "no_cluster_email_2days":
+        }
+    },
+    {
+        "model": "api.rule",
+        "pk": 2,
+        "fields": {
+            "condition": "not_launched_after_5days",
+            "action": "no_cluster_email_5days":
+        }
+    },
+    {
+        "model": "api.rule",
+        "pk": 3,
+        "fields": {
+            "condition": "not_launched_after_10days",
+            "action": "no_cluster_email_10days":
+        }
     }
 ]
