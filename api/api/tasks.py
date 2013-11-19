@@ -4,14 +4,11 @@ from __future__ import unicode_literals
 import datetime
 from logging import getLogger
 from django.conf import settings
-from django.dispatch.dispatcher import receiver
-from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth import get_user_model
 from boto.route53.exception import DNSServerError
 from boto.exception import BotoClientError, BotoServerError
 from celery.task import Task, task
-from .models import Node, Cluster
+from .models import Node, Cluster, Rule
 from .exceptions import BackendNotReady
 
 logger = getLogger(__name__)
@@ -159,30 +156,5 @@ def launch_email(cluster, email_message='confirmation_email'):
     cluster.user.email_user_template(email_message, ctx_dict)
 
 @task()
-def send_reminder(user, reminder):
-    if user.is_paid:
-        return
-    #TODO: Load cluster/node info from user object
-
-    #ctx_dict = {
-    #    'nodes': nodes,
-    #    'username': str(cluster.user),
-    #    'is_paid': cluster.user.is_paid,
-    #    'cluster_dns': cluster.dns_name,
-    #    'trial_end': datetime.date.today() + settings.TRIAL_LENGTH,
-    #    'port': cluster.port,
-    #    'db': cluster.dbname,
-    #    'dbusername': cluster.dbusername,
-    #    'dbpassword': cluster.dbpassword,
-    #    'regions': ' and '.join(node.region.name for node in nodes)
-    #}
-    #
-    #user.email_user_template(reminder['template'], ctx_dict)
-
-
-@receiver(models.signals.post_save, sender=get_user_model())
-def schedule_reminders(sender, instance, created, using, update_fields, **kwargs):
-    if sender != get_user_model():
-        return
-    for reminder in getattr(settings, 'REMINDERS', ()):
-        send_reminder.apply_async((instance, reminder), eta=reminder['ETA'])
+def rules_process():
+    Rule.process()
