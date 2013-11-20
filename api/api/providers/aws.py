@@ -71,6 +71,7 @@ class EC2(Cloud):
         return bdm
 
     def _run_instances(self, node, sgs):
+        zones = self.ec2.get_all_zones()
         return self.ec2.run_instances(
             self.region.image,
             key_name=self.region.key_name,
@@ -78,6 +79,7 @@ class EC2(Cloud):
             block_device_map=self._create_block_device_map(node),
             security_groups=sgs,
             user_data=self.cloud_init(node),
+            placement=zones[node.nid % len(zones)],
         )
 
     def launch(self, node):
