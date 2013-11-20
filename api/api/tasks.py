@@ -17,12 +17,8 @@ from .exceptions import BackendNotReady
 logger = getLogger(__name__)
 
 if hasattr(settings, 'BUGSNAG'):
-    from celery.signals import after_setup_logger, after_setup_task_logger
-    def add_logger(logger, *args, **kwargs):
-        import bugsnag.handlers
-        logger.addHandler(bugsnag.handlers.BugsnagHandler())
-    after_setup_logger.connect(add_logger)
-    after_setup_task_logger.connect(add_logger)
+    import bugsnag.celery
+    bugsnag.celery.connect_failure_handler()
 
 class NodeTask(Task):
     def on_failure(self, exc, task_id, args, kwargs, einfo):
