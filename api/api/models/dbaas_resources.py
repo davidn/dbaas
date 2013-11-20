@@ -1,166 +1,28 @@
-#!/usr/bin/python
-
-"""Manage clusters of GenieDB nodes.
-
-This module provides classes to create, manage and destroy clusters of GenieDB
-nodes.  It consists of three related classes, Cluster, Node and
-LBRRegionNodeSet. Each Cluster contains several Nodes; each cluster has
-LBRRegionNodeSet which in turn contain Nodes, such that the LBRRegionNodeSets
-partition the Nodes in a cluster. See `the wiki`_ for more info.
-
-.. _the wiki: https://geniedb.atlassian.net/wiki/x/NgCYAQ
-
-"""
-
 from __future__ import unicode_literals
 from logging import getLogger
 import json
+from collections import Sequence
 from django.db import models
-from django.dispatch.dispatcher import receiver
 from django.conf import settings
-from django.contrib.sites.models import Site
-from django.core.validators import MinValueValidator, MaxValueValidator, MaxLengthValidator
 from django.core.urlresolvers import reverse
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.utils import timezone
-from django.utils.translation import ugettext as _
+from django.core.validators import MaxLengthValidator
+from django.contrib.sites.models import Site
 from boto import connect_s3, connect_iam
+from pyzabbix import ZabbixAPI, ZabbixAPIException
 from simple_history.models import HistoricalRecords
-from pyzabbix import ZabbixAPI
 from salt_jobs.models import send_salt_cmd, get_highstate_result
-from .route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception, catch_dns_exists, catch_dns_not_found, connect_route53
+from ..crypto import KeyPair, SslPair, CertificateAuthority
+from ..utils import retry, cron_validator
+from ..route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception, \
+    catch_dns_exists, catch_dns_not_found, connect_route53
+from ..exceptions import BackendNotReady
 from .uuid_field import UUIDField
-from .crypto import KeyPair, SslPair, CertificateAuthority
-from .utils import retry, split_every, cron_validator
-from .exceptions import BackendNotReady
-import providers
-import rules.conditions, rules.actions
-import types
-
-BUCKET_NAME = getattr(settings, 'S3_BUCKET', 'dbaas-backups')
+from .cloud_resources import Region, Flavor
 
 logger = getLogger(__name__)
 
-class UserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
-        """
-        Creates and saves a User with the given email and password.
-        """
-        now = timezone.now()
-        email = UserManager.normalize_email(email)
-        user = self.model(email=email,
-                          is_staff=False, is_active=True, is_superuser=False,
-                          last_login=now, date_joined=now, **extra_fields)
+BUCKET_NAME = getattr(settings, 'S3_BUCKET', 'dbaas-backups')
 
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, email, password, **extra_fields):
-        u = self.create_user(email, password, **extra_fields)
-        u.is_staff = True
-        u.is_active = True
-        u.is_superuser = True
-        u.save(using=self._db)
-        return u
-
-
-class User(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(_('email address'), unique=True)
-    first_name = models.CharField(_('first name'), max_length=30, blank=True)
-    last_name = models.CharField(_('last name'), max_length=30, blank=True)
-    is_staff = models.BooleanField(_('staff status'), default=False,
-                                   help_text=_('Designates whether the user can log into this admin '
-                                               'site.'))
-    is_active = models.BooleanField(_('active'), default=True,
-                                    help_text=_('Designates whether this user should be treated as '
-                                                'active. Unselect this instead of deleting accounts.'))
-    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
-    is_paid = models.BooleanField(_('paid'), default=False,
-                                  help_text=_('Designates whether this user should be allowed to '
-                                              'create arbitrary nodes and clusters.'))
-
-    objects = UserManager()
-
-    USERNAME_FIELD = 'email'
-
-    class Meta:
-        verbose_name = _('user')
-        verbose_name_plural = _('users')
-
-    @models.permalink
-    def get_absolute_url(self):
-        return ('user-detail', [self.pk])
-
-    def get_full_name(self):
-        """
-        Returns the first_name plus the last_name, with a space in between.
-        """
-        full_name = '%s %s' % (self.first_name, self.last_name)
-        return full_name.strip()
-
-    def get_short_name(self):
-        "Returns the short name for the user."
-        return self.first_name
-
-    def email_user(self, subject, message, from_email=None, message_html=None):
-        """
-        Sends an email to this User.
-        """
-        from django.core.mail import EmailMultiAlternatives
-
-        recipient = [settings.OVERRIDE_USER_EMAIL] if getattr(settings, 'OVERRIDE_USER_EMAIL', False) else [self.email]
-
-        bcc_recipient = settings.INTERNAL_BCC_EMAIL if getattr(settings, 'INTERNAL_BCC_EMAIL', False) else None
-
-        if not from_email:
-            from_email = settings.DEFAULT_FROM_EMAIL
-
-        msg = EmailMultiAlternatives(subject, message, from_email, recipient, bcc=bcc_recipient)
-        if message_html:
-            msg.attach_alternative(message_html, "text/html")
-
-        msg.send()
-
-    def email_user_template(self, template_base_name, dictionary):
-        """
-        Sends a multipart html email to this User.
-        """
-        from django.template.loader import render_to_string
-
-        subject = render_to_string(template_base_name + '_subject.txt', dictionary)
-        # Email subject *must not* contain newlines
-        subject = ''.join(subject.splitlines())
-
-        message_text = render_to_string(template_base_name + '.txt', dictionary)
-        message_html = render_to_string(template_base_name + '.html', dictionary)
-
-        self.email_user(subject, message_text, settings.DEFAULT_FROM_EMAIL, message_html)
-
-
-class Rule(models.Model):
-    condition = models.CharField(max_length=255)
-    action = models.CharField(max_length=255)
-    completed = models.ManyToManyField(User, related_name='completed_rules')
-
-    def run(self, user):
-        if getattr(rules.conditions, self.condition)(user):
-            getattr(rules.actions, self.action)(user)
-
-    @classmethod
-    def process_user(cls, user):
-        for rule in cls.objects.exclude(completed=user):
-            rule.run(user)
-            rule.completed.add(user)
-            rule.save()
-
-    @classmethod
-    def process(cls):
-        # The query below would fetch every rule, user pair we need, but I can't find a way to get django to make
-        # pairs of instances from a query :(
-        # select api_user.id, api_rule.id from api_rule, api_user left join api_rule_completed on api_rule_completed.rule_id=api_rule.id and api_rule_completed.user_id=api_User.id where api_rule_completed.id is not null;
-        for user in User.objects.all():
-            cls.process_user(user)
 
 class Cluster(models.Model):
     """Manage a cluster.
@@ -194,7 +56,8 @@ class Cluster(models.Model):
     dbusername = models.CharField("Database Username", max_length=255, validators=[MaxLengthValidator(16)])
     dbpassword = models.CharField("Database Password", max_length=255)
     backup_count = models.PositiveIntegerField("Number of backups to keep", default=24)
-    backup_schedule = models.CharField("Cron-style backup schedule", max_length=255, validators=[cron_validator], default="3 */2 * * *")
+    backup_schedule = models.CharField("Cron-style backup schedule", max_length=255, validators=[cron_validator],
+                                       default="3 */2 * * *")
     iam_arn = models.CharField(max_length=255, blank=True, default="")
     iam_key = models.CharField(max_length=255, blank=True, default="")
     iam_secret = models.CharField(max_length=255, blank=True, default="")
@@ -210,7 +73,9 @@ class Cluster(models.Model):
     history = HistoricalRecords()
 
     class Meta:
-        unique_together=(("user","label"),)
+        unique_together = (("user", "label"),)
+        app_label = "api"
+
 
     def __repr__(self):
         return "Cluster(uuid={uuid}, user={user})".format(uuid=repr(self.uuid), user=repr(self.user))
@@ -219,12 +84,12 @@ class Cluster(models.Model):
         return self.dns_name
 
     def generate_keys(self):
-        # idempotence
+        # idempotency
         if len(self.ca_cert) != 0:
             return
-        ca = CertificateAuthority(CN='GenieDB Inc',ST='CA', C='US')
-        client = SslPair(ca, CN=self.dns_name, O='GenieDB Inc',ST='CA', C='US')
-        server = SslPair(ca, CN=self.dns_name, O='GenieDB Inc',ST='CA', C='US')
+        ca = CertificateAuthority(CN='GenieDB Inc', ST='CA', C='US')
+        client = SslPair(ca, CN=self.dns_name, O='GenieDB Inc', ST='CA', C='US')
+        server = SslPair(ca, CN=self.dns_name, O='GenieDB Inc', ST='CA', C='US')
         self.client_cert = client.certificate
         self.client_key = client.private_key
         self.server_cert = server.certificate
@@ -250,7 +115,7 @@ class Cluster(models.Model):
                         "Effect": "Allow",
                         "Action": ["s3:ListBucket"],
                         "Resource": "arn:aws:s3:::%s" % BUCKET_NAME,
-                        "Condition": {"StringLike":{"s3:prefix":"%s/*"%self.uuid}}
+                        "Condition": {"StringLike": {"s3:prefix": "%s/*" % self.uuid}}
                     },
                     {
                         "Effect": "Allow",
@@ -263,23 +128,24 @@ class Cluster(models.Model):
             }))
             res = iam.create_access_key(self.uuid)
             self.iam_key = res['create_access_key_response']['create_access_key_result']['access_key']['access_key_id']
-            self.iam_secret = res['create_access_key_response']['create_access_key_result']['access_key']['secret_access_key']
+            self.iam_secret = res['create_access_key_response']['create_access_key_result']['access_key'][
+                'secret_access_key']
             self.save()
 
     def launch_async_zabbix(self):
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
         z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
-        hostGroups = z.hostgroup.getobjects(name=self.user.email)
-        if not hostGroups:
+        host_groups = z.hostgroup.getobjects(name=self.user.email)
+        if not host_groups:
             logger.info("%s: Creating Zabbix HostGroup %s", self, self.user.email)
-            hostGroups = [{'groupid':gid} for gid in z.hostgroup.create(name=self.user.email)['groupids']]
+            z.hostgroup.create(name=self.user.email)
 
     def launch_complete(self):
         self.status = Cluster.RUNNING
         self.save()
 
     def add_database_sync(self, dbname):
-        self.dbname += ','+dbname
+        self.dbname += ',' + dbname
         self.save()
 
     def refresh_salt(self, qs=None):
@@ -309,7 +175,7 @@ class Cluster(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('cluster-detail', [self.pk])
+        return 'cluster-detail', [self.pk]
 
     def next_nid(self):
         """Return the next available node id."""
@@ -321,76 +187,15 @@ class Cluster(models.Model):
 
     @property
     def subscriptions(self):
-        return ",".join(":".join([str(node.nid), '192.168.33.' + str(node.nid), "5502"]) for node in self.nodes.exclude(status__in=[Node.INITIAL, Node.OVER]))
+        return ",".join(":".join([str(node.nid), '192.168.33.' + str(node.nid), "5502"]) for node in
+                        self.nodes.exclude(status__in=[Node.INITIAL, Node.OVER]))
 
     def get_lbr_region_set(self, region):
-        """Given a Region object, return the LBRRegionNodeSet for that region in this cluster, creating one if needed."""
+        """
+        Given a Region object, return the LBRRegionNodeSet for that region in this cluster, creating one if needed.
+        """
         obj, _ = self.lbr_regions.get_or_create(cluster=self.pk, lbr_region=region.lbr_region)
         return obj
-
-class Provider(models.Model):
-    """Represent a Cloud Compute provider."""
-    name = models.CharField("Name", max_length=255)
-    code = models.CharField(max_length=20)
-    enabled = models.BooleanField(default=True)
-
-    @models.permalink
-    def get_absolute_url(self):
-        return ('provider-detail', [self.pk])
-
-    def __unicode__(self):
-        return self.name
-
-
-class Region(models.Model):
-    """Represent a region in a Cloud"""
-    provider = models.ForeignKey(Provider, related_name='regions')
-    code = models.CharField("Code", max_length=20)
-    name = models.CharField("Name", max_length=255)
-    image = models.CharField("Image", max_length=255)
-    lbr_region = models.CharField("LBR Region", max_length=20)
-    key_name = models.CharField("SSH Key", max_length=255, blank=True)
-    security_group = models.CharField("Security Group", max_length=255, blank=True)
-    longitude = models.FloatField("Longitude", validators=[MaxValueValidator(180), MinValueValidator(-180)])
-    latitude = models.FloatField("Latitude", validators=[MaxValueValidator(90), MinValueValidator(-90)])
-
-    @models.permalink
-    def get_absolute_url(self):
-        return ('region-detail', [self.pk])
-
-    def __unicode__(self):
-        return self.name
-
-    @property
-    def connection(self):
-        if not hasattr(self, '_connection'):
-            self._connection = getattr(providers, self.provider.code)(self)
-        return self._connection
-
-    def __getstate__(self):
-        if hasattr(self, '_connection'):
-            odict = self.__dict__.copy()
-            del odict['_connection']
-            return odict
-        else:
-            return self.__dict__
-
-
-class Flavor(models.Model):
-    """Represent a size/type of instance that can be created in a cloud"""
-    provider = models.ForeignKey(Provider, related_name='flavors')
-    code = models.CharField("Code", max_length=20)
-    name = models.CharField("Name", max_length=255)
-    ram = models.PositiveIntegerField("RAM (MiB)")
-    cpus = models.PositiveSmallIntegerField("CPUs")
-    free_allowed = models.BooleanField("Free users allowed", default=False)
-
-    @models.permalink
-    def get_absolute_url(self):
-        return ('flavor-detail', [self.pk])
-
-    def __unicode__(self):
-        return self.name
 
 
 class LBRRegionNodeSet(models.Model):
@@ -407,6 +212,9 @@ class LBRRegionNodeSet(models.Model):
 
     history = HistoricalRecords()
 
+    class Meta:
+        app_label = "api"
+
     def __unicode__(self):
         return self.dns_name
 
@@ -417,7 +225,8 @@ class LBRRegionNodeSet(models.Model):
     def launch_async(self):
         logger.debug("%s: setting up dns for lbr region %s, cluster %s", self, self.lbr_region, self.cluster.pk)
         if self.lbr_region != 'test':
-            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY,
+                                  aws_secret_access_key=settings.AWS_SECRET_KEY)
             rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
             rrs.add_change_record('CREATE', self.record)
             catch_dns_exists(rrs)
@@ -431,18 +240,22 @@ class LBRRegionNodeSet(models.Model):
     @property
     def record(self):
         return RecordWithTargetHealthCheck(name=self.cluster.dns_name,
-                                           type='A', ttl=60, alias_hosted_zone_id=settings.ROUTE53_ZONE, alias_dns_name=self.dns_name,
+                                           type='A', ttl=60, alias_hosted_zone_id=settings.ROUTE53_ZONE,
+                                           alias_dns_name=self.dns_name,
                                            identifier=self.identifier, region=self.lbr_region)
 
     def on_terminate(self):
         logger.debug("%s: terminating dns for lbr region %s, cluster %s", self, self.lbr_region, self.cluster.pk)
         if self.lbr_region != 'test':
-            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY,
+                                  aws_secret_access_key=settings.AWS_SECRET_KEY)
+
             def try_remove_dns():
                 rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
                 rrs.add_change_record('DELETE', self.record)
                 catch_dns_not_found(rrs)
                 return True
+
             retry(try_remove_dns)
 
 
@@ -500,6 +313,9 @@ class Node(models.Model):
 
     history = HistoricalRecords()
 
+    class Meta:
+        app_label = "api"
+
     def __repr__(self):
         optional = ""
         if self.iops != "":
@@ -534,15 +350,17 @@ class Node(models.Model):
         """Return True if the underlying cloud provider is in the process of reinstantiating the instance."""
         return self.region.connection.reinstantiating(self)
 
-    def update(self, tags={}):
+    def update(self, tags=None):
+        if tags is None:
+            tags = {}
         return self.region.connection.update(self, tags)
 
-    def getIP(self):
-        return self.region.connection.getIP(self)
+    def get_ip(self):
+        return self.region.connection.get_ip(self)
 
     @models.permalink
     def get_absolute_url(self):
-        return ('node-detail', [self.cluster.pk, self.pk])
+        return 'node-detail', [self.cluster.pk, self.pk]
 
     @property
     def dns_name(self):
@@ -554,7 +372,7 @@ class Node(models.Model):
 
     @property
     def buffer_pool_size(self):
-        return int(max((self.flavor.ram-128) * 0.7, self.flavor.ram - 2048) * 2 ** 20)
+        return int(max((self.flavor.ram - 128) * 0.7, self.flavor.ram - 2048) * 2 ** 20)
 
     @property
     def set_backup_url(self):
@@ -563,8 +381,7 @@ class Node(models.Model):
     def visible_name(self):
         return "{email}-{label}-{node}".format(email=self.cluster.user.email, label=self.cluster.label, node=self.nid)
 
-    def addToHostGroup(self):
-        hostName = self.dns_name
+    def add_to_host_group(self):
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
         z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
         templates = z.template.getobjects(host='Template App GenieDB V2 Monitoring')
@@ -573,63 +390,65 @@ class Node(models.Model):
                         self, 'Template App GenieDB V2 Monitoring')
         else:
             logger.info("%s: Not using a zabbix template")
-        hostGroups = z.hostgroup.getobjects(name=self.cluster.user.email)
-        existingHosts = z.host.getobjects(name=self.visible_name())
-        if existingHosts:
+        host_groups = z.hostgroup.getobjects(name=self.cluster.user.email)
+        existing_hosts = z.host.getobjects(name=self.visible_name())
+        if existing_hosts:
             logger.warning('%s: Cleaning up old zabbix host with same visible name "%s" and id "%s".',
-                           self, self.visible_name(), existingHosts[0]['hostid'])
-            z.host.delete(existingHosts[0])
+                           self, self.visible_name(), existing_hosts[0]['hostid'])
+            z.host.delete(existing_hosts[0])
 
         logger.info("%s: Creating Zabbix Host with visible name: %s", self, self.visible_name())
-        z.host.create(host=hostName, groups=hostGroups, name=self.visible_name(), templates=templates,
-                      interfaces={"type": '1', "main": '1', "useip": '1', "ip": self.ip, "dns": hostName, "port": "10050"})
+        z.host.create(host=self.dns_name, groups=host_groups, name=self.visible_name(), templates=templates,
+                      interfaces={"type": '1', "main": '1', "useip": '1', "ip": self.ip, "dns": self.dns_name,
+                                  "port": "10050"})
 
     def zabbix_monitoring(self, enable=True):
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
         z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
-        hostids = z.host.get(filter={'host':self.dns_name})
-        assert(len(hostids)==1)
+        hostids = z.host.get(filter={'host': self.dns_name})
+        assert (len(hostids) == 1)
         status = 0 if enable else 1
-        z.host.update({'hostid':hostids[0]['hostid'], 'status':status})
+        z.host.update({'hostid': hostids[0]['hostid'], 'status': status})
 
-    def removeFromHostGroup(self):
-        hostName = self.dns_name
+    def remove_from_host_group(self):
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
         z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
         # Find the Zabbix HostGroup and Host IDs
         # then delete the Host node,
         # and if the HostGroup is now empty, remove it too.
-        hostGroups = z.hostgroup.getobjects(name=self.cluster.user.email)
-        if not hostGroups:
+        host_groups = z.hostgroup.getobjects(name=self.cluster.user.email)
+        if not host_groups:
             return
-        zabbixHostGroup = hostGroups[0]
-        hosts = z.host.get(groupids=zabbixHostGroup["groupid"], output='extend')
+        zabbix_host_group = host_groups[0]
+        hosts = z.host.get(groupids=zabbix_host_group["groupid"], output='extend')
         for zabbixHost in hosts:
-            if zabbixHost['host'] == hostName:
-                logger.info("Zabbix Host %s being removed." % (hostName))
+            if zabbixHost['host'] == self.dns_name:
+                logger.info("Zabbix Host %s being removed.", self.dns_name)
                 z.host.delete(hostid=zabbixHost['hostid'])
-                hosts = z.host.get(groupids=zabbixHostGroup["groupid"], output='extend')
+                hosts = z.host.get(groupids=zabbix_host_group["groupid"], output='extend')
                 break
         if not hosts:
-            logger.info("Zabbix HostGroup %s being removed." % (self.cluster.user.email))
+            logger.info("Zabbix HostGroup %s being removed.", self.cluster.user.email)
             try:
-                z.hostgroup.delete(zabbixHostGroup["groupid"])
-            except:
-                logger.warning("Failed to delete Zabbix HostGroup %s" % (self.cluster.user.email))
+                z.hostgroup.delete(zabbix_host_group["groupid"])
+            except ZabbixAPIException:
+                logger.warning("Failed to delete Zabbix HostGroup %s", self.cluster.user.email)
 
     @property
     def health_check_reference(self):
-        return str(self.cluster.pk)+str(self.id)+"-"+self.ip
+        return str(self.cluster.pk) + str(self.id) + "-" + self.ip
 
     def setup_dns(self):
         if self.region.provider.code != 'test':
-            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY,
+                                  aws_secret_access_key=settings.AWS_SECRET_KEY)
             health_check = HealthCheck(connection=r53, caller_reference=self.health_check_reference,
                                        ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
             self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
             rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
             rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-                                                                  type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
+                                                                  type='A', ttl=60, resource_records=[self.ip],
+                                                                  identifier=self.instance_id,
                                                                   weight=1))
             rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
                                                           resource_records=[self.ip]))
@@ -637,10 +456,12 @@ class Node(models.Model):
 
     def remove_dns(self):
         if self.region.provider.code != 'test':
-            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY,
+                                  aws_secret_access_key=settings.AWS_SECRET_KEY)
             rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
             rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-                                                                  type='A', ttl=60, resource_records=[self.ip], identifier=self.instance_id,
+                                                                  type='A', ttl=60, resource_records=[self.ip],
+                                                                  identifier=self.instance_id,
                                                                   weight=1))
             rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
                                                           resource_records=[self.ip]))
@@ -657,7 +478,8 @@ class Node(models.Model):
             # If the IP address didn't change then we don't need to do anything
             if old_ip and old_ip != self.ip:
                 logger.info("Deregistering the old IP=%s to the new IP=%s" % (old_ip, self.ip))
-                r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
+                r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY,
+                                      aws_secret_access_key=settings.AWS_SECRET_KEY)
 
                 # De-register the old IP address
                 rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
@@ -689,8 +511,8 @@ class Node(models.Model):
                 catch_dns_exists(rrs)
 
     def assert_state(self, state, equal=True):
-        if type(state) not in (types.ListType, types.TupleType):
-            state = [state]
+        if not isinstance(state, Sequence):
+            state = (state,)
         assert equal == (self.status in state), \
             'Cannot launch node "%s" as it is in state %s.' % (self, dict(Node.STATUSES)[self.status])
 
@@ -726,7 +548,7 @@ class Node(models.Model):
             'node': str(self.pk),
             'url': 'https://' + Site.objects.get_current().domain + self.get_absolute_url(),
         })
-        self.ip = self.getIP()
+        self.ip = self.get_ip()
         self.save()
 
     def launch_async_dns(self):
@@ -743,7 +565,7 @@ class Node(models.Model):
     def launch_async_zabbix(self):
         self.status = self.CONFIGURING_MONITORING
         self.save()
-        self.addToHostGroup()
+        self.add_to_host_group()
 
     def launch_complete(self):
         self.status = self.RUNNING
@@ -762,7 +584,7 @@ class Node(models.Model):
             return False
         self.assert_state([Node.RUNNING, Node.PAUSED])
         if self.flavor.provider == new_flavor.provider \
-            and self.flavor.code != new_flavor.code:
+                and self.flavor.code != new_flavor.code:
             self.flavor = new_flavor
             self.status = self.PROVISIONING
             self.save()
@@ -783,7 +605,7 @@ class Node(models.Model):
         if self.reinstantiating():
             raise BackendNotReady()
         old_ip = self.ip
-        self.ip = self.getIP()
+        self.ip = self.get_ip()
         self.modify_dns(old_ip)
         self.save()
 
@@ -798,10 +620,12 @@ class Node(models.Model):
         self.assert_state(Node.RUNNING)
         self.status = Node.PAUSING
         self.save()
+
     def pause_async_salt(self):
         self.assert_state(Node.PAUSING)
         self.zabbix_monitoring(False)
         self.refresh_salt()
+
     def pause_complete(self):
         self.assert_state(Node.PAUSING)
         self.refresh_salt_complete()
@@ -812,9 +636,11 @@ class Node(models.Model):
         self.assert_state(Node.PAUSED)
         self.status = Node.RESUMING
         self.save()
+
     def resume_async_salt(self):
         self.assert_state(Node.RESUMING)
         self.refresh_salt()
+
     def resume_complete(self):
         self.assert_state(Node.RESUMING)
         self.refresh_salt_complete()
@@ -824,12 +650,12 @@ class Node(models.Model):
 
     def on_terminate(self):
         """Shutdown the node and remove DNS entries."""
-        self.removeFromHostGroup()
+        self.remove_from_host_group()
         if self.status not in (self.INITIAL, self.OVER):
             logger.debug("%s: terminating instance %s", self, self.instance_id)
             self.remove_dns()
             self.region.connection.terminate(self)
-        self.status=Node.OVER
+        self.status = Node.OVER
         self.save()
 
 
@@ -840,39 +666,11 @@ class Backup(models.Model):
     time = models.DateTimeField()
     size = models.PositiveIntegerField("Backup size (MB)")
 
+    class Meta:
+        app_label = "api"
+
     def get_url(self):
         s3 = connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
         return s3.generate_url(3600,
                                "GET", BUCKET_NAME,
                                '%s/%s/%s' % (self.node.cluster.uuid, self.node.nid, self.filename))
-
-@receiver(models.signals.pre_save, sender=Node)
-def node_pre_save_callback(sender, instance, raw, using, **kwargs):
-    if sender != Node:
-        return
-    if raw:
-        return
-    instance.lbr_region = instance.cluster.get_lbr_region_set(instance.region)
-
-@receiver(models.signals.pre_delete, sender=Node)
-def node_pre_delete_callback(sender, instance, using, **kwargs):
-    """Terminate Nodes when the instances is deleted"""
-    if sender != Node:
-        return
-    instance.on_terminate()
-
-
-@receiver(models.signals.pre_delete, sender=LBRRegionNodeSet)
-def region_pre_delete_callback(sender, instance, using, **kwargs):
-    """Terminate LBRRegionNodeSets when the instances is deleted"""
-    if sender != LBRRegionNodeSet:
-        return
-    instance.on_terminate()
-
-
-@receiver(models.signals.pre_delete, sender=Cluster)
-def cluster_pre_delete_callback(sender, instance, using, **kwargs):
-    """Terminate Clusters when the instances is deleted"""
-    if sender != Cluster:
-        return
-    instance.on_terminate()

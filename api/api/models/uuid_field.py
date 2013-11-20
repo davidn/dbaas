@@ -84,4 +84,4 @@ For more information see: http://docs.python.org/lib/module-uuid.html
         field_class = "django.db.models.fields.CharField"
         args, kwargs = introspector(self)
         # That's our definition!
-        return (field_class, args, kwargs)
+        return field_class, args, kwargs
