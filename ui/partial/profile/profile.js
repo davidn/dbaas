@@ -1,20 +1,21 @@
-angular.module('geniedb').controller('ClusterCtrl', function ($scope, $location, apiModel, growl, dbaasConfig) {
-    $scope.providers = apiModel.getProviders();
+angular.module('geniedb').controller('ProfileCtrl', function ($scope, $http, $location, growl, User, dbaasConfig) {
+    $scope.user = angular.copy(User.user);
 
-    $scope.cluster = angular.copy(dbaasConfig.quickStart);
     $scope.showValidationMessages = false;
 
     $scope.save = function () {
         $scope.showValidationMessages = true;
-        if (!apiModel.isUniqueClusterLabel($scope.cluster.label)) {
-            growl.warning({body: "Cluster Name must be unique"});
+        // Validation Logic
+        if ($scope.profileForm.$invalid){
             return;
         }
+
         $scope.isLoading = true;
-        apiModel.Cluster.save($scope.cluster, function () {
-            growl.success({body: "Cluster " + $scope.cluster.label + " created"});
-            $location.path("/list");
-        }, handleError);
+
+        User.update({email: $scope.user.email, first_name: $scope.user.firstName, last_name: $scope.user.lastName, password: $scope.user.password}).success(function (data) {
+            growl.success({body: "User data updated"});
+            $location.path('/list');
+        }).error(handleError);
     };
 
     $scope.cancel = function () {
@@ -22,6 +23,7 @@ angular.module('geniedb').controller('ClusterCtrl', function ($scope, $location,
     };
 
     function handleError(err) {
+        console.log(err);
         $scope.isLoading = false;
         if (err && err.data && err.data.detail) {
             growl.error({body: err.data.detail});

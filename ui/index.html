@@ -41,8 +41,8 @@
 				<a id="dbaasHeader" class="navbar-brand" href="#"> <img src="img/DBaaSConsole_Logo.png"/> </a>
 			</div>
 			<div id="logout" ng-cloak class="ng-cloak navbar-header" ng-if="user.token">
-				<span class="environment-tag" app-environment></span> Welcome {{ user.email }}&nbsp;
-				<i class="fa fa-user" ng-class="{'paid-user': user.isPaid}"></i> &nbsp;&nbsp;
+				<span class="environment-tag" app-environment></span> Welcome <a class="btn btn-profile" href="#/profile"> {{ user.email }}&nbsp;
+				<i class="fa fa-user" ng-class="{'paid-user': user.isPaid}"></i></a> &nbsp;&nbsp;
 				<button class="btn btn-primary btn-sm" ng-click="logout()">LOGOUT</button>
 				<button class="btn btn-success btn-sm" ng-if="!user.isPaid" ng-click="upgrade()" analytics-on="click" analytics-event="Upgrade">UPGRADE</button>
 			</div>
@@ -132,7 +132,8 @@
 <script src="partial/welcome/welcome.js"></script>
 <script src="partial/share/share.js"></script>
 <script src="partial/resize/resize.js"></script>
-<!-- Add New Partial JS Above -->
+<script src="partial/profile/profile.js"></script>
+  <!-- Add New Partial JS Above -->
 
 
 <script type="text/javascript" data-remove="exclude" data-build="exclude">

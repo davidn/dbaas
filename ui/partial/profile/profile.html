@@ -1,0 +1,43 @@
+<div class="modal-dialog " ui-keydown="{esc: 'cancel()'}" ng-controller="ProfileCtrl">
+	<form name="profileForm" ng novalidate>
+		<div class="modal-content">
+			<div class="modal-header">
+				User Profile
+				<button type="button" class="modal-close-button close" ng-click="cancel()"><i class="fa fa-times"></i></button>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-6 two-column-form-left">
+						<div class="form-group">
+							<label class="control-label" for="first_name"> First Name </label>
+							<input class="form-control" id="first_name" ng-model="user.firstName" size="30" type="text" focus-me/>
+						</div>
+						<div class="form-group">
+							<label class="control-label" for="last_name"> Last Name </label>
+							<input class="form-control" id="last_name" ng-model="user.lastName" size="30"  type="text"/>
+						</div>
+						<div class="form-group">
+							<label class="control-label" for="user_email"> Email </label>
+							<input class="form-control" disabled id="user_email" ng-model="user.email"  size="75" type="text"/>
+						</div>
+					</div>
+					<div class="col-md-6 two-column-form-right">
+						<div class="form-group">
+							<label class="control-label" for="master_password"> Password </label>
+							<input class="form-control" id="master_password" ng-model="user.password"  size="30" type="password"/>
+						</div>
+						<div class="form-group">
+							<label class="control-label" for="master_password"> Password Confirmation </label>
+							<input class="form-control" id="master_password_confirm" ng-model="user.password_confirm" type="password" pw-check="master_password"  size="30"/>
+							<span ng-show="user.password_confirm.$error.pwmatch">Passwords don't match.</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-success" btn-loading="isLoading" data-loading-text="Updating..." ng-click="save()">SAVE</button>
+				<button class="btn btn-primary pull-right" ng-click="cancel()">CANCEL</button>
+			</div>
+		</div>
+	</form>
+</div>

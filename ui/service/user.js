@@ -39,6 +39,11 @@ angular.module('geniedb').factory('User', function ($resource, $localStorage, $h
         user.email = aUser.email;
         user.firstName = aUser.first_name;
         user.lastName = aUser.last_name;
+
+        var fragments = aUser.url.split('/');
+        user.fragment = fragments.slice(-2).join('/');
+        user.id = fragments[fragments.length-1];
+        user.url = aUser.url;
         identityConfirmed = true;
         updateUserStorage();
         updateUserVoice();
@@ -68,6 +73,11 @@ angular.module('geniedb').factory('User', function ($resource, $localStorage, $h
 
     return {
         user: user,
+        update: function (newUser) {
+            return $http({method:'PATCH', url: dbaasConfig.apiUrl + user.fragment, data: newUser}).success(function (data) {
+                setUser(data);
+            });
+        },
         register: function (email) {
             clearToken();
             return Registration.save({email: email});
