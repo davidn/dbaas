@@ -17,7 +17,7 @@ from .exceptions import BackendNotReady
 logger = getLogger(__name__)
 
 if hasattr(settings, 'BUGSNAG'):
-    import bugsnag.celery.connect_failure_handler
+    import bugsnag.celery
     bugsnag.celery.connect_failure_handler()
 
 class NodeTask(Task):
