@@ -79,7 +79,7 @@ class EC2(Cloud):
             block_device_map=self._create_block_device_map(node),
             security_groups=sgs,
             user_data=self.cloud_init(node),
-            placement=zones[node.nid % len(zones)],
+            placement=zones[node.nid % len(zones)].name,
         )
 
     def launch(self, node):
