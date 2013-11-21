@@ -1,6 +1,7 @@
 # Django settings for dbaas_api project.
 
 from __future__ import unicode_literals
+import datetime
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -59,7 +60,6 @@ CLUSTER_DNS_TEMPLATE = "{cluster}.dbaas.example.com"
 REGION_DNS_TEMPLATE = "{cluster}-{lbr_region}.dbaas.example.com"
 NODE_DNS_TEMPLATE = "{cluster}-{node}.dbaas.example.com"
 CLUSTER_NID_TEMPLATE = "^(?P<cluster>[-a-f0-9A-F]+)-(?P<nid>\d+)(?:.*)"
-import datetime
 
 TRIAL_LENGTH = datetime.timedelta(weeks=1)
 
@@ -200,6 +200,20 @@ AUTH_USER_MODEL = 'api.User'
 CORS_ORIGIN_ALLOW_ALL = True
 
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunnerStoringResult'
+BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = False
+CELERY_CHORD_PROPAGATES = True
+CELERY_SEND_TASK_ERROR_EMAILS = True
+
+CELERYBEAT_SCHEDULE = {
+    'rules': {
+        'task': 'api.tasks.rules_process',
+        'schedule': datetime.timedelta(hours=1)
+    }
+}
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
