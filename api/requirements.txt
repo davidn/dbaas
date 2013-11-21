@@ -13,7 +13,7 @@ suds
 pyopenssl
 pycrypto
 google-api-python-client
-git+https://github.com/treyhunner/django-simple-history
+git+https://github.com/treyhunner/django-simple-history#egg=django-simple-history
 mock
 salt==0.17.1
-git+https://github.com/profitbricks-devel/ProfitBricks-CLI-API
+git+https://github.com/profitbricks-devel/ProfitBricks-CLI-API#egg=pbapi
