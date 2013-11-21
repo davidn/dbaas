@@ -24,10 +24,10 @@ class Cloud(object):
         return False
 
     def getIP(self, node):
-        return ''
+        return "192.0.2.%d" % node.nid
 
     def update(self, node, tags={}):
-        self.ip = "192.0.2.%d" % node.nid
+        pass
 
     def terminate(self, node):
         pass
