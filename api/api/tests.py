@@ -498,3 +498,154 @@ class RetryTest(TestCase):
             retry(self.retry_func, initialDelay=1, maxRetries=3)
         )
         self.assertEqual(2, len(self.retry_func.mock_calls))
+
+from api.models import Rule
+@patch('api.models.rules.rules.actions')
+@patch('api.models.rules.rules.conditions')
+class RuleTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(email='test@email.com')
+        self.rule = Rule.objects.create(condition='test_condition', action='test_action')
+
+    def test_condition_true(self, conditions, actions):
+        conditions.test_condition.return_value = True
+        Rule.process()
+        conditions.test_condition.assert_called_with(self.user)
+        actions.test_action.assert_called_with(self.user)
+
+    def test_condition_false(self, conditions, actions):
+        conditions.test_condition.return_value = False
+        Rule.process()
+        conditions.test_condition.assert_called_with(self.user)
+        self.assertFalse(actions.test_action.called)
+
+    def test_repeat_true(self, conditions, actions):
+        conditions.test_condition.return_value = True
+        Rule.process()
+        conditions.reset_mock()
+        actions.reset_mock()
+        Rule.process()
+        self.assertFalse(conditions.test_condition.called)
+        self.assertFalse(actions.test_action.called)
+
+    def test_repeat_false(self, conditions, actions):
+        conditions.test_condition.return_value = False
+        Rule.process()
+        conditions.reset_mock()
+        actions.reset_mock()
+        Rule.process()
+        conditions.test_condition.assert_called_with(self.user)
+        self.assertFalse(actions.test_action.called)
+
+    def test_multi_user(self, conditions, actions):
+        conditions.test_condition.side_effect = (True, False, True)
+        user2 = User.objects.create(email='test2@email.com')
+        Rule.process()
+        self.assertEqual(conditions.test_condition.call_count, 2)
+        self.assertEqual(actions.test_action.call_count, 1)
+        conditions.reset_mock()
+        actions.reset_mock()
+        Rule.process()
+        conditions.test_condition.assert_called_with(user2)
+        actions.test_action.assert_called_with(user2)
+
+    def test_multi_rule(self, conditions, actions):
+        self.rule = Rule.objects.create(condition='test_condition2', action='test_action2')
+        conditions.test_condition.return_value = True
+        conditions.test_condition2.side_effect = (False, True)
+        Rule.process()
+        conditions.test_condition.assert_called_with(self.user)
+        actions.test_action.assert_called_with(self.user)
+        conditions.test_condition2.assert_called_with(self.user)
+        self.assertFalse(actions.test_action2.called)
+        conditions.reset_mock()
+        actions.reset_mock()
+        Rule.process()
+        self.assertFalse(conditions.test_action.called)
+        self.assertFalse(actions.test_action.called)
+        conditions.test_condition2.assert_called_with(self.user)
+        actions.test_action2.assert_called_with(self.user)
+
+import datetime
+class ConditionsTest(TestCase):
+    from rules import conditions
+
+    def setUp(self):
+        self.user = User.objects.create(email='test@email.com')
+        self.user2 = User.objects.create(email='test2@email.com')
+
+    def test_user_launched(self):
+        self.assertFalse(self.conditions.user_launched(self.user))
+        c = Cluster.objects.create(user=self.user)
+        self.assertFalse(self.conditions.user_launched(self.user))
+        Cluster.objects.create(user=self.user2, status=Cluster.PROVISIONING)
+        self.assertFalse(self.conditions.user_launched(self.user))
+        c.status = Cluster.PROVISIONING
+        c.save()
+        self.assertTrue(self.conditions.user_launched(self.user))
+        c.status = Cluster.RUNNING
+        c.save()
+        self.assertTrue(self.conditions.user_launched(self.user))
+        c.status = Cluster.OVER
+        c.save()
+        self.assertTrue(self.conditions.user_launched(self.user))
+        c.delete()
+        self.assertTrue(self.conditions.user_launched(self.user))
+
+    def test_user_not_launched_after_2days(self):
+        self.assertFalse(self.conditions.user_not_launched_after_2days(self.user))
+        c = Cluster.objects.create(user=self.user)
+        self.assertFalse(self.conditions.user_not_launched_after_2days(self.user))
+        c.status = Cluster.PROVISIONING
+        c.save()
+        self.assertFalse(self.conditions.user_not_launched_after_2days(self.user))
+        c.delete()
+        self.assertFalse(self.conditions.user_not_launched_after_2days(self.user))
+        self.user.date_joined -= datetime.timedelta(days=2)
+        self.assertFalse(self.conditions.user_not_launched_after_2days(self.user))
+
+        self.assertFalse(self.conditions.user_not_launched_after_2days(self.user2))
+        self.user2.date_joined -= datetime.timedelta(days=2)
+        self.assertTrue(self.conditions.user_not_launched_after_2days(self.user2))
+        c2 = Cluster.objects.create(user=self.user2)
+        self.assertTrue(self.conditions.user_not_launched_after_2days(self.user2))
+        c2.status = Cluster.PROVISIONING
+        c2.save()
+        self.assertFalse(self.conditions.user_not_launched_after_2days(self.user2))
+
+    @override_settings(TRIAL_LENGTH=datetime.timedelta(days=1))
+    def test_user_expired(self):
+        self.assertFalse(self.conditions.user_expired(self.user))
+        c = Cluster.objects.create(user=self.user)
+        self.assertFalse(self.conditions.user_expired(self.user))
+        c.status = Cluster.PROVISIONING
+        c.save()
+        self.assertFalse(self.conditions.user_expired(self.user))
+        h = c.history.all().update(history_date=datetime.datetime.utcnow() - datetime.timedelta(days=2))
+        self.assertTrue(self.conditions.user_expired(self.user))
+        c.status = Cluster.OVER
+        c.save()
+        self.assertTrue(self.conditions.user_expired(self.user))
+        c.delete()
+        self.assertTrue(self.conditions.user_expired(self.user))
+
+
+class ActionsTest(TestCase):
+    from rules import actions
+    import django.core.mail as mail
+
+    def setUp(self):
+        self.user = User.objects.create(email='test@email.com')
+        self.user2 = User.objects.create(email='test2@email.com')
+
+    def test_disable_user(self):
+        self.user.is_active = True
+        self.user.save()
+        self.actions.disable_user(self.user)
+        self.assertFalse(User.objects.get(pk=self.user.pk).is_active)
+
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    def test_no_cluster_email_2days(self):
+        self.actions.no_cluster_email_2days(self.user)
+        self.assertEquals(len(self.mail.outbox), 1)
+        self.assertSequenceEqual(self.mail.outbox[0].to, (self.user.email,))
