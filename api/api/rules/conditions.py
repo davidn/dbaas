@@ -16,7 +16,7 @@ def user_expired(user):
 
 
 def user_launched(user):
-    return Cluster.history.filter(user_id=user.id).count() != 0
+    return Cluster.history.filter(user_id=user.id, status=Cluster.PROVISIONING).count() != 0
 
 
 def user_not_launched(user):
