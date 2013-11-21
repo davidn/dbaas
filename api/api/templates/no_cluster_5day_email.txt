@@ -1,0 +1,18 @@
+
+Hi {{username}},
+
+Thank you for signing up for GenieDB Database as a Service! To get started, blah blah blah.
+
+
+If you have questions, feel free to reach us at:
+
+    support@geniedb.com
+
+---------
+
+www.geniedb.com
+
+---------
+
+This is a one-time email. To get the latest on GenieDB news you should follow us on Twitter at: http://twitter.com/geniedb
+
