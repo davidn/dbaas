@@ -8,7 +8,7 @@ def disable_account(user):
 
 
 def no_cluster_email(user, delta):
-    user.email_user_template('no_cluster_%sday' % timedelta.days, {
+    user.email_user_template('no_cluster_%sday_email' % delta.days, {
         'username': str(user),
         'is_paid': user.is_paid,
         'user': user,
