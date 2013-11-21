@@ -5,13 +5,7 @@ from time import sleep
 from django.conf import settings
 from .cloud import Cloud
 from api.utils import retry
-
-try:
-    import pb.client
-except:
-    print("Unable to import pb.client")
-    pass
-
+import pb.client
 
 logger = getLogger(__name__)
 
