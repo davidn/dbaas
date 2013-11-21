@@ -18,13 +18,13 @@ class Rule(models.Model):
     def run(self, user):
         if getattr(rules.conditions, self.condition)(user):
             getattr(rules.actions, self.action)(user)
+            self.completed.add(user)
+            self.save()
 
     @classmethod
     def process_user(cls, user):
         for rule in cls.objects.exclude(completed=user):
             rule.run(user)
-            rule.completed.add(user)
-            rule.save()
 
     @classmethod
     def process(cls):
