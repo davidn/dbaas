@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 from datetime import timedelta
 
 
-def disable_account(user):
+def disable_user(user):
     user.is_active = False
     user.save()
 
