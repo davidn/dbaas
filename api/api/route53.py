@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 import re
 import boto
-from boto.route53 import *
+from boto.route53 import record, exception, connection
 from boto.resultset import ResultSet
 
 # If need to bump connection version

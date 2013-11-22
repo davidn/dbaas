@@ -1,6 +1,7 @@
 # Django settings for dbaas_api project.
 
 from __future__ import unicode_literals
+import datetime
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -59,7 +60,6 @@ CLUSTER_DNS_TEMPLATE = "{cluster}.dbaas.example.com"
 REGION_DNS_TEMPLATE = "{cluster}-{lbr_region}.dbaas.example.com"
 NODE_DNS_TEMPLATE = "{cluster}-{node}.dbaas.example.com"
 CLUSTER_NID_TEMPLATE = "^(?P<cluster>[-a-f0-9A-F]+)-(?P<nid>\d+)(?:.*)"
-import datetime
 
 TRIAL_LENGTH = datetime.timedelta(weeks=1)
 
@@ -75,8 +75,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     )
 }
-
-BROKER_URL = 'amqp://guest:guest@localhost:5672/'
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
@@ -202,9 +200,20 @@ AUTH_USER_MODEL = 'api.User'
 CORS_ORIGIN_ALLOW_ALL = True
 
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunnerStoringResult'
-CELERY_EAGER_PROPAGATES_EXCEPTIONS=False
-CELERY_CHORD_PROPAGATES=True
-CELERY_SEND_TASK_ERROR_EMAILS=True
+BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = False
+CELERY_CHORD_PROPAGATES = True
+CELERY_SEND_TASK_ERROR_EMAILS = True
+
+CELERYBEAT_SCHEDULE = {
+    'rules': {
+        'task': 'api.tasks.rules_process',
+        'schedule': datetime.timedelta(hours=1)
+    }
+}
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
@@ -239,36 +248,5 @@ try:
     from local_settings import *
 except:
     pass
-
-# To Add Reminders Use:
-# REMINDERS = {
-#   'dayAfter': { ETA: 'tomorrow', template: 'day_after'}
-# }
-#
-# template must be available in the template paths as:
-#   day_after_subject.txt
-#   day_after.txt
-#   day_after.html
-#
-# The multi-part email will be created from the templates and sent according to the ETA.
-#
-# See the following for ETA options:
-# http://ask.github.io/celery/userguide/executing.html#eta-and-countdown
-
-
-# OVERRIDE_USER_EMAIL
-# Set to an email address to use instead of users email. e.g.
-#
-# OVERRIDE_USER_EMAIL = "newcustomer@geniedb.com"
-#
-# This will force all emails to go to newcustomer@geniedb.com instead of user.email
-
-
-# INTERNAL_BCC_EMAIL
-# Set to an array of email addresses to BCC with every user email. e.g.
-#
-# INTERNAL_BCC_EMAIL = ["newcustomer@geniedb.com","emailtosalesforce@2-51p5fxi5n5nqdb3248ig5hpt.ejjemma4.e.le.salesforce.com"]
-#
-# If missing no BCC is sent
 
 

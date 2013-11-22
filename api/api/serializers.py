@@ -8,7 +8,7 @@ from rest_framework.reverse import reverse
 from django.contrib.auth.hashers import make_password
 import math
 from django.core.exceptions import ValidationError
-from api.models import cron_validator
+from .utils import cron_validator
 import dateutil.parser
 
 class MultiHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
