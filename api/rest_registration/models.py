@@ -55,36 +55,6 @@ class RegistrationManager(BaseRegistrationManager):
 
     forgot_password = transaction.commit_on_success(forgot_password)
 
-    def reactivate_user(self, activation_key):
-        """
-        Validate an activation key and activate the corresponding
-        ``User`` if valid.
-
-        If the key is valid and has not expired, return the ``User``
-        after activating.
-
-        If the key is not valid or has expired, return ``False``.
-
-
-        To prevent reactivation of an account which has been
-        deactivated by site administrators, the activation key is
-        reset to the string constant ``RegistrationProfile.ACTIVATED``
-        after successful activation.
-
-        """
-        try:
-            profile = self.get(activation_key=activation_key)
-        except self.model.DoesNotExist:
-            return False
-        if not profile.activation_key_expired():
-            user = profile.user
-            user.is_active = True
-            user.save()
-            profile.activation_key = self.model.ACTIVATED
-            profile.save()
-            return user
-        return False
-
     def create_profile(self, user):
         """
         Create a ``RegistrationProfile`` for a given
@@ -107,9 +77,6 @@ class RegistrationProfile(BaseRegistrationProfile):
     objects = RegistrationManager()
 
     created_on = models.DateTimeField(_('date joined'), default=timezone.now)
-
-    class Meta:
-        proxy = True
 
     def send_activation_email(self, site, template='registration/activation_email'):
         """Send the activation mail"""
