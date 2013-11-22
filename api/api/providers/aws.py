@@ -71,16 +71,22 @@ class EC2(Cloud):
         return bdm
 
     def _run_instances(self, node, sgs):
-        zones = self.ec2.get_all_zones()
-        return self.ec2.run_instances(
-            self.region.image,
-            key_name=self.region.key_name,
-            instance_type=node.flavor.code,
-            block_device_map=self._create_block_device_map(node),
-            security_groups=sgs,
-            user_data=self.cloud_init(node),
-            placement=sorted([z.name for z in zones])[node.nid % len(zones)],
-        )
+        zones = sorted(z.name for z in self.ec2.get_all_zones())
+        # each nodes try different zones first.
+        zones = zones[node.nid % len(zones):] + zones[:node.nid % len(zones)]
+        for zone in zones:
+            try:
+                return self.ec2.run_instances(
+                    self.region.image,
+                    key_name=self.region.key_name,
+                    instance_type=node.flavor.code,
+                    block_device_map=self._create_block_device_map(node),
+                    security_groups=sgs,
+                    user_data=self.cloud_init(node),
+                    placement=zone,
+                )
+            except EC2ResponseError as e:
+                pass
 
     def launch(self, node):
         logger.debug("%s: Assigned NID %s", node, node.nid)
