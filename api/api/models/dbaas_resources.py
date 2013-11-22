@@ -208,7 +208,7 @@ class LBRRegionNodeSet(models.Model):
     """
     cluster = models.ForeignKey(Cluster, related_name='lbr_regions')
     lbr_region = models.CharField("LBR Region", max_length=20)
-    launched = models.BooleanField("Launched")
+    launched = models.BooleanField("Launched", default=False)
 
     history = HistoricalRecords()
 
