@@ -579,7 +579,7 @@ class ConditionsTest(TestCase):
         c.delete()
         self.assertTrue(self.conditions.user_launched(self.user))
 
-    def test_user_not_launched_after_2days(self):
+    def test_user_not_launched_after_2days(self, paid=False):
         self.assertFalse(self.conditions.user_not_launched_after_2days(self.user))
         c = Cluster.objects.create(user=self.user)
         self.assertFalse(self.conditions.user_not_launched_after_2days(self.user))
@@ -593,12 +593,19 @@ class ConditionsTest(TestCase):
 
         self.assertFalse(self.conditions.user_not_launched_after_2days(self.user2))
         self.user2.date_joined -= datetime.timedelta(days=2)
-        self.assertTrue(self.conditions.user_not_launched_after_2days(self.user2))
+        self.assertEqual(self.conditions.user_not_launched_after_2days(self.user2), not paid)
         c2 = Cluster.objects.create(user=self.user2)
-        self.assertTrue(self.conditions.user_not_launched_after_2days(self.user2))
+        self.assertEqual(self.conditions.user_not_launched_after_2days(self.user2), not paid)
         c2.status = Cluster.PROVISIONING
         c2.save()
         self.assertFalse(self.conditions.user_not_launched_after_2days(self.user2))
+
+    def test_paid_user_not_launched_after_2days(self):
+        self.user.is_paid = True
+        self.user.save()
+        self.user2.is_paid = True
+        self.user2.save()
+        self.test_user_not_launched_after_2days(True)
 
     @override_settings(TRIAL_LENGTH=datetime.timedelta(days=1))
     def test_user_expired(self):
