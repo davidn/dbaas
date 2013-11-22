@@ -1,6 +1,6 @@
 from django.conf import settings
-from datetime import datetime, timedelta
-from django.utils.timezone import utc
+from datetime import timedelta
+from django.utils.timezone import now
 from ..models import Cluster
 
 
@@ -12,7 +12,7 @@ def user_expired(user):
         first_cluster = q[0]
     except IndexError:
         return False
-    return first_cluster.history_date + settings.TRIAL_LENGTH < datetime.utcnow().replace(tzinfo=utc)
+    return first_cluster.history_date + settings.TRIAL_LENGTH < now()
 
 
 def user_launched(user):
@@ -24,15 +24,21 @@ def user_not_launched(user):
 
 
 def user_not_launched_after_2days(user):
-    return user.date_joined + timedelta(days=2) < datetime.utcnow().replace(tzinfo=utc) and not user_launched(user) and not user.is_paid
+    return now() - timedelta(days=5) < user.date_joined < now() - timedelta(days=2) \
+        and not user_launched(user) \
+        and not user.is_paid
 
 
 def user_not_launched_after_5days(user):
-    return user.date_joined + timedelta(days=5) < datetime.utcnow().replace(tzinfo=utc) and not user_launched(user) and not user.is_paid
+    return now() - timedelta(days=10) < user.date_joined < now() - timedelta(days=5) \
+        and not user_launched(user)\
+        and not user.is_paid
 
 
 def user_not_launched_after_10days(user):
-    return user.date_joined + timedelta(days=10) < datetime.utcnow().replace(tzinfo=utc) and not user_launched(user) and not user.is_paid
+    return user.date_joined < now() - timedelta(days=10) \
+        and not user_launched(user) \
+        and not user.is_paid
 
 
 def tables_created(user):

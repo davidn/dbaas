@@ -607,6 +607,25 @@ class ConditionsTest(TestCase):
         self.user2.save()
         self.test_user_not_launched_after_2days(True)
 
+    def test_2days_5_days_10days_no_overlap(self):
+        """Test we only send one email if the system has been down suddenly 2 and 5 day alerts are triggered at the
+        same time"""
+        self.assertFalse(self.conditions.user_not_launched_after_2days(self.user))
+        self.assertFalse(self.conditions.user_not_launched_after_5days(self.user))
+        self.assertFalse(self.conditions.user_not_launched_after_10days(self.user))
+        self.user.date_joined -= datetime.timedelta(days=2)
+        self.assertTrue(self.conditions.user_not_launched_after_2days(self.user))
+        self.assertFalse(self.conditions.user_not_launched_after_5days(self.user))
+        self.assertFalse(self.conditions.user_not_launched_after_10days(self.user))
+        self.user.date_joined -= datetime.timedelta(days=3)
+        self.assertFalse(self.conditions.user_not_launched_after_2days(self.user))
+        self.assertTrue(self.conditions.user_not_launched_after_5days(self.user))
+        self.assertFalse(self.conditions.user_not_launched_after_10days(self.user))
+        self.user.date_joined -= datetime.timedelta(days=5)
+        self.assertFalse(self.conditions.user_not_launched_after_2days(self.user))
+        self.assertFalse(self.conditions.user_not_launched_after_5days(self.user))
+        self.assertTrue(self.conditions.user_not_launched_after_10days(self.user))
+
     @override_settings(TRIAL_LENGTH=datetime.timedelta(days=1))
     def test_user_expired(self):
         self.assertFalse(self.conditions.user_expired(self.user))
