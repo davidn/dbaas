@@ -2,8 +2,8 @@ angular.module('geniedb').constant('dbaasConfig', (function () {
     // TODO: Make conditional parameters for grunt.js to package the deployments
     var versionTag = "2.1";
 
-        var serviceUrl = "http://localhost:8000";
-//    var serviceUrl = "https://dbaas-test.geniedb.com:4000";
+//        var serviceUrl = "http://localhost:8000";
+    var serviceUrl = "https://dbaas-test.geniedb.com:4000";
 
     var posDash = serviceUrl.indexOf('-');
     var environmentLabel = posDash > 0 ? serviceUrl.substring(posDash+1,serviceUrl.indexOf('.')).toUpperCase():'';
