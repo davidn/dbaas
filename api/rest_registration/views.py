@@ -10,6 +10,7 @@ from rest_framework import status, permissions
 from django.db import IntegrityError
 from .models import RegistrationProfile
 from .serializers import RegistrationSerializer
+from rest_framework.decorators import action
 
 
 logger = getLogger(__name__)
@@ -91,6 +92,7 @@ class RegistrationView(GenericViewSet):
                                      request=request)
         return new_user
 
+    @action()
     def forgot(self, request, data):
         """
         Given a valid email address, generate a new

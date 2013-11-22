@@ -10,6 +10,5 @@ class OptionalSlashRouter(routers.SimpleRouter):
 
 router = OptionalSlashRouter(trailing_slash='optional')
 router.register(r'', RegistrationView, 'registration')
-router.register(r'', RegistrationView, 'forgot')
 
 urlpatterns = router.urls
