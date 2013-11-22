@@ -29,6 +29,24 @@ class RegistrationManager(BaseRegistrationManager):
 
     create_inactive_user = transaction.commit_on_success(create_inactive_user)
 
+    def forgot_password(self, email, site, send_email=True):
+        """
+        Validate email address, then regenerate the
+        ``RegistrationProfile`` and email its activation key to the
+        ``User``, returning the existing ``User``.
+
+        """
+        existing_user = User.objects.get_by_natural_key(email)
+
+        registration_profile = self.create_profile(existing_user)
+
+        if send_email:
+            registration_profile.send_reactivation_email(site)
+
+        return existing_user
+
+    forgot_password = transaction.commit_on_success(forgot_password)
+
     def create_profile(self, user):
         """
         Create a ``RegistrationProfile`` for a given
@@ -53,7 +71,7 @@ class RegistrationProfile(BaseRegistrationProfile):
     class Meta:
         proxy = True
 
-    def send_activation_email(self, site):
+    def send_activation_email(self, site, template='registration/activation_email'):
         """Send the activation mail"""
 
         ctx_dict = {'activation_key': self.activation_key,
@@ -61,4 +79,9 @@ class RegistrationProfile(BaseRegistrationProfile):
                     'site': site,
                     'url': settings.FRONTEND_URL}
 
-        self.user.email_user_template('registration/activation_email', ctx_dict)
+        self.user.email_user_template(template, ctx_dict)
+
+    def send_reactivation_email(self, site):
+        """Send the reactivation mail"""
+
+        self.send_activation_email(site, 'registration/reactivation_email')

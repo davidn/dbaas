@@ -58,7 +58,7 @@ angular.module('geniedb').factory('User', function ($resource, $localStorage, $h
 
     var Registration = $resource(dbaasConfig.registerUrlEscaped + ':activation_code', {activation_code: '@activation_code'}, {
         activate: {method: 'PUT'},
-        reminder: {method: 'GET'}
+        reminder: {method: 'POST'}
     });
     var Token = $resource(dbaasConfig.authUrlEscaped + '/:id', {id: '@id'});
     var Identity = $resource(dbaasConfig.apiUrlEscaped + 'self');

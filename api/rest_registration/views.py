@@ -91,6 +91,34 @@ class RegistrationView(GenericViewSet):
                                      request=request)
         return new_user
 
+    def forgot(self, request, data):
+        """
+        Given a valid email address, generate a new
+        registration profile.
+
+        An email will be sent to the supplied email address; this
+        email should contain an activation link. The email will be
+        rendered using two templates. See the documentation for
+        ``RegistrationProfile.send_reactivation_email()`` for
+        information about these templates and the contexts provided to
+        them.
+
+        After the ``User`` and ``RegistrationProfile`` are created and
+        the activation email is sent, the signal
+        ``registration.signals.user_registered`` will be sent, with
+        the new ``User`` as the keyword argument ``user`` and the
+        class of this backend as the sender.
+
+        """
+        logger.info("forgot")
+        email = data['email']
+        if Site._meta.installed:
+            site = Site.objects.get_current()
+        else:
+            site = RequestSite(request)
+        new_user = RegistrationProfile.objects.forgot_password(email, site, getattr(settings, 'SEND_REGISTRATION_EMAIL', True))
+        return new_user
+
     def registration_allowed(self, request):
         """
         Indicate whether account registration is currently permitted,
