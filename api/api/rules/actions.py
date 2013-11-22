@@ -1,13 +1,18 @@
 from __future__ import unicode_literals
+from logging import getLogger
 from datetime import timedelta
+
+logger = getLogger(__name__)
 
 
 def disable_user(user):
+    logger.info("Disabling user %s", user.email)
     user.is_active = False
     user.save()
 
 
 def no_cluster_email(user, delta):
+    logger.info("Sending %s day email to %s", delta.days, user.email)
     user.email_user_template('no_cluster_%sday_email' % delta.days, {
         'username': str(user),
         'is_paid': user.is_paid,

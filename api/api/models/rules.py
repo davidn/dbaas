@@ -17,6 +17,8 @@ class Rule(models.Model):
 
     def run(self, user):
         if getattr(rules.conditions, self.condition)(user):
+            logger.debug("Condition '%s' triggered for user '%s'. Running action '%s'",
+                         self.condition, user.email, self.action)
             getattr(rules.actions, self.action)(user)
             self.completed.add(user)
             self.save()
