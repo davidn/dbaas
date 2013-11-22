@@ -24,15 +24,15 @@ def user_not_launched(user):
 
 
 def user_not_launched_after_2days(user):
-    return user.date_joined + timedelta(days=2) < datetime.utcnow().replace(tzinfo=utc) and not user_launched(user)
+    return user.date_joined + timedelta(days=2) < datetime.utcnow().replace(tzinfo=utc) and not user_launched(user) and not user.is_paid
 
 
 def user_not_launched_after_5days(user):
-    return user.date_joined + timedelta(days=5) < datetime.utcnow().replace(tzinfo=utc) and not user_launched(user)
+    return user.date_joined + timedelta(days=5) < datetime.utcnow().replace(tzinfo=utc) and not user_launched(user) and not user.is_paid
 
 
 def user_not_launched_after_10days(user):
-    return user.date_joined + timedelta(days=10) < datetime.utcnow().replace(tzinfo=utc) and not user_launched(user)
+    return user.date_joined + timedelta(days=10) < datetime.utcnow().replace(tzinfo=utc) and not user_launched(user) and not user.is_paid
 
 
 def tables_created(user):
