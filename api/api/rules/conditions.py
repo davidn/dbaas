@@ -36,7 +36,6 @@ def user_not_launched_after_10days(user):
 
 
 def tables_created(user):
-    return False
     # in practice this test will need to *not* fire if user_not_launched == true, otherwise the user might get two
     # emails. If you want to be fussy create an extra function so that this can be a 'pure' function. See
     # https://geniedb.atlassian.net/browse/BPB-154?focusedCommentId=20211&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-20211
@@ -44,4 +43,4 @@ def tables_created(user):
 
 
 def rows_created(user):
-    return False
+    raise NotImplementedError()
