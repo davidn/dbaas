@@ -2,7 +2,7 @@ You requested assistance resetting your GenieDB DBaaS password.
 
 Please click here to reset your password
 
- {{url}}/#activate/{{activation_key}}
+ {{url}}/#reset/{{activation_key}}
 
 If this was not you, feel free to ignore this message.
 

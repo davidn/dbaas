@@ -1,8 +1,14 @@
+import datetime
 import random
 import hashlib
+from django.utils import timezone
 from django.conf import settings
 from registration.models import User, RegistrationProfile as BaseRegistrationProfile, RegistrationManager as BaseRegistrationManager
-from django.db import transaction
+from django.db import transaction, models
+try:
+    from django.utils.timezone import now as datetime_now
+except ImportError:
+    datetime_now = datetime.datetime.now
 
 
 class RegistrationManager(BaseRegistrationManager):
@@ -49,6 +55,36 @@ class RegistrationManager(BaseRegistrationManager):
 
     forgot_password = transaction.commit_on_success(forgot_password)
 
+    def reactivate_user(self, activation_key):
+        """
+        Validate an activation key and activate the corresponding
+        ``User`` if valid.
+
+        If the key is valid and has not expired, return the ``User``
+        after activating.
+
+        If the key is not valid or has expired, return ``False``.
+
+
+        To prevent reactivation of an account which has been
+        deactivated by site administrators, the activation key is
+        reset to the string constant ``RegistrationProfile.ACTIVATED``
+        after successful activation.
+
+        """
+        try:
+            profile = self.get(activation_key=activation_key)
+        except self.model.DoesNotExist:
+            return False
+        if not profile.activation_key_expired():
+            user = profile.user
+            user.is_active = True
+            user.save()
+            profile.activation_key = self.model.ACTIVATED
+            profile.save()
+            return user
+        return False
+
     def create_profile(self, user):
         """
         Create a ``RegistrationProfile`` for a given
@@ -70,6 +106,8 @@ class RegistrationManager(BaseRegistrationManager):
 class RegistrationProfile(BaseRegistrationProfile):
     objects = RegistrationManager()
 
+    created_on = models.DateTimeField(_('date joined'), default=timezone.now)
+
     class Meta:
         proxy = True
 
@@ -87,3 +125,29 @@ class RegistrationProfile(BaseRegistrationProfile):
         """Send the reactivation mail"""
 
         self.send_activation_email(site, 'registration/reactivation_email')
+
+    def activation_key_expired(self):
+        """
+        Determine whether this ``RegistrationProfile``'s activation
+        key has expired, returning a boolean -- ``True`` if the key
+        has expired.
+
+        Key expiration is determined by a two-step process:
+
+        1. If the user has already activated, the key will have been
+           reset to the string constant ``ACTIVATED``. Re-activating
+           is not permitted, and so this method returns ``True`` in
+           this case.
+
+        2. Otherwise, the date the user signed up is incremented by
+           the number of days specified in the setting
+           ``ACCOUNT_ACTIVATION_DAYS`` (which should be the number of
+           days after signup during which a user is allowed to
+           activate their account); if the result is less than or
+           equal to the current date, the key has expired and this
+           method returns ``True``.
+
+        """
+        expiration_date = datetime.timedelta(days=settings.ACCOUNT_ACTIVATION_DAYS)
+        return self.activation_key == self.ACTIVATED or \
+               (self.created_on + expiration_date <= datetime_now())

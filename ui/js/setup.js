@@ -5,6 +5,7 @@ angular.module('geniedb', ['ui.keypress', 'ui.bootstrap.tooltipX', 'ngRoute', 'n
         $routeProvider.
             when('/', {templateUrl: 'partial/welcome/welcome.html'}).
             when('/activate/:activationHash', {templateUrl: 'partial/activate/activate.html'}).
+            when('/reset/:activationHash', {templateUrl: 'partial/activate/activate.html', action:'reset'}).
             when('/cluster', {templateUrl: 'partial/cluster/cluster.html'}).
             when('/cluster/:clusterid/node', {templateUrl: 'partial/node/node.html'}).
             when('/forgot', {templateUrl: 'partial/forgot/forgot.html'}).

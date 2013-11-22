@@ -1,14 +1,19 @@
 <div class="container modal-dialog small-modal" ng-controller="ActivateCtrl">
 	<div class="modal-content">
-		<div class="modal-header">Welcome to Genie DBaaS</div>
+		<div ng-if="!isReset" class="modal-header">Welcome to Genie DBaaS</div>
+		<div ng-if="isReset" class="modal-header">Reset Your Password</div>
 		<div class="modal-body">
 			<div ng-hide="email">
 				<div ng-bind-html="statusText"></div>
 			</div>
 			<div ng-hide="!email">
-				<p>
+				<p  ng-if="!isReset" >
 					Thanks for registering
 					<b>{{ email }}</b>. Set your account password to continue setting up your free distributed database. </p>
+
+				<p  ng-if="isReset" >
+					To reset your password for
+					<b>{{ email }}</b> please enter a new password below.</p>
 
 				<p>
 					<input type="password" id="pw1" class="form-control" ng-model="password" placeholder="Password" required ng-class="{'form-invalid': showValidationMessages && !activateForm.passwd.$valid}"/>
@@ -18,7 +23,7 @@
 					<input type="password" class="form-control" ng-model="verifyPassword" placeholder="Verify Password" pw-check="pw1" required ng-class="{'form-invalid': showValidationMessages && !activateForm.passwd.$valid}"/>
 					<span ng-show="verifyPassword.$error.pwmatch">Passwords don't match.</span>
 				</p>
-				<p>
+				<p ng-if="!isReset">
 					<input id="promo" class="form-control" ng-model="promo" placeholder="Promo Code" />
 				</p>
 			</div>

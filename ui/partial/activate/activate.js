@@ -1,6 +1,8 @@
-angular.module('geniedb').controller('ActivateCtrl', function ($scope, $location, $routeParams, User, growl) {
+angular.module('geniedb').controller('ActivateCtrl', function ($scope, $location, $route, $routeParams, User, growl) {
 
     $scope.statusText = "Looking up activation details...<i class='fa fa-refresh fa-spin'></i>";
+
+    $scope.isReset = $route.current.$$route.action == 'reset';
 
     User.checkActivation($routeParams.activationHash).$then(function (response) {
         $scope.email = response.data.email;
