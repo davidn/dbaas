@@ -55,6 +55,13 @@ class RegistrationView(GenericViewSet):
             return Response(status=status.HTTP_202_ACCEPTED, headers={"Location": activated_user.get_absolute_url()})
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+    def partial_update(self, request, *args, **kwargs):
+        try:
+            self.forgot(request, request.DATA)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_200_OK)
+
     def register(self, request, data):
         """
         Given an email address, register a new
@@ -92,7 +99,6 @@ class RegistrationView(GenericViewSet):
                                      request=request)
         return new_user
 
-    @action()
     def forgot(self, request, data):
         """
         Given a valid email address, generate a new

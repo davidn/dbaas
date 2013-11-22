@@ -38,6 +38,8 @@ class RegistrationManager(BaseRegistrationManager):
         """
         existing_user = User.objects.get_by_natural_key(email)
 
+        #TODO: If requesting reactivation again, resend the existing activation code. or generate a new one.
+        #Currently this errors out.
         registration_profile = self.create_profile(existing_user)
 
         if send_email:

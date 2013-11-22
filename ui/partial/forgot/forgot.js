@@ -6,9 +6,9 @@ angular.module('geniedb').controller('ForgotCtrl', function ($scope, User, $loca
     $scope.reminder = function () {
         $scope.isLoading = true;
 
-        User.reminder($scope.form.email).$then(function () {
+        User.reminder($scope.form.email).success(function () {
             $scope.submitted = true;
-        }, function (err) {
+        }).error(function (err) {
             $scope.isLoading = false;
             if (err && err.data) {
                 growl.error({body: err.data});
