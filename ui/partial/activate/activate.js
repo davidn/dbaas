@@ -14,9 +14,13 @@ angular.module('geniedb').controller('ActivateCtrl', function ($scope, $location
 
     $scope.activate = function () {
         User.activate($routeParams.activationHash, $scope.password).$then(function (response) {
-            growl.success({body: "Account activated!"});
+            growl.success({body: $scope.isReset ? "Password changed" : "Account activated!"});
             User.login($scope.email, $scope.password).$then(function () {
-                $location.path("/share/" + $scope.promo);
+                if ($scope.isReset){
+                    $location.path("/list");
+                } else {
+                    $location.path("/share/" + $scope.promo);
+                }
             });
         }, function (err) {
             console.log(err);
