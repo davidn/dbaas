@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.conf import settings
 from registration.models import User, RegistrationProfile as BaseRegistrationProfile, RegistrationManager as BaseRegistrationManager
 from django.db import transaction, models
+from django.utils.translation import ugettext as _
 try:
     from django.utils.timezone import now as datetime_now
 except ImportError:
@@ -77,6 +78,10 @@ class RegistrationProfile(BaseRegistrationProfile):
     objects = RegistrationManager()
 
     created_on = models.DateTimeField(_('date joined'), default=timezone.now)
+
+    class Meta:
+        verbose_name = _('registration profile')
+        verbose_name_plural = _('registration profiles')
 
     def send_activation_email(self, site, template='registration/activation_email'):
         """Send the activation mail"""
