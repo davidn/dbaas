@@ -51,7 +51,7 @@ class Openstack(Cloud):
     def reinstantiating(self, node):
         return self.nova.servers.get(node.instance_id).status == u'RESIZE'
 
-    def getIP(self, node):
+    def get_ip(self, node):
         return self.nova.servers.get(node.instance_id).accessIPv4
 
     def update(self, node, tags=None):

@@ -127,7 +127,7 @@ class EC2(Cloud):
     def reinstantiating(self, node):
         return self.pending(node)
 
-    def getIP(self, node):
+    def get_ip(self, node):
         instance = self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0]
         return instance.ip_address
     def update(self, node, tags={}):

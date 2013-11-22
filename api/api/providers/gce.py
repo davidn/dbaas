@@ -236,7 +236,7 @@ class GoogleComputeEngine(Cloud):
     def reinstantiating(self, node):
         return self.pending(node)
 
-    def getIP(self, node):
+    def get_ip(self, node):
         ip = ''
         items = self._getInstanceObjects(node.instance_id)
         if items:

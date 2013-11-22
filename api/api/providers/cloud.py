@@ -23,7 +23,7 @@ class Cloud(object):
     def shutting_down(self, node):
         return False
 
-    def getIP(self, node):
+    def get_ip(self, node):
         return "192.0.2.%d" % node.nid
 
     def update(self, node, tags={}):

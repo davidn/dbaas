@@ -104,7 +104,7 @@ class ProfitBrick(Cloud):
         node.status = node.PROVISIONING
         node.save()
 
-    def getIP(self, node):
+    def get_ip(self, node):
         s = self.pbp.getServer(node.instance_id)
         return s.ips[0]
 
