@@ -1,7 +1,9 @@
-
 Hi {{username}},
 
-Thank you for signing up for GenieDB Database as a Service! To get started, blah blah blah.
+Thank you for signing up for GenieDB's Multi-Region, Multi-Cloud, Multi-Master MySQL Databases as a Service. We offer a 7-day free trial and you can start at your convinence. Some of the benefits of our service are:
+ - High Availability. Database is no longer a Single Point of Failure.
+ - Scalability. Add Nodes as well as resize Nodes.
+ - Improved Application Response time for your distributed users.
 
 
 If you have questions, feel free to reach us at:
@@ -15,4 +17,3 @@ www.geniedb.com
 ---------
 
 This is a one-time email. To get the latest on GenieDB news you should follow us on Twitter at: http://twitter.com/geniedb
-
