@@ -90,7 +90,7 @@ angular.module('geniedb').factory('User', function ($resource, $localStorage, $h
             return Registration.activate({activation_code: activationCode}, {password: password});
         },
         reminder: function (email) {
-            return $http({method:'PATCH', url: dbaasConfig.registerUrl + 'forgot', data: {email: email}});
+            return $http({method:'PATCH', url: dbaasConfig.registerUrl, data: {email: email}});
         },
         login: function (email, password) {
             user.email = email;
