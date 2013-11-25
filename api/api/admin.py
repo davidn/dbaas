@@ -121,6 +121,11 @@ class NodeAdmin(SimpleHistoryAdmin):
             reinstantiate_node(obj, new_flavor)
 
 
+class BackupAdmin(admin.ModelAdmin):
+    list_display = ('__unicode__', 'node', 'time', 'size')
+    list_filter = ('node', 'node__cluster', 'node__cluster__user')
+
+
 class RegionInline(admin.StackedInline):
     model = Region
     extra = 0
@@ -293,7 +298,7 @@ class TokenImpersonationAdmin(TokenAdmin):
     impersonate.allow_tags = True
 
 
-admin.site.register(Backup)
+admin.site.register(Backup, BackupAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(Cluster, ClusterAdmin)
 admin.site.register(Node, NodeAdmin)
