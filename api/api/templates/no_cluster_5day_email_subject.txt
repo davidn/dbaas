@@ -1,1 +1,1 @@
-Get Started with GenieDB!
+Spin up a Geo-Distributed MySQL cluster within minutes!
