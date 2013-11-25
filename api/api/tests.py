@@ -423,10 +423,15 @@ class MysqlDatabaseValidatorTest(TestCase):
         'CREATE',
         'create',
         "a2345678901234567890123456789012345678901234567890123456789012345",
-)
+        "mysql",
+        "performance_schema",
+        "information_schema",
+    )
+
     def test_valid(self):
         for i in self.valid:
             mysql_database_validator(i)
+
     def test_invalid(self):
         for i in self.invalid:
             try:
