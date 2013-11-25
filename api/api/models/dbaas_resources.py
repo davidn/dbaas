@@ -666,6 +666,9 @@ class Backup(models.Model):
     time = models.DateTimeField()
     size = models.PositiveIntegerField("Backup size (MB)")
 
+    def __unicode__(self):
+        return "%s backup of %s" % (self.time, self.node.dns_name)
+
     class Meta:
         app_label = "api"
 
