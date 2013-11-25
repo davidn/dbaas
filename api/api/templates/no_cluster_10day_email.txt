@@ -1,8 +1,12 @@
-
 Hi {{username}},
 
-Thank you for signing up for GenieDB Database as a Service! To get started, blah blah blah.
+We hear rave reviews from our customers about GenieDB's Multi-Cloud, Multi-Region, Multi-Master MySQL DBaaS all the time.
 
+"Your product is incredible. Your solution is extraordinary, I was most impressed." - Patrick, VoodooDesignz
+"The GenieDB product hits a BIG, BIG problem area. You guys seem to be the only one in this space.  And it's a BIG need." - Paul, ScreenPopper
+"You have a great product! I've been looking for this for a while!" - Lyle, BetterVoicemail
+
+You could also experience this Nirvana by spinning up a cluster with a few clicks!
 
 If you have questions, feel free to reach us at:
 
