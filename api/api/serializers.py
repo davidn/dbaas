@@ -1,5 +1,6 @@
 #!/usr/bin/python
 from __future__ import unicode_literals
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from .models import Cluster, Node, Flavor, Provider, Region, Backup
@@ -71,11 +72,27 @@ class RamField(serializers.IntegerField):
         # then deserialize round trip loses data.
         return serializers.IntegerField.from_native(self, ram_gb*1024)
 
+
+class UserExpiryField(serializers.DateTimeField):
+    def to_native(self, user):
+        if user.is_paid:
+            return ''
+        q = Cluster.history.filter(user_id=user.id, status=Cluster.PROVISIONING).order_by('-history_date')
+        try:
+            first_cluster = q[0]
+        except IndexError:
+            return ''
+        return first_cluster.history_date + settings.TRIAL_LENGTH
+
+
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     password = PasswordField()
+    expiry = UserExpiryField('*')
+
     class Meta:
         model = get_user_model()
-        fields = ('url','email', 'first_name', 'last_name', 'password', 'is_paid')
+        fields = ('url','email', 'first_name', 'last_name', 'password', 'is_paid', 'expiry')
+        read_only_fields = ('expiry',)
 
     def validate_email(self, attrs, source):
         if self.object is not None and attrs[source] != self.object.email:
