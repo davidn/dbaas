@@ -87,7 +87,7 @@ class UserExpiryField(serializers.DateTimeField):
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     password = PasswordField()
-    expiry = UserExpiryField('*', read_only=True)
+    expiry = UserExpiryField(source='*', read_only=True)
 
     class Meta:
         model = get_user_model()
