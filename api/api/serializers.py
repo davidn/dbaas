@@ -87,12 +87,11 @@ class UserExpiryField(serializers.DateTimeField):
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     password = PasswordField()
-    expiry = UserExpiryField('*')
+    expiry = UserExpiryField('*', read_only=True)
 
     class Meta:
         model = get_user_model()
         fields = ('url','email', 'first_name', 'last_name', 'password', 'is_paid', 'expiry')
-        read_only_fields = ('expiry',)
 
     def validate_email(self, attrs, source):
         if self.object is not None and attrs[source] != self.object.email:
