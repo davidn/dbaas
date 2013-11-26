@@ -67,8 +67,6 @@ module.exports = function (grunt) {
                     {src: ['img/**'], dest: 'dist/'},
                     {src: ['bower_components/angular-ui/build/angular-ui-ieshiv.js'], dest: 'dist/'},
                     {src: ['bower_components/font-awesome/font/**'], dest: 'dist/font/', flatten: true, filter: 'isFile', expand: true},
-                    // {src: ['bower_components/select2/*.png','bower_components/select2/*.gif'], dest:'dist/css/',flatten:true,expand:true},
-//          {src: ['bower_components/angular-mocks/angular-mocks.js'], dest: 'dist/'}
                 ]
             }
         },
@@ -98,15 +96,11 @@ module.exports = function (grunt) {
                         $("#jQueryScript").after('<script src="app.full.min.js"></script>');
                     }
                 },
-//                options: {
-//                    prepend: {selector: '#prependScript', html: '<script src="app.full.min.js"></script>'}
-//                },
                 src: 'dist/index.html'
             },
             removecss: {
                 options: {
                     remove: 'link[rel="stylesheet/less"]'
-//                    append: {selector: 'head', html: '<link rel="stylesheet" href="css/app.full.min.css">'}
                 },
                 src: 'dist/index.html'
             },
@@ -192,6 +186,18 @@ module.exports = function (grunt) {
                     specs: 'test/unit/**/*.js'
                 }
             }
+        },
+        sed: {
+            serviceUrl: {
+                pattern: new RegExp("//BEGINSERVICEURL[\\s\\S]*ENDSERVICEURL"),
+                replacement: 'var serviceUrl = "<%= grunt.option("serviceurl") %>";',
+                path: 'js/config.js'
+            },
+            buildDate: {
+                pattern: '%BUILDDATE%',
+                replacement: '<%= grunt.template.today("dddd, mmmm dS, yyyy, h:MM:ss TT Z") %>',
+                path: 'js/config.js'
+            }
         }
     });
 
@@ -210,11 +216,22 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-ngmin');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-sed');
 
+
+    grunt.registerTask('configure', 'Apply environment settings', function () {
+        if (grunt.option('serviceurl')) {
+            grunt.task.run(['sed']);
+        } else {
+            grunt.warn("serviceurl not specified");
+        }
+    });
 
     // Original flow
 //  grunt.registerTask('build',['jshint','clean:before','less','dom_munger:readcss','dom_munger:readscripts','ngtemplates','cssmin','concat','ngmin','uglify','copy','dom_munger:removecss','dom_munger:addcss','dom_munger:removescripts','dom_munger:addscript','htmlmin','imagemin','clean:after']);
-    grunt.registerTask('build', ['jshint', 'clean:before', 'less', 'dom_munger:readscripts', 'ngtemplates', 'cssmin', 'concat', 'ngmin', 'copy', 'dom_munger:removecss', 'dom_munger:addcss', 'dom_munger:removescripts', 'dom_munger:addscript', 'dom_munger:cdn', 'dom_munger:clean', 'htmlmin', 'imagemin', 'clean:after']);
+    grunt.registerTask('build', ['jshint', 'clean:before', 'less', 'dom_munger:readscripts', 'ngtemplates', 'cssmin', 'configure', 'concat', 'ngmin', 'copy', 'dom_munger:removecss', 'dom_munger:addcss', 'dom_munger:removescripts', 'dom_munger:addscript', 'dom_munger:cdn', 'dom_munger:clean', 'htmlmin', 'imagemin', 'clean:after']);
     grunt.registerTask('server', ['jshint', 'connect', 'watch']);
     grunt.registerTask('test', ['dom_munger:readscripts', 'jasmine'])
+
+    // grunt build --serviceurl="//dbaas-test.geniedb.com:4000"
 };
