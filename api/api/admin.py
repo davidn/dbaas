@@ -27,6 +27,7 @@ logger = getLogger(__name__)
 csrf_protect_m = method_decorator(csrf_protect)
 sensitive_post_parameters_m = method_decorator(sensitive_post_parameters())
 
+
 class NodeInline(admin.StackedInline):
     model = Node
     extra = 0
@@ -46,7 +47,6 @@ class ClusterAdmin(SimpleHistoryAdmin):
                         (r'^(.+)/add_database/$',
                          self.admin_site.admin_view(self.add_database))
         ) + super(ClusterAdmin, self).get_urls()
-
 
     def cluster_size(self, cluster):
         return cluster.nodes.count()
@@ -70,10 +70,10 @@ class ClusterAdmin(SimpleHistoryAdmin):
         else:
             form = AddDatabaseForm()
         fieldsets = [(None, {'fields': list(form.base_fields)})]
-        adminForm = admin.helpers.AdminForm(form, fieldsets, {})
+        admin_form = admin.helpers.AdminForm(form, fieldsets, {})
         context = {
             'title': _('Add Database: %s') % escape(str(cluster)),
-            'adminform': adminForm,
+            'adminform': admin_form,
             'form_url': form_url,
             'form': form,
             'is_popup': '_popup' in request.REQUEST,
@@ -94,7 +94,7 @@ class ClusterAdmin(SimpleHistoryAdmin):
 class NodeAdmin(SimpleHistoryAdmin):
     exclude = ('lbr_region',)
     actions = ('pause', 'resume')
-    list_display = ('__unicode__', 'cluster_user', 'region', 'flavor','status','ip')
+    list_display = ('__unicode__', 'cluster_user', 'region', 'flavor', 'status', 'ip')
     list_filter = ('region', 'cluster', 'status', 'region__provider')
 
     def cluster_user(self, node):
@@ -153,8 +153,7 @@ class UserAdmin(admin.ModelAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2')}
-        ),
+            'fields': ('email', 'password1', 'password2')}),
     )
     form = UserChangeForm
     add_form = UserCreationForm
@@ -186,10 +185,8 @@ class UserAdmin(admin.ModelAdmin):
     def get_urls(self):
         from django.conf.urls import patterns
 
-        return patterns('',
-                        (r'^(\d+)/password/$',
-                         self.admin_site.admin_view(self.user_change_password))
-        ) + super(UserAdmin, self).get_urls()
+        return patterns('', (r'^(\d+)/password/$',
+                        self.admin_site.admin_view(self.user_change_password))) + super(UserAdmin, self).get_urls()
 
     def lookup_allowed(self, lookup, value):
         # See #20078: we don't want to allow any lookups involving passwords.
@@ -244,11 +241,11 @@ class UserAdmin(admin.ModelAdmin):
             form = self.change_password_form(user)
 
         fieldsets = [(None, {'fields': list(form.base_fields)})]
-        adminForm = admin.helpers.AdminForm(form, fieldsets, {})
+        admin_form = admin.helpers.AdminForm(form, fieldsets, {})
 
         context = {
             'title': _('Change password: %s') % escape(user.get_username()),
-            'adminForm': adminForm,
+            'adminForm': admin_form,
             'form_url': form_url,
             'form': form,
             'is_popup': '_popup' in request.REQUEST,

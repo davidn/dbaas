@@ -76,7 +76,6 @@ class Cluster(models.Model):
         unique_together = (("user", "label"),)
         app_label = "api"
 
-
     def __repr__(self):
         return "Cluster(uuid={uuid}, user={user})".format(uuid=repr(self.uuid), user=repr(self.user))
 

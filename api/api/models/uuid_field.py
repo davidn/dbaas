@@ -14,6 +14,7 @@ try:
 except ImportError:
     from django.utils.encoding import force_text as force_unicode # NOQA
 
+
 class UUIDVersionError(Exception):
     pass
 
@@ -78,7 +79,7 @@ For more information see: http://docs.python.org/lib/module-uuid.html
         return super(UUIDField, self).formfield(**kwargs)
 
     def south_field_triple(self):
-        "Returns a suitable description of this field for South."
+        """Returns a suitable description of this field for South."""
         # We'll just introspect the _actual_ field.
         from south.modelsinspector import introspector
         field_class = "django.db.models.fields.CharField"

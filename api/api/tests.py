@@ -474,20 +474,20 @@ class RetryTest(TestCase):
         self.retry_func.return_value=1
     def test_success(self):
         self.assertEqual(self.retry_func.return_value,
-            retry(self.retry_func, initialDelay=1, maxRetries=3)
+            retry(self.retry_func, initial_delay=1, max_retries=3)
         )
         self.assertEqual(1, len(self.retry_func.mock_calls))
     def test_fail(self):
         self.retry_func.side_effect=Exception('asdf')
         with self.assertRaisesRegexp(Exception, 'asdf'):
             self.assertEqual(self.retry_func.return_value,
-                retry(self.retry_func, initialDelay=1, maxRetries=3)
+                retry(self.retry_func, initial_delay=1, max_retries=3)
             )
         self.assertEqual(3, len(self.retry_func.mock_calls))
     def test_fail_once(self):
         self.retry_func.side_effect=(Exception(),1)
         self.assertEqual(self.retry_func.return_value,
-            retry(self.retry_func, initialDelay=1, maxRetries=3)
+            retry(self.retry_func, initial_delay=1, max_retries=3)
         )
         self.assertEqual(2, len(self.retry_func.mock_calls))
 

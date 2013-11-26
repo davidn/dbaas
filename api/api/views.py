@@ -22,7 +22,8 @@ from django.core.mail import mail_admins
 from django.core.exceptions import ValidationError
 from rest_framework import viewsets, mixins, status, permissions
 from .models import Cluster, Node, Region, Provider, Flavor, Backup
-from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
+from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, \
+    FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
 from .controller import launch_cluster, reinstantiate_node, pause_node, resume_node, add_database, add_nodes
 from rest_framework.response import Response
 from rest_framework.decorators import action, link, api_view, permission_classes
@@ -117,6 +118,7 @@ def upgrade(request):
     serializer = UserSerializer(request.user)
     return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
+
 class ClusterViewSet(mixins.CreateModelMixin,
                      mixins.ListModelMixin,
                      mixins.RetrieveModelMixin,
@@ -143,7 +145,8 @@ class ClusterViewSet(mixins.CreateModelMixin,
             n = 1
 
         if not request.user.is_paid and request.user.clusters.count() + n > 1:
-            return Response({'non_field_errors': ['Free users cannot create more than one cluster']}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'non_field_errors': ['Free users cannot create more than one cluster']},
+                            status=status.HTTP_403_FORBIDDEN)
 
         serializer = self.get_serializer(data=data, files=request.FILES)
 
@@ -172,7 +175,8 @@ class ClusterViewSet(mixins.CreateModelMixin,
             n = 1
 
         if not request.user.is_paid and self.object.nodes.count() + n > 2:
-            return Response({'non_field_errors': ['Free users cannot create more than two nodes']}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'non_field_errors': ['Free users cannot create more than two nodes']},
+                            status=status.HTTP_403_FORBIDDEN)
 
         serializer = NodeSerializer(data=data, files=request.FILES, context={
             'request': self.request,
@@ -183,7 +187,8 @@ class ClusterViewSet(mixins.CreateModelMixin,
         if not request.user.is_paid and (
                 isinstance(serializer.object, list) and any(not serializer.object.flavor.free_allowed for n in serializer.object)) or (
                 isinstance(serializer.object, Node) and not serializer.object.flavor.free_allowed):
-            return Response({'non_field_errors': ['Free users cannot create this flavor node']}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'non_field_errors': ['Free users cannot create this flavor node']},
+                            status=status.HTTP_403_FORBIDDEN)
 
         if serializer.is_valid():
             serializer.save(force_insert=True)

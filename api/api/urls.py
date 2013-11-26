@@ -1,23 +1,21 @@
 #!/usr/bin/python
 from __future__ import unicode_literals
 from django.conf.urls import patterns, include, url
-from django.contrib import admin
 from rest_framework import routers
 from api import views
 
-# This class is a customization of the rest_framework router. The only
-# difference is the addition of the 'post': 'add' mapping.
+
 class DbaasRouter(routers.SimpleRouter):
+    """Router with added 'add' method to handle POST to an object.
+
+    This is needed for our non-standard hierarchical use of the rest_framework.
+
+    """
     def __init__(self, trailing_slash=True):
         routers.SimpleRouter.__init__(self, trailing_slash=trailing_slash)
-        if trailing_slash=='optional':
-            self.trailing_slash='/?'
+        if trailing_slash == 'optional':
+            self.trailing_slash = '/?'
 
-    """Router with added 'add' method to handle POST to an object.
-    
-    This is needed for our non-standard hierarchical use of the rest_framework.
-    
-    """
     routes = [
         # List route.
         routers.Route(
@@ -64,7 +62,6 @@ router.register(r'clusters/(?P<cluster>[^/]+)', views.NodeViewSet)
 router.register(r'clusters/(?P<cluster>[^/]+)/(?P<node>[^/]+)/backups', views.BackupViewSet)
 
 urlpatterns = patterns('',
-    url(r'', include(router.urls)),
-    url(r'self', views.identity),
-    url(r'upgrade', views.upgrade),
-)
+                       url(r'', include(router.urls)),
+                       url(r'self', views.identity),
+                       url(r'upgrade', views.upgrade))
