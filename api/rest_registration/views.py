@@ -8,6 +8,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.db import IntegrityError
+from api.models import User
 from .models import RegistrationProfile
 from .serializers import RegistrationSerializer
 from rest_framework.decorators import action
@@ -58,7 +59,7 @@ class RegistrationView(GenericViewSet):
     def partial_update(self, request, *args, **kwargs):
         try:
             self.forgot(request, request.DATA)
-        except:
+        except User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         return Response(status=status.HTTP_200_OK)
 
