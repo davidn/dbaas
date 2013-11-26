@@ -6,6 +6,7 @@ from django.conf import settings
 from registration.models import User, RegistrationProfile as BaseRegistrationProfile, RegistrationManager as BaseRegistrationManager
 from django.db import transaction, models
 from django.utils.translation import ugettext as _
+
 try:
     from django.utils.timezone import now as datetime_now
 except ImportError:
@@ -47,14 +48,29 @@ class RegistrationManager(BaseRegistrationManager):
 
         #TODO: If requesting reactivation again, resend the existing activation code. or generate a new one.
         #Currently this errors out.
-        registration_profile = self.create_profile(existing_user)
+
+        profile = self.get(user=existing_user)
+
+        if not profile:
+            profile = self.create_profile(existing_user)
+        else:
+            profile.activation_key = self.generate_activation_key(existing_user)
+            profile.save()
 
         if send_email:
-            registration_profile.send_reactivation_email(site)
+            profile.send_reactivation_email(site)
 
         return existing_user
 
     forgot_password = transaction.commit_on_success(forgot_password)
+
+    def generate_activation_key( user):
+        salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
+        username = user.email
+        if isinstance(username, unicode):
+            username = username.encode('utf-8')
+        activation_key = hashlib.sha1(salt + username).hexdigest()
+        return activation_key
 
     def create_profile(self, user):
         """
@@ -66,11 +82,7 @@ class RegistrationManager(BaseRegistrationManager):
         username and a random salt.
 
         """
-        salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
-        username = user.email
-        if isinstance(username, unicode):
-            username = username.encode('utf-8')
-        activation_key = hashlib.sha1(salt + username).hexdigest()
+        activation_key = self.generate_activation_key(user)
         return self.create(user=user, activation_key=activation_key)
 
 
