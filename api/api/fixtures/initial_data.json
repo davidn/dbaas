@@ -454,6 +454,7 @@
             "provider": 1,
             "code": "t1.micro",
             "name": "t1.micro",
+            "description": "Suitable for test machines to explore functionality.",
             "ram": 630,
             "cpus": 1
         }
@@ -465,6 +466,7 @@
             "provider": 1,
             "code": "m1.small",
             "name": "m1.small",
+            "description": "Suitable for low traffic sites.",
             "ram": 1741,
             "cpus": 1
         }

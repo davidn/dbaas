@@ -72,6 +72,7 @@ class Flavor(models.Model):
     provider = models.ForeignKey(Provider, related_name='flavors')
     code = models.CharField("Code", max_length=20)
     name = models.CharField("Name", max_length=255)
+    description = models.CharField("description", max_length=255, default="", blank=True)
     ram = models.PositiveIntegerField("RAM (MiB)")
     cpus = models.PositiveSmallIntegerField("CPUs")
 
