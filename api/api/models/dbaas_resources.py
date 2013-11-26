@@ -5,7 +5,7 @@ from collections import Sequence
 from django.db import models
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.core.validators import MaxLengthValidator
+from django.core.validators import MaxLengthValidator, MinValueValidator
 from django.contrib.sites.models import Site
 from boto import connect_s3, connect_iam
 from pyzabbix import ZabbixAPI, ZabbixAPIException
@@ -664,7 +664,7 @@ class Backup(models.Model):
     node = models.ForeignKey(Node, related_name='backups')
     filename = models.CharField(max_length=255)
     time = models.DateTimeField()
-    size = models.PositiveIntegerField("Backup size (MB)")
+    size = models.BigIntegerField("Backup size (bytes)", validators=[MinValueValidator(0)])
 
     def __unicode__(self):
         return "%s backup of %s" % (self.time, self.node.dns_name)
