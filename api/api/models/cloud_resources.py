@@ -13,6 +13,7 @@ class Provider(models.Model):
     code = models.CharField(max_length=20)
     enabled = models.BooleanField(default=True)
     quickstart = models.ForeignKey('Flavor', related_name='+', on_delete=models.PROTECT, null=True)
+    launch_time = models.PositiveIntegerField('Time to launch (s)', default=300)
 
     class Meta:
         app_label = "api"

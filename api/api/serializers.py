@@ -115,7 +115,7 @@ class ProviderSerializer(serializers.HyperlinkedModelSerializer):
     regions = RegionSerializer(many=True)
     class Meta:
         model = Provider
-        fields = ('url','name', 'code', 'flavors', 'regions', 'quickstart')
+        fields = ('url','name', 'code', 'flavors', 'regions', 'quickstart', 'launch_time')
 
 class NodeSerializer(serializers.HyperlinkedModelSerializer):
     status = StatusField(choices=Node.STATUSES, read_only=True)

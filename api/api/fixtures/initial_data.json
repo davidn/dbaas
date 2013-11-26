@@ -6,7 +6,8 @@
             "name": "Amazon",
             "code": "az",
             "enabled": true,
-            "quickstart": 1
+            "quickstart": 1,
+            "launch_time": 180
         }
     },
     {
@@ -16,7 +17,8 @@
             "name": "Rackspace",
             "code": "rs",
             "enabled": true,
-            "quickstart": 19
+            "quickstart": 19,
+            "launch_time": 300
         }
     },
     {
@@ -26,7 +28,8 @@
             "name": "Test",
             "code": "test",
             "enabled": false,
-            "quickstart": 25
+            "quickstart": 25,
+            "launch_time": 60
         }
     },
     {
@@ -36,7 +39,8 @@
             "name": "HP Cloud",
             "code": "hp",
             "enabled": false,
-            "quickstart": 28
+            "quickstart": 28,
+            "launch_time": 300
         }
     },
     {
@@ -46,7 +50,8 @@
             "name": "LayeredTech",
             "code": "layeredtech",
             "enabled": false,
-            "quickstart": 29
+            "quickstart": 29,
+            "launch_time": 300
         }
     },
     {
@@ -56,7 +61,8 @@
             "name": "DataPipe",
             "code": "datapipe",
             "enabled": false,
-            "quickstart": 30
+            "quickstart": 30,
+            "launch_time": 300
         }
     },
     {
@@ -66,7 +72,8 @@
             "name": "Google Compute Engine",
             "code": "gce",
             "enabled": true,
-            "quickstart": 34
+            "quickstart": 34,
+            "launch_time": 120
         }
     },
     {
@@ -76,7 +83,8 @@
             "name": "ProfitBricks",
             "code": "pb",
             "enabled": false,
-            "quickstart": 43
+            "quickstart": 43,
+            "launch_time": 300
         }
     },
     {
