@@ -266,19 +266,11 @@ class NodeViewSet(mixins.ListModelMixin,
         new_object = self.get_object()
         serializer = self.get_serializer(new_object, data=request.DATA, partial=True)
         if serializer.is_valid():
-            if not new_object.flavor.provider:
-                new_object.flavor.provider = self.object.flavor.provider
-            elif new_object.flavor.provider != self.object.flavor.provider:
+            if new_object.flavor.provider != self.object.flavor.provider:
                 return Response({'dbname': ["Cannot change provider from %s (attempted to change to %s)" % (self.object.flavor.provider, new_object.flavor.provider)]}, status=status.HTTP_400_BAD_REQUEST)
-            if not new_object.flavor.code:
-                new_object.flavor.code = self.object.flavor.code
-            if not new_object.flavor.name:
-                new_object.flavor.name = self.object.flavor.name
-            if not new_object.flavor.free_allowed:
-                new_object.flavor.free_allowed = self.object.flavor.free_allowed
-            elif new_object.flavor.free_allowed != self.object.flavor.free_allowed:
-                return Response({'dbname': ["Cannot change free users allowed status from %s (attempted to change to %s)" % (self.object.flavor.free_allowed, new_object.flavor.free_allowed)]}, status=status.HTTP_400_BAD_REQUEST)
-            if new_object.flavor.code != self.object.flavor.code:
+            if not request.user.is_paid and not new_object.flavor.free_allowed:
+                return Response({'dbname': ["Free users cannot change flavor from %s (attempted to change to %s)" % (self.object.flavor, new_object.flavor)]}, status=status.HTTP_400_BAD_REQUEST)
+            if new_object.flavor != self.object.flavor:
                 reinstantiate_node(self.object, new_object.flavor)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(status=status.HTTP_200_OK)
