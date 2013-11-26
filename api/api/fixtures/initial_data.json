@@ -5,7 +5,8 @@
         "fields": {
             "name": "Amazon",
             "code": "az",
-            "enabled": true
+            "enabled": true,
+            "quickstart": 1
         }
     },
     {
@@ -14,7 +15,8 @@
         "fields": {
             "name": "Rackspace",
             "code": "rs",
-            "enabled": true
+            "enabled": true,
+            "quickstart": 19
         }
     },
     {
@@ -23,7 +25,8 @@
         "fields": {
             "name": "Test",
             "code": "test",
-            "enabled": false
+            "enabled": false,
+            "quickstart": 25
         }
     },
     {
@@ -32,7 +35,8 @@
         "fields": {
             "name": "HP Cloud",
             "code": "hp",
-            "enabled": false
+            "enabled": false,
+            "quickstart": 28
         }
     },
     {
@@ -41,7 +45,8 @@
         "fields": {
             "name": "LayeredTech",
             "code": "layeredtech",
-            "enabled": false
+            "enabled": false,
+            "quickstart": 29
         }
     },
     {
@@ -50,7 +55,8 @@
         "fields": {
             "name": "DataPipe",
             "code": "datapipe",
-            "enabled": false
+            "enabled": false,
+            "quickstart": 30
         }
     },
     {
@@ -59,7 +65,8 @@
         "fields": {
             "name": "Google Compute Engine",
             "code": "gce",
-            "enabled": true
+            "enabled": true,
+            "quickstart": 34
         }
     },
     {
@@ -68,7 +75,8 @@
         "fields": {
             "name": "ProfitBricks",
             "code": "pb",
-            "enabled": false
+            "enabled": false,
+            "quickstart": 43
         }
     },
     {
@@ -439,8 +447,7 @@
             "code": "t1.micro",
             "name": "t1.micro",
             "ram": 630,
-            "cpus": 1,
-            "free_allowed": true
+            "cpus": 1
         }
     },
     {
@@ -451,8 +458,7 @@
             "code": "m1.small",
             "name": "m1.small",
             "ram": 1741,
-            "cpus": 1,
-            "free_allowed": false
+            "cpus": 1
         }
     },
     {
@@ -463,8 +469,7 @@
             "code": "m1.medium",
             "name": "m1.medium",
             "ram": 3840,
-            "cpus": 1,
-            "free_allowed": false
+            "cpus": 1
         }
     },
     {
@@ -475,8 +480,7 @@
             "code": "m1.large",
             "name": "m1.large",
             "ram": 7680,
-            "cpus": 2,
-            "free_allowed": false
+            "cpus": 2
         }
     },
     {
@@ -487,8 +491,7 @@
             "code": "m1.xlarge",
             "name": "m1.xlarge",
             "ram": 15360,
-            "cpus": 4,
-            "free_allowed": false
+            "cpus": 4
         }
     },
     {
@@ -499,8 +502,7 @@
             "code": "m3.xlarge",
             "name": "m3.xlarge",
             "ram": 15360,
-            "cpus": 4,
-            "free_allowed": false
+            "cpus": 4
         }
     },
     {
@@ -511,8 +513,7 @@
             "code": "m3.2xlarge",
             "name": "m3.2xlarge",
             "ram": 30720,
-            "cpus": 8,
-            "free_allowed": false
+            "cpus": 8
         }
     },
     {
@@ -523,8 +524,7 @@
             "code": "c1.medium",
             "name": "c1.medium",
             "ram": 1741,
-            "cpus": 2,
-            "free_allowed": false
+            "cpus": 2
         }
     },
     {
@@ -535,8 +535,7 @@
             "code": "c1.xlarge",
             "name": "c1.xlarge",
             "ram": 7168,
-            "cpus": 8,
-            "free_allowed": false
+            "cpus": 8
         }
     },
     {
@@ -547,8 +546,7 @@
             "code": "cc2.8xlarge",
             "name": "cc2.8xlarge",
             "ram": 61952,
-            "cpus": 32,
-            "free_allowed": false
+            "cpus": 32
         }
     },
     {
@@ -559,8 +557,7 @@
             "code": "m2.xlarge",
             "name": "m2.xlarge",
             "ram": 17510,
-            "cpus": 2,
-            "free_allowed": false
+            "cpus": 2
         }
     },
     {
@@ -571,8 +568,7 @@
             "code": "m2.2xlarge",
             "name": "m2.2xlarge",
             "ram": 35021,
-            "cpus": 4,
-            "free_allowed": false
+            "cpus": 4
         }
     },
     {
@@ -583,8 +579,7 @@
             "code": "m2.4xlarge",
             "name": "m2.4xlarge",
             "ram": 70042,
-            "cpus": 8,
-            "free_allowed": false
+            "cpus": 8
         }
     },
     {
@@ -595,8 +590,7 @@
             "code": "cr1.8xlarge",
             "name": "cr1.8xlarge",
             "ram": 229376,
-            "cpus": 32,
-            "free_allowed": false
+            "cpus": 32
         }
     },
     {
@@ -607,8 +601,7 @@
             "code": "hi1.4xlarge",
             "name": "hi1.4xlarge",
             "ram": 61952,
-            "cpus": 16,
-            "free_allowed": false
+            "cpus": 16
         }
     },
     {
@@ -619,8 +612,7 @@
             "code": "hs1.8xlarge",
             "name": "hs1.8xlarge",
             "ram": 119808,
-            "cpus": 16,
-            "free_allowed": false
+            "cpus": 16
         }
     },
     {
@@ -631,8 +623,7 @@
             "code": "2",
             "name": "512MB Standard Instance",
             "ram": 512,
-            "cpus": 1,
-            "free_allowed": true
+            "cpus": 1
         }
     },
     {
@@ -643,8 +634,7 @@
             "code": "3",
             "name": "1GB Standard Instance",
             "ram": 1024,
-            "cpus": 1,
-            "free_allowed": true
+            "cpus": 1
         }
     },
     {
@@ -655,8 +645,7 @@
             "code": "4",
             "name": "2GB Standard Instance",
             "ram": 2048,
-            "cpus": 2,
-            "free_allowed": false
+            "cpus": 2
         }
     },
     {
@@ -667,8 +656,7 @@
             "code": "5",
             "name": "4GB Standard Instance",
             "ram": 4096,
-            "cpus": 2,
-            "free_allowed": false
+            "cpus": 2
         }
     },
     {
@@ -679,8 +667,7 @@
             "code": "6",
             "name": "8GB Standard Instance",
             "ram": 8192,
-            "cpus": 4,
-            "free_allowed": false
+            "cpus": 4
         }
     },
     {
@@ -691,8 +678,7 @@
             "code": "7",
             "name": "15GB Standard Instance",
             "ram": 15872,
-            "cpus": 6,
-            "free_allowed": false
+            "cpus": 6
         }
     },
     {
@@ -703,8 +689,7 @@
             "code": "8",
             "name": "30GB Standard Instance",
             "ram": 30720,
-            "cpus": 8,
-            "free_allowed": false
+            "cpus": 8
         }
     },
     {
@@ -715,8 +700,7 @@
             "code": "test-small",
             "name": "Small Fake Instance",
             "ram": 2048,
-            "cpus": 1,
-            "free_allowed": false
+            "cpus": 1
         }
     },
     {
@@ -727,8 +711,7 @@
             "code": "test-medium",
             "name": "Medium Fake Instance",
             "ram": 4096,
-            "cpus": 2,
-            "free_allowed": false
+            "cpus": 2
         }
     },
     {
@@ -739,8 +722,7 @@
             "code": "test-large",
             "name": "Large Fake Instance",
             "ram": 8192,
-            "cpus": 4,
-            "free_allowed": false
+            "cpus": 4
         }
     },
     {

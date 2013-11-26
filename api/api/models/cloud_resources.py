@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from logging import getLogger
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from .. import providers
 logger = getLogger(__name__)
@@ -11,6 +12,7 @@ class Provider(models.Model):
     name = models.CharField("Name", max_length=255)
     code = models.CharField(max_length=20)
     enabled = models.BooleanField(default=True)
+    quickstart = models.ForeignKey('Flavor', related_name='+', on_delete=models.PROTECT, null=True)
 
     class Meta:
         app_label = "api"
@@ -21,6 +23,10 @@ class Provider(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def clean(self):
+        if self.quickstart.provider != self:
+            raise ValidationError('Provider quickstart flavor must belong to this provider.')
 
 
 class Region(models.Model):
@@ -67,7 +73,6 @@ class Flavor(models.Model):
     name = models.CharField("Name", max_length=255)
     ram = models.PositiveIntegerField("RAM (MiB)")
     cpus = models.PositiveSmallIntegerField("CPUs")
-    free_allowed = models.BooleanField("Free users allowed", default=False)
 
     class Meta:
         app_label = "api"
@@ -78,3 +83,7 @@ class Flavor(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    @property
+    def free_allowed(self):
+        return self.provider.quickstart == self
