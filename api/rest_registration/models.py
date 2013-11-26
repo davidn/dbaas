@@ -46,10 +46,7 @@ class RegistrationManager(BaseRegistrationManager):
         """
         existing_user = User.objects.get_by_natural_key(email)
 
-        #TODO: If requesting reactivation again, resend the existing activation code. or generate a new one.
-        #Currently this errors out.
-
-        profile = self.get(user=existing_user)
+        profile = existing_user.registrationprofile_set
 
         if not profile:
             profile = self.create_profile(existing_user)
@@ -64,7 +61,8 @@ class RegistrationManager(BaseRegistrationManager):
 
     forgot_password = transaction.commit_on_success(forgot_password)
 
-    def generate_activation_key( user):
+    @staticmethod
+    def generate_activation_key(user):
         salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
         username = user.email
         if isinstance(username, unicode):
