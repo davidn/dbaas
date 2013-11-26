@@ -1016,7 +1016,8 @@
         "fields": {
             "provider": 8,
             "code": "pb.std1",
-            "name": "PB 1 cpu, 2GB",
+            "name": "pb.std1",
+            "description": "1 cpu, 2GB",
             "ram": 2048,
             "cpus": 1
         }
@@ -1027,7 +1028,8 @@
         "fields": {
             "provider": 8,
             "code": "pb.std2",
-            "name": "PB 2 cpu, 4GB",
+            "name": "pb.std2",
+            "description": "2 cpu, 4GB",
             "ram": 4096,
             "cpus": 2
         }
@@ -1038,7 +1040,8 @@
         "fields": {
             "provider": 8,
             "code": "pb.std4",
-            "name": "PB 4 cpu, 8GB",
+            "name": "pb.std4",
+            "description": "4 cpu, 8GB",
             "ram": 8192,
             "cpus": 4
         }
@@ -1049,7 +1052,8 @@
         "fields": {
             "provider": 8,
             "code": "pb.std6",
-            "name": "PB 6 cpu, 12GB",
+            "name": "pb.std6",
+            "description": "6 cpu, 12GB",
             "ram": 12288,
             "cpus": 6
         }
@@ -1060,7 +1064,8 @@
         "fields": {
             "provider": 8,
             "code": "pb.std8",
-            "name": "PB 8 cpu, 16GB",
+            "name": "pb.std8",
+            "description": "8 cpu, 16GB",
             "ram": 16384,
             "cpus": 8
         }
