@@ -48,13 +48,18 @@ class RegistrationManager(BaseRegistrationManager):
 
         profile_set = existing_user.registrationprofile_set
 
+        profile = None
+
         if profile_set:
-            profile = list(profile_set.all()[:1])[0]
-            profile = self.get(pk=profile.id)
+            try:
+                profile = list(profile_set.all()[:1])[0]
+            except IndexError:
+                pass
 
         if not profile:
             profile = self.create_profile(existing_user)
         else:
+            profile = self.get(pk=profile.id)
             profile.activation_key = self.generate_activation_key(existing_user)
             profile.save()
 
