@@ -46,7 +46,9 @@ class RegistrationManager(BaseRegistrationManager):
         """
         existing_user = User.objects.get_by_natural_key(email)
 
-        profile = existing_user.registrationprofile_set
+        profile_set = existing_user.registrationprofile_set
+        if profile_set:
+            profile = profile_set.all()[0]
 
         if not profile:
             profile = self.create_profile(existing_user)
