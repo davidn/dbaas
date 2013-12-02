@@ -303,7 +303,7 @@ class Node(models.Model):
     security_group = models.CharField("Security Group ID", max_length=200, default="", blank=True)
     health_check = models.CharField("R53 Health Check ID", max_length=200, default="", blank=True)
     nid = models.IntegerField("Node ID", default=None, blank=True, null=True)
-    storage = models.IntegerField("Allocated Storage")
+    storage = models.PositiveIntegerField("Storage", null=True, default=None, blank=True) # null = instance storage
     ip = models.IPAddressField("Instance IP Address", default="", blank=True)
     iops = models.IntegerField("Provisioned IOPS", default=None, blank=True, null=True)
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
@@ -336,6 +336,13 @@ class Node(models.Model):
 
     def __unicode__(self):
         return self.dns_name
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.storage and not self.flavor.variable_storage_available:
+            raise ValidationError("Instance type '%s' does not support variable storage." % self.flavor.code)
+        if not self.storage and not self.flavor.fixed_storage:
+            raise ValidationError("Instance type '%s' does not support fixed storage." % self.flavor.code)
 
     def pending(self):
         """Return True if the instance is still being provisioned by the underlying cloud provider."""

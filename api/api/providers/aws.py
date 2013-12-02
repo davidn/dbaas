@@ -72,6 +72,11 @@ class EC2(Cloud):
         return bdm
 
     def _run_instances(self, node, sgs):
+        if node.storage:
+            block_device_map = self._create_block_device_map(node)
+        else:
+            block_device_map = None
+        last_exc = None
         zones = sorted(z.name for z in self.ec2.get_all_zones())
         # each nodes try different zones first.
         zones = zones[node.nid % len(zones):] + zones[:node.nid % len(zones)]
@@ -81,7 +86,7 @@ class EC2(Cloud):
                     self.region.image,
                     key_name=self.region.key_name,
                     instance_type=node.flavor.code,
-                    block_device_map=self._create_block_device_map(node),
+                    block_device_map=block_device_map,
                     security_groups=sgs,
                     user_data=self.cloud_init(node),
                     placement=zone,

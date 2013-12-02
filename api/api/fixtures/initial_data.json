@@ -456,7 +456,9 @@
             "name": "t1.micro",
             "description": "Suitable for test machines to explore functionality.",
             "ram": 630,
-            "cpus": 1
+            "cpus": 1,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -468,7 +470,10 @@
             "name": "m1.small",
             "description": "Suitable for low traffic sites.",
             "ram": 1741,
-            "cpus": 1
+            "cpus": 1,
+            "variable_storage_available": true,
+            "variable_storage_default": true,
+            "fixed_storage": 160
         }
     },
     {
@@ -479,7 +484,10 @@
             "code": "m1.medium",
             "name": "m1.medium",
             "ram": 3840,
-            "cpus": 1
+            "cpus": 1,
+            "variable_storage_available": true,
+            "variable_storage_default": true,
+            "fixed_storage": 410
         }
     },
     {
@@ -490,7 +498,10 @@
             "code": "m1.large",
             "name": "m1.large",
             "ram": 7680,
-            "cpus": 2
+            "cpus": 2,
+            "variable_storage_available": true,
+            "variable_storage_default": true,
+            "fixed_storage": 840
         }
     },
     {
@@ -501,7 +512,10 @@
             "code": "m1.xlarge",
             "name": "m1.xlarge",
             "ram": 15360,
-            "cpus": 4
+            "cpus": 4,
+            "variable_storage_available": true,
+            "variable_storage_default": true,
+            "fixed_storage": 840
         }
     },
     {
@@ -512,7 +526,9 @@
             "code": "m3.xlarge",
             "name": "m3.xlarge",
             "ram": 15360,
-            "cpus": 4
+            "cpus": 4,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -523,7 +539,9 @@
             "code": "m3.2xlarge",
             "name": "m3.2xlarge",
             "ram": 30720,
-            "cpus": 8
+            "cpus": 8,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -534,7 +552,10 @@
             "code": "c1.medium",
             "name": "c1.medium",
             "ram": 1741,
-            "cpus": 2
+            "cpus": 2,
+            "variable_storage_available": true,
+            "variable_storage_default": true,
+            "fixed_storage": 350
         }
     },
     {
@@ -545,7 +566,10 @@
             "code": "c1.xlarge",
             "name": "c1.xlarge",
             "ram": 7168,
-            "cpus": 8
+            "cpus": 8,
+            "variable_storage_available": true,
+            "variable_storage_default": true,
+            "fixed_storage": 840
         }
     },
     {
@@ -556,7 +580,10 @@
             "code": "cc2.8xlarge",
             "name": "cc2.8xlarge",
             "ram": 61952,
-            "cpus": 32
+            "cpus": 32,
+            "variable_storage_available": true,
+            "variable_storage_default": true,
+            "fixed_storage": 3360
         }
     },
     {
@@ -567,7 +594,10 @@
             "code": "m2.xlarge",
             "name": "m2.xlarge",
             "ram": 17510,
-            "cpus": 2
+            "cpus": 2,
+            "variable_storage_available": true,
+            "variable_storage_default": true,
+            "fixed_storage": 420
         }
     },
     {
@@ -578,7 +608,10 @@
             "code": "m2.2xlarge",
             "name": "m2.2xlarge",
             "ram": 35021,
-            "cpus": 4
+            "cpus": 4,
+            "variable_storage_available": true,
+            "variable_storage_default": true,
+            "fixed_storage": 850
         }
     },
     {
@@ -589,7 +622,10 @@
             "code": "m2.4xlarge",
             "name": "m2.4xlarge",
             "ram": 70042,
-            "cpus": 8
+            "cpus": 8,
+            "variable_storage_available": true,
+            "variable_storage_default": true,
+            "fixed_storage": 840
         }
     },
     {
@@ -600,7 +636,10 @@
             "code": "cr1.8xlarge",
             "name": "cr1.8xlarge",
             "ram": 229376,
-            "cpus": 32
+            "cpus": 32,
+            "variable_storage_available": true,
+            "variable_storage_default": false,
+            "fixed_storage": 240
         }
     },
     {
@@ -611,7 +650,10 @@
             "code": "hi1.4xlarge",
             "name": "hi1.4xlarge",
             "ram": 61952,
-            "cpus": 16
+            "cpus": 16,
+            "variable_storage_available": true,
+            "variable_storage_default": false,
+            "fixed_storage": 2048
         }
     },
     {
@@ -622,7 +664,10 @@
             "code": "hs1.8xlarge",
             "name": "hs1.8xlarge",
             "ram": 119808,
-            "cpus": 16
+            "cpus": 16,
+            "variable_storage_available": true,
+            "variable_storage_default": false,
+            "fixed_storage": 49152
         }
     },
     {
@@ -633,7 +678,8 @@
             "code": "2",
             "name": "512MB Standard Instance",
             "ram": 512,
-            "cpus": 1
+            "cpus": 1,
+            "fixed_storage": 20
         }
     },
     {
@@ -644,7 +690,8 @@
             "code": "3",
             "name": "1GB Standard Instance",
             "ram": 1024,
-            "cpus": 1
+            "cpus": 1,
+            "fixed_storage": 40
         }
     },
     {
@@ -655,7 +702,8 @@
             "code": "4",
             "name": "2GB Standard Instance",
             "ram": 2048,
-            "cpus": 2
+            "cpus": 2,
+            "fixed_storage": 80
         }
     },
     {
@@ -666,7 +714,8 @@
             "code": "5",
             "name": "4GB Standard Instance",
             "ram": 4096,
-            "cpus": 2
+            "cpus": 2,
+            "fixed_storage": 160
         }
     },
     {
@@ -677,7 +726,8 @@
             "code": "6",
             "name": "8GB Standard Instance",
             "ram": 8192,
-            "cpus": 4
+            "cpus": 4,
+            "fixed_storage": 320
         }
     },
     {
@@ -688,7 +738,8 @@
             "code": "7",
             "name": "15GB Standard Instance",
             "ram": 15872,
-            "cpus": 6
+            "cpus": 6,
+            "fixed_storage": 620
         }
     },
     {
@@ -699,7 +750,8 @@
             "code": "8",
             "name": "30GB Standard Instance",
             "ram": 30720,
-            "cpus": 8
+            "cpus": 8,
+            "fixed_storage": 1200
         }
     },
     {
@@ -710,7 +762,10 @@
             "code": "test-small",
             "name": "Small Fake Instance",
             "ram": 2048,
-            "cpus": 1
+            "cpus": 1,
+            "variable_storage_available": true,
+            "variable_storage_default": true,
+            "fixed_storage": 10
         }
     },
     {
@@ -721,7 +776,10 @@
             "code": "test-medium",
             "name": "Medium Fake Instance",
             "ram": 4096,
-            "cpus": 2
+            "cpus": 2,
+            "variable_storage_available": true,
+            "variable_storage_default": false,
+            "fixed_storage": 20
         }
     },
     {
@@ -732,7 +790,8 @@
             "code": "test-large",
             "name": "Large Fake Instance",
             "ram": 8192,
-            "cpus": 4
+            "cpus": 4,
+            "fixed_storage": 40
         }
     },
     {
@@ -743,7 +802,9 @@
             "code": "hp",
             "name": "Unspecified HP Cloud",
             "ram": 1,
-            "cpus": 1
+            "cpus": 1,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -754,7 +815,9 @@
             "code": "layeredtech",
             "name": "Unspecified LayeredTech",
             "ram": 1,
-            "cpus": 1
+            "cpus": 1,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -765,7 +828,9 @@
             "code": "datapipe",
             "name": "Unspecified DataPipe",
             "ram": 1,
-            "cpus": 1
+            "cpus": 1,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -776,7 +841,9 @@
             "code": "f1-micro",
             "name": "f1-micro",
             "ram": 600,
-            "cpus": 1
+            "cpus": 1,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -787,7 +854,9 @@
             "code": "g1-small",
             "name": "g1-small",
             "ram": 1700,
-            "cpus": 1
+            "cpus": 1,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -798,7 +867,8 @@
             "code": "n1-standard-1-d",
             "name": "n1-standard-1-d",
             "ram": 3750,
-            "cpus": 1
+            "cpus": 1,
+            "fixed_storage": 420
         }
     },
     {
@@ -809,7 +879,8 @@
             "code": "n1-standard-2-d",
             "name": "n1-standard-2-d",
             "ram": 7500,
-            "cpus": 2
+            "cpus": 2,
+            "fixed_storage": 870
         }
     },
     {
@@ -820,7 +891,8 @@
             "code": "n1-standard-4-d",
             "name": "n1-standard-4-d",
             "ram": 15000,
-            "cpus": 4
+            "cpus": 4,
+            "fixed_storage": 1770
         }
     },
     {
@@ -831,7 +903,8 @@
             "code": "n1-standard-8-d",
             "name": "n1-standard-8-d",
             "ram": 30000,
-            "cpus": 8
+            "cpus": 8,
+            "fixed_storage": 3540
         }
     },
     {
@@ -842,7 +915,9 @@
             "code": "n1-standard-1",
             "name": "n1-standard-1",
             "ram": 3750,
-            "cpus": 1
+            "cpus": 1,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -853,7 +928,9 @@
             "code": "n1-standard-2",
             "name": "n1-standard-2",
             "ram": 7500,
-            "cpus": 2
+            "cpus": 2,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -864,7 +941,9 @@
             "code": "n1-standard-4",
             "name": "n1-standard-4",
             "ram": 15000,
-            "cpus": 4
+            "cpus": 4,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -875,7 +954,9 @@
             "code": "n1-standard-8",
             "name": "n1-standard-8",
             "ram": 30000,
-            "cpus": 8
+            "cpus": 8,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -886,7 +967,8 @@
             "code": "n1-highmem-2-d",
             "name": "n1-highmem-2-d",
             "ram": 13000,
-            "cpus": 2
+            "cpus": 2,
+            "fixed_storage": 870
         }
     },
     {
@@ -897,7 +979,8 @@
             "code": "n1-highmem-4-d",
             "name": "n1-highmem-4-d",
             "ram": 26000,
-            "cpus": 4
+            "cpus": 4,
+            "fixed_storage": 1770
         }
     },
     {
@@ -908,7 +991,8 @@
             "code": "n1-highmem-8-d",
             "name": "n1-highmem-8-d",
             "ram": 52000,
-            "cpus": 8
+            "cpus": 8,
+            "fixed_storage": 3540
         }
     },
     {
@@ -919,7 +1003,9 @@
             "code": "n1-highmem-2",
             "name": "n1-highmem-2",
             "ram": 13000,
-            "cpus": 2
+            "cpus": 2,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -930,7 +1016,9 @@
             "code": "n1-highmem-4",
             "name": "n1-highmem-4",
             "ram": 26000,
-            "cpus": 4
+            "cpus": 4,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -941,7 +1029,9 @@
             "code": "n1-highmem-8",
             "name": "n1-highmem-8",
             "ram": 52000,
-            "cpus": 8
+            "cpus": 8,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -952,7 +1042,8 @@
             "code": "n1-highcpu-2-d",
             "name": "n1-highcpu-2-d",
             "ram": 1800,
-            "cpus": 2
+            "cpus": 2,
+            "fixed_storage": 870
         }
     },
     {
@@ -963,7 +1054,8 @@
             "code": "n1-highcpu-4-d",
             "name": "n1-highcpu-4-d",
             "ram": 3600,
-            "cpus": 4
+            "cpus": 4,
+            "fixed_storage": 1770
         }
     },
     {
@@ -974,7 +1066,8 @@
             "code": "n1-highcpu-8-d",
             "name": "n1-highcpu-8-d",
             "ram": 7200,
-            "cpus": 8
+            "cpus": 8,
+            "fixed_storage": 3540
         }
     },
     {
@@ -985,7 +1078,9 @@
             "code": "n1-highcpu-2",
             "name": "n1-highcpu-2",
             "ram": 1800,
-            "cpus": 2
+            "cpus": 2,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -996,7 +1091,9 @@
             "code": "n1-highcpu-4",
             "name": "n1-highcpu-4",
             "ram": 3600,
-            "cpus": 4
+            "cpus": 4,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -1007,7 +1104,9 @@
             "code": "n1-highcpu-8",
             "name": "n1-highcpu-8",
             "ram": 7200,
-            "cpus": 8
+            "cpus": 8,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -1019,7 +1118,9 @@
             "name": "pb.std1",
             "description": "1 cpu, 2GB",
             "ram": 2048,
-            "cpus": 1
+            "cpus": 1,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -1031,7 +1132,9 @@
             "name": "pb.std2",
             "description": "2 cpu, 4GB",
             "ram": 4096,
-            "cpus": 2
+            "cpus": 2,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -1043,7 +1146,9 @@
             "name": "pb.std4",
             "description": "4 cpu, 8GB",
             "ram": 8192,
-            "cpus": 4
+            "cpus": 4,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -1055,7 +1160,9 @@
             "name": "pb.std6",
             "description": "6 cpu, 12GB",
             "ram": 12288,
-            "cpus": 6
+            "cpus": 6,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {
@@ -1067,7 +1174,9 @@
             "name": "pb.std8",
             "description": "8 cpu, 16GB",
             "ram": 16384,
-            "cpus": 8
+            "cpus": 8,
+            "variable_storage_available": true,
+            "variable_storage_default": true
         }
     },
     {

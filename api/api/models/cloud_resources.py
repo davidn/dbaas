@@ -75,9 +75,20 @@ class Flavor(models.Model):
     description = models.CharField("description", max_length=255, default="", blank=True)
     ram = models.PositiveIntegerField("RAM (MiB)")
     cpus = models.PositiveSmallIntegerField("CPUs")
+    variable_storage_available = models.BooleanField(default=False)
+    variable_storage_default = models.BooleanField(default=False)
+    fixed_storage = models.PositiveIntegerField(null=True, default=None, blank=True) # null = not available
 
     class Meta:
         app_label = "api"
+
+    def clean(self):
+        if not self.variable_storage_available and not self.fixed_storage_available:
+            raise ValidationError("Flavor must have at least one of fixed or variable storage available.")
+        if not self.variable_storage_available and self.variable_storage_default:
+            raise ValidationError("Flavor must not default to variable storage if it is not available.")
+        if not self.fixed_storage and not self.variable_storage_default:
+            raise ValidationError("Flavor must default to variable storage if fixed storage is not available.")
 
     @models.permalink
     def get_absolute_url(self):
