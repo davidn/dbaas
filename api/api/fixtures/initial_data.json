@@ -861,54 +861,6 @@
     },
     {
         "model": "api.flavor",
-        "pk": 35,
-        "fields": {
-            "provider": 7,
-            "code": "n1-standard-1-d",
-            "name": "n1-standard-1-d",
-            "ram": 3750,
-            "cpus": 1,
-            "fixed_storage": 420
-        }
-    },
-    {
-        "model": "api.flavor",
-        "pk": 36,
-        "fields": {
-            "provider": 7,
-            "code": "n1-standard-2-d",
-            "name": "n1-standard-2-d",
-            "ram": 7500,
-            "cpus": 2,
-            "fixed_storage": 870
-        }
-    },
-    {
-        "model": "api.flavor",
-        "pk": 37,
-        "fields": {
-            "provider": 7,
-            "code": "n1-standard-4-d",
-            "name": "n1-standard-4-d",
-            "ram": 15000,
-            "cpus": 4,
-            "fixed_storage": 1770
-        }
-    },
-    {
-        "model": "api.flavor",
-        "pk": 38,
-        "fields": {
-            "provider": 7,
-            "code": "n1-standard-8-d",
-            "name": "n1-standard-8-d",
-            "ram": 30000,
-            "cpus": 8,
-            "fixed_storage": 3540
-        }
-    },
-    {
-        "model": "api.flavor",
         "pk": 39,
         "fields": {
             "provider": 7,
@@ -961,42 +913,6 @@
     },
     {
         "model": "api.flavor",
-        "pk": 48,
-        "fields": {
-            "provider": 7,
-            "code": "n1-highmem-2-d",
-            "name": "n1-highmem-2-d",
-            "ram": 13000,
-            "cpus": 2,
-            "fixed_storage": 870
-        }
-    },
-    {
-        "model": "api.flavor",
-        "pk": 49,
-        "fields": {
-            "provider": 7,
-            "code": "n1-highmem-4-d",
-            "name": "n1-highmem-4-d",
-            "ram": 26000,
-            "cpus": 4,
-            "fixed_storage": 1770
-        }
-    },
-    {
-        "model": "api.flavor",
-        "pk": 50,
-        "fields": {
-            "provider": 7,
-            "code": "n1-highmem-8-d",
-            "name": "n1-highmem-8-d",
-            "ram": 52000,
-            "cpus": 8,
-            "fixed_storage": 3540
-        }
-    },
-    {
-        "model": "api.flavor",
         "pk": 51,
         "fields": {
             "provider": 7,
@@ -1032,42 +948,6 @@
             "cpus": 8,
             "variable_storage_available": true,
             "variable_storage_default": true
-        }
-    },
-    {
-        "model": "api.flavor",
-        "pk": 54,
-        "fields": {
-            "provider": 7,
-            "code": "n1-highcpu-2-d",
-            "name": "n1-highcpu-2-d",
-            "ram": 1800,
-            "cpus": 2,
-            "fixed_storage": 870
-        }
-    },
-    {
-        "model": "api.flavor",
-        "pk": 55,
-        "fields": {
-            "provider": 7,
-            "code": "n1-highcpu-4-d",
-            "name": "n1-highcpu-4-d",
-            "ram": 3600,
-            "cpus": 4,
-            "fixed_storage": 1770
-        }
-    },
-    {
-        "model": "api.flavor",
-        "pk": 56,
-        "fields": {
-            "provider": 7,
-            "code": "n1-highcpu-8-d",
-            "name": "n1-highcpu-8-d",
-            "ram": 7200,
-            "cpus": 8,
-            "fixed_storage": 3540
         }
     },
     {
