@@ -371,7 +371,7 @@ class Node(models.Model):
 
     @property
     def buffer_pool_size(self):
-        return int(max((self.flavor.ram - 128) * 0.7, self.flavor.ram - 2048) * 2 ** 20)
+        return int(max((self.flavor.ram - 128) * settings.BUFFER_POOL_PROPORTION, self.flavor.ram - 2048) * 2 ** 20)
 
     @property
     def set_backup_url(self):
