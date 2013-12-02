@@ -5,6 +5,7 @@ from logging import getLogger
 from time import sleep
 from django.conf import settings
 from .cloud import Cloud
+from ..exceptions import LaunchException
 from api.utils import retry
 
 import boto.ec2
@@ -86,7 +87,10 @@ class EC2(Cloud):
                     placement=zone,
                 )
             except EC2ResponseError as e:
-                pass
+                last_exc = e
+        if last_exc is None:
+            raise LaunchException("No zones available to attempt launch in.")
+        raise last_exc
 
     def launch(self, node):
         logger.debug("%s: Assigned NID %s", node, node.nid)

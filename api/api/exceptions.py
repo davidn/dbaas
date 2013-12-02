@@ -6,3 +6,7 @@ class BackendNotReady(Exception):
 
 class DiskNotAvailableException(Exception):
     pass
+
+
+class LaunchException(Exception):
+    pass
