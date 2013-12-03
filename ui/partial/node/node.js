@@ -1,13 +1,25 @@
 angular.module('geniedb').controller('NodeCtrl', function ($scope, $routeParams, $location, apiModel, $http, growl, dbaasConfig, User) {
     $scope.providers = apiModel.getProviders();
 
-    $scope.node = {size: 10};
+    $scope.node = {size: 10, useVariableStorage: null};
     $scope.regions = apiModel.regions;
     $scope.user = User.user;
     $scope.isCollapsed = true;
 
     $scope.updateFlavor = function () {
         $scope.node.flavor = $scope.node.region.provider.quickStartFlavor;
+        $scope.updateUseVariableStorage();
+    };
+
+    $scope.updateUseVariableStorage = function () {
+        $scope.node.useVariableStorage = $scope.node.flavor.variable_storage_default;
+        $scope.updateSize();
+    };
+
+    $scope.updateSize = function () {
+        $scope.node.size = $scope.node.useVariableStorage ? 10 : $scope.node.flavor.fixed_storage;
+//        alternative to change the default variable storage to the size of the fixed storage that would be used.
+//        $scope.node.size = $scope.node.flavor.fixed_storage == null ? 10 : $scope.node.flavor.fixed_storage;
     };
 
     $scope.save = function () {
@@ -29,7 +41,7 @@ angular.module('geniedb').controller('NodeCtrl', function ($scope, $routeParams,
         var nodes = [
             {region: node.region.code,
                 flavor: flavor.code,
-                storage: node.size}
+                storage: node.useVariableStorage ? node.size : null}
         ];
         // TODO Move to service call
         $http.post(dbaasConfig.apiUrl + "clusters/" + $routeParams.clusterid, nodes).success(function (data) {

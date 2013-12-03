@@ -10,39 +10,46 @@
 			</div>
 			<div class="form-group" ng-if="user.isPaid">
 				<label style="width: 20%"> Node Type</label>
-				<select ui-select2 ng-model="node.flavor" ng-disabled="!node.region" data-placeholder="Pick a type" ng-options="flavor as flavor.name for flavor in node.region.provider.flavors" style="width: 70%"></select>
+				<select ui-select2 ng-model="node.flavor" ng-change="updateUseVariableStorage()" ng-disabled="!node.region" data-placeholder="Pick a type" ng-options="flavor as flavor.name for flavor in node.region.provider.flavors" style="width: 70%"></select>
 			</div>
 
-			<div class="form-group" ng-if="user.isPaid">
-				<label style="width: 20%"> Node Size</label>
-				<input type="number" min="10" max="2048" ng-model="node.size" required/>
-				<label> GB</label>
-			</div>
 			<div class="form-group" ng-if="!user.isPaid">
 				<label style="width: 20%"> Node Type</label>
 				<input disabled value="{{node.region.provider.quickStartFlavor.name}}" style="width: 70%"/>
 			</div>
-			<div class="form-group" ng-if="!user.isPaid">
-				<label style="width: 20%"> Node Size</label>
-				<input disabled value="10"/>
-				<label> GB</label>
-			</div>
-			<p ng-if="!user.isPaid" class="lead">Free accounts are limited to small instances and 10GB of storage per node. Upgrade to a paid account to enable the full power of GenieDB.</p>
-
-			<div ng-if="node.region.provider.code === 'az'" class="advanced-panel">
+            <div class="form-group">
+                <label style="width: 20%"> Storage</label>
+                <input type="number" ng-disabled="!node.useVariableStorage || !user.isPaid" min="10" max="2048" ng-model="node.size" required/>
+                <label> GB</label>
+            </div>
+            <div ng-if="user.isPaid && node.flavor != null && !node.flavor.variable_storage_available" class="well well-large">
+                This instance type has fixed storage requirements.
+            </div>
+            <div ng-if="user.isPaid && !node.useVariableStorage && node.flavor.variable_storage_available" class="well well-large">
+                The storage requirements are fixed when you are not using variable storage (see advanced options).
+            </div>
+            <p ng-if="!user.isPaid" class="lead">Free accounts cannot choose type or storage. Upgrade to a paid account to enable the full power of GenieDB.</p>
+			<div class="advanced-panel" ng-if="node.region.provider.code === 'az' || user.isPaid && node.flavor.variable_storage_available && (node.flavor.fixed_storage != null)">
 				<a class="btn-link" style="text-decoration: none;"  ng-click="toggle()">Advanced</a>
 			</div>
-			<div ng-if="node.region.provider.code === 'az'" collapse="isCollapsed">
+			<div collapse="isCollapsed">
 				<br/>
-				<div class="form-group">
+                <div class="form-group" ng-if="user.isPaid && node.flavor.variable_storage_available && (node.flavor.fixed_storage != null)">
+                    <label style="width: 20%"> Variable Storage</label>
+                    <input type="checkbox" ng-change="updateSize()" ng-model="node.useVariableStorage">
+                </div>
+				<div ng-if="user.isPaid && node.flavor.variable_storage_available && (node.flavor.fixed_storage != null)" class="well well-large">
+                    Check this box to attach external storage to your machine. This allows you to choose the storage size and preserves your data if the provider loses your instance at a slight performance cost.
+                </div>
+				<div ng-if="node.region.provider.code === 'az'" class="form-group">
 					<label style="width: 20%">Provision IOPS</label>
 					<input type="checkbox" ng-model="node.useIOps"/>
 				</div>
-				<div class="form-group">
+				<div ng-if="node.region.provider.code === 'az'" class="form-group">
 					<label style="width: 20%"> IOPS</label>
 					<input ng-disabled="!node.useIOps" type="number" step="100" min="100" max="4000" ng-model="node.iops"/>
 				</div>
-				<div class="well well-large">The number of input-output operations per second. For provisioned IOPS volumes, you can specify the IOPS rate when you create the volume. The ratio of IOPS provisioned and the volume size requested can be a maximum of 30 (in other words, a volume with 3000 IOPS must be at least 100 GB).</div>
+				<div ng-if="node.region.provider.code === 'az'" class="well well-large">The number of input-output operations per second. For provisioned IOPS volumes, you can specify the IOPS rate when you create the volume. The ratio of IOPS provisioned and the volume size requested can be a maximum of 30 (in other words, a volume with 3000 IOPS must be at least 100 GB).</div>
 			</div>
 		</div>
 		<div class="modal-footer">
