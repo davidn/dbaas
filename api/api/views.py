@@ -15,20 +15,23 @@ There are several aspects to the API, each with their own class (a viewset):
 """
 
 from __future__ import unicode_literals
+
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.mail import mail_admins
 from django.core.exceptions import ValidationError
 from rest_framework import viewsets, mixins, status, permissions
-from .models import Cluster, Node, Region, Provider, Flavor, Backup
-from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, \
-    FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
-from .controller import launch_cluster, reinstantiate_node, pause_node, resume_node, add_database, add_nodes
 from rest_framework.response import Response
 from rest_framework.decorators import action, link, api_view, permission_classes
 from django.http.response import HttpResponse
 from pyzabbix import ZabbixAPI
+
+from api.models.pricing import Pricing, CreditCardToken
+from .models import Cluster, Node, Region, Provider, Flavor, Backup
+from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, \
+    FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
+from .controller import launch_cluster, reinstantiate_node, pause_node, resume_node, add_database, add_nodes
 from api.utils import mysql_database_validator
 
 
@@ -218,6 +221,7 @@ class ClusterViewSet(mixins.CreateModelMixin,
         serializer = self.get_serializer(self.object)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
+
     launch_all = launch
 
 
@@ -272,9 +276,12 @@ class NodeViewSet(mixins.ListModelMixin,
         serializer = self.get_serializer(new_object, data=request.DATA, partial=True)
         if serializer.is_valid():
             if new_object.flavor.provider != self.object.flavor.provider:
-                return Response({'dbname': ["Cannot change provider from %s (attempted to change to %s)" % (self.object.flavor.provider, new_object.flavor.provider)]}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'dbname': ["Cannot change provider from %s (attempted to change to %s)" % (
+                    self.object.flavor.provider, new_object.flavor.provider)]}, status=status.HTTP_400_BAD_REQUEST)
             if not request.user.is_paid and not new_object.flavor.free_allowed:
-                return Response({'dbname': ["Free users cannot change flavor from %s (attempted to change to %s)" % (self.object.flavor, new_object.flavor)]}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'dbname': [
+                    "Free users cannot change flavor from %s (attempted to change to %s)" % (self.object.flavor, new_object.flavor)]},
+                                status=status.HTTP_400_BAD_REQUEST)
             if new_object.flavor != self.object.flavor:
                 reinstantiate_node(self.object, new_object.flavor)
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -338,12 +345,14 @@ class NodeViewSet(mixins.ListModelMixin,
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
 
+
 class OwnerOrCreate(Owner):
     def has_permission(self, request, view):
         return view.action == 'create' or not request.user.is_anonymous()
 
+
 class BackupViewSet(mixins.ListModelMixin,
-                  viewsets.GenericViewSet):
+                    viewsets.GenericViewSet):
     model = Backup
     serializer_class = BackupReadSerializer
     permission_classes = (OwnerOrCreate,)
@@ -371,6 +380,57 @@ class BackupViewSet(mixins.ListModelMixin,
 
         if serializer.is_valid():
             self.get_queryset().delete()
+            self.pre_save(serializer.object)
+            self.object = serializer.save(force_insert=True)
+            self.post_save(self.object, created=True)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED,
+                            headers=headers)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PricingViewSet(viewsets.GenericViewSet):
+    """List, :py:class:`~api.Pricing`."""
+    model = Pricing
+    # serializer_class = UserSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def list(self, request, *args, **kwargs):
+        # TODO: Structure as Region -> Instance: Name, Price
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+        return Response(serializer.data)
+
+
+class CreditCardViewSet(mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        mixins.UpdateModelMixin,
+                        viewsets.GenericViewSet):
+    """Create and retrieve :py:class:`~api.CreditCardToken`."""
+    model = CreditCardToken
+    # serializer_class = UserSerializer
+    permission_classes = (OwnerOrCreate,)
+
+    def get_queryset(self):
+        return CreditCardToken.objects.filter(user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        if isinstance(request.DATA, list):
+            data = []
+            n = len(request.DATA)
+            for d in request.DATA:
+                new_d = d.copy()
+                new_d["user"] = reverse('user-detail', args=(request.user.pk,))
+                data.append(new_d)
+        else:
+            data = request.DATA.copy()
+            data["user"] = reverse('user-detail', args=(request.user.pk,))
+            n = 1
+
+        CreditCardToken.objects.create_credit_card()
+        serializer = self.get_serializer(data=data)
+
+        if serializer.is_valid():
             self.pre_save(serializer.object)
             self.object = serializer.save(force_insert=True)
             self.post_save(self.object, created=True)

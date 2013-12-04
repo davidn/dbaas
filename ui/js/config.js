@@ -2,7 +2,8 @@ angular.module('geniedb').constant('dbaasConfig', (function () {
     var versionTag = "2.1";
     var buildTag = "%BUILDDATE%";
     //BEGINSERVICEURL
-    var serviceUrl = "//localhost:8000";
+//    var serviceUrl = "//localhost:8000";
+    var serviceUrl = "https://dbaas-test.geniedb.com:4000";
     //ENDSERVICEURL
 
     var posDash = serviceUrl.indexOf('-');

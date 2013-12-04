@@ -1,4 +1,4 @@
-angular.module('geniedb').controller('NavigationCtrl', function ($scope, User, userVoice) {
+angular.module('geniedb').controller('NavigationCtrl', function ($scope, User, $location) {
     $scope.user = User.user;
 
     $scope.logout = function () {
@@ -6,7 +6,7 @@ angular.module('geniedb').controller('NavigationCtrl', function ($scope, User, u
     };
 
     $scope.upgrade = function () {
-        userVoice.contact('Upgrade Account', 'Interested in upgrading to paid account.');
+        $location.path("/pricing");
     };
 
 });

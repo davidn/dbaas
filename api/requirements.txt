@@ -17,3 +17,4 @@ git+https://github.com/treyhunner/django-simple-history#egg=django-simple-histor
 mock
 salt==0.17.1
 git+https://github.com/profitbricks-devel/ProfitBricks-CLI-API#egg=pbapi
+paypalrestsdk

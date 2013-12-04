@@ -5,7 +5,7 @@ angular.module('geniedb', ['ui.keypress', 'ui.bootstrap.tooltipX', 'ngRoute', 'n
         $routeProvider.
             when('/', {templateUrl: 'partial/welcome/welcome.html'}).
             when('/activate/:activationHash', {templateUrl: 'partial/activate/activate.html'}).
-            when('/reset/:activationHash', {templateUrl: 'partial/activate/activate.html', action:'reset'}).
+            when('/reset/:activationHash', {templateUrl: 'partial/activate/activate.html', action: 'reset'}).
             when('/cluster', {templateUrl: 'partial/cluster/cluster.html'}).
             when('/cluster/:clusterid/node', {templateUrl: 'partial/node/node.html'}).
             when('/forgot', {templateUrl: 'partial/forgot/forgot.html'}).
@@ -19,8 +19,10 @@ angular.module('geniedb', ['ui.keypress', 'ui.bootstrap.tooltipX', 'ngRoute', 'n
             when('/share/:promo', {templateUrl: 'partial/share/share.html'}).
             when('/share', {templateUrl: 'partial/share/share.html'}).
             when('/resize/:clusterId/:nodeId', {templateUrl: 'partial/resize/resize.html'}).
-            when('/profile',{templateUrl: 'partial/profile/profile.html'}).
-	/* Add New Routes Above */
+            when('/profile', {templateUrl: 'partial/profile/profile.html'}).
+            when('/pricing', {templateUrl: 'partial/pricing/pricing.html'}).
+            when('/billinginfo', {templateUrl: 'partial/billinginfo/billinginfo.html'}).
+            /* Add New Routes Above */
             otherwise({redirectTo: '/'});
 
 

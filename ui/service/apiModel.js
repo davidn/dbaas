@@ -144,6 +144,8 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
             });
             provider.flavors.forEach(function (flavor) {
                 flavor.provider = provider;
+                // TODO: REMOVE HACK
+                flavor.price = 0.04;
             });
             regions.push.apply(regions, provider.regions);
             flavors.push.apply(flavors, provider.flavors);

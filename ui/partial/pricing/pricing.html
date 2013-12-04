@@ -1,0 +1,24 @@
+<div class="pricing-grid" ng-controller="PricingCtrl">
+	<select ui-select2 ng-model="region" ng-options="region as region.name group by region.provider.name for region in regions" style="width: 300px"></select>
+	<table class="table table-striped table-condensed pricing-table">
+		<thead>
+		<td>{{region.provider.name}} {{region.name}}
+		</td>
+		<td><b>GenieDB DBaas</b> <br/> <em>(Per Server-Hour)</em></td>
+		</thead>
+
+		<tbody>
+		<tr ng-repeat="flavor in region.provider.flavors">
+			<td >{{flavor.name}}</td>
+			<td >${{flavor.price}}</td>
+		</tr>
+		<tr ng-if="!region.provider.flavors">
+			<td colspan="8" style="line-height: 6em;">Select a Provider and Region to see pricing.
+			</td>
+		</tr>
+		</tbody>
+	</table>
+
+	<button class="btn btn-success" ng-click="upgrade()">UPGRADE NOW</button>
+	<button class="btn btn-primary pull-right" ng-click="cancel()">CANCEL</button>
+</div>
