@@ -61,21 +61,18 @@ class EC2(Cloud):
         return sg
 
     def _create_block_device_map(self, node):
-        dev_sda1 = boto.ec2.blockdevicemapping.BlockDeviceType(
+        bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
+        bdm['/dev/sda1'] = boto.ec2.blockdevicemapping.BlockDeviceType(
             iops=node.iops,
             volume_type=self.null_or_io1(node.iops),
-            delete_on_termination=True
+            delete_on_termination=True,
+            size=node.storage # null -> default
         )
-        dev_sda1.size = node.storage
-        bdm = boto.ec2.blockdevicemapping.BlockDeviceMapping()
-        bdm['/dev/sda1'] = dev_sda1
+        if node.storage is None:
+            bdm['/dev/sdb'] = boto.ec2.blockdevicemapping.BlockDeviceType(ephemeral_name='ephemeral0')
         return bdm
 
     def _run_instances(self, node, sgs):
-        if node.storage:
-            block_device_map = self._create_block_device_map(node)
-        else:
-            block_device_map = None
         last_exc = None
         zones = sorted(z.name for z in self.ec2.get_all_zones())
         # each nodes try different zones first.
@@ -86,7 +83,7 @@ class EC2(Cloud):
                     self.region.image,
                     key_name=self.region.key_name,
                     instance_type=node.flavor.code,
-                    block_device_map=block_device_map,
+                    block_device_map=self._create_block_device_map(node),
                     security_groups=sgs,
                     user_data=self.cloud_init(node),
                     placement=zone,
