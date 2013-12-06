@@ -267,6 +267,36 @@
             "longitude": 0
         }
     },
+        {
+        "model": "api.region",
+        "pk": 48,
+        "fields": {
+            "provider": 2,
+            "code": "hkg",
+            "name": "Rackspace Hong Kong",
+            "image": "f3f005e9-6958-4c57-911f-45a1c1b2a674",
+            "lbr_region": "ap-southeast-1",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 22.2783,
+            "longitude": 114.1589
+        }
+    },
+    {
+        "model": "api.region",
+        "pk": 49,
+        "fields": {
+            "provider": 2,
+            "code": "iad",
+            "name": "Rackspace North Virginia",
+            "image": "385cc9fd-65a7-4cb1-bbbc-7b2b9c16799c",
+            "lbr_region": "us-east-1",
+            "key_name": "dbaas",
+            "security_group": "",
+            "latitude": 38.9544,
+            "longitude": -77.3464
+        }
+    },
     {
         "model": "api.region",
         "pk": 12,
