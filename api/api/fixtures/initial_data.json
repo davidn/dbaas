@@ -531,7 +531,8 @@
             "cpus": 2,
             "variable_storage_available": true,
             "variable_storage_default": true,
-            "fixed_storage": 840
+            "fixed_storage": 840,
+            "fixed_storage_volumes": 2
         }
     },
     {
@@ -545,7 +546,8 @@
             "cpus": 4,
             "variable_storage_available": true,
             "variable_storage_default": true,
-            "fixed_storage": 840
+            "fixed_storage": 840,
+            "fixed_storage_volumes": 4
         }
     },
     {
@@ -599,7 +601,8 @@
             "cpus": 8,
             "variable_storage_available": true,
             "variable_storage_default": true,
-            "fixed_storage": 840
+            "fixed_storage": 840,
+            "fixed_storage_volumes": 4
         }
     },
     {
@@ -613,7 +616,8 @@
             "cpus": 32,
             "variable_storage_available": true,
             "variable_storage_default": true,
-            "fixed_storage": 3360
+            "fixed_storage": 3360,
+            "fixed_storage_volumes": 4
         }
     },
     {
@@ -655,7 +659,8 @@
             "cpus": 8,
             "variable_storage_available": true,
             "variable_storage_default": true,
-            "fixed_storage": 840
+            "fixed_storage": 840,
+            "fixed_storage_volumes": 2
         }
     },
     {
@@ -669,7 +674,8 @@
             "cpus": 32,
             "variable_storage_available": true,
             "variable_storage_default": false,
-            "fixed_storage": 240
+            "fixed_storage": 240,
+            "fixed_storage_volumes": 2
         }
     },
     {
@@ -683,7 +689,8 @@
             "cpus": 16,
             "variable_storage_available": true,
             "variable_storage_default": false,
-            "fixed_storage": 2048
+            "fixed_storage": 2048,
+            "fixed_storage_volumes": 2
         }
     },
     {
@@ -697,7 +704,8 @@
             "cpus": 16,
             "variable_storage_available": true,
             "variable_storage_default": false,
-            "fixed_storage": 49152
+            "fixed_storage": 49152,
+            "fixed_storage_volumes": 24
         }
     },
     {

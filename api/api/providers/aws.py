@@ -69,7 +69,8 @@ class EC2(Cloud):
             size=node.storage # null -> default
         )
         if node.storage is None:
-            bdm['/dev/sdb'] = boto.ec2.blockdevicemapping.BlockDeviceType(ephemeral_name='ephemeral0')
+            for i in xrange(node.flavor.fixed_storage_volumes):
+                bdm['/dev/sd%s' % chr(ord('b')+i)] = boto.ec2.blockdevicemapping.BlockDeviceType(ephemeral_name='ephemeral%d' % i)
         return bdm
 
     def _run_instances(self, node, sgs):

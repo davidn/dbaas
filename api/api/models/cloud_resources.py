@@ -78,6 +78,7 @@ class Flavor(models.Model):
     variable_storage_available = models.BooleanField(default=False)
     variable_storage_default = models.BooleanField(default=False)
     fixed_storage = models.PositiveIntegerField(null=True, default=None, blank=True) # null = not available
+    fixed_storage_volumes = models.PositiveIntegerField(default=1) # For EC2
 
     class Meta:
         app_label = "api"
