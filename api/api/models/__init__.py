@@ -20,6 +20,7 @@ from .user import User
 from .cloud_resources import Provider, Region, Flavor
 from .dbaas_resources import Cluster, LBRRegionNodeSet, Node, Backup, BUCKET_NAME
 from .rules import Rule
+from .pricing import Pricing, CreditCardToken, Activity
 
 @receiver(models.signals.pre_save, sender=Node)
 def node_pre_save_callback(sender, instance, raw, using, **kwargs):
