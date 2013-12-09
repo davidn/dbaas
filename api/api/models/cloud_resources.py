@@ -84,7 +84,7 @@ class Flavor(models.Model):
         app_label = "api"
 
     def clean(self):
-        if not self.variable_storage_available and not self.fixed_storage_available:
+        if not self.variable_storage_available and not self.fixed_storage:
             raise ValidationError("Flavor must have at least one of fixed or variable storage available.")
         if not self.variable_storage_available and self.variable_storage_default:
             raise ValidationError("Flavor must not default to variable storage if it is not available.")
