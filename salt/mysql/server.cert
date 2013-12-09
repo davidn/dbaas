@@ -1,1 +1,1 @@
-pillar['dbaas_api']['cluster']['server_cert']
+{{pillar['dbaas_api']['cluster']['server_cert']}}
