@@ -15,7 +15,7 @@ def register(request):
         return HttpResponse(status=400)
     try:
         email = j['email_address'][0]
-    except TypeError, IndexError, KeyError:
+    except (TypeError, IndexError, KeyError):
         return HttpResponse(status=400)
     if Site._meta.installed:
         site = Site.objects.get_current()
