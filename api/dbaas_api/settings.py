@@ -193,6 +193,7 @@ INSTALLED_APPS = (
     'rest_registration',
     'simple_history',
     'salt_jobs',
+    'unbounce_hook',
     'api'
 )
 
