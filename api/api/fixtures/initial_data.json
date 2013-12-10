@@ -1093,5 +1093,13 @@
             "condition": "user_not_launched_after_10days",
             "action": "no_cluster_email_10days"
         }
+    },
+    {
+        "model": "api.rule",
+        "pk": 4,
+        "fields": {
+            "condition": "user_near_expiry",
+            "action": "near_expiry_email"
+        }
     }
 ]

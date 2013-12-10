@@ -561,6 +561,8 @@ class RuleTest(TestCase):
 import datetime
 class ConditionsTest(TestCase):
     from rules import conditions
+    from django.utils.timezone import now
+    now = staticmethod(now)
 
     def setUp(self):
         self.user = User.objects.create(email='test@email.com')
@@ -639,13 +641,30 @@ class ConditionsTest(TestCase):
         c.status = Cluster.PROVISIONING
         c.save()
         self.assertFalse(self.conditions.user_expired(self.user))
-        h = c.history.all().update(history_date=datetime.datetime.utcnow() - datetime.timedelta(days=2))
+        h = c.history.all().update(history_date=self.now() - datetime.timedelta(days=2))
         self.assertTrue(self.conditions.user_expired(self.user))
         c.status = Cluster.OVER
         c.save()
         self.assertTrue(self.conditions.user_expired(self.user))
         c.delete()
         self.assertTrue(self.conditions.user_expired(self.user))
+
+    @override_settings(TRIAL_LENGTH=datetime.timedelta(days=1))
+    @override_settings(TRIAL_WARN_PERIOD=datetime.timedelta(hours=2))
+    def test_user_near_expiry(self):
+        self.assertFalse(self.conditions.user_near_expiry(self.user))
+        c = Cluster.objects.create(user=self.user)
+        self.assertFalse(self.conditions.user_near_expiry(self.user))
+        c.status = Cluster.PROVISIONING
+        c.save()
+        self.assertFalse(self.conditions.user_near_expiry(self.user))
+        h = c.history.all().update(history_date=self.now() - settings.TRIAL_LENGTH + settings.TRIAL_WARN_PERIOD/2)
+        self.assertTrue(self.conditions.user_near_expiry(self.user))
+        c.status = Cluster.OVER
+        c.save()
+        self.assertTrue(self.conditions.user_near_expiry(self.user))
+        c.delete()
+        self.assertTrue(self.conditions.user_near_expiry(self.user))
 
 
 class ActionsTest(TestCase):
