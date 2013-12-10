@@ -14,7 +14,9 @@ def user_expired(user):
         return False
     return first_cluster.history_date + settings.TRIAL_LENGTH < now()
 
+
 def user_near_expiry(user):
+    # TRIAL_WARNING_PERIOD can be negative, in which case we warn *after* the trial has expired.
     if user.is_paid:
         return False
     q = Cluster.history.filter(user_id=user.id, status=Cluster.PROVISIONING).order_by('-history_date')
