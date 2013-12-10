@@ -14,6 +14,16 @@ def user_expired(user):
         return False
     return first_cluster.history_date + settings.TRIAL_LENGTH < now()
 
+def user_near_expiry(user):
+    if user.is_paid:
+        return False
+    q = Cluster.history.filter(user_id=user.id, status=Cluster.PROVISIONING).order_by('-history_date')
+    try:
+        first_cluster = q[0]
+    except IndexError:
+        return False
+    return first_cluster.history_date + settings.TRIAL_LENGTH - settings.TRIAL_WARN_PERIOD < now()
+
 
 def user_launched(user):
     return Cluster.history.filter(user_id=user.id, status=Cluster.PROVISIONING).count() != 0
