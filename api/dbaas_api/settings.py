@@ -64,6 +64,7 @@ CLUSTER_NID_TEMPLATE = "^(?P<cluster>[-a-f0-9A-F]+)-(?P<nid>\d+)(?:.*)"
 BUFFER_POOL_PROPORTION = 0.5
 
 TRIAL_LENGTH = datetime.timedelta(weeks=1)
+TRIAL_WARN_PERIOD = datetime.timedelta(days=-1)
 
 DEFAULT_PORT = 3306
 

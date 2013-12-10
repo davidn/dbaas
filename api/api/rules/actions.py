@@ -11,6 +11,14 @@ def disable_user(user):
     user.save()
 
 
+def near_expiry_email(user):
+    logger.info("Sending trial time warning to %s", user.email)
+    user.email_user_template('trial_warning_email', {
+        'username': str(user),
+        'is_paid': user.is_paid,
+        'user': user,
+    })
+
 def no_cluster_email(user, delta):
     logger.info("Sending %s day email to %s", delta.days, user.email)
     user.email_user_template('no_cluster_%sday_email' % delta.days, {
