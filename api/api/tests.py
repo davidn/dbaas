@@ -666,6 +666,23 @@ class ConditionsTest(TestCase):
         c.delete()
         self.assertTrue(self.conditions.user_near_expiry(self.user))
 
+    @override_settings(TRIAL_LENGTH=datetime.timedelta(days=1))
+    @override_settings(TRIAL_WARN_PERIOD=datetime.timedelta(days=-1))
+    def test_user_past_expiry(self):
+        self.assertFalse(self.conditions.user_near_expiry(self.user))
+        c = Cluster.objects.create(user=self.user)
+        self.assertFalse(self.conditions.user_near_expiry(self.user))
+        c.status = Cluster.PROVISIONING
+        c.save()
+        self.assertFalse(self.conditions.user_near_expiry(self.user))
+        h = c.history.all().update(history_date=self.now() - settings.TRIAL_LENGTH + settings.TRIAL_WARN_PERIOD)
+        self.assertTrue(self.conditions.user_near_expiry(self.user))
+        c.status = Cluster.OVER
+        c.save()
+        self.assertTrue(self.conditions.user_near_expiry(self.user))
+        c.delete()
+        self.assertTrue(self.conditions.user_near_expiry(self.user))
+
 
 class ActionsTest(TestCase):
     from rules import actions
