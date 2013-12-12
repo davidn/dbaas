@@ -82,7 +82,7 @@ angular.module('geniedb').controller('ListCtrl', function ($scope, $location, $t
             if (result === "ok") {
                 $http['delete'](cluster.url).success(function () {
                     $scope.refresh();
-                    growl.success({body: "Cluster " + cluster.label + " deleted"});
+                    growl.success({body: "Cluster " + cluster.label + " shutting down"});
                 }).error(function (err) {
                         cluster.isDeleting = false;
                         handleError(err);
