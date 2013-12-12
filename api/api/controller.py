@@ -24,18 +24,18 @@ def launch_cluster(cluster):
     install_nodes = cluster.nodes.filter(status=Node.STARTING)
     lbr_regions = cluster.lbr_regions.filter(launched=False)
     task = tasks.cluster_launch_iam.si(cluster) \
-         | group([tasks.node_launch_provision.si(node) for node in install_nodes]) \
+         | group_or_null([tasks.node_launch_provision.si(node) for node in install_nodes]) \
          | tasks.null_task.si() \
-         | group([tasks.node_launch_update.si(node) for node in install_nodes]).set(countdown=1) \
+         | group_or_null([tasks.node_launch_update.si(node) for node in install_nodes]).set(countdown=1) \
          | tasks.null_task.si() \
-         | group([tasks.node_launch_dns.si(node) for node in install_nodes]) \
+         | group_or_null([tasks.node_launch_dns.si(node) for node in install_nodes]) \
          | tasks.cluster_launch_zabbix.si(cluster) \
-         | group([tasks.node_launch_salt.si(node) for node in install_nodes]) \
+         | group_or_null([tasks.node_launch_salt.si(node) for node in install_nodes]) \
          | tasks.null_task.si() \
-         | group([tasks.node_launch_zabbix.si(node) for node in install_nodes]
+         | group_or_null([tasks.node_launch_zabbix.si(node) for node in install_nodes]
                 +[tasks.region_launch.si(lbr_region) for lbr_region in lbr_regions]) \
          | tasks.null_task.si() \
-         | group([tasks.node_launch_complete.si(node) for node in install_nodes]) \
+         | group_or_null([tasks.node_launch_complete.si(node) for node in install_nodes]) \
          | tasks.launch_email.si(cluster, 'confirmation_email') \
          | tasks.cluster_launch_complete.si(cluster)
     return task.delay()
@@ -90,7 +90,7 @@ def shutdown_node(node):
 def add_database(cluster, dbname):
     cluster.add_database_sync(dbname)
     task = tasks.cluster_refresh_salt.si(cluster) \
-         | group([tasks.node_refresh_complete.si(node) for node in cluster.nodes.filter(status=Node.RUNNING)])
+         | group_or_null([tasks.node_refresh_complete.si(node) for node in cluster.nodes.filter(status=Node.RUNNING)])
     task.delay()
 
 
@@ -98,20 +98,20 @@ def add_nodes(nodes):
     for node in nodes:
         node.launch_sync()
     cluster = nodes[0].cluster
-    task = group([tasks.node_launch_provision.si(node) for node in nodes]) \
+    task = group_or_null([tasks.node_launch_provision.si(node) for node in nodes]) \
          | tasks.null_task.si() \
-         | group([tasks.node_launch_update.si(node) for node in nodes]) \
+         | group_or_null([tasks.node_launch_update.si(node) for node in nodes]) \
          | tasks.null_task.si() \
-         | group([tasks.node_launch_dns.si(node) for node in nodes]) \
+         | group_or_null([tasks.node_launch_dns.si(node) for node in nodes]) \
          | tasks.null_task.si() \
-         | group([tasks.node_launch_salt.si(node) for node in nodes]) \
+         | group_or_null([tasks.node_launch_salt.si(node) for node in nodes]) \
          | tasks.null_task.si() \
-         | group([tasks.node_launch_zabbix.si(node) for node in nodes]
+         | group_or_null([tasks.node_launch_zabbix.si(node) for node in nodes]
                 +[tasks.region_launch.si(lbr_region) for lbr_region in set(node.lbr_region for node in nodes)]) \
          | tasks.null_task.si() \
          | tasks.cluster_refresh_salt.si(cluster) \
-         | group([tasks.node_refresh_complete.si(node) for node in cluster.nodes.filter(status=Node.RUNNING)]) \
+         | group_or_null([tasks.node_refresh_complete.si(node) for node in cluster.nodes.filter(status=Node.RUNNING)]) \
          | tasks.null_task.si() \
-         | group([tasks.node_launch_complete.si(node) for node in nodes]) \
+         | group_or_null([tasks.node_launch_complete.si(node) for node in nodes]) \
          | tasks.launch_email.si(node.cluster, 'add_node_confirmation_email')
     return task.delay()
