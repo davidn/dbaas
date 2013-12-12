@@ -254,8 +254,8 @@ class LBRRegionNodeSet(models.Model):
             rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
             rrs.add_change_record('DELETE', self.record)
             catch_dns_not_found(rrs)
-            self.launched = False
-            self.save()
+        self.launched = False
+        self.save()
 
     def shutdown_complete(self):
         self.delete()

@@ -150,6 +150,12 @@ def node_shutdown_instance(node):
 @task(base=NodeTask)
 def node_shutdown_complete(node):
     node.shutdown_complete()
+@task()
+def region_shutdown(region):
+    region.shutdown_async()
+@task()
+def region_shutdown_complete(region):
+    region.shutdown_complete()
 
 @task()
 def launch_email(cluster, email_message='confirmation_email'):

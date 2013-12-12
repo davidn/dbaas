@@ -46,11 +46,16 @@ def shutdown_cluster(cluster):
     for node in cluster.nodes.exclude(status=Node.INITIAL):
         node.shutdown_sync()
     shutdown_nodes = cluster.nodes.filter(status=Node.SHUTTING_DOWN)
+    lbr_regions = cluster.lbr_regions.filter(launched=True)
     task = group_or_null([tasks.node_shutdown_zabbix.si(node) for node in shutdown_nodes]
                  + [tasks.node_shutdown_dns.si(node) for node in shutdown_nodes]
                  + [tasks.node_shutdown_instance.si(node) for node in shutdown_nodes]) \
         | tasks.null_task.si() \
+        | group_or_null([tasks.region_shutdown.si(lbr_region) for lbr_region in lbr_regions]) \
+        | tasks.null_task.si() \
         | group_or_null([tasks.node_shutdown_complete.si(node) for node in shutdown_nodes]) \
+        | tasks.null_task.si() \
+        | group_or_null([tasks.region_shutdown_complete.si(lbr_region) for lbr_region in lbr_regions]) \
         | tasks.cluster_shutdown.si(cluster)
     return task.delay()
 
