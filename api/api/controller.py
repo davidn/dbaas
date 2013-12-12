@@ -10,6 +10,10 @@ from celery import group
 from .models import Node
 from . import tasks
 
+
+def group_or_null(contents):
+    return tasks.null_task.si() if len(contents) == 0 else group(contents)
+
 # Controller functions named <VERB>_<OBJECT>
 
 
@@ -37,6 +41,20 @@ def launch_cluster(cluster):
     return task.delay()
 
 
+def shutdown_cluster(cluster):
+    cluster.shutdown_sync()
+    for node in cluster.nodes.exclude(status=Node.INITIAL):
+        node.shutdown_sync()
+    shutdown_nodes = cluster.nodes.filter(status=Node.SHUTTING_DOWN)
+    task = group_or_null([tasks.node_shutdown_zabbix.si(node) for node in shutdown_nodes]
+                 + [tasks.node_shutdown_dns.si(node) for node in shutdown_nodes]
+                 + [tasks.node_shutdown_instance.si(node) for node in shutdown_nodes]) \
+        | tasks.null_task.si() \
+        | group_or_null([tasks.node_shutdown_complete.si(node) for node in shutdown_nodes]) \
+        | tasks.cluster_shutdown.si(cluster)
+    return task.delay()
+
+
 def reinstantiate_node(node, flavor):
     if node.reinstantiate_sync(flavor):
         task = tasks.node_reinstantiate_setup.si(node) \
@@ -60,6 +78,14 @@ def resume_node(node):
          | tasks.node_resume_complete.si(node)
     return task.delay()
 
+
+def shutdown_node(node):
+    node.shutdown_sync()
+    task = tasks.node_shutdown_zabbix.si(node) \
+         | tasks.node_shutdown_dns.si(node) \
+         | tasks.node_shutdown_instance.si(node) \
+         | tasks.node_shutdown_complete.si(node)
+    return task.delay()
 
 def add_database(cluster, dbname):
     cluster.add_database_sync(dbname)

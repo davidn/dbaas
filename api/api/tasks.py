@@ -134,6 +134,23 @@ def node_refresh_complete(node):
     except ObjectDoesNotExist, e:
         node_refresh_complete.retry(exc=e, countown=15)
 
+@task(base=ClusterTask)
+def cluster_shutdown(cluster):
+    cluster.shutdown_async()
+
+@task(base=NodeTask)
+def node_shutdown_zabbix(node):
+    node.shutdown_async_zabbix()
+@task(base=NodeTask)
+def node_shutdown_dns(node):
+    node.shutdown_async_dns()
+@task(base=NodeTask)
+def node_shutdown_instance(node):
+    node.shutdown_async_instance()
+@task(base=NodeTask)
+def node_shutdown_complete(node):
+    node.shutdown_complete()
+
 @task()
 def launch_email(cluster, email_message='confirmation_email'):
     nodes = cluster.nodes.all()

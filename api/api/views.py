@@ -31,7 +31,8 @@ from api.models.pricing import Pricing, CreditCardToken
 from .models import Cluster, Node, Region, Provider, Flavor, Backup
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, \
     FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
-from .controller import launch_cluster, reinstantiate_node, pause_node, resume_node, add_database, add_nodes
+from .controller import launch_cluster, reinstantiate_node, pause_node, resume_node, add_database, add_nodes, \
+    shutdown_cluster, shutdown_node
 from api.utils import mysql_database_validator
 
 
@@ -125,7 +126,6 @@ def upgrade(request):
 class ClusterViewSet(mixins.CreateModelMixin,
                      mixins.ListModelMixin,
                      mixins.RetrieveModelMixin,
-                     mixins.DestroyModelMixin,
                      viewsets.GenericViewSet):
     model = Cluster
     serializer_class = ClusterSerializer
@@ -162,6 +162,11 @@ class ClusterViewSet(mixins.CreateModelMixin,
                             headers=headers)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        obj = self.get_object()
+        shutdown_cluster(obj)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def add(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -235,7 +240,6 @@ def random_walk(initial_value=0, min_value=0, max_value=100, step=2):
 
 class NodeViewSet(mixins.ListModelMixin,
                   mixins.RetrieveModelMixin,
-                  mixins.DestroyModelMixin,
                   viewsets.GenericViewSet):
     model = Node
     serializer_class = NodeSerializer
@@ -287,6 +291,12 @@ class NodeViewSet(mixins.ListModelMixin,
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def destroy(self, request, *args, **kwargs):
+        obj = self.get_object()
+        shutdown_node(obj)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @link()
     def cpu(self, request, *args, **kwargs):

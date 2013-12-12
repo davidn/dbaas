@@ -155,10 +155,12 @@ class Cluster(models.Model):
             n.last_salt_jid = jid
             n.save()
 
-    def on_terminate(self):
-        """Clean up the S3 bucket and IAM user associated with this cluster."""
+    def shutdown_sync(self):
         self.status = Cluster.SHUTTING_DOWN
         self.save()
+
+    def shutdown_async(self):
+        """Clean up the IAM user associated with this cluster."""
         if self.iam_arn != "":
             iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             if self.iam_key != "":
@@ -170,7 +172,7 @@ class Cluster(models.Model):
             self.iam_arn = ""
             self.save()
         self.status = Cluster.OVER
-        self.save()
+        self.delete()
 
     @models.permalink
     def get_absolute_url(self):
@@ -243,19 +245,20 @@ class LBRRegionNodeSet(models.Model):
                                            alias_dns_name=self.dns_name,
                                            identifier=self.identifier, region=self.lbr_region)
 
-    def on_terminate(self):
-        logger.debug("%s: terminating dns for lbr region %s, cluster %s", self, self.lbr_region, self.cluster.pk)
-        if self.lbr_region != 'test':
+    def shutdown_async(self):
+        if self.lbr_region != 'test' and self.launched:
+            logger.debug("%s: terminating dns for lbr region %s, cluster %s", self, self.lbr_region, self.cluster.pk)
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY,
                                   aws_secret_access_key=settings.AWS_SECRET_KEY)
 
-            def try_remove_dns():
-                rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-                rrs.add_change_record('DELETE', self.record)
-                catch_dns_not_found(rrs)
-                return True
+            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+            rrs.add_change_record('DELETE', self.record)
+            catch_dns_not_found(rrs)
+            self.launched = False
+            self.save()
 
-            retry(try_remove_dns)
+    def shutdown_complete(self):
+        self.delete()
 
 
 class Node(models.Model):
@@ -387,96 +390,16 @@ class Node(models.Model):
     def visible_name(self):
         return "{email}-{label}-{node}".format(email=self.cluster.user.email, label=self.cluster.label, node=self.nid)
 
-    def add_to_host_group(self):
-        z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
-        z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
-        templates = z.template.getobjects(host='Template App GenieDB V2 Monitoring')
-        if templates:
-            logger.info("%s: Using zabbix template %s",
-                        self, 'Template App GenieDB V2 Monitoring')
-        else:
-            logger.info("%s: Not using a zabbix template")
-        host_groups = z.hostgroup.getobjects(name=self.cluster.user.email)
-        existing_hosts = z.host.getobjects(name=self.visible_name())
-        if existing_hosts:
-            logger.warning('%s: Cleaning up old zabbix host with same visible name "%s" and id "%s".',
-                           self, self.visible_name(), existing_hosts[0]['hostid'])
-            z.host.delete(existing_hosts[0])
-
-        logger.info("%s: Creating Zabbix Host with visible name: %s", self, self.visible_name())
-        z.host.create(host=self.dns_name, groups=host_groups, name=self.visible_name(), templates=templates,
-                      interfaces={"type": '1', "main": '1', "useip": '1', "ip": self.ip, "dns": self.dns_name,
-                                  "port": "10050"})
-
     def zabbix_monitoring(self, enable=True):
         z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
         z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
         hostids = z.host.get(filter={'host': self.dns_name})
         assert (len(hostids) == 1)
         status = 0 if enable else 1
-        z.host.update({'hostid': hostids[0]['hostid'], 'status': status})
-
-    def remove_from_host_group(self):
-        z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
-        z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
-        # Find the Zabbix HostGroup and Host IDs
-        # then delete the Host node,
-        # and if the HostGroup is now empty, remove it too.
-        host_groups = z.hostgroup.getobjects(name=self.cluster.user.email)
-        if not host_groups:
-            return
-        zabbix_host_group = host_groups[0]
-        hosts = z.host.get(groupids=zabbix_host_group["groupid"], output='extend')
-        for zabbixHost in hosts:
-            if zabbixHost['host'] == self.dns_name:
-                logger.info("Zabbix Host %s being removed.", self.dns_name)
-                z.host.delete(hostid=zabbixHost['hostid'])
-                hosts = z.host.get(groupids=zabbix_host_group["groupid"], output='extend')
-                break
-        if not hosts:
-            logger.info("Zabbix HostGroup %s being removed.", self.cluster.user.email)
-            try:
-                z.hostgroup.delete(zabbix_host_group["groupid"])
-            except ZabbixAPIException:
-                logger.warning("Failed to delete Zabbix HostGroup %s", self.cluster.user.email)
 
     @property
     def health_check_reference(self):
         return str(self.cluster.pk) + str(self.id) + "-" + self.ip
-
-    def setup_dns(self):
-        if self.region.provider.code != 'test':
-            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY,
-                                  aws_secret_access_key=settings.AWS_SECRET_KEY)
-            health_check = HealthCheck(connection=r53, caller_reference=self.health_check_reference,
-                                       ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
-            self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
-            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-            rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-                                                                  type='A', ttl=60, resource_records=[self.ip],
-                                                                  identifier=self.instance_id,
-                                                                  weight=1))
-            rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
-                                                          resource_records=[self.ip]))
-            catch_dns_exists(rrs)
-
-    def remove_dns(self):
-        if self.region.provider.code != 'test':
-            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY,
-                                  aws_secret_access_key=settings.AWS_SECRET_KEY)
-            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-            rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
-                                                                  type='A', ttl=60, resource_records=[self.ip],
-                                                                  identifier=self.instance_id,
-                                                                  weight=1))
-            rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
-                                                          resource_records=[self.ip]))
-            catch_dns_not_found(rrs)
-            try:
-                r53.delete_health_check(self.health_check)
-            except exception.DNSServerError, e:
-                if e.status != 404:
-                    raise
 
     def modify_dns(self, old_ip):
         if self.region.provider.code != 'test':
@@ -560,7 +483,20 @@ class Node(models.Model):
     def launch_async_dns(self):
         self.status = self.CONFIGURING_DNS
         self.save()
-        self.setup_dns()
+        if self.region.provider.code != 'test':
+            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY,
+                                  aws_secret_access_key=settings.AWS_SECRET_KEY)
+            health_check = HealthCheck(connection=r53, caller_reference=self.health_check_reference,
+                                       ip_address=self.ip, port=self.cluster.port, health_check_type='TCP')
+            self.health_check = health_check.commit()['CreateHealthCheckResponse']['HealthCheck']['Id']
+            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+            rrs.add_change_record('CREATE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
+                                                                  type='A', ttl=60, resource_records=[self.ip],
+                                                                  identifier=self.instance_id,
+                                                                  weight=1))
+            rrs.add_change_record('CREATE', record.Record(name=self.dns_name, type='A', ttl=3600,
+                                                          resource_records=[self.ip]))
+            catch_dns_exists(rrs)
         self.save()
 
     def launch_async_salt(self):
@@ -571,7 +507,25 @@ class Node(models.Model):
     def launch_async_zabbix(self):
         self.status = self.CONFIGURING_MONITORING
         self.save()
-        self.add_to_host_group()
+        z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
+        z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
+        templates = z.template.getobjects(host='Template App GenieDB V2 Monitoring')
+        if templates:
+            logger.info("%s: Using zabbix template %s",
+                        self, 'Template App GenieDB V2 Monitoring')
+        else:
+            logger.info("%s: Not using a zabbix template")
+        host_groups = z.hostgroup.getobjects(name=self.cluster.user.email)
+        existing_hosts = z.host.getobjects(name=self.visible_name())
+        if existing_hosts:
+            logger.warning('%s: Cleaning up old zabbix host with same visible name "%s" and id "%s".',
+                           self, self.visible_name(), existing_hosts[0]['hostid'])
+            z.host.delete(existing_hosts[0])
+
+        logger.info("%s: Creating Zabbix Host with visible name: %s", self, self.visible_name())
+        z.host.create(host=self.dns_name, groups=host_groups, name=self.visible_name(), templates=templates,
+                      interfaces={"type": '1', "main": '1', "useip": '1', "ip": self.ip, "dns": self.dns_name,
+                                  "port": "10050"})
 
     def launch_complete(self):
         self.status = self.RUNNING
@@ -654,15 +608,59 @@ class Node(models.Model):
         self.status = Node.RUNNING
         self.save()
 
-    def on_terminate(self):
-        """Shutdown the node and remove DNS entries."""
-        self.remove_from_host_group()
-        if self.status not in (self.INITIAL, self.OVER):
-            logger.debug("%s: terminating instance %s", self, self.instance_id)
-            self.remove_dns()
-            self.region.connection.terminate(self)
-        self.status = Node.OVER
+    def shutdown_sync(self):
+        self.status = Node.SHUTTING_DOWN
         self.save()
+
+    def shutdown_async_zabbix(self):
+        z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
+        z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
+        # Find the Zabbix HostGroup and Host IDs
+        # then delete the Host node,
+        # and if the HostGroup is now empty, remove it too.
+        host_groups = z.hostgroup.getobjects(name=self.cluster.user.email)
+        if not host_groups:
+            return
+        zabbix_host_group = host_groups[0]
+        hosts = z.host.get(groupids=zabbix_host_group["groupid"], output='extend')
+        for zabbixHost in hosts:
+            if zabbixHost['host'] == self.dns_name:
+                logger.info("Zabbix Host %s being removed.", self.dns_name)
+                z.host.delete(hostid=zabbixHost['hostid'])
+                hosts = z.host.get(groupids=zabbix_host_group["groupid"], output='extend')
+                break
+        if not hosts:
+            logger.info("Zabbix HostGroup %s being removed.", self.cluster.user.email)
+            try:
+                z.hostgroup.delete(zabbix_host_group["groupid"])
+            except ZabbixAPIException:
+                logger.warning("Failed to delete Zabbix HostGroup %s", self.cluster.user.email)
+
+    def shutdown_async_dns(self):
+        if self.region.provider.code != 'test':
+            r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY,
+                                  aws_secret_access_key=settings.AWS_SECRET_KEY)
+            rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
+            if len(self.ip) > 0:
+                rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
+                                                                      type='A', ttl=60, resource_records=[self.ip],
+                                                                      identifier=self.instance_id,
+                                                                      weight=1))
+            rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
+                                                          resource_records=[self.ip]))
+            catch_dns_not_found(rrs)
+            try:
+                r53.delete_health_check(self.health_check)
+            except exception.DNSServerError, e:
+                if e.status != 404:
+                    raise
+
+    def shutdown_async_instance(self):
+        self.region.connection.terminate(self)
+
+    def shutdown_complete(self):
+        self.status = Node.OVER
+        self.delete()
 
 
 class Backup(models.Model):

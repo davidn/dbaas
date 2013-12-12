@@ -32,23 +32,20 @@ def node_pre_save_callback(sender, instance, raw, using, **kwargs):
 
 @receiver(models.signals.pre_delete, sender=Node)
 def node_pre_delete_callback(sender, instance, using, **kwargs):
-    """Terminate Nodes when the instances is deleted"""
     if sender != Node:
         return
-    instance.on_terminate()
+    assert(instance.status in (Node.INITIAL, Node.OVER))
 
 
 @receiver(models.signals.pre_delete, sender=LBRRegionNodeSet)
 def region_pre_delete_callback(sender, instance, using, **kwargs):
-    """Terminate LBRRegionNodeSets when the instances is deleted"""
     if sender != LBRRegionNodeSet:
         return
-    instance.on_terminate()
+    assert(instance.launched is False)
 
 
 @receiver(models.signals.pre_delete, sender=Cluster)
 def cluster_pre_delete_callback(sender, instance, using, **kwargs):
-    """Terminate Clusters when the instances is deleted"""
     if sender != Cluster:
         return
-    instance.on_terminate()
+    assert(instance.status in (Cluster.INITIAL, Cluster.OVER))
