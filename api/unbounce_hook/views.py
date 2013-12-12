@@ -12,11 +12,11 @@ from registration import signals
 @csrf_exempt
 def register(request):
     try:
-        j = loads(request.body)
+        j = loads(request.REQUEST['data.json'])
     except ValueError:
         return HttpResponse(status=400)
     try:
-        email = j['email_address'][0]
+        email = j['email'][0]
     except (TypeError, IndexError, KeyError):
         return HttpResponse(status=400)
     if Site._meta.installed:
