@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.3 - 2013-12-11
+------------------
+
+* Add unbounce webhook.
+* Add email after trial ends without upgrade.
+
 2.2.1 - 2013-12-09
 ------------------
 
