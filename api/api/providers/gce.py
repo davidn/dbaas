@@ -58,10 +58,10 @@ class GoogleComputeEngine(Cloud):
         else:
             return self.__dict__
 
-    def getDiskName(self):
+    def get_disk_fame(self):
         return self.gce['name'] + '-disk'
 
-    def filterNames(self, items, matchNames=None):
+    def filter_names(self, items, matchNames=None):
         if matchNames is not None:
             allItems = items
             items = []
@@ -72,13 +72,13 @@ class GoogleComputeEngine(Cloud):
                     items.append(item)
         return items
 
-    def _getInstanceObjects(self, matchNames=None):
+    def _get_instance_objects(self, matchNames=None):
         # Fetch the instance
         request = self.gce['service'].instances().list(project=self.gce['project'], zone=self.gce['zone'])
         response = request.execute(http=self.gce['auth_http'])
         return self.filter_names(response.get('items', []), matchNames)
 
-    def _createInstance(self, userData=None):
+    def _create_instance(self, userData=None):
         # Construct the request body
         disk_body = [{
             'source': "https://www.googleapis.com/compute/v1beta16/projects/%(project)s/zones/%(zone)s/disks/%(diskName)s" % self.gce,
@@ -109,7 +109,7 @@ class GoogleComputeEngine(Cloud):
         response = request.execute(http=self.gce['auth_http'])
         return response
 
-    def _deleteInstance(self, waitFunction=None):
+    def _delete_instance(self, waitFunction=None):
         # Delete the instance (but not the persistent disk).
         request = self.gce['service'].instances().delete(project=self.gce['project'], zone=self.gce['zone'], instance=self.gce['name'])
         response = request.execute(http=self.gce['auth_http'])
@@ -125,13 +125,13 @@ class GoogleComputeEngine(Cloud):
 
         return response
 
-    def _getDiskObjects(self, matchNames=None):
+    def _get_disk_objects(self, matchNames=None):
         # Fetch the instance
         request = self.gce['service'].disks().list(project=self.gce['project'], zone=self.gce['zone'])
         response = request.execute(http=self.gce['auth_http'])
-        return self.filterNames(response.get('items', []), matchNames)
+        return self.filter_names(response.get('items', []), matchNames)
 
-    def _createDisk(self, diskSize, wait=False):
+    def _create_disk(self, diskSize, wait=False):
         #
         # Create a persistent Disk for the Instance to mount
         #
@@ -151,7 +151,7 @@ class GoogleComputeEngine(Cloud):
             sleep(2)
             diskIsReady = False
             for i in xrange(GoogleComputeEngine.MAX_DELAY_RETRIES):
-                disks = self._getDiskObjects(self.gce["diskName"])
+                disks = self._get_disk_objects(self.gce["diskName"])
                 if disks and disks[0]['status'] == 'READY':
                     diskIsReady = True
                     break
@@ -161,7 +161,7 @@ class GoogleComputeEngine(Cloud):
 
         return response
 
-    def _deleteDisk(self):
+    def _delete_disk(self):
         # Delete the persistent disk
         request = self.gce['service'].disks().delete(project=self.gce['project'], zone=self.gce['zone'], disk=self.gce['diskName'])
         response = request.execute(http=self.gce['auth_http'])
@@ -171,7 +171,7 @@ class GoogleComputeEngine(Cloud):
         project = self.gce['project']
         self.gce['zone'] = self.region.code
         self.gce['name'] = make_gce_valid_name('dbaas-cluster-{c}-node-{n}'.format(c=node.cluster.pk, n=node.nid))
-        self.gce['diskName'] = self.getDiskName()
+        self.gce['diskName'] = self.get_disk_fame()
         self.gce['nid'] = node.nid
         self.gce['machineType'] = node.flavor.code
         self.gce['imageName'] = node.region.image
@@ -180,19 +180,19 @@ class GoogleComputeEngine(Cloud):
         #
         # Create a persistent Disk for the Instance to mount
         #
-        self._createDisk(diskSize=node.storage, wait=True)
+        self._create_disk(diskSize=node.storage, wait=True)
 
         #
         # Create the Instance
         #
-        self._createInstance(userData=self.cloud_init(node))
+        self._create_instance(userData=self.cloud_init(node))
         logger.info("Creating the GCE Instance %(name)s" % self.gce)
         node.instance_id = self.gce['name']
 
     def pending(self, node):
         self.gce['name'] = node.instance_id
         self.gce['zone'] = node.region.code
-        items = self._getInstanceObjects(self.gce['name'])
+        items = self._get_instance_objects(self.gce['name'])
         if items:
             try:
                 self.gce['ip'] = items[0]['networkInterfaces'][0]['accessConfigs'][0]['natIP']
@@ -205,14 +205,14 @@ class GoogleComputeEngine(Cloud):
     def shutting_down(self, node):
         self.gce['name'] = node.instance_id
         self.gce['zone'] = node.region.code
-        return self._getInstanceObjects(self.gce['name']) != []
+        return self._get_instance_objects(self.gce['name']) != []
 
     def reinstantiating(self, node):
         return self.pending(node)
 
     def get_ip(self, node):
         ip = ''
-        items = self._getInstanceObjects(node.instance_id)
+        items = self._get_instance_objects(node.instance_id)
         if items:
             try:
                 ip = items[0]['networkInterfaces'][0]['accessConfigs'][0]['natIP']
@@ -241,7 +241,7 @@ class GoogleComputeEngine(Cloud):
     def terminate(self, node):
         self.gce['name'] = node.instance_id
         self.gce['zone'] = node.region.code
-        self.gce['diskName'] = self.getDiskName()
+        self.gce['diskName'] = self.get_disk_fame()
         if node.instance_id != "":
             self.gce['name'] = node.instance_id
             #
@@ -249,7 +249,7 @@ class GoogleComputeEngine(Cloud):
             #
             logger.debug("Terminating GCE Instance %(name)s" % self.gce)
             try:
-                self._deleteInstance(waitFunction=node.shutting_down)
+                self._delete_instance(waitFunction=node.shutting_down)
             except errors.HttpError, e:
                 if e.resp.status != 404:
                     raise
@@ -258,7 +258,7 @@ class GoogleComputeEngine(Cloud):
             # We also need to delete the persistent disk.
             #
             try:
-                self._deleteDisk()
+                self._delete_disk()
             except errors.HttpError, e:
                 if e.resp.status != 404:
                     raise
@@ -268,7 +268,7 @@ class GoogleComputeEngine(Cloud):
         # Note: this command reboots the server as a new instance
         self.gce['name'] = node.instance_id
         self.gce['zone'] = node.region.code
-        self.gce['diskName'] = self.getDiskName()
+        self.gce['diskName'] = self.get_disk_fame()
         self.gce['nid'] = node.nid
         self.gce['machineType'] = node.flavor.code
         self.gce['imageName'] = node.region.image
@@ -277,12 +277,12 @@ class GoogleComputeEngine(Cloud):
         #
         # Delete the instance
         #
-        self._deleteInstance(waitFunction=node.shutting_down)
+        self._delete_instance(waitFunction=node.shutting_down)
 
         #
         # Reinstantiate the instance with its new configuration
         #
-        self._createInstance(userData=self.cloud_init(node))
+        self._create_instance(userData=self.cloud_init(node))
         logger.info("Reinstantiating the GCE Instance %(name)s" % self.gce)
         #node.instance_id = self.gce['name']
 
@@ -305,6 +305,3 @@ def make_gce_valid_name(name):
     elif len(name) > MAX_VALID_NAME_LEN:
         name = name[:MAX_VALID_NAME_LEN]
     return name.lower()
-
-
-
