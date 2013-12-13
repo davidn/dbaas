@@ -207,7 +207,7 @@ class GoogleComputeEngine(Cloud):
         if items:
             try:
                 self.gce['ip'] = items[0]['networkInterfaces'][0]['accessConfigs'][0]['natIP']
-            except:
+            except (KeyError, IndexError):
                 pass
         if items and items[0]['status'] == 'RUNNING':
             return False
@@ -227,7 +227,7 @@ class GoogleComputeEngine(Cloud):
         if items:
             try:
                 ip = items[0]['networkInterfaces'][0]['accessConfigs'][0]['natIP']
-            except:
+            except (KeyError, IndexError):
                 pass
         return ip
 
