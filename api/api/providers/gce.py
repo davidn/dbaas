@@ -14,23 +14,21 @@ logger = getLogger(__name__)
 
 
 class GoogleComputeEngine(Cloud):
-    SERVICE_PROJECT_ID  = settings.GCE_PROJECT_ID
-    SERVICE_ACCT_EMAIL  = settings.GCE_SERVICE_ACCOUNT_EMAIL
+    SERVICE_PROJECT_ID = settings.GCE_PROJECT_ID
+    SERVICE_ACCT_EMAIL = settings.GCE_SERVICE_ACCOUNT_EMAIL
     SERVICE_PRIVATE_KEY = settings.GCE_PRIVATE_KEY
 
-    MAX_DELAY_RETRIES   = 40        # Max delay of 200 seconds
-    RETRY_DELAY         = 5
+    MAX_DELAY_RETRIES = 40        # Max delay of 200 seconds
+    RETRY_DELAY = 5
     @property
     def gce(self):
         if not hasattr(self, "_gce_params"):
             credentials = client.SignedJwtAssertionCredentials(
-              service_account_name=GoogleComputeEngine.SERVICE_ACCT_EMAIL,
-              private_key=GoogleComputeEngine.SERVICE_PRIVATE_KEY,
-              scope=[
-                'https://www.googleapis.com/auth/compute',
-                'https://www.googleapis.com/auth/devstorage.full_control',
-                'https://www.googleapis.com/auth/devstorage.read_write',
-              ])
+                service_account_name=GoogleComputeEngine.SERVICE_ACCT_EMAIL,
+                private_key=GoogleComputeEngine.SERVICE_PRIVATE_KEY,
+                scope=['https://www.googleapis.com/auth/compute',
+                       'https://www.googleapis.com/auth/devstorage.full_control',
+                       'https://www.googleapis.com/auth/devstorage.read_write'])
             # Create an httplib2.Http object to handle our HTTP requests and authorize it
             # with our good Credentials.
             http = httplib2.Http()
@@ -38,18 +36,18 @@ class GoogleComputeEngine(Cloud):
             # Construct the service object for the interacting with the Compute Engine API.
             gce_service = discovery.build('compute', 'v1beta16', http=auth_http)
             self._gce_params = {
-                'credentials':credentials,
-                'auth_http':auth_http,
-                'service':gce_service,
-                'project':GoogleComputeEngine.SERVICE_PROJECT_ID,
-                'zone':'',
-                'name':'',
-                'nid':None,
-                'machineType':'',
-                'kernel':'google/global/kernels/gce-v20130813',
-                'imageType':'',
+                'credentials': credentials,
+                'auth_http': auth_http,
+                'service': gce_service,
+                'project': GoogleComputeEngine.SERVICE_PROJECT_ID,
+                'zone': '',
+                'name': '',
+                'nid': None,
+                'machineType': '',
+                'kernel': 'google/global/kernels/gce-v20130813',
+                'imageType': '',
                 'imageName': '',
-                'ip':'' }
+                'ip': ''}
         return self._gce_params
 
     def __getstate__(self):
@@ -86,20 +84,18 @@ class GoogleComputeEngine(Cloud):
 
     def _createInstance(self, userData=None):
         # Construct the request body
-        disk_body = [
-            {'source': "https://www.googleapis.com/compute/v1beta16/projects/%(project)s/zones/%(zone)s/disks/%(diskName)s" % self.gce,
-             'boot': True,
-             'type': 'PERSISTENT',
-             'mode': 'READ_WRITE',
-             'deviceName': "bootdisk",
-            }]
+        disk_body = [{
+            'source': "https://www.googleapis.com/compute/v1beta16/projects/%(project)s/zones/%(zone)s/disks/%(diskName)s" % self.gce,
+            'boot': True,
+            'type': 'PERSISTENT',
+            'mode': 'READ_WRITE',
+            'deviceName': "bootdisk",
+        }]
         netIfc_body = [{
-            'accessConfigs': [{
-              'type': 'ONE_TO_ONE_NAT',
-              'name': 'External NAT'
-             }],
+            'accessConfigs': [{'type': 'ONE_TO_ONE_NAT',
+                               'name': 'External NAT'}],
             'network': 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/networks/default' % self.gce,
-          }]
+        }]
         metadata_items = []
         if userData:
             metadata_items = [{"key": "user-data", "value": userData}]
@@ -240,9 +236,9 @@ class GoogleComputeEngine(Cloud):
             if k not in updateProperties:
                 del tags[k]
         if tags:
-            body['items'].append( {"name": node.instance_id} )  # Is this the right property name?
+            body['items'].append({"name": node.instance_id})  # Is this the right property name?
             for k, v in tags.items():
-                body['items'].append( {k: v} )
+                body['items'].append({k: v})
             request = self.gce['service'].instances().setMetadata(project=self.gce['project'], zone=self.gce['zone'], instance=self.gce['name'], body=body)
             response = request.execute(http=self.gce['auth_http'])
 
@@ -295,8 +291,8 @@ class GoogleComputeEngine(Cloud):
         #node.instance_id = self.gce['name']
 
 def make_gce_valid_name(name):
-    MAX_VALID_NAME_LEN  = 63    # GCE Instance Names must be <= this length
-    FIRST_ALPHA         = "g"   # GCE Name must start with an alpha char
+    MAX_VALID_NAME_LEN = 63    # GCE Instance Names must be <= this length
+    FIRST_ALPHA = "g"   # GCE Name must start with an alpha char
     if name[:1].isalpha():
         FIRST_ALPHA = ""
     i = name.find('.')
