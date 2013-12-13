@@ -650,7 +650,7 @@ class Node(models.Model):
             r53 = connect_route53(aws_access_key_id=settings.AWS_ACCESS_KEY,
                                   aws_secret_access_key=settings.AWS_SECRET_KEY)
             rrs = record.ResourceRecordSets(r53, settings.ROUTE53_ZONE)
-            if len(self.ip) > 0:
+            if self.health_check:
                 rrs.add_change_record('DELETE', RecordWithHealthCheck(self.health_check, name=self.lbr_region.dns_name,
                                                                       type='A', ttl=60, resource_records=[self.ip],
                                                                       identifier=self.instance_id,
@@ -658,11 +658,12 @@ class Node(models.Model):
             rrs.add_change_record('DELETE', record.Record(name=self.dns_name, type='A', ttl=3600,
                                                           resource_records=[self.ip]))
             catch_dns_not_found(rrs)
-            try:
-                r53.delete_health_check(self.health_check)
-            except exception.DNSServerError, e:
-                if e.status != 404:
-                    raise
+            if self.health_check:
+                try:
+                    r53.delete_health_check(self.health_check)
+                except exception.DNSServerError, e:
+                    if e.status != 404:
+                        raise
 
     def shutdown_async_instance(self):
         self.region.connection.terminate(self)
