@@ -143,7 +143,11 @@ class EC2(Cloud):
             instance.add_tag(k, v)
 
     def terminate(self, node):
-        self.ec2.terminate_instances([node.instance_id])
+        try:
+            self.ec2.terminate_instances([node.instance_id])
+        except EC2ResponseError, e:
+            if re.search('InvalidInstanceID.NotFound', e.body) is None:
+                raise
         if node.security_group != "":
             node.status = node.SHUTTING_DOWN
             node.save()
