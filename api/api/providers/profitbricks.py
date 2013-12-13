@@ -6,6 +6,7 @@ from django.conf import settings
 from .cloud import Cloud
 from api.utils import retry
 import pb.client
+import suds
 
 logger = getLogger(__name__)
 
@@ -125,15 +126,23 @@ class ProfitBrick(Cloud):
             if node.status != node.SHUTTING_DOWN:
                 node.status = node.SHUTTING_DOWN
                 node.save()
-            logger.debug("%s: terminating server %s", node, node.instance_id)
-            self.pbp.deleteServer(node.instance_id)
+            try:
+                logger.debug("%s: terminating server %s", node, node.instance_id)
+                self.pbp.deleteServer(node.instance_id)
+            except suds.WebFault, e:
+                if e.fault.detail.ProfitbricksServiceFault.httpCode != 404:
+                    raise
             node.instance_id = ""
         if node.security_group != "":
             if node.status != node.SHUTTING_DOWN:
                 node.status = node.SHUTTING_DOWN
                 node.save()
-            self.pbp.deleteDataCenter(node.security_group)
-            logger.debug("%s: terminating security group %s", node, node.security_group)
+            try:
+                logger.debug("%s: terminating security group %s", node, node.security_group)
+                self.pbp.deleteDataCenter(node.security_group)
+            except suds.WebFault, e:
+                if e.fault.detail.ProfitbricksServiceFault.httpCode != 404:
+                    raise
             node.security_group = ""
         while node.shutting_down():
             sleep(15)
