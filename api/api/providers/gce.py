@@ -60,9 +60,6 @@ class GoogleComputeEngine(Cloud):
         else:
             return self.__dict__
 
-    def getInstanceName(self, node):
-        return node.instance_id
-
     def getDiskName(self):
         return self.gce['name'] + '-disk'
 

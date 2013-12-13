@@ -11,9 +11,6 @@ class Cloud(object):
     def __init__(self, region):
         self.region = region
 
-    def getInstanceName(self, node):
-        return node.dns_name
-
     def launch(self, node):
         pass
 
