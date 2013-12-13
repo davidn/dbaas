@@ -123,7 +123,11 @@ class GoogleComputeEngine(Cloud):
     def _deleteInstance(self, waitFunction=None):
         # Delete the instance (but not the persistent disk).
         request = self.gce['service'].instances().delete(project=self.gce['project'], zone=self.gce['zone'], instance=self.gce['name'])
-        response = request.execute(http=self.gce['auth_http'])
+        try:
+            response = request.execute(http=self.gce['auth_http'])
+        except errors.HttpError, e:
+            if e.resp.status != 404:
+                raise
 
         if waitFunction is not None:
             #
