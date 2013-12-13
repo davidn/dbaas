@@ -6,12 +6,8 @@ from django.conf import settings
 from api.exceptions import DiskNotAvailableException
 import httplib2
 from .cloud import Cloud
-
-try:
-    from apiclient import discovery
-    from oauth2client import client
-except:
-    pass
+from apiclient import discovery, errors
+from oauth2client import client
 
 
 logger = getLogger(__name__)
