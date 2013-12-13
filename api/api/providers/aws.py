@@ -122,8 +122,6 @@ class EC2(Cloud):
 
         node.instance_id = res.instances[0].id
         logger.debug("%s: Reservation %s launched. Instance id %s", node, res.id, node.instance_id)
-        node.status = node.PROVISIONING
-        node.save()
 
     def pending(self, node):
         return self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'pending'
@@ -149,8 +147,6 @@ class EC2(Cloud):
             if re.search('InvalidInstanceID.NotFound', e.body) is None:
                 raise
         if node.security_group != "":
-            node.status = node.SHUTTING_DOWN
-            node.save()
             while node.shutting_down():
                 sleep(15)
             logger.debug("%s: terminating security group %s", node, node.security_group)

@@ -41,7 +41,6 @@ class Openstack(Cloud):
             },
         )
         node.instance_id = server.id
-        node.status = node.PROVISIONING
 
     def pending(self, node):
         return self.nova.servers.get(node.instance_id).status == u'BUILD'
@@ -69,8 +68,6 @@ class Openstack(Cloud):
     def reinstantiate(self, node):
         self.nova.servers.resize(node.instance_id, flavor=node.flavor.code)
         logger.info("Reinstantiating the Openstack Instance %s" % (node.dns_name))
-        node.status = node.PROVISIONING
-        node.save()
 
     def reinstantiation_complete(self, node):
         # Free up the original image before the resize snapshot.

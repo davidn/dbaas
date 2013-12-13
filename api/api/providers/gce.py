@@ -205,8 +205,6 @@ class GoogleComputeEngine(Cloud):
         self._createInstance(userData=self.cloud_init(node))
         logger.info("Creating the GCE Instance %(name)s" % (self.gce))
         node.instance_id = self.gce['name']
-        node.status = node.PROVISIONING
-        node.save()
 
     def pending(self, node):
         self.gce['name'] = node.instance_id
@@ -265,9 +263,6 @@ class GoogleComputeEngine(Cloud):
         self.gce['diskName'] = diskName
         if node.instance_id != "":
             self.gce['name'] = node.instance_id
-            if node.status != node.SHUTTING_DOWN:
-                node.status = node.SHUTTING_DOWN
-                node.save()
             #
             # Delete the instance
             #
@@ -311,8 +306,6 @@ class GoogleComputeEngine(Cloud):
         self._createInstance(userData=self.cloud_init(node))
         logger.info("Reinstantiating the GCE Instance %(name)s" % (self.gce))
         #node.instance_id = self.gce['name']
-        node.status = node.PROVISIONING
-        node.save()
 
 def make_gce_valid_name(name):
     MAX_VALID_NAME_LEN  = 63    # GCE Instance Names must be <= this length

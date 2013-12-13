@@ -73,8 +73,6 @@ class ProfitBrick(Cloud):
 
         node.security_group = dcId
         node.instance_id = svrId
-        node.status = node.PROVISIONING
-        node.save()
 
     def pending(self, node):
         svr = self.pbp.getServer(node.instance_id)
@@ -102,8 +100,6 @@ class ProfitBrick(Cloud):
                 "ram": node.flavor.ram}
         self.pbp.updateServer(tags)
         logger.info("Reinstantiating the PB Instance %s" % (node.instance_id))
-        node.status = node.PROVISIONING
-        node.save()
 
     def get_ip(self, node):
         s = self.pbp.getServer(node.instance_id)
@@ -123,9 +119,6 @@ class ProfitBrick(Cloud):
 
     def terminate(self, node):
         if node.instance_id != "":
-            if node.status != node.SHUTTING_DOWN:
-                node.status = node.SHUTTING_DOWN
-                node.save()
             try:
                 logger.debug("%s: terminating server %s", node, node.instance_id)
                 self.pbp.deleteServer(node.instance_id)
@@ -134,9 +127,6 @@ class ProfitBrick(Cloud):
                     raise
             node.instance_id = ""
         if node.security_group != "":
-            if node.status != node.SHUTTING_DOWN:
-                node.status = node.SHUTTING_DOWN
-                node.save()
             try:
                 logger.debug("%s: terminating security group %s", node, node.security_group)
                 self.pbp.deleteDataCenter(node.security_group)
