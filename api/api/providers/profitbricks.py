@@ -1,7 +1,6 @@
 #!/usr/bin/python
 from __future__ import unicode_literals
 from logging import getLogger
-from time import sleep
 from django.conf import settings
 from .cloud import Cloud
 from api.utils import retry
@@ -30,49 +29,44 @@ class ProfitBrick(Cloud):
             return self.__dict__
 
     def launch(self, node):
-        logger.debug("%s: Assigned NID %s" % (str(node), node.nid))
-
+        logger.debug("%s: Assigned NID %s", node, node.nid)
         # Create the Data Center
-        logger.debug("Creating the DataCenter - %s, %s" % (self.region.name, str(self.region.code)))
-        dcId = self.pbp.createDataCenter(str(node), self.region.code).dataCenterId
-        retry(lambda: provisioningStateAvailable(self.pbp.getDataCenter(dcId)))
+        logger.debug("Creating the DataCenter - %s, %s", self.region.name, self.region.code)
+        node.security_group = self.pbp.createDataCenter(str(node), self.region.code).dataCenterId
+        retry(lambda: provisioning_state_available(self.pbp.getDataCenter(node.security_group)))
 
         # Create the Server
-        logger.debug("Creating the Server - name=%s, cores=%d, ram=%d, dcId=%s" % (str(node), node.flavor.cpus, node.flavor.ram, str(dcId)))
-        createServerRequest = {
+        logger.debug("Creating the Server - name=%s, cores=%d, ram=%d, datacenter=%s", node, node.flavor.cpus,
+                     node.flavor.ram, node.security_group)
+        node.instance_id = self.pbp.createServer({
             'serverName': str(node),
             'cores': node.flavor.cpus,
             'ram': node.flavor.ram,
-            'dataCenterId': dcId,
+            'dataCenterId': node.security_group,
             #'availabilityZone': self.region.code,
-            'internetAccess': True}
-        svrId = self.pbp.createServer(createServerRequest).serverId
-        #retry(lambda: provisioningStateAvailable(self.pbp.getServer(srvId)), initialDelay=250)
+            'internetAccess': True}).serverId
+        #retry(lambda: provisioning_state_available(self.pbp.getServer(srvId)), initialDelay=250)
 
         # Create the Storage
-        logger.debug("Creating the Storage - size=%d" % (node.storage))
+        logger.debug("Creating the Storage - size=%d", node.storage)
         # Find the image object
-        imageId = None
+        image_id = None
         images = self.pbp.getAllImages()
         for image in images:
             if image['imageName'] == self.region.image and image['region'] == self.region.code:
-                imageId = image['imageId']
+                image_id = image['imageId']
                 break
-        logger.debug("mounting image=%s, Id=%s" % (self.region.image, str(imageId)))
-        createStorageRequest = {
+        logger.debug("mounting image=%s, Id=%s" % (self.region.image, str(image_id)))
+        storage_id = self.pbp.createStorage({
             'size': node.storage,
-            'dataCenterId': dcId,
-            'mountImageId': imageId,
-            'storageName': str(node)}
-        stgId = self.pbp.createStorage(createStorageRequest).storageId
-        #retry(lambda: provisioningStateAvailable(self.pbp.getStorage(stgId)))
+            'dataCenterId': node.security_group,
+            'mountImageId': image_id,
+            'storageName': str(node)}).storageId
+        #retry(lambda: provisioning_state_available(self.pbp.getStorage(stgId)))
 
         # Connect the Server to the Storage
-        self.pbp.connectStorageToServer({"storageId": stgId, "serverId": svrId})
-        logger.debug("Connected the Storage to the Server - stgId=%s, svrId=%s" % (str(stgId), str(svrId)))
-
-        node.security_group = dcId
-        node.instance_id = svrId
+        self.pbp.connectStorageToServer({"storageId": storage_id, "serverId": node.instance_id})
+        logger.debug("Connected the Storage to the Server - stgId=%s, svrId=%s" % (storage_id, node.instance_id))
 
     def pending(self, node):
         svr = self.pbp.getServer(node.instance_id)
@@ -83,14 +77,14 @@ class ProfitBrick(Cloud):
     def shutting_down(self, node):
         try:
             self.pbp.getDataCenter(node.security_group)
-            dcExists = True
+            return True
         except:
-            dcExists = False
-        return dcExists
+            return False
 
     def reinstantiating(self, node):
         svr = self.pbp.getServer(node.instance_id)
-        if svr and svr.provisioningState == 'AVAILABLE' and svr.cores == node.flavor.cpus and svr.ram == node.flavor.ram:
+        if svr and svr.provisioningState == 'AVAILABLE' and svr.cores == node.flavor.cpus and \
+                svr.ram == node.flavor.ram:
             return False
         return True
 
@@ -99,18 +93,19 @@ class ProfitBrick(Cloud):
                 "cores": node.flavor.cpus,
                 "ram": node.flavor.ram}
         self.pbp.updateServer(tags)
-        logger.info("Reinstantiating the PB Instance %s" % (node.instance_id))
+        logger.info("Reinstantiating the PB Instance %s", node.instance_id)
 
     def get_ip(self, node):
         s = self.pbp.getServer(node.instance_id)
         return s.ips[0]
 
     def update(self, node, tags=None):
-        updateProperties = ['serverName', 'cores', 'ram', 'bootFromImageId', 'availabilityZone', 'bootFromStorageId', 'osType']
+        supported_properties = ['serverName', 'cores', 'ram', 'bootFromImageId', 'availabilityZone',
+                                'bootFromStorageId', 'osType']
         if tags is None:
             tags = {}
         for k in tags.keys():
-            if k not in updateProperties:
+            if k not in supported_properties:
                 del tags[k]
         if tags:
             tags['serverId'] = node.instance_id
@@ -135,7 +130,7 @@ class ProfitBrick(Cloud):
                     raise
             node.security_group = ""
 
-def provisioningStateAvailable(obj):
-    if obj.provisioningState=='AVAILABLE':
-        return object
 
+def provisioning_state_available(obj):
+    if obj.provisioningState == 'AVAILABLE':
+        return object
