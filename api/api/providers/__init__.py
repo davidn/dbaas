@@ -6,6 +6,7 @@ from cloud import Cloud as test
 from profitbricks import ProfitBrick as pb
 from gce import GoogleComputeEngine as gce
 
+
 def rs(region):
     import openstack
     if region.code == 'lon':

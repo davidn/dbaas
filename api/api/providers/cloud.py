@@ -7,6 +7,7 @@ from django.db import connection
 
 logger = getLogger(__name__)
 
+
 class Cloud(object):
     def __init__(self, region):
         self.region = region
@@ -40,7 +41,8 @@ class Cloud(object):
         # Allow for any clean up now that the reinstantiation is complete
         pass
 
-    def cloud_init(self, node):
+    @staticmethod
+    def cloud_init(node):
         return dedent("""\
             #!/bin/sh
             cat >>/etc/salt/minion <<END
@@ -54,8 +56,9 @@ class Cloud(object):
             startup_states: highstate
             ext_job_cache: mysql
             END
-            """.format(dns_name=node.dns_name,
-                       salt_master=settings.SALT_MASTER,
-                       mysql_db=getattr(settings, 'SALT_MINION_SQL_DB', connection.settings_dict['NAME']),
-                       salt_minion_sql_user=getattr(settings, 'SALT_MINION_SQL_USER', connection.settings_dict['USER']),
-                       salt_minion_sql_pass=getattr(settings, 'SALT_MINION_SQL_PASSWORD', connection.settings_dict['PASSWORD'])))
+            """.format(
+            dns_name=node.dns_name,
+            salt_master=settings.SALT_MASTER,
+            mysql_db=getattr(settings, 'SALT_MINION_SQL_DB', connection.settings_dict['NAME']),
+            salt_minion_sql_user=getattr(settings, 'SALT_MINION_SQL_USER', connection.settings_dict['USER']),
+            salt_minion_sql_pass=getattr(settings, 'SALT_MINION_SQL_PASSWORD', connection.settings_dict['PASSWORD'])))

@@ -19,6 +19,7 @@ def near_expiry_email(user):
         'user': user,
     })
 
+
 def no_cluster_email(user, delta):
     logger.info("Sending %s day email to %s", delta.days, user.email)
     user.email_user_template('no_cluster_%sday_email' % delta.days, {
