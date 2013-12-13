@@ -190,7 +190,7 @@ class GoogleComputeEngine(Cloud):
         # Create the Instance
         #
         self._createInstance(userData=self.cloud_init(node))
-        logger.info("Creating the GCE Instance %(name)s" % (self.gce))
+        logger.info("Creating the GCE Instance %(name)s" % self.gce)
         node.instance_id = self.gce['name']
 
     def pending(self, node):
@@ -287,7 +287,7 @@ class GoogleComputeEngine(Cloud):
         # Reinstantiate the instance with its new configuration
         #
         self._createInstance(userData=self.cloud_init(node))
-        logger.info("Reinstantiating the GCE Instance %(name)s" % (self.gce))
+        logger.info("Reinstantiating the GCE Instance %(name)s" % self.gce)
         #node.instance_id = self.gce['name']
 
 def make_gce_valid_name(name):
