@@ -165,7 +165,11 @@ class Cluster(models.Model):
         if self.iam_arn != "":
             iam = connect_iam(aws_access_key_id=settings.AWS_ACCESS_KEY, aws_secret_access_key=settings.AWS_SECRET_KEY)
             if self.iam_key != "":
-                iam.delete_access_key(self.iam_key, self.uuid)
+                try:
+                    iam.delete_access_key(self.iam_key, self.uuid)
+                except BotoServerError, e:
+                    if e.status != 404:
+                        raise
                 self.iam_key = ""
                 self.save()
             try:
