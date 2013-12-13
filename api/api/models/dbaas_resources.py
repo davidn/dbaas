@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+from boto.exception import BotoServerError
 from logging import getLogger
 import json
 from collections import Sequence
@@ -167,8 +168,16 @@ class Cluster(models.Model):
                 iam.delete_access_key(self.iam_key, self.uuid)
                 self.iam_key = ""
                 self.save()
-            iam.delete_user_policy(self.uuid, self.uuid)
-            iam.delete_user(self.uuid)
+            try:
+                iam.delete_user_policy(self.uuid, self.uuid)
+            except BotoServerError, e:
+                if e.status != 404:
+                    raise
+            try:
+                iam.delete_user(self.uuid)
+            except BotoServerError, e:
+                if e.status != 404:
+                    raise
             self.iam_arn = ""
             self.save()
         self.status = Cluster.OVER
