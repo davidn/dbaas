@@ -33,7 +33,6 @@ class GoogleComputeEngine(Cloud):
             self._http = credentials.authorize(httplib2.Http())
         return self._http
 
-
     @property
     def gce(self):
         if not hasattr(self, "_gce"):
@@ -52,7 +51,8 @@ class GoogleComputeEngine(Cloud):
     def node_name(node):
         return make_gce_valid_name('dbaas-cluster-{c}-node-{n}'.format(c=node.cluster.pk, n=node.nid))
 
-    def get_disk_name(self, node):
+    @staticmethod
+    def get_disk_name(node):
         return node.instance_id + '-disk'
 
     @staticmethod
@@ -76,11 +76,8 @@ class GoogleComputeEngine(Cloud):
     def _create_instance(self, node, user_data=None):
         # Construct the request body
         disk_body = [{
-            'source': "https://www.googleapis.com/compute/v1beta16/projects/%(project)s/zones/%(zone)s/disks/%(disk_name)s" % {
-                'project': self.SERVICE_PROJECT_ID,
-                'zone': self.region.code,
-                'disk_name': self.get_disk_name(node)
-            },
+            'source': "https://www.googleapis.com/compute/v1beta16/projects/%s/zones/%s/disks/%s" %
+                      (self.SERVICE_PROJECT_ID, self.region.code, self.get_disk_name(node)),
             'boot': True,
             'type': 'PERSISTENT',
             'mode': 'READ_WRITE',
@@ -89,7 +86,8 @@ class GoogleComputeEngine(Cloud):
         net_body = [{
             'accessConfigs': [{'type': 'ONE_TO_ONE_NAT',
                                'name': 'External NAT'}],
-            'network': 'https://www.googleapis.com/compute/v1beta16/projects/%s/global/networks/default' % self.SERVICE_PROJECT_ID,
+            'network': 'https://www.googleapis.com/compute/v1beta16/projects/%s/global/networks/default' %
+                       self.SERVICE_PROJECT_ID,
         }]
         metadata_items = []
         if user_data:
@@ -97,11 +95,8 @@ class GoogleComputeEngine(Cloud):
         body = {
             'name': node.instance_id,
             'kernel': 'https://www.googleapis.com/compute/v1beta16/projects/google/global/kernels/gce-v20130813',
-            'machineType': "https://www.googleapis.com/compute/v1beta16/projects/%(project)s/zones/%(zone)s/machineTypes/%(machine_type)s" % {
-                'project': self.SERVICE_PROJECT_ID,
-                'zone': self.region.code,
-                'machine_type': self.node.flavor.code
-            },
+            'machineType': "https://www.googleapis.com/compute/v1beta16/projects/%s/zones/%s/machineTypes/%s" %
+                           (self.SERVICE_PROJECT_ID, self.region.code, node.flavor.code),
             'networkInterfaces': net_body,
             'disks': disk_body,
             'metadata': {'items': metadata_items}
@@ -178,8 +173,8 @@ class GoogleComputeEngine(Cloud):
 
     def launch(self, node):
         node.instance_id = self.node_name(node)
-        self._create_disk(wait=True)
-        self._create_instance(user_data=self.cloud_init(node))
+        self._create_disk(node, wait=True)
+        self._create_instance(node, user_data=self.cloud_init(node))
         logger.info("Creating GCE Instance")
 
     def pending(self, node):
@@ -219,12 +214,12 @@ class GoogleComputeEngine(Cloud):
         if node.instance_id != "":
             logger.debug("Terminating GCE Instance")
             try:
-                self._delete_instance(wait_function=node.shutting_down)
+                self._delete_instance(node, wait_function=node.shutting_down)
             except errors.HttpError, e:
                 if e.resp.status != 404:
                     raise
             try:
-                self._delete_disk()
+                self._delete_disk(node)
             except errors.HttpError, e:
                 if e.resp.status != 404:
                     raise
@@ -232,26 +227,27 @@ class GoogleComputeEngine(Cloud):
 
     def reinstantiate(self, node):
         # Note: this command reboots the server as a new instance
-        self._delete_instance(wait_function=node.shutting_down)
-        self._create_instance(user_data=self.cloud_init(node))
+        self._delete_instance(node, wait_function=node.shutting_down)
+        self._create_instance(node, user_data=self.cloud_init(node))
         logger.info("Reinstantiating the GCE Instance")
 
+
+MAX_VALID_NAME_LEN = 63    # GCE Instance Names must be <= this length
+
+
 def make_gce_valid_name(name):
-    MAX_VALID_NAME_LEN = 63    # GCE Instance Names must be <= this length
-    FIRST_ALPHA = "g"   # GCE Name must start with an alpha char
-    if name[:1].isalpha():
-        FIRST_ALPHA = ""
+    first_alpha = "" if name[:1].isalpha() else "g"   # GCE Name must start with an alpha char
     i = name.find('.')
-    if i >= MAX_VALID_NAME_LEN - len(FIRST_ALPHA):
+    if i >= MAX_VALID_NAME_LEN - len(first_alpha):
         # If we can, drop the chars just before the Node ID
         k = name.rfind('-', 0, i)
-        if k + MAX_VALID_NAME_LEN >= i + len(FIRST_ALPHA):
-            j = k + MAX_VALID_NAME_LEN - i - len(FIRST_ALPHA)
-            name = "".join((FIRST_ALPHA, name[:j], name[k:i]))
+        if k + MAX_VALID_NAME_LEN >= i + len(first_alpha):
+            j = k + MAX_VALID_NAME_LEN - i - len(first_alpha)
+            name = "".join((first_alpha, name[:j], name[k:i]))
         else:
-            name = FIRST_ALPHA + name[:MAX_VALID_NAME_LEN-1]
-    elif (FIRST_ALPHA and name[:len(FIRST_ALPHA)] != FIRST_ALPHA) or i >= 0:
-        name = FIRST_ALPHA + name[:i]
+            name = first_alpha + name[:MAX_VALID_NAME_LEN-1]
+    elif (first_alpha and name[:len(first_alpha)] != first_alpha) or i >= 0:
+        name = first_alpha + name[:i]
     elif len(name) > MAX_VALID_NAME_LEN:
         name = name[:MAX_VALID_NAME_LEN]
     return name.lower()
