@@ -3,6 +3,7 @@ from django.conf import settings
 from .cloud import Cloud
 
 import novaclient.v1_1
+import novaclient.exceptions
 
 logger = getLogger(__name__)
 
@@ -60,7 +61,10 @@ class Openstack(Cloud):
         tags['id'] = node.instance_id
 
     def terminate(self, node):
-        self.nova.servers.delete(node.instance_id)
+        try:
+            self.nova.servers.delete(node.instance_id)
+        except novaclient.exceptions.NotFound:
+            pass
 
     def reinstantiate(self, node):
         self.nova.servers.resize(node.instance_id, flavor=node.flavor.code)
