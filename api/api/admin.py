@@ -19,7 +19,8 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
-from .controller import launch_cluster, pause_node, resume_node, reinstantiate_node, add_database
+from .controller import launch_cluster, pause_node, resume_node, reinstantiate_node, add_database, shutdown_cluster, \
+    shutdown_node
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -38,7 +39,7 @@ class ClusterAdmin(SimpleHistoryAdmin):
     inlines = [NodeInline]
     list_display = ('__unicode__', 'user', 'cluster_size','status')
     list_filter = ('user', 'status')
-    actions = ('launch',)
+    actions = ('launch','shutdown')
 
     def get_urls(self):
         from django.conf.urls import patterns
@@ -56,6 +57,10 @@ class ClusterAdmin(SimpleHistoryAdmin):
     def launch(self, request, queryset):
         for cluster in queryset:
             launch_cluster(cluster)
+
+    def shutdown(self, request, queryset):
+        for cluster in queryset:
+            shutdown_cluster(cluster)
 
     def add_database(self, request, cluster_id, form_url='', extra_context=None):
         if not self.has_change_permission(request):
@@ -93,7 +98,7 @@ class ClusterAdmin(SimpleHistoryAdmin):
 
 class NodeAdmin(SimpleHistoryAdmin):
     exclude = ('lbr_region',)
-    actions = ('pause', 'resume')
+    actions = ('pause', 'resume', 'shutdown')
     list_display = ('__unicode__', 'cluster_user', 'region', 'flavor', 'status', 'ip')
     list_filter = ('region', 'cluster', 'status', 'region__provider')
 
@@ -107,6 +112,10 @@ class NodeAdmin(SimpleHistoryAdmin):
     def resume(self, request, queryset):
         for node in queryset:
             resume_node(node)
+
+    def shutdown(self, request, queryset):
+        for node in queryset:
+            shutdown_node(node)
 
     def save_model(self, request, obj, form, change):
         node = Node.objects.get(pk=obj.pk)
