@@ -9,6 +9,11 @@ logger = getLogger(__name__)
 
 
 class Openstack(Cloud):
+    USER = ""
+    PASS = ""
+    TENANT = ""
+    AUTH_URL = ""
+
     @property
     def nova(self):
         if not hasattr(self, "_nova"):
@@ -67,11 +72,12 @@ class Openstack(Cloud):
 
     def reinstantiate(self, node):
         self.nova.servers.resize(node.instance_id, flavor=node.flavor.code)
-        logger.info("Reinstantiating the Openstack Instance %s" % (node.dns_name))
+        logger.info("Reinstantiating the Openstack Instance %s", node.dns_name)
 
     def reinstantiation_complete(self, node):
         # Free up the original image before the resize snapshot.
         self.nova.servers.confirm_resize(node.instance_id)
+
 
 class Rackspace(Openstack):
     USER = settings.RACKSPACE_USER
@@ -79,11 +85,9 @@ class Rackspace(Openstack):
     TENANT = settings.RACKSPACE_TENANT
     AUTH_URL = settings.RACKSPACE_AUTH_URL
 
+
 class RackspaceLondon(Rackspace):
     USER = settings.RACKSPACELONDON_USER
     PASS = settings.RACKSPACELONDON_PASS
     TENANT = settings.RACKSPACELONDON_TENANT
     AUTH_URL = settings.RACKSPACELONDON_AUTH_URL
-
-
-
