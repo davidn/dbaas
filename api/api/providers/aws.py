@@ -30,15 +30,16 @@ class EC2(Cloud):
         else:
             return self.__dict__
 
-    def null_or_io1(self, iops):
+    @staticmethod
+    def null_or_io1(iops):
         if iops is None:
             return None
         else:
             return 'io1'
 
-    def _create_security_group(self, node, sgName):
+    def _create_security_group(self, node, security_group):
         try:
-            sg = self.ec2.create_security_group(sgName, 'Security group for ' + sgName)
+            sg = self.ec2.create_security_group(security_group, 'Security group for ' + security_group)
         except EC2ResponseError, e:
             if re.search('InvalidGroup.Duplicate', e.body) is None:
                 raise
@@ -56,7 +57,8 @@ class EC2(Cloud):
             if re.search('InvalidPermission.Duplicate', e.body) is None:
                 raise
 
-        logger.debug("%s: Created Security Group %s (named %s) with port %s open", node, sg.id, sg.name, node.cluster.port)
+        logger.debug("%s: Created Security Group %s (named %s) with port %s open", node, sg.id, sg.name,
+                     node.cluster.port)
         node.save()
         return sg
 
@@ -66,11 +68,12 @@ class EC2(Cloud):
             iops=node.iops,
             volume_type=self.null_or_io1(node.iops),
             delete_on_termination=True,
-            size=node.storage # null -> default
+            size=node.storage  # null -> default
         )
         if node.storage is None:
             for i in xrange(node.flavor.fixed_storage_volumes):
-                bdm['/dev/sd%s' % chr(ord('b')+i)] = boto.ec2.blockdevicemapping.BlockDeviceType(ephemeral_name='ephemeral%d' % i)
+                bdm['/dev/sd%s' % chr(ord('b')+i)] = boto.ec2.blockdevicemapping.BlockDeviceType(
+                    ephemeral_name='ephemeral%d' % i)
         return bdm
 
     def _run_instances(self, node, sgs):
@@ -111,10 +114,11 @@ class EC2(Cloud):
             res = retry(ec2_run_instances)
         except:
             logger.error("run_instances failed, deleting security group. Node: %s", node)
+
             def ec2_delete_security():
                 return self.ec2.delete_security_group(group_id=node.security_group)
             try:
-                res = retry(ec2_delete_security)
+                retry(ec2_delete_security)
             except:
                 logger.error("delete_security_group failed, Node:%s", node)
                 #TODO Better manage failures
@@ -135,7 +139,10 @@ class EC2(Cloud):
     def get_ip(self, node):
         instance = self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0]
         return instance.ip_address
-    def update(self, node, tags={}):
+
+    def update(self, node, tags=None):
+        if tags is None:
+            tags = dict()
         instance = self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0]
         for k, v in tags.items():
             instance.add_tag(k, v)
@@ -160,13 +167,13 @@ class EC2(Cloud):
         self.ec2.stop_instances([node.instance_id])
         while self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].update() == 'stopping':
             sleep(15)
-        self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].modify_attribute('instanceType', node.flavor.code)
+        self.ec2.get_all_instances(instance_ids=[node.instance_id])[0].instances[0].modify_attribute('instanceType',
+                                                                                                     node.flavor.code)
 
     def reinstantiate(self, node):
         try:
             self.ec2.start_instances([node.instance_id])
         except:
-            logger.error("resizing attempt to %s failed, Node:%s", (node.flavor.code, node.dns_name))
+            logger.error("resizing attempt to %s failed, Node:%s", node.flavor.code, node.dns_name)
             raise
-        logger.info("Reinstantiating the AWS Instance %s" % (node.dns_name))
-
+        logger.info("Reinstantiating the AWS Instance %s", node.dns_name)
