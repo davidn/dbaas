@@ -76,11 +76,7 @@ class GoogleComputeEngine(Cloud):
         # Fetch the instance
         request = self.gce['service'].instances().list(project=self.gce['project'], zone=self.gce['zone'])
         response = request.execute(http=self.gce['auth_http'])
-        try:
-            items = response['items']
-        except:
-            items = []
-        return self.filterNames(items, matchNames)
+        return self.filter_names(response.get('items', []), matchNames)
 
     def _createInstance(self, userData=None):
         # Construct the request body
