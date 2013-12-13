@@ -65,7 +65,7 @@ class GoogleComputeEngine(Cloud):
         if matchNames is not None:
             allItems = items
             items = []
-            if type(matchNames) == type(''):
+            if isinstance(matchNames, basestring):
                 matchNames = [matchNames]
             for item in allItems:
                 if item['name'] in matchNames:
