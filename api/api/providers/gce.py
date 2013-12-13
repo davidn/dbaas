@@ -188,8 +188,7 @@ class GoogleComputeEngine(Cloud):
 
     def launch(self, node):
         project = self.gce['project']
-        zone = self.region.code
-        self.gce['zone'] = zone
+        self.gce['zone'] = self.region.code
         self.gce['name'] = make_gce_valid_name('dbaas-cluster-{c}-node-{n}'.format(c=node.cluster.pk, n=node.nid))
         diskName = self.getDiskName()
         self.gce['diskName'] = diskName
@@ -210,13 +209,12 @@ class GoogleComputeEngine(Cloud):
         self._createInstance(userData=self.cloud_init(node))
         logger.info("Creating the GCE Instance %(name)s" % (self.gce))
         node.instance_id = self.gce['name']
-        node.security_group = self.gce['zone']
         node.status = node.PROVISIONING
         node.save()
 
     def pending(self, node):
         self.gce['name'] = node.instance_id
-        self.gce['zone'] = node.security_group
+        self.gce['zone'] = node.region.code
         items = self._getInstanceObjects(self.gce['name'])
         if items:
             try:
@@ -229,7 +227,7 @@ class GoogleComputeEngine(Cloud):
 
     def shutting_down(self, node):
         self.gce['name'] = node.instance_id
-        self.gce['zone'] = node.security_group
+        self.gce['zone'] = node.region.code
         items = self._getInstanceObjects(self.gce['name'])
         return items != []
 
@@ -248,7 +246,7 @@ class GoogleComputeEngine(Cloud):
 
     def update(self, node, tags=None):
         self.gce['name'] = node.instance_id
-        self.gce['zone'] = node.security_group
+        self.gce['zone'] = node.region.code
 
         updateProperties = []   # Put in the list of supported metadata properties when they are known.
         body = {"items": []}
@@ -266,7 +264,7 @@ class GoogleComputeEngine(Cloud):
 
     def terminate(self, node):
         self.gce['name'] = node.instance_id
-        self.gce['zone'] = node.security_group
+        self.gce['zone'] = node.region.code
         diskName = self.getDiskName()
         self.gce['diskName'] = diskName
         if node.instance_id != "":
@@ -289,7 +287,7 @@ class GoogleComputeEngine(Cloud):
     def reinstantiate(self, node):
         # Note: this command reboots the server as a new instance
         self.gce['name'] = node.instance_id
-        self.gce['zone'] = node.security_group
+        self.gce['zone'] = node.region.code
         diskName = self.getDiskName()
         self.gce['diskName'] = diskName
         self.gce['nid'] = node.nid
@@ -309,7 +307,6 @@ class GoogleComputeEngine(Cloud):
         self._createInstance(userData=self.cloud_init(node))
         logger.info("Reinstantiating the GCE Instance %(name)s" % (self.gce))
         #node.instance_id = self.gce['name']
-        #node.security_group = self.gce['zone']
         node.status = node.PROVISIONING
         node.save()
 
