@@ -134,8 +134,6 @@ class ProfitBrick(Cloud):
                 if e.fault.detail.ProfitbricksServiceFault.httpCode != 404:
                     raise
             node.security_group = ""
-        while node.shutting_down():
-            sleep(15)
 
 def provisioningStateAvailable(obj):
     if obj.provisioningState=='AVAILABLE':
