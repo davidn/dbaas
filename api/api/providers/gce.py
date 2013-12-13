@@ -140,11 +140,7 @@ class GoogleComputeEngine(Cloud):
         # Fetch the instance
         request = self.gce['service'].disks().list(project=self.gce['project'], zone=self.gce['zone'])
         response = request.execute(http=self.gce['auth_http'])
-        try:
-            items = response['items']
-        except:
-            items = []
-        return self.filterNames(items, matchNames)
+        return self.filterNames(response.get('items', []), matchNames)
 
     def _createDisk(self, diskSize, wait=False):
         #
@@ -186,13 +182,11 @@ class GoogleComputeEngine(Cloud):
         project = self.gce['project']
         self.gce['zone'] = self.region.code
         self.gce['name'] = make_gce_valid_name('dbaas-cluster-{c}-node-{n}'.format(c=node.cluster.pk, n=node.nid))
-        diskName = self.getDiskName()
-        self.gce['diskName'] = diskName
+        self.gce['diskName'] = self.getDiskName()
         self.gce['nid'] = node.nid
         self.gce['machineType'] = node.flavor.code
         self.gce['imageName'] = node.region.image
-        sourceImage = 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/images/%(imageName)s' % self.gce
-        self.gce['sourceImage'] = sourceImage
+        self.gce['sourceImage'] = 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/images/%(imageName)s' % self.gce
 
         #
         # Create a persistent Disk for the Instance to mount
@@ -222,8 +216,7 @@ class GoogleComputeEngine(Cloud):
     def shutting_down(self, node):
         self.gce['name'] = node.instance_id
         self.gce['zone'] = node.region.code
-        items = self._getInstanceObjects(self.gce['name'])
-        return items != []
+        return self._getInstanceObjects(self.gce['name']) != []
 
     def reinstantiating(self, node):
         return self.pending(node)
@@ -259,8 +252,7 @@ class GoogleComputeEngine(Cloud):
     def terminate(self, node):
         self.gce['name'] = node.instance_id
         self.gce['zone'] = node.region.code
-        diskName = self.getDiskName()
-        self.gce['diskName'] = diskName
+        self.gce['diskName'] = self.getDiskName()
         if node.instance_id != "":
             self.gce['name'] = node.instance_id
             #
@@ -287,13 +279,11 @@ class GoogleComputeEngine(Cloud):
         # Note: this command reboots the server as a new instance
         self.gce['name'] = node.instance_id
         self.gce['zone'] = node.region.code
-        diskName = self.getDiskName()
-        self.gce['diskName'] = diskName
+        self.gce['diskName'] = self.getDiskName()
         self.gce['nid'] = node.nid
         self.gce['machineType'] = node.flavor.code
         self.gce['imageName'] = node.region.image
-        sourceImage = 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/images/%(imageName)s' % self.gce
-        self.gce['sourceImage'] = sourceImage
+        self.gce['sourceImage'] = 'https://www.googleapis.com/compute/v1beta16/projects/%(project)s/global/images/%(imageName)s' % self.gce
 
         #
         # Delete the instance
