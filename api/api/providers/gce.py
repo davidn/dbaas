@@ -123,11 +123,7 @@ class GoogleComputeEngine(Cloud):
     def _deleteInstance(self, waitFunction=None):
         # Delete the instance (but not the persistent disk).
         request = self.gce['service'].instances().delete(project=self.gce['project'], zone=self.gce['zone'], instance=self.gce['name'])
-        try:
-            request.execute(http=self.gce['auth_http'])
-        except errors.HttpError, e:
-            if e.resp.status != 404:
-                raise
+        response = request.execute(http=self.gce['auth_http'])
 
         if waitFunction is not None:
             #
@@ -137,6 +133,8 @@ class GoogleComputeEngine(Cloud):
                 if not waitFunction():
                     break
                 sleep(GoogleComputeEngine.RETRY_DELAY)
+
+        return response
 
     def _getDiskObjects(self, matchNames=None):
         # Fetch the instance
@@ -274,12 +272,20 @@ class GoogleComputeEngine(Cloud):
             # Delete the instance
             #
             logger.debug("Terminating GCE Instance %(name)s" % self.gce)
-            self._deleteInstance(waitFunction=node.shutting_down)
+            try:
+                self._deleteInstance(waitFunction=node.shutting_down)
+            except errors.HttpError, e:
+                if e.resp.status != 404:
+                    raise
 
             #
             # We also need to delete the persistent disk.
             #
-            self._deleteDisk()
+            try:
+                self._deleteDisk()
+            except errors.HttpError, e:
+                if e.resp.status != 404:
+                    raise
             node.instance_id = ""
 
     def reinstantiate(self, node):
