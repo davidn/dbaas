@@ -639,7 +639,10 @@ class Node(models.Model):
         for zabbixHost in hosts:
             if zabbixHost['host'] == self.dns_name:
                 logger.info("Zabbix Host %s being removed.", self.dns_name)
-                z.host.delete(hostid=zabbixHost['hostid'])
+                try:
+                    z.host.delete(hostid=zabbixHost['hostid'])
+                except ZabbixAPIException:
+                    logger.warning("%s: Failed to delete Zabbix Host %s", self, zabbixHost['hostid'], exc_info=True)
                 hosts = z.host.get(groupids=zabbix_host_group["groupid"], output='extend')
                 break
         if not hosts:
@@ -647,7 +650,7 @@ class Node(models.Model):
             try:
                 z.hostgroup.delete(zabbix_host_group["groupid"])
             except ZabbixAPIException:
-                logger.warning("Failed to delete Zabbix HostGroup %s", self.cluster.user.email)
+                logger.warning("Failed to delete Zabbix HostGroup %s", self.cluster.user.email, exc_info=True)
 
     def shutdown_async_dns(self):
         if self.region.provider.code != 'test':
