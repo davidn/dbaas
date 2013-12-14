@@ -86,6 +86,11 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             serializers.ValidationError("Email changing disabled")
         return attrs
 
+    def validate_is_paid(self, attrs, source):
+        if self.object is not None and attrs[source] != self.object.is_paid:
+            serializers.ValidationError("Cannot change paid status")
+        return attrs
+
 
 class FlavorSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
