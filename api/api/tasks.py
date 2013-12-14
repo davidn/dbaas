@@ -141,9 +141,12 @@ def cluster_shutdown(cluster):
 @task(base=NodeTask)
 def node_shutdown_zabbix(node):
     node.shutdown_async_zabbix()
-@task(base=NodeTask)
+@task(base=NodeTask, max_retries=10)
 def node_shutdown_dns(node):
-    node.shutdown_async_dns()
+    try:
+        node.shutdown_async_dns()
+    except DNSServerError as e:
+        node_shutdown_dns.retry(exc=e, countdown=15)
 @task(base=NodeTask)
 def node_shutdown_instance(node):
     node.shutdown_async_instance()
