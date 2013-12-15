@@ -1,5 +1,5 @@
 angular.module('geniedb').constant('dbaasConfig', (function () {
-    var versionTag = "2.3";
+    var versionTag = "2.4";
     var buildTag = "%BUILDDATE%";
     //BEGINSERVICEURL
     var serviceUrl = "//localhost:8000";

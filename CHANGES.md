@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.4 - 2013-12-15
+------------------
+
+* Add pricing information and credit card entry.
+* Improve speed and reliability of shutdown.
+* Give users choice between EBS and ephemeral disks.
+
 2.3 - 2013-12-11
 ------------------
 
