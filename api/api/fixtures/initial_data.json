@@ -269,7 +269,7 @@
     },
         {
         "model": "api.region",
-        "pk": 48,
+        "pk": 27,
         "fields": {
             "provider": 2,
             "code": "hkg",
