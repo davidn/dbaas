@@ -42,11 +42,15 @@ angular.module('geniedb').factory('User', function ($resource, $localStorage, $h
 
         var fragments = aUser.url.split('/');
         user.fragment = fragments.slice(-2).join('/');
-        user.id = fragments[fragments.length-1];
+        user.id = fragments[fragments.length - 1];
         user.url = aUser.url;
         identityConfirmed = true;
         updateUserStorage();
         updateUserVoice();
+    }
+
+    function setPaid(){
+        user.isPaid = true;
     }
 
     function checkIdentity() {
@@ -73,8 +77,13 @@ angular.module('geniedb').factory('User', function ($resource, $localStorage, $h
     return {
         user: user,
         update: function (newUser) {
-            return $http({method:'PATCH', url: dbaasConfig.apiUrl + user.fragment, data: newUser}).success(function (data) {
+            return $http({method: 'PATCH', url: dbaasConfig.apiUrl + user.fragment, data: newUser}).success(function (data) {
                 setUser(data);
+            });
+        },
+        billing: function (cc) {
+            return $http({method: 'POST', url: dbaasConfig.apiUrl + 'cc', data: cc}).success(function (data) {
+                setPaid();
             });
         },
         register: function (email) {
@@ -90,7 +99,7 @@ angular.module('geniedb').factory('User', function ($resource, $localStorage, $h
             return Registration.activate({activation_code: activationCode}, {password: password});
         },
         reminder: function (email) {
-            return $http({method:'PATCH', url: dbaasConfig.registerUrl, data: {email: email}});
+            return $http({method: 'PATCH', url: dbaasConfig.registerUrl, data: {email: email}});
         },
         login: function (email, password) {
             user.email = email;

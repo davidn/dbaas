@@ -1,57 +1,58 @@
-<div class="modal-dialog" ng-controller="BillinginfoCtrl">
+<div class="modal-dialog small-modal" ui-keydown="{esc: 'cancel()'}" ng-controller="BillinginfoCtrl">
 	<div class="modal-content">
 		<div class="modal-header">
-			<h3>Billing Info</h3>
+			<span ng-if="mode=='address'">Billing - Step 1</span>
+			<span ng-if="mode=='payment'">Billing - Step 2</span>
+			<button type="button" class="modal-close-button close" ng-click="cancel()"><i class="fa fa-times"></i></button>
 		</div>
 		<div class="modal-body">
-			<div class="form-group">
-				<label class="radio-inline"> <input type="radio" id="typeRadioVisa" value="visa"> Visa </label> <label class="radio-inline">
-				<input type="radio" id="typeRadioMC" value="mastercard"> Mastercard </label> <label class="radio-inline">
-				<input type="radio" id="typeRadioAmex" value="amex"> American Express </label> <label class="radio-inline">
-				<input type="radio" id="typeRadioDisc" value="discover"> Discover </label>
+			<div class="row" ng-if="mode=='address'">
+				<div class="col-md-1">
+					<i class="fa fa-user fa-2x form-label"></i>
+				</div>
+				<div class="col-md-10">
+					<input class="form-control-cc" placeholder="First Name" type="text" ng-model="cc.first_name" required/>
+					<input class="form-control-cc" placeholder="Last Name" type="text" ng-model="cc.last_name" required/>
+				</div>
+				<div class="col-md-1 form-group-spacer">
+					<i class="fa fa-map-marker fa-2x form-label"></i>
+				</div>
+				<div class="col-md-10 form-group-spacer">
+					<input class="form-control-cc" placeholder="Street Address" type="text" ng-model="cc.billing_address.line1" required/>
+					<input class="form-control-cc" placeholder="City" type="text" ng-model="cc.billing_address.city" required/>
+					<input class="form-control-cc-state" placeholder="State" type="text" ng-model="cc.billing_address.state" required/>
+					<input class="form-control-cc-zip" placeholder="Postal" type="text" ng-model="cc.billing_address.postal_code" required/>
+					<select ui-select2 class="form-control-cc" ng-model="cc.billing_address.country_code" data-placeholder="Country" ng-options="country.code as country.name for country in countries"></select>
 
+				</div>
 			</div>
-			<div class="form-group">
-				<label style="width: 20%"> Number</label> <input type="text" ng-model="cc.number" required/>
+			<div class="row" ng-if="mode=='payment'">
+				<div class="col-md-1">
+					<i class="fa fa-credit-card fa-lg form-label"></i>
+				</div>
+				<div class="col-md-10">
+					<input class="form-control-cc" type="text" placeholder="Card Number" size="20" ng-model="cc.number"  required/>
+				</div>
+				<div class="col-md-1">
+					<i class="fa fa-calendar fa-lg form-label"></i>
+				</div>
+				<div class="col-md-10">
+					<input class="form-control-cc-zip" type="text" size="2" maxlength="2" ng-model="cc.expire_month" placeholder="Month"/>
+					<span> / </span>
+					<input class="form-control-cc-zip" type="text" size="2" maxlength="2" ng-model="cc.expire_year" placeholder="Year"/>
+				</div>
+				<div class="col-md-1">
+					<i class="fa fa-lock fa-lg form-label"></i>
+				</div>
+				<div class="col-md-10">
+					<input placeholder="CVV2" class="form-control-cc-zip"  type="text" maxlength="4" size="4" ng-model="cc.cvv2" required/>
+				</div>
 			</div>
-			<div class="form-group">
-				<label style="width: 20%"> Expires </label> <input type="number" ng-model="cc.expire_month" required/>
-				<input type="number" ng-model="cc.expire_year" required/>
-			</div>
-			<div class="form-group">
-				<label style="width: 20%"> CVV2</label> <input type="text" ng-model="cc.cvv2" required/>
-			</div>
-			<div class="form-group">
-				<label style="width: 20%"> Name</label> <input type="text" ng-model="cc.first_name" required/>
-				<input type="text" ng-model="cc.last_name" required/>
-			</div>
-
-			<div class="form-group">
-				<label style="width: 20%"> Address</label>
-				<input type="text" ng-model="cc.billing_address.line1" required/>
-			</div>
-			<div class="form-group">
-				<label style="width: 20%"> City</label>
-				<input type="text" ng-model="cc.billing_address.city" required/>
-			</div>
-			<div class="form-group">
-				<label style="width: 20%"> State</label>
-				<input type="text" ng-model="cc.billing_address.state" required/>
-			</div>
-			<div class="form-group">
-				<label style="width: 20%"> Postal Code</label>
-				<input type="text" ng-model="cc.billing_address.postal_code" required/>
-			</div>
-			<div class="form-group">
-				<label style="width: 20%"> Country</label>
-				<input type="text" ng-model="cc.billing_address.country_code" required/>
-			</div>
-
-
 		</div>
 		<div class="modal-footer">
-			<button class="btn btn-success" btn-loading="isLoading" data-loading-text="Saving..." ng-click="save()">SAVE</button>
-			<button class="btn btn-primary pull-right" ng-click="cancel()">CANCEL</button>
+			<button ng-if="mode=='payment'" class="btn btn-primary" ng-click="showAddress()">BACK</button>
+			<button ng-if="mode=='address'" class="btn btn-success pull-right" ng-click="showPayment()">NEXT</button>
+			<button ng-if="mode=='payment'" class="btn btn-success pull-right" btn-loading="isLoading" data-loading-text="Saving..." ng-click="save()">SAVE</button>
 		</div>
 	</div>
 </div>

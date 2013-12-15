@@ -11,6 +11,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 
+	<link href='//fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
 	<!-- CSS from Bower components  -->
 	<link href="bower_components/bootstrap/dist/css/bootstrap.css" data-cdn="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.0/css/bootstrap.css" rel="stylesheet">
 	<link href="bower_components/font-awesome/css/font-awesome.css" data-cdn="//netdna.bootstrapcdn.com/font-awesome/4.0.2/css/font-awesome.min.css" rel="stylesheet">
@@ -38,7 +40,10 @@
 	<div class="navbar navbar-fixed-top navbar-default" role="navigation" ng-controller="NavigationCtrl">
 		<div class="container">
 			<div class="navbar-header">
-				<a id="dbaasHeader" class="navbar-brand" href="#"> <img src="img/DBaaSConsole_Logo.png"/> </a>
+				<a id="dbaasHeader" class="navbar-brand" href="#"> <img src="img/DBaaSConsole_Logo.png"/></a>
+			</div>
+			<div class="navbar-header">
+				<div ng-cloak class="ng-cloak version-tag" ng-right-click="showInfo(event)">v<span app-version></span></div>
 			</div>
 			<div id="logout" ng-cloak class="ng-cloak navbar-header" ng-if="user.token">
 				<span class="environment-tag" app-environment></span> Welcome <a class="btn btn-profile" href="#/profile"> {{ user.email }}&nbsp;
@@ -51,7 +56,6 @@
 	</div>
 
 	<div ng-view></div>
-	<div ng-cloak class="ng-cloak version-tag" ng-right-click="showInfo(event)">GenieDB DBaaS v<span app-version></span></div>
 </div>
 
 <!--[if lt IE 9]>
@@ -134,8 +138,9 @@
 <script src="partial/resize/resize.js"></script>
 <script src="partial/profile/profile.js"></script>
 <script src="partial/pricing/pricing.js"></script>
-  <script src="partial/billinginfo/billinginfo.js"></script>
-  <!-- Add New Partial JS Above -->
+<script src="partial/billinginfo/billinginfo.js" charset="UTF-8"></script>
+<script src="partial/upgrade/upgrade.js"></script>
+<!-- Add New Partial JS Above -->
 
 
 <script type="text/javascript" data-remove="exclude" data-build="exclude">

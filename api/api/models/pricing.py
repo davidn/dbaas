@@ -13,6 +13,11 @@ from .cloud_resources import Region, Flavor
 
 logger = getLogger(__name__)
 
+# paypalrestsdk.configure({
+#     "mode": settings.PAYPAL_MODE,
+#     "client_id": settings.PAYPAL_CLIENT_ID,
+#     "client_secret": settings.PAYPAL_CLIENT_SECRET})
+
 paypalrestsdk.configure({
     "mode": "sandbox",
     "client_id": "EBWKjlELKMYqRNQ6sYvFo64FtaRLRR5BdHEESmha49TM",
@@ -36,6 +41,22 @@ class Pricing(models.Model):
         return "Pricing(region={region}, flavor={flavor})".format(region=repr(self.region), flavor=repr(self.flavor))
 
 
+class CreditCardTokenManager(models.Manager):
+    def create_credit_card(self, cc, user):
+        credit_card = CreditCard(cc)
+
+        if credit_card.create():
+            logger.error(cc)
+            logger.error(credit_card)
+            valid_until = credit_card.valid_until[:-10]
+            token = self.model(token=credit_card.id, valid_until=valid_until, type=credit_card.type, last4=credit_card.number[-4:],
+                               expire_month=credit_card.expire_month, expire_year=credit_card.expire_year, user=user)
+            token.save()
+            token.user.is_paid = True
+            token.user.save()
+            return token
+
+
 class CreditCardToken(models.Model):
     """Result of storing credit card details with Paypal - no PCI information
 
@@ -51,34 +72,13 @@ class CreditCardToken(models.Model):
 
     created_on = models.DateTimeField(auto_now_add=True)
 
+    objects = CreditCardTokenManager()
+
     class Meta:
         app_label = "api"
 
     def __unicode__(self):
-        return "CreditCardToken(%s %s xxx-)" % (self.token, self.type, self.last4)
-
-
-class CreditCardTokenManager(models.Manager):
-    def create_credit_card(self, params):
-        credit_card = CreditCard({
-            "type": "visa",
-            "number": "4417119669820331",
-            "expire_month": "11",
-            "expire_year": "2018",
-            "cvv2": "874",
-            "first_name": "Joe",
-            "last_name": "Shopper",
-            "billing_address": {
-                "line1": "52 N Main ST",
-                "city": "Johnstown",
-                "state": "OH",
-                "postal_code": "43210",
-                "country_code": "US"}})
-
-        if credit_card.create():
-            token = self.model(token=credit_card.id, valid_until=credit_card.valid_until, type=credit_card.type, last4=credit_card.last4,
-                               expire_month=credit_card.expire_month, expire_year=credit_card.expire_year)
-            return token
+        return "CreditCardToken(%s %s xxx-%s)" % (self.token, self.type, self.last4)
 
 
 class Activity(models.Model):

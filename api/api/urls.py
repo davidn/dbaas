@@ -58,6 +58,7 @@ router.register(r'clusters', views.ClusterViewSet)
 router.register(r'providers', views.ProviderViewSet)
 router.register(r'regions', views.RegionViewSet)
 router.register(r'flavor', views.FlavorViewSet)
+router.register(r'cc', views.CreditCardViewSet)
 router.register(r'clusters/(?P<cluster>[^/]+)', views.NodeViewSet)
 router.register(r'clusters/(?P<cluster>[^/]+)/(?P<node>[^/]+)/backups', views.BackupViewSet)
 

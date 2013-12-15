@@ -11,7 +11,6 @@ from django.db import IntegrityError
 from api.models import User
 from .models import RegistrationProfile
 from .serializers import RegistrationSerializer
-from rest_framework.decorators import action
 
 
 logger = getLogger(__name__)

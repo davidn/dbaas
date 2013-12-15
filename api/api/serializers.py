@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Cluster, Node, Flavor, Provider, Region, Backup
+from .models import Cluster, Node, Flavor, Provider, Region, Backup, CreditCardToken
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework.reverse import reverse
 from django.contrib.auth.hashers import make_password
@@ -136,6 +136,7 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 
 class CronField(serializers.CharField):
     """This class allows submission as a plain integer (hours)"""
+
     def from_native(self, value):
         try:
             cron_validator(value)
@@ -187,3 +188,12 @@ class BackupReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Backup
         fields = ('url', 'time', 'size')
+
+
+class CreditCardSerializer(serializers.ModelSerializer):
+    """Serializer for sending data to users"""
+
+    class Meta:
+        model = CreditCardToken
+        fields = ('valid_until', 'last4', 'expire_month', 'expire_year')
+

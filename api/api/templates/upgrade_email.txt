@@ -1,0 +1,15 @@
+Hi,
+
+Welcome to GenieDB DBaaS, and thanks for upgrading.
+
+Please do not hesitate to contact us with any questions or concerns.  We are happy to help guide your setup or answer any questions you may have regarding distributed system architecture.
+
+
+---------
+
+www.geniedb.com
+
+---------
+
+This is a one-time email. To get the latest on GenieDB news you should follow us on Twitter at: http://twitter.com/geniedb
+

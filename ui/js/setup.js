@@ -22,7 +22,8 @@ angular.module('geniedb', ['ui.keypress', 'ui.bootstrap.tooltipX', 'ngRoute', 'n
             when('/profile', {templateUrl: 'partial/profile/profile.html'}).
             when('/pricing', {templateUrl: 'partial/pricing/pricing.html'}).
             when('/billinginfo', {templateUrl: 'partial/billinginfo/billinginfo.html'}).
-            /* Add New Routes Above */
+            when('/upgrade',{templateUrl: 'partial/upgrade/upgrade.html'}).
+	/* Add New Routes Above */
             otherwise({redirectTo: '/'});
 
 

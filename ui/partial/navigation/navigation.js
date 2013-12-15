@@ -6,7 +6,7 @@ angular.module('geniedb').controller('NavigationCtrl', function ($scope, User, $
     };
 
     $scope.upgrade = function () {
-        $location.path("/pricing");
+        $location.path("/upgrade");
     };
 
 });

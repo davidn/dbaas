@@ -30,10 +30,13 @@ from pyzabbix import ZabbixAPI
 from api.models.pricing import Pricing, CreditCardToken
 from .models import Cluster, Node, Region, Provider, Flavor, Backup
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, \
-    FlavorSerializer, BackupWriteSerializer, BackupReadSerializer
+    FlavorSerializer, BackupWriteSerializer, BackupReadSerializer, CreditCardSerializer
 from .controller import launch_cluster, reinstantiate_node, pause_node, resume_node, add_database, add_nodes, \
     shutdown_cluster, shutdown_node
 from api.utils import mysql_database_validator
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class Owner(permissions.BasePermission):
@@ -418,34 +421,16 @@ class CreditCardViewSet(mixins.ListModelMixin,
                         viewsets.GenericViewSet):
     """Create and retrieve :py:class:`~api.CreditCardToken`."""
     model = CreditCardToken
-    # serializer_class = UserSerializer
+    serializer_class = CreditCardSerializer
     permission_classes = (OwnerOrCreate,)
 
     def get_queryset(self):
         return CreditCardToken.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        if isinstance(request.DATA, list):
-            data = []
-            n = len(request.DATA)
-            for d in request.DATA:
-                new_d = d.copy()
-                new_d["user"] = reverse('user-detail', args=(request.user.pk,))
-                data.append(new_d)
-        else:
-            data = request.DATA.copy()
-            data["user"] = reverse('user-detail', args=(request.user.pk,))
-            n = 1
+        token = CreditCardToken.objects.create_credit_card(request.DATA, request.user)
 
-        CreditCardToken.objects.create_credit_card()
-        serializer = self.get_serializer(data=data)
+        request.user.email_user_template('upgrade_email', {})
 
-        if serializer.is_valid():
-            self.pre_save(serializer.object)
-            self.object = serializer.save(force_insert=True)
-            self.post_save(self.object, created=True)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED,
-                            headers=headers)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = CreditCardSerializer(token)
+        return Response(serializer.data)
