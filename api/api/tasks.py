@@ -153,9 +153,12 @@ def node_shutdown_instance(node):
 @task(base=NodeTask)
 def node_shutdown_complete(node):
     node.shutdown_complete()
-@task()
+@task(max_retries=10)
 def region_shutdown(region):
-    region.shutdown_async()
+    try:
+        region.shutdown_async()
+    except DNSServerError as e:
+        region_shutdown.retry(exc=e, countdown=15)
 @task()
 def region_shutdown_complete(region):
     region.shutdown_complete()
