@@ -8,7 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from boto.route53.exception import DNSServerError
 from boto.exception import BotoClientError, BotoServerError
 from celery.task import Task, task
-from .models import Node, Cluster, Rule
+from .models import Node, Cluster, Rule, LBRRegionNodeSet
 from .exceptions import BackendNotReady
 
 logger = getLogger(__name__)
@@ -161,7 +161,7 @@ def region_shutdown(region):
         region_shutdown.retry(exc=e, countdown=15)
 @task()
 def region_shutdown_complete(region):
-    region.shutdown_complete()
+    LBRRegionNodeSet.objects.get(pk=region.pk).shutdown_complete()
 
 @task()
 def launch_email(cluster, email_message='confirmation_email'):
