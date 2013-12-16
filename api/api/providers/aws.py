@@ -148,14 +148,15 @@ class EC2(Cloud):
             instance.add_tag(k, v)
 
     def terminate(self, node):
-        try:
-            self.ec2.terminate_instances([node.instance_id])
-        except EC2ResponseError, e:
-            if re.search('InvalidInstanceID.NotFound', e.body) is None:
-                raise
         if node.security_group != "":
-            while node.shutting_down():
-                sleep(15)
+            if node.instance_id != "":
+                try:
+                    self.ec2.terminate_instances([node.instance_id])
+                    while node.shutting_down():
+                        sleep(15)
+                except EC2ResponseError, e:
+                    if re.search('InvalidInstanceID.NotFound', e.body) is None:
+                        raise
             logger.debug("%s: terminating security group %s", node, node.security_group)
             try:
                 self.ec2.delete_security_group(group_id=node.security_group)
