@@ -91,3 +91,6 @@ class Activity(models.Model):
     detail = models.CharField(max_length=255, blank=True, default="")
     created_on = models.DateTimeField()
     ip = models.CharField(max_length=15, blank=True, default="")
+
+    class Meta:
+        app_label = "api"
