@@ -99,7 +99,7 @@ class ClusterTest(TestCase):
             cluster=cluster,
             storage=10,
             region=Region.objects.get(code='test-1'),
-            flavor=Flavor.objects.get(code='test-small')) for _ in xrange(4)]
+            flavor=Flavor.objects.get(code='test-small')) for _ in xrange(5)]
         nodes[0].nid = cluster.next_nid()
         nodes[0].save()
         nodes[1].nid = cluster.next_nid()
@@ -111,6 +111,9 @@ class ClusterTest(TestCase):
         self.assertEqual(nodes[1].nid, 2)
         self.assertEqual(nodes[2].nid, 5)
         self.assertEqual(nodes[3].nid, 6)
+        nodes[3].delete()
+        nodes[4].nid = cluster.next_nid()
+        self.assertEqual(nodes[4].nid, 7)
 
 from controller import launch_cluster
 @patch('api.models.dbaas_resources.ZabbixAPI')
