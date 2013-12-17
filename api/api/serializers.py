@@ -80,16 +80,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ('url', 'email', 'first_name', 'last_name', 'password', 'is_paid', 'expiry')
-
-    def validate_email(self, attrs, source):
-        if self.object is not None and hasattr(attrs, source) and attrs[source] != self.object.email:
-            serializers.ValidationError("Email changing disabled")
-        return attrs
-
-    def validate_is_paid(self, attrs, source):
-        if self.object is not None and hasattr(attrs, source) and attrs[source] != self.object.is_paid:
-            serializers.ValidationError("Cannot change paid status")
-        return attrs
+        read_only_fields = ('email', 'is_paid')
 
 
 class FlavorSerializer(serializers.HyperlinkedModelSerializer):
