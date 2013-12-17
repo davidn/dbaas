@@ -193,7 +193,7 @@ class Cluster(models.Model):
 
     def next_nid(self):
         """Return the next available node id."""
-        return max([node.nid for node in self.nodes.all()] + [0]) + 1
+        return max([node.nid for node in Node.history.filter(cluster_id=self.uuid)] + [0]) + 1
 
     @property
     def dns_name(self):
