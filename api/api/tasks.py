@@ -106,15 +106,15 @@ def cluster_launch_complete(cluster):
 def node_reinstantiate_setup(node):
     Node.objects.get(pk=node.pk).reinstantiate_async_setup()
 @task(base=NodeTask,max_retries=10)
-def node_reinstantiate(node):
+def node_reinstantiate_main(node):
     try:
-        Node.objects.get(pk=node.pk).reinstantiate_async()
+        Node.objects.get(pk=node.pk).reinstantiate_async_main()
     except () as e:
-        node_reinstantiate.retry(exc=e, countdown=15)
+        node_reinstantiate_main.retry(exc=e, countdown=15)
 @task(base=NodeTask,max_retries=180)    # This supports a max of 3 hrs!
 def node_reinstantiate_update(node):
     try:
-        Node.objects.get(pk=node.pk).reinstantiate_update()
+        Node.objects.get(pk=node.pk).reinstantiate_async_update()
     except BackendNotReady as e:
         node_reinstantiate_update.retry(exc=e, countdown=60)
 @task(base=NodeTask,max_retries=20)

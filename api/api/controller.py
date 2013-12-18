@@ -63,7 +63,7 @@ def shutdown_cluster(cluster):
 def reinstantiate_node(node, flavor):
     if node.reinstantiate_sync(flavor):
         task = tasks.node_reinstantiate_setup.si(node) \
-             | tasks.node_reinstantiate.si(node) \
+             | tasks.node_reinstantiate_main.si(node) \
              | tasks.node_reinstantiate_update.si(node) \
              | tasks.node_reinstantiate_complete.si(node) \
              | tasks.launch_email.si(node.cluster, 'resize_confirmation_email')

@@ -569,11 +569,11 @@ class Node(models.Model):
         self.assert_state(Node.PROVISIONING)
         self.region.connection.reinstantiate_setup(self)
 
-    def reinstantiate_async(self):
+    def reinstantiate_async_main(self):
         """This part of the operation can be retried"""
         self.region.connection.reinstantiate(self)
 
-    def reinstantiate_update(self):
+    def reinstantiate_async_update(self):
         self.assert_state(self.PROVISIONING)
         if self.reinstantiating():
             raise BackendNotReady()
