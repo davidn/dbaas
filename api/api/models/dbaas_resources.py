@@ -568,6 +568,7 @@ class Node(models.Model):
     def reinstantiate_async_setup(self):
         """Reinstantiate the node using its current flavor settings."""
         self.assert_state(Node.PROVISIONING)
+        self.zabbix_monitoring(False)
         self.region.connection.reinstantiate_setup(self)
 
     def reinstantiate_async_main(self):
@@ -582,6 +583,14 @@ class Node(models.Model):
         self.ip = self.get_ip()
         self.modify_dns(old_ip)
         self.save()
+
+    def reinstantiate_async_zabbix(self):
+        z = ZabbixAPI(settings.ZABBIX_ENDPOINT)
+        z.login(settings.ZABBIX_USER, settings.ZABBIX_PASSWORD)
+        hostids = z.host.get(filter={'host': self.dns_name})
+        interfaceids = z.hostinterface.get(filter={'hostid':hostids[0]['hostid']})
+        z.hostinterface.update({'interfaceid':interfaceids[0]['interfaceid'], 'ip': self.ip})
+        z.host.update({'hostid': hostids[0]['hostid'], 'status': 0})
 
     def reinstantiate_complete(self):
         if self.reinstantiating():

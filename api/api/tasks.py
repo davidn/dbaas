@@ -117,6 +117,9 @@ def node_reinstantiate_update(node):
         Node.objects.get(pk=node.pk).reinstantiate_async_update()
     except BackendNotReady as e:
         node_reinstantiate_update.retry(exc=e, countdown=60)
+@task(base=NodeTask)
+def node_reinstantiate_zabbix(node):
+    Node.objects.get(pk=node.pk).reinstantiate_async_zabbix()
 @task(base=NodeTask,max_retries=20)
 def node_reinstantiate_complete(node):
     try:
