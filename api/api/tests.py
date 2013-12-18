@@ -706,3 +706,9 @@ class ActionsTest(TestCase):
         self.actions.no_cluster_email_2days(self.user)
         self.assertEquals(len(self.mail.outbox), 1)
         self.assertSequenceEqual(self.mail.outbox[0].to, (self.user.email,))
+
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    def test_expiry_from_jcharles(self):
+        self.actions.near_expiry_email(self.user)
+        self.assertEquals(len(self.mail.outbox), 1)
+        self.assertEqual(self.mail.outbox[0].from_email, 'John Charles <jcharles@geniedb.com>')

@@ -91,7 +91,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         msg.send()
 
-    def email_user_template(self, template_base_name, dictionary):
+    def email_user_template(self, template_base_name, dictionary, *args, **kwargs):
         """
         Sends a multipart html email to this User.
         """
@@ -104,4 +104,4 @@ class User(AbstractBaseUser, PermissionsMixin):
         message_text = render_to_string(template_base_name + '.txt', dictionary)
         message_html = render_to_string(template_base_name + '.html', dictionary)
 
-        self.email_user(subject, message_text, settings.DEFAULT_FROM_EMAIL, message_html)
+        self.email_user(subject, message_text, message_html=message_html, *args, **kwargs)

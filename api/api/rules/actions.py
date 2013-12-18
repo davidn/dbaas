@@ -17,7 +17,7 @@ def near_expiry_email(user):
         'username': str(user),
         'is_paid': user.is_paid,
         'user': user,
-    })
+    }, from_email='John Charles <jcharles@geniedb.com>')
 
 
 def no_cluster_email(user, delta):
