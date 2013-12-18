@@ -409,6 +409,7 @@ class Node(models.Model):
         hostids = z.host.get(filter={'host': self.dns_name})
         assert (len(hostids) == 1)
         status = 0 if enable else 1
+        z.host.update({'hostid': hostids[0]['hostid'], 'status': status})
 
     @property
     def health_check_reference(self):
