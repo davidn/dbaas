@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.5 - 2013-12-20
+----------------
+
+* Security fix. BPB-182
+* Zabbix fixes. BPB-184
+* Disable ALTER TABLE permissions. CFTWO-233
+
 2.4 - 2013-12-15
 ------------------
 
