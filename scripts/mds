@@ -20,7 +20,7 @@ RAID_DEV=/dev/md/myraid
 
 [ -e /etc/sysconfig/mds ] && . /etc/sysconfig/mds
 
-dev_from_eph() {
+dev_from_xvd() {
   printf "/dev/xvd"
   curl -s http://169.254.169.254/latest/meta-data/block-device-mapping/$1 | sed 's/sd//; s/[w-z]/w\0/' | tr a-z e-za-d 
 }
@@ -72,14 +72,14 @@ start() {
       echo "already mounted."
       return 0
     fi
-    ephemeral_list=$(curl -s http://169.254.169.254/latest/meta-data/block-device-mapping/ | grep ephemeral)
-    disc_count=$(echo $ephemeral_list | wc -l)
-    if [ $disc_count -eq 0 ] ; then
-      echo "no ephemeral disks."
+    disk_list=$(curl -s http://169.254.169.254/latest/meta-data/block-device-mapping/ | grep -v ami | grep -v root)
+    disk_count=$(echo $disk_list | wc -l)
+    if [ $disk_count -eq 0 ] ; then
+      echo "no disks."
       return 0
     fi
 
-    disk=$(disk_from_ephs $ephemeral_list)
+    disk=$(disk_from_xvds $disk_list)
     copy_data $disk
     write_fstab $disk
     mount $disk
