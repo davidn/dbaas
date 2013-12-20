@@ -16,7 +16,8 @@
 # Source function library.
 . /etc/rc.d/init.d/functions
 
-RAID_DEV=/dev/md/myraid
+VOLGROUP=mysql
+VOLUME=main
 
 [ -e /etc/sysconfig/mds ] && . /etc/sysconfig/mds
 
@@ -37,24 +38,21 @@ copy_data() {
   umount /mnt
 }
 
-write_mdadm() {
-  mdadm --detail --scan > /etc/mdadm.conf
-}
-
-disk_from_ephs() {
-  if [ $# -eq 1 ] ; then
-    disk=$(dev_from_eph $1)
-  else
-    disks=""
-    for i in "$@" ; do
-      disks="$disks $(dev_from_eph $i)"
-    done
-    mdadm --create $RAID_DEV --level=0 --raid-devices=$# --force --run $disks >&2
-    write_mdadm >&2
-    disk=$RAID_DEV
-  fi
-  mkfs -t xfs -f $disk >&2
-  echo $disk
+disk_from_xvds() {
+  disks=""
+  for i in "$@" ; do
+    this_disk="$(dev_from_xvd $i)"
+    disks="$disks $this_disk"
+    if pvdisplay -s $this_disk > /dev/null ; then
+      pvremove $this_disk
+    fi
+    pvcreate $this_disk
+  done
+  vgcreate $VOLGROUP $disks >&2
+  # Stripe?
+  lvcreate --name $VOLUME --extents 70%VG $VOLGROUP
+  mkfs -t xfs $VOLGROUP
+  echo $VOLGROUP
 }
 
 write_fstab() {
