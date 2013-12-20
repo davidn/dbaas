@@ -53,7 +53,7 @@ disk_from_ephs() {
     write_mdadm >&2
     disk=$RAID_DEV
   fi
-  mkfs -t xfs $disk >&2
+  mkfs -t xfs -f $disk >&2
   echo $disk
 }
 
