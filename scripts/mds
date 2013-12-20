@@ -44,15 +44,15 @@ disk_from_xvds() {
     this_disk="$(dev_from_xvd $i)"
     disks="$disks $this_disk"
     if pvdisplay -s $this_disk > /dev/null ; then
-      pvremove $this_disk
+      pvremove $this_disk >&2
     fi
-    pvcreate $this_disk
+    pvcreate $this_disk >&2
   done
   vgcreate $VOLGROUP $disks >&2
   # Stripe?
-  lvcreate --name $VOLUME --extents 70%VG $VOLGROUP
-  mkfs -t xfs $VOLGROUP
-  echo $VOLGROUP
+  lvcreate --name $VOLUME --extents 70%VG $VOLGROUP >&2
+  mkfs -t xfs /dev/mapper/$VOLGROUP-$VOLUME >&2
+  echo /dev/mapper/$VOLGROUP-$VOLUME
 }
 
 write_fstab() {
