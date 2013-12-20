@@ -1,0 +1,157 @@
+#!/bin/sh
+#
+# mds - start instance storage
+#
+# chkconfig:   - 63 37
+# description: start instance storage
+
+### BEGIN INIT INFO
+# Provides: mds
+# Required-Start: $local_fs $network
+# Required-Stop: $local_fs
+# Short-Description: start instance storage
+# Description: start instance storage
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+RAID_DEV=/dev/md/myraid
+
+[ -e /etc/sysconfig/mds ] && . /etc/sysconfig/mds
+
+dev_from_eph() {
+  printf "/dev/xvd"
+  curl -s http://169.254.169.254/latest/meta-data/block-device-mapping/$1 | sed 's/sd//; s/[w-z]/w\0/' | tr a-z e-za-d 
+}
+
+already_mounted() {
+  [ $(stat -c '%d' /var/lib/mysql) -ne $(stat -c '%d' /var/lib) ]
+}
+
+copy_data() {
+  mount -t xfs $1 /mnt
+  if [ ! -e /mnt/mysql ] ; then
+    cp -a /var/lib/mysql/* /mnt
+  fi
+  umount /mnt
+}
+
+write_mdadm() {
+  mdadm --detail --scan > /etc/mdadm.conf
+}
+
+disk_from_ephs() {
+  if [ $# -eq 1 ] ; then
+    disk=$(dev_from_eph $1)
+  else
+    disks=""
+    for i in "$@" ; do
+      disks="$disks $(dev_from_eph $i)"
+    done
+    mdadm --create $RAID_DEV --level=0 --raid-devices=$# --force --run $disks >&2
+    write_mdadm >&2
+    disk=$RAID_DEV
+  fi
+  mkfs -t xfs $disk >&2
+  echo $disk
+}
+
+write_fstab() {
+  if ! grep /var/lib/mysql /etc/fstab >/dev/null 2>/dev/null ; then
+    echo $1 /var/lib/mysql xfs defaults 1 2 >> /etc/fstab
+  fi
+}
+
+
+
+start() {
+    set -e
+    echo -n "Mounting instance storage: "
+    if already_mounted ; then
+      echo "already mounted."
+      return 0
+    fi
+    ephemeral_list=$(curl -s http://169.254.169.254/latest/meta-data/block-device-mapping/ | grep ephemeral)
+    disc_count=$(echo $ephemeral_list | wc -l)
+    if [ $disc_count -eq 0 ] ; then
+      echo "no ephemeral disks."
+      return 0
+    fi
+
+    disk=$(disk_from_ephs $ephemeral_list)
+    copy_data $disk
+    write_fstab $disk
+    mount $disk
+    echo "done."
+    return 0
+}
+
+stop() {
+    echo -n $"Stopping $prog: "
+    # stop it here, often "killproc $prog"
+    retval=$?
+    echo
+    return $retval
+}
+
+restart() {
+    stop
+    start
+}
+
+reload() {
+    restart
+}
+
+force_reload() {
+    restart
+}
+
+rh_status() {
+    # run checks to determine if the service is running or use generic status
+    if already_mounted ; then
+      echo "Instance storage already mounted."
+      return 0
+    else
+      echo "Instance storage unavailable or not running."
+      return 3
+    fi
+}
+
+rh_status_q() {
+    rh_status >/dev/null 2>&1
+}
+
+
+case "$1" in
+    start)
+        rh_status_q && exit 0
+        $1
+        ;;
+    stop)
+        rh_status_q || exit 0
+        $1
+        ;;
+    restart)
+        $1
+        ;;
+    reload)
+        rh_status_q || exit 7
+        $1
+        ;;
+    force-reload)
+        force_reload
+        ;;
+    status)
+        rh_status
+        ;;
+    condrestart|try-restart)
+        rh_status_q || exit 0
+        restart
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|reload|force-reload}"
+        exit 2
+esac
+exit $?
