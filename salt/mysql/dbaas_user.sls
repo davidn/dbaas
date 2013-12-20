@@ -34,7 +34,7 @@ user_to_db_{{database}}:
     - connection_pass: ''
     - connection_port: {{ pillar['dbaas_api']['cluster']['port'] }}
     - connection_db: ''
-    - grant: all privileges
+    - grant: create, drop, lock tables, references, event, delete, index, insert, select, update, create temporary tables, trigger, create view, show view, alter routine, create routine, execute
     - database: {{ database }}.*
     - user: {{ pillar['dbaas_api']['cluster']['dbusername'] }}
     - host: '%'
