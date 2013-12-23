@@ -51,8 +51,8 @@ disk_from_xvds() {
   vgcreate $VOLGROUP $disks >&2
   # Stripe?
   lvcreate --name $VOLUME --extents 70%VG $VOLGROUP >&2
-  mkfs -t xfs /dev/mapper/$VOLGROUP-$VOLUME >&2
-  echo /dev/mapper/$VOLGROUP-$VOLUME
+  mkfs -t xfs /dev/$VOLGROUP/$VOLUME >&2
+  echo /dev/$VOLGROUP/$VOLUME
 }
 
 write_fstab() {
