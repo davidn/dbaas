@@ -8,3 +8,4 @@ base:
     - users.aladdin
     - zabbix.config
     - mysql.dbaas_user
+    - rsync
