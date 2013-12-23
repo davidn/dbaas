@@ -78,7 +78,7 @@ class EC2(Cloud):
                 iops=node.iops,
                 volume_type=self.null_or_io1(node.iops),
                 delete_on_termination=True,
-                size=node.size
+                size=node.storage
             )
         return bdm
 
