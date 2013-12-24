@@ -185,8 +185,8 @@ class ClusterViewSet(mixins.CreateModelMixin,
             data["cluster"] = self.object.get_absolute_url()
             n = 1
 
-        if not request.user.is_paid and self.object.nodes.count() + n > 2:
-            return Response({'non_field_errors': ['Free users cannot create more than two nodes']},
+        if not request.user.is_paid and self.object.nodes.count() + n > 3:
+            return Response({'non_field_errors': ['Free users cannot create more than three nodes']},
                             status=status.HTTP_403_FORBIDDEN)
 
         serializer = NodeSerializer(data=data, files=request.FILES, context={
