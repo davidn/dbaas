@@ -62,7 +62,7 @@ def node_dict(node):
 
 def cluster_dict(cluster):
     ret = dict((field, getattr(cluster, field)) for field in
-               ('uuid','port','dbname', 'dbusername', 'dbpassword','ca_cert', 'server_cert', 'server_key', 'subscriptions', 'backup_count', 'backup_schedule', 'iam_key','iam_secret'))
+               ('uuid','port','dbname', 'dbusername', 'dbpassword','ca_cert', 'server_cert', 'server_key', 'subscriptions', 'backup_count', 'backup_schedule', 'iam_key','iam_secret', 'status'))
     ret['nodes'] = [node_dict(node) for node in cluster.nodes.all()]
     ret['backup_parts'] = cluster.backup_schedule.split()
     ret['dbname_parts'] = cluster.dbname.split(',')
