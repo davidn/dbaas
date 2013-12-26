@@ -5,9 +5,9 @@ from south.modelsinspector import add_introspection_rules
 from salt.client import LocalClient
 from .exceptions import check_highstate_error
 
-def send_salt_cmd(ids, cmd, timeout=20):
+def send_salt_cmd(ids, cmd, **kwargs):
         client = LocalClient()
-        return client.cmd_async(ids, cmd, expr_form='list')
+        return client.cmd_async(ids, cmd, expr_form='list', **kwargs)
 
 def get_salt_result(**kwargs):
     return SaltReturn.objects.filter(**kwargs)
