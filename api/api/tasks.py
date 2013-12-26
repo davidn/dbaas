@@ -9,7 +9,7 @@ from boto.route53.exception import DNSServerError
 from boto.exception import BotoClientError, BotoServerError
 from celery.task import Task, task
 from .models import Node, Cluster, Rule, LBRRegionNodeSet
-from .exceptions import BackendNotReady
+from .exceptions import BackendNotReady, NoSourceError
 
 logger = getLogger(__name__)
 
@@ -126,6 +126,19 @@ def node_reinstantiate_complete(node):
         Node.objects.get(pk=node.pk).reinstantiate_complete()
     except BackendNotReady as e:
         node_reinstantiate_complete.retry(exc=e, countdown=15)
+
+@task(base=NodeTask)
+def node_add_copy(node):
+    try:
+        Node.objects.get(pk=node.pk).add_async_copy()
+    except NoSourceError as e:
+        logger.warning("%s: no source found for copy, skipping.", node)
+@task(base=NodeTask, max_retries=30)
+def node_add_copy_complete(node):
+    try:
+        Node.objects.get(pk=node.pk).add_async_copy_complete()
+    except BackendNotReady as e:
+        node_add_copy_complete.retry(exc=e, countdown=15)
 
 @task(base=ClusterTask)
 def cluster_refresh_salt(cluster, *args):

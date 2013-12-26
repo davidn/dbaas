@@ -115,8 +115,11 @@ def add_nodes(nodes):
          | group_or_null([tasks.node_launch_zabbix.si(node) for node in nodes]
                 +[tasks.region_launch.si(lbr_region) for lbr_region in set(node.lbr_region for node in nodes)]) \
          | tasks.null_task.si() \
+         | tasks.node_add_copy.si() \
+         | tasks.node_add_copy_complete.si() \
          | tasks.cluster_refresh_salt.si(cluster) \
-         | group_or_null([tasks.node_refresh_complete.si(node) for node in cluster.nodes.filter(status=Node.RUNNING)]) \
+         | group_or_null([tasks.node_refresh_complete.si(node) for node in cluster.nodes.filter(status=Node.RUNNING)] +
+                         nodes) \
          | tasks.null_task.si() \
          | group_or_null([tasks.node_launch_complete.si(node) for node in nodes]) \
          | tasks.launch_email.si(node.cluster, 'add_node_confirmation_email')
