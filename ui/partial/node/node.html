@@ -6,7 +6,8 @@
 		<div class="modal-body">
 			<div class="form-group">
 				<label style="width: 20%"> Node Region</label>
-				<select ui-select2 ng-model="node.region" ng-change="updateFlavor()" data-placeholder="Pick a region" ng-options="region as region.name group by region.provider.name for region in regions" style="width: 70%"></select>
+				<select ui-select2-collapsed ng-model="node.region" ng-change="updateFlavor()" data-placeholder="Pick a region" ng-options="region as region.name group by region.provider.name for region in regions" style="width: 70%"></select>
+				<select ui-select2-collapsed ng-model="node.region" ng-change="updateFlavor()" data-placeholder="Pick a region" ng-options="region as region.name group by region.provider.name for region in regions" style="width: 70%"></select>
 			</div>
 			<div class="form-group" ng-if="user.isPaid">
 				<label style="width: 20%"> Node Type</label>

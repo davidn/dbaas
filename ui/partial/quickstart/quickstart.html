@@ -11,14 +11,14 @@
 
 			<div class="form-group">
 				<label> Node 1 Region</label><br/>
-				<select ui-select2 ng-model="region1" data-placeholder="Pick a region" ng-options="region as region.name group by region.provider.name for region in regions" focus-me style="width: 80%"></select>
+                <select ui-select2-collapsed ng-model="region1" data-placeholder="Pick a region" ng-options="region as region.name group by region.provider.name for region in regions" focus-me style="width: 80%"></select>
 			</div>
 			<div class="form-group">
 				<label> Node 2 Region</label><br/>
-				<select ui-select2 ng-model="region2" data-placeholder="Pick a region" ng-options="region as region.name group by region.provider.name for region in regions" style="width: 80%"></select>
+				<select ui-select2-collapsed ng-model="region2" data-placeholder="Pick a region" ng-options="region as region.name group by region.provider.name for region in regions" style="width: 80%"></select>
 			</div>
 			<br/>
-			<p >
+			<p>
 				While the cluster is launching you can check the status from the dashboard, an email with connection information will be sent as soon as your cluster is available. </p>
 		</div>
 		<div class="modal-footer">

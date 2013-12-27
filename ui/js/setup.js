@@ -1,4 +1,5 @@
-angular.module('geniedb', ['ui.keypress', 'ui.bootstrap.tooltipX', 'ngRoute', 'ngSanitize', 'ngResource', 'ngStorage', 'ui.select2', 'ui.bootstrap', 'angulartics', 'angulartics.google.analytics', 'messageBox'])
+//angular.module('geniedb', ['ui.keypress', 'ui.bootstrap.tooltipX', 'ngRoute', 'ngSanitize', 'ngResource', 'ngStorage', 'ui.select2', 'ui.bootstrap', 'angulartics', 'angulartics.google.analytics', 'messageBox'])
+angular.module('geniedb', ['ui.keypress', 'ui.bootstrap.tooltipX', 'ngRoute', 'ngSanitize', 'ngResource', 'ngStorage', 'ui.select2', 'ui.select2collapsed', 'ui.bootstrap', 'messageBox'])
 
     .config(function ($routeProvider, $httpProvider, $compileProvider) {
 
