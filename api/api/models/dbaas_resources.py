@@ -154,7 +154,7 @@ class Cluster(models.Model):
         jid = send_salt_cmd([n.dns_name for n in qs], 'state.highstate')
         for n in qs:
             n.last_salt_jid = jid
-            n.save()
+            n.save(update_fields=['last_salt_jid'])
 
     def shutdown_sync(self):
         self.status = Cluster.SHUTTING_DOWN
