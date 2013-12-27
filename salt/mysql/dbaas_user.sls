@@ -1,7 +1,7 @@
 include:
   - mysql
 
-{% if pillar['dbaas_api']['node']['status'] not in [9,10] %}
+{% if ( pillar['dbaas_api']['node']['status'] not in [9,10] ) and ( ( pillar['dbaas_api']['node']['status'] not in [3, 14, 15] ) or ( pillar['dbaas_api']['cluster']['status'] != 6 ) ) %}
 db_user:
   mysql_user.present:
     - connection_host: 'localhost'
