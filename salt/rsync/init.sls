@@ -16,7 +16,7 @@
   file.managed:
     - show_diff: False
     - makedirs: True
-    - source: salt://rsunc/pre-rsync
+    - source: salt://rsync/pre-rsync
     - mode: 755
     - template: jinja
 
@@ -24,7 +24,7 @@
   file.managed:
     - show_diff: False
     - makedirs: True
-    - source: salt://rsunc/post-rsync
+    - source: salt://rsync/post-rsync
     - mode: 755
     - template: jinja
 
@@ -32,6 +32,8 @@ rsyncd:
   service:
     - running
     - enable: True
+    - watch:
+      - service: tinc
     - require:
       - file: /etc/init.d/rsyncd
       - file: /etc/rsyncd.conf
