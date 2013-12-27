@@ -87,7 +87,7 @@ class FlavorSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Flavor
         fields = ('url', 'code', 'name', 'ram', 'cpus', 'description', 'variable_storage_available',
-                  'variable_storage_default', 'fixed_storage')
+                  'variable_storage_default', 'fixed_storage', 'free_allowed')
 
 
 class RegionSerializer(serializers.HyperlinkedModelSerializer):

@@ -8,6 +8,13 @@ angular.module('geniedb').controller('NodeCtrl', function ($scope, $routeParams,
 
     $scope.updateFlavor = function () {
         $scope.node.flavor = $scope.node.region.provider.quickStartFlavor;
+        if ($scope.user.isPaid) {
+            $scope.flavors = $scope.node.region.provider.flavors;
+        }
+        else {
+            $scope.flavors = _.filter($scope.node.region.provider.flavors, 'free_allowed');
+        }
+
         $scope.updateUseVariableStorage();
     };
 
@@ -26,17 +33,14 @@ angular.module('geniedb').controller('NodeCtrl', function ($scope, $routeParams,
         $scope.isLoading = true;
         var node = $scope.node;
 
-        var flavor = node.region.provider.quickStartFlavor;
+        var flavor = node.flavor;
+        if (flavor.provider !== node.region.provider) {
+            growl.error({body: "You must choose a valid provider for " + node.region.name});
 
-        if (User.user.isPaid) {
-            flavor = node.flavor;
-            if (flavor.provider !== node.region.provider) {
-                growl.error({body: "You must choose a valid provider for " + node.region.name});
-
-                $scope.isLoading = false;
-                return;
-            }
+            $scope.isLoading = false;
+            return;
         }
+
 
         var nodes = [
             {region: node.region.code,
@@ -54,7 +58,7 @@ angular.module('geniedb').controller('NodeCtrl', function ($scope, $routeParams,
         $location.path("/list");
     };
 
-    $scope.toggle = function(){
+    $scope.toggle = function () {
         $scope.isCollapsed = !$scope.isCollapsed;
     };
 

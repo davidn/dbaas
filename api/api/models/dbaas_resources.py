@@ -11,12 +11,12 @@ from django.contrib.sites.models import Site
 from boto import connect_s3, connect_iam
 from pyzabbix import ZabbixAPI, ZabbixAPIException
 from simple_history.models import HistoricalRecords
-from salt_jobs.models import send_salt_cmd, get_highstate_result
+from salt_jobs.models import send_salt_cmd, get_highstate_result, get_salt_result
 from ..crypto import KeyPair, SslPair, CertificateAuthority
 from ..utils import retry, cron_validator
 from ..route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception, \
     catch_dns_exists, catch_dns_not_found, connect_route53
-from ..exceptions import BackendNotReady
+from ..exceptions import BackendNotReady, DataCopyError, NoSourceError
 from .uuid_field import UUIDField
 from .cloud_resources import Region, Flavor
 
@@ -211,6 +211,24 @@ class Cluster(models.Model):
         obj, _ = self.lbr_regions.get_or_create(cluster=self.pk, lbr_region=region.lbr_region)
         return obj
 
+    def copy_source(self, origin_node):
+        # Prefer same region
+        same_region = self.nodes.exclude(pk=origin_node.pk).filter(region=origin_node.region).filter(
+            status__in=[Node.RUNNING, Node.PAUSED, Node.PAUSING, Node.RESUMING])
+        if len(same_region) != 0:
+            return same_region[0]
+        # Next stuff generally nearby
+        same_lbr_region = self.nodes.exclude(pk=origin_node.pk).filter(lbr_region=origin_node.lbr_region).filter(
+            status__in=[Node.RUNNING, Node.PAUSED, Node.PAUSING, Node.RESUMING])
+        if len(same_lbr_region) != 0:
+            return same_lbr_region[0]
+        # Otherwise just pick anyone
+        others = self.nodes.exclude(pk=origin_node.pk).filter(
+            statusstatus__in=[Node.RUNNING, Node.PAUSED, Node.PAUSING, Node.RESUMING])
+        if len(others) != 0:
+            return others[0]
+        raise NoSourceError("No source available for node %s to copy from" % origin_node)
+
 
 class LBRRegionNodeSet(models.Model):
     """A set of Nodes in a cluster in the same DNS routing region
@@ -294,6 +312,7 @@ class Node(models.Model):
     CONFIGURING_DNS = 14
     CONFIGURING_MONITORING = 13
     CONFIGURING_NODE = 15
+    COPYING_DATA = 16
     ERROR = 1000
     STATUSES = (
         (INITIAL, 'not yet started'),
@@ -302,6 +321,7 @@ class Node(models.Model):
         (CONFIGURING_DNS, 'Configuring DNS'),
         (CONFIGURING_NODE, 'Configuring node'),
         (CONFIGURING_MONITORING, 'Configuring performance monitor'),
+        (COPYING_DATA, 'Copying data'),
         (RUNNING, 'running'),
         (PAUSED, 'paused'),
         (PAUSING, 'pausing'),
@@ -544,6 +564,29 @@ class Node(models.Model):
     def launch_complete(self):
         self.status = self.RUNNING
         self.save()
+
+    def add_async_copy(self):
+        """Only for add_node"""
+        self.status = self.COPYING_DATA
+        self.save()
+        self.last_salt_jid = send_salt_cmd(
+            [self.dns_name], 'cmd.retcode', arg=('rsync', '-r', '192.168.33.%d::snap/mnt/' %
+                                                                self.cluster.copy_source(self).nid, '/var/lib/mysql/'))
+        self.save()
+
+    def add_async_copy_complete(self):
+        if len(self.last_salt_jid) == 0:
+            # Skipped copy due to no source
+            return
+        try:
+            ret = get_salt_result(id=self.dns_name, jid=self.last_salt_jid)[0].s_return
+            retcode = int(ret)
+            if retcode != 0:
+                raise DataCopyError("Data copy failed with code %d" % retcode)
+        except IndexError:
+            raise BackendNotReady()
+        except ValueError as e:
+            raise DataCopyError("Data copy failed: %s" % ret)
 
     def refresh_salt(self):
         self.cluster.refresh_salt([self])

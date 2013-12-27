@@ -26,6 +26,8 @@ class Provider(models.Model):
         return self.name
 
     def clean(self):
+        if not self.quickstart.free_allowed:
+            raise ValidationError('Quickstart flavor must be usable by free users.')
         if self.quickstart.provider != self:
             raise ValidationError('Provider quickstart flavor must belong to this provider.')
 
@@ -79,6 +81,7 @@ class Flavor(models.Model):
     variable_storage_default = models.BooleanField(default=False)
     fixed_storage = models.PositiveIntegerField(null=True, default=None, blank=True) # null = not available
     fixed_storage_volumes = models.PositiveIntegerField(default=1) # For EC2
+    free_allowed = models.BooleanField("Free users allowed", default=False)
 
     class Meta:
         app_label = "api"
@@ -98,6 +101,3 @@ class Flavor(models.Model):
     def __unicode__(self):
         return self.name
 
-    @property
-    def free_allowed(self):
-        return self.provider.quickstart == self

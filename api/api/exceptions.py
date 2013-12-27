@@ -12,3 +12,11 @@ class DiskNotAvailableException(Exception):
 
 class LaunchException(Exception):
     pass
+
+
+class DataCopyError(LaunchException):
+    pass
+
+
+class NoSourceError(DataCopyError):
+    pass

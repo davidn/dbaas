@@ -1,0 +1,6 @@
+#!/bin/sh
+
+mkdir -p /mnt/mnt
+lvcreate --extents 30%VG --name snap --snapshot mysql/main
+mount -t xfs -o nouuid /dev/mysql/snap /mnt/mnt
+

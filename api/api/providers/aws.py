@@ -67,13 +67,19 @@ class EC2(Cloud):
         bdm['/dev/sda1'] = boto.ec2.blockdevicemapping.BlockDeviceType(
             iops=node.iops,
             volume_type=self.null_or_io1(node.iops),
-            delete_on_termination=True,
-            size=node.storage  # null -> default
+            delete_on_termination=True
         )
         if node.storage is None:
             for i in xrange(node.flavor.fixed_storage_volumes):
                 bdm['/dev/sd%s' % chr(ord('b')+i)] = boto.ec2.blockdevicemapping.BlockDeviceType(
                     ephemeral_name='ephemeral%d' % i)
+        else:
+            bdm['/dev/sdf'] = boto.ec2.blockdevicemapping.BlockDeviceType(
+                iops=node.iops,
+                volume_type=self.null_or_io1(node.iops),
+                delete_on_termination=True,
+                size=node.storage
+            )
         return bdm
 
     def _run_instances(self, node, sgs):

@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# Startup script for rsyncd daemon
+#
+# chkconfig: 35 90 10
+# description: Server data for sync to other server
+# processname rsync
+
+# Source function library
+. /etc/rc.d/init.d/functions
+
+prog=rsync
+conf=/etc/rsyncd.conf
+
+case "$1" in
+    start)
+        echo -n "Starting rsync daemon: "
+        daemon /usr/bin/$prog --daemon --config=$conf
+        RETVAL=$?
+        echo
+        [ $RETVAL = 0 ] && touch /var/lock/subsys/$prog
+        ;;
+    stop)
+        echo -n "Shutting down $prog: "
+        killproc -d 60 $prog
+        RETVAL=$?
+        echo
+        [ $RETVAL = 0 ] && rm -f /var/lock/subsys/$prog
+        ;;
+    status)
+        status $prog
+        ;;
+    restart)
+        $0 stop
+        $0 start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+esac
+
+exit 0

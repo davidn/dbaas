@@ -3,12 +3,14 @@ mysql-server:
     - installed
 mysqld:
   service:
-{% if pillar['dbaas_api']['node']['status'] in [9,10] %}
+# paused/pausing => shutdown mysql. The second condition allows leaving mysqld stopped during boot for nodes added after the cluster has started.
+{% if ( pillar['dbaas_api']['node']['status'] in [9,10] ) or ( ( pillar['dbaas_api']['node']['status'] in [3, 14, 15] ) and ( pillar['dbaas_api']['cluster']['status'] == 6 ) ) %}
     - dead
+    - enable: False
 {% else %}
     - running
-{% endif %}
     - enable: True
+{% endif %}
     - require:
       - pkg: mysql-server
 
