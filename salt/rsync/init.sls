@@ -32,6 +32,8 @@ rsyncd:
   service:
     - running
     - enable: True
+    - watch:
+      - service: tinc
     - require:
       - file: /etc/init.d/rsyncd
       - file: /etc/rsyncd.conf
