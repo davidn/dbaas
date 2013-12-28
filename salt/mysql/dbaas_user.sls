@@ -40,5 +40,7 @@ user_to_db_{{database}}:
     - host: '%'
     - require:
       - service: mysqld
+      - mysql_database: database_{{database}}
+      - mysql_user: db_user
 {% endfor %}
 {% endif %}
