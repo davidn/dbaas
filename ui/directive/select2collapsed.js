@@ -82,15 +82,15 @@ angular.module('ui.select2collapsed', []).value('uiSelect2CollapsedConfig', {}).
 
         if (controller) {
           // Watch the model for programmatic changes
-           scope.$watch(tAttrs.ngModel, function(current, old) {
-            if (!current) {
-              return;
-            }
-            if (current === old) {
-              return;
-            }
-            controller.$render();
-          }, true);
+//           scope.$watch(tAttrs.ngModel, function(current, old) {
+//            if (!current) {
+//              return;
+//            }
+//            if (current === old) {
+//              return;
+//            }
+//            controller.$render();
+//          }, true);
           controller.$render = function () {
             if (isSelect) {
               elm.select2('val', controller.$viewValue);
