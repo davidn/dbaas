@@ -1,22 +1,40 @@
-Hi {{username}},
+Hi{% if user.first_name %} {{user.first_name}}{% endif %},
 
-We hear rave reviews from our customers about GenieDB's Multi-Cloud, Multi-Region, Multi-Master MySQL DBaaS all the time.
+Tired of database latency and slow performance?   Well, why not spin up your
+database cluster with GenieDB?  We’re here to help you get started anytime with
+five easy steps.
 
-"Your product is incredible. Your solution is extraordinary, I was most impressed." - Patrick, VoodooDesignz
-"The GenieDB product hits a BIG, BIG problem area. You guys seem to be the only one in this space.  And it's a BIG need." - Paul, ScreenPopper
-"You have a great product! I've been looking for this for a while!" - Lyle, BetterVoicemail
+1. Sign Up for GenieDB
+2. Click the verifcation link
+3. Received confirmation email
+4. Spin Up a Database Node
+5. Build great apps
 
-You could also experience this Nirvana by spinning up a cluster with a few clicks!
+To access you accout go to https://dbaas.geniedb.com/ .
 
-If you have questions, feel free to reach us at:
+GenieDB is a MySQL Database-as-a-Service that helps you accelerate your app
+development by easily spinning up and managing your MySQL databases. Benefits
+include:
+
+* Geo-Distribution - Multi-Region, Multi-Cloud, Multi-Master MySQL Databases as
+  a Service. 
+* High Availability - Distribute apps without fear of failure
+* Scalability - Add, resize, change location of Nodes easily and quickly
+* Fast Application Response Time - Locate database nodes close to your app
+  servers for better, faster performance  - all anywhere in the world.
+
+Don't hesitate to contact us anytime if you have any questions or need help
+getting started.
 
     support@geniedb.com
+
 
 ---------
 
 www.geniedb.com
 
 ---------
+
 
 This is a one-time email. To get the latest on GenieDB news you should follow us on Twitter at: http://twitter.com/geniedb
 

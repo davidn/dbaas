@@ -1,14 +1,32 @@
-Hi {{username}},
+Hi{% if user.first_name %} {{user.first_name}}{% endif %},
 
-Thank you for signing up for GenieDB's Multi-Region, Multi-Cloud, Multi-Master MySQL Databases as a Service. We offer a 7-day free trial and you can start at your convenience. Some of the benefits of our service are:
- - High Availability. Database is no longer a Single Point of Failure.
- - Scalability. Add Nodes as well as resize Nodes.
- - Improved Application Response time for your distributed users.
+We’ve noticed that you haven’t started your database cluster.  Are you having
+any problems getting started?   Please let us know how we can help.  Getting
+started with GenieDB is easy.
 
+1. Sign Up for GenieDB
+2. Click the verifcation link
+3. Received confirmation email
+4. Spin Up a Database Node
+5. Build great apps
 
-If you have questions, feel free to reach us at:
+To access you accout go to https://dbaas.geniedb.com/ .
+
+With GenieDB’s MySQL Database-as-a-Service, you’ll accelerate app development
+by easily spinning up and managing MySQL databases, giving you:
+
+* Geo-Distribution - Multi-Region, Multi-Cloud, Multi-Master MySQL Databases as
+  a Service. 
+* High Availability - Distribute apps without fear of failure
+* Scalability - Add, resize, change location of Nodes easily and quickly
+* Fast Application Response Time - Locate database nodes close to your app
+  servers for better, faster performance  - all anywhere in the world.
+
+Don't hesitate to contact us anytime if you have any questions or need help
+getting started.
 
     support@geniedb.com
+
 
 ---------
 
@@ -16,4 +34,6 @@ www.geniedb.com
 
 ---------
 
+
 This is a one-time email. To get the latest on GenieDB news you should follow us on Twitter at: http://twitter.com/geniedb
+

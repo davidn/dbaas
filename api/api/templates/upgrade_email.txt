@@ -1,15 +1,26 @@
 Hi,
 
-Welcome to GenieDB DBaaS, and thanks for upgrading.
+Thanks upgrading to a paid account with GenieDB!  We appreciate you choosing
+GenieDB as your MySQL Database-as-a-Service provider.  
 
-Please do not hesitate to contact us with any questions or concerns.  We are happy to help guide your setup or answer any questions you may have regarding distributed system architecture.
+With GenieDB, you get great benefits that help you accelerate your app
+development. 
 
+* Provisioning - Within minutes, easily deploy across regions, cloud providers
+  and datacenters.
+* Auto-Recovery - Automatically resynchronizes the database nodes after any
+  interruption, regardless of network or server failure. 
+* Backup/Restore - Automatically set up and monitored by GenieDB
+* Management - Manage and track all vital metrics including CPU utilization,
+  node health and more.
+* Security - Run distinct nodes using industry standard security protocols.  No
+  worries of multi-tenancy.
+
+Don't hesitate to contact us anytime if you have any questions at
+support@geniedb.com.
 
 ---------
 
 www.geniedb.com
 
 ---------
-
-This is a one-time email. To get the latest on GenieDB news you should follow us on Twitter at: http://twitter.com/geniedb
-
