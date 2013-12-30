@@ -6,11 +6,11 @@
 		<div class="modal-body">
 			<div class="form-group">
 				<label style="width: 20%"> Node Region</label>
-				<select ui-select2-collapsed ng-model="node.region" ng-change="updateFlavor()" data-placeholder="Pick a region" ng-options="region as region.name group by region.provider.name for region in regions" style="width: 70%"></select>
+				<select ui-select2-collapsed ng-model="node.region" ng-change="updateFlavor()" data-placeholder="Pick a region" ng-options="region as region.name group by region.provider.name for region in regions" style="width: 70%"><option value=""></option></select>
 			</div>
 			<div class="form-group" ng-if="user.isPaid">
 				<label style="width: 20%"> Node Type</label>
-				<select ui-select2-collapsed ng-model="node.flavor" ng-change="updateUseVariableStorage()" ng-disabled="!node.region" data-placeholder="Pick a type" ng-options="flavor as flavor.name for flavor in flavors" style="width: 70%"></select>
+				<select ui-select2-collapsed ng-model="node.flavor" ng-change="updateUseVariableStorage()" ng-disabled="!node.region" data-placeholder="Pick a type" ng-options="flavor as flavor.name for flavor in flavors" style="width: 70%"><option value=""></option></select>
 			</div>
             <div class="form-group">
                 <label style="width: 20%"> Storage</label>
@@ -48,8 +48,8 @@
 			</div>
 		</div>
 		<div class="modal-footer">
-			<button class="btn btn-success" btn-loading="isLoading" data-loading-text="Adding..." ng-click="save()">SAVE</button>
-			<button class="btn btn-primary pull-right" ng-click="cancel()">CANCEL</button>
+			<button ng-disabled="!node.region || node.flavor.length === 0" class="btn btn-success" btn-loading="isLoading" data-loading-text="Adding..." ng-click="save()">SAVE</button>
+			<button type="button" class="btn btn-primary pull-right" ng-click="cancel()">CANCEL</button>
 		</div>
 	</div>
 </div>
