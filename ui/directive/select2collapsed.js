@@ -13,6 +13,9 @@ angular.module('ui.select2collapsed', []).value('uiSelect2CollapsedConfig', {}).
   return {
     require: 'ngModel',
     priority: 1,
+    scope: {
+      'ngModel': '='
+    },
     compile: function (tElm, tAttrs) {
       var watch,
         repeatOption = tElm.find( 'optgroup[ng-repeat], optgroup[data-ng-repeat], option[ng-repeat], option[data-ng-repeat]' ),
@@ -82,15 +85,15 @@ angular.module('ui.select2collapsed', []).value('uiSelect2CollapsedConfig', {}).
 
         if (controller) {
           // Watch the model for programmatic changes
-//           scope.$watch(tAttrs.ngModel, function(current, old) {
-//            if (!current) {
-//              return;
-//            }
-//            if (current === old) {
-//              return;
-//            }
-//            controller.$render();
-//          }, true);
+           scope.$watch(tAttrs.ngModel, function(current, old) {
+            if (!current) {
+              return;
+            }
+            if (current === old) {
+              return;
+            }
+            controller.$render();
+          }, true);
           controller.$render = function () {
             if (isSelect) {
               elm.select2('val', controller.$viewValue);
@@ -159,15 +162,20 @@ angular.module('ui.select2collapsed', []).value('uiSelect2CollapsedConfig', {}).
               });
             });
 
-            if (opts.initSelection) {
-              var initSelection = opts.initSelection;
-              opts.initSelection = function (element, callback) {
-                initSelection(element, function (value) {
-                  controller.$setViewValue(convertToAngularModel(value));
-                  callback(value);
-                });
-              };
-            }
+              if (opts.initSelection) {
+                  var initSelection = opts.initSelection;
+                  opts.initSelection = function (element, callback) {
+                      initSelection(element, function (value) {
+                          var isPristine = controller.$pristine;
+                          controller.$setViewValue(convertToAngularModel(value));
+                          callback(value);
+                          if (isPristine) {
+                              controller.$setPristine();
+                          }
+                          elm.prev().toggleClass('ng-pristine', controller.$pristine);
+                      });
+                  };
+              }
           }
         }
 
