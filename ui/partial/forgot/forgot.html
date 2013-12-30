@@ -1,17 +1,19 @@
 <div class="modal-dialog small-modal" ng-controller="ForgotCtrl">
 	<div class="modal-content">
-		<form id="register-form">
+		<form name="registerForm" id="register-form">
 			<div class="modal-header">Forgot Password</div>
 			<div class="modal-body" ng-if="!submitted">
 				<p>
 					Enter your email </p>
 
 				<p>
-					<input class="form-control" type="text" ng-model="form.email" placeholder="Email Address" required>
+					<input class="form-control" name="email" type="email" ng-model="form.email" placeholder="Email Address" required ng-focus>
+                    <div class="alert alert-danger alert-small" ng-show="registerForm.email.$error.required && !form.registerForm.$focused">Email cannot be empty!<span style="margin-top: -7px;" class="glyphicon glyphicon-exclamation-sign pull-right"></span></div>
+                    <div class="alert alert-danger alert-small" ng-show="registerForm.email.$dirty && registerForm.email.$invalid && !registerForm.email.$focused && !registerForm.email.$error.required">This is not a valid email.<span style="margin-top: -7px;" class="glyphicon glyphicon-exclamation-sign pull-right"></span></div>
 				</p>
 
 				<div>
-					<button type="submit" class="btn btn-success" btn-loading="isLoading" data-loading-text="Sending Reminder..." ng-click="reminder()">SUBMIT</button>
+					<button ng-disabled="registerForm.email.$invalid || registerForm.email.$error.required" type="submit" class="btn btn-success" btn-loading="isLoading" data-loading-text="Sending Reminder..." ng-click="reminder()">SUBMIT</button>
 				</div>
 			</div>
 			<div class="modal-body" ng-if="submitted">

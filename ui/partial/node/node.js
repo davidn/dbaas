@@ -30,6 +30,14 @@ angular.module('geniedb').controller('NodeCtrl', function ($scope, $routeParams,
     };
 
     $scope.save = function () {
+        if (!$scope.node.region) {
+            growl.warning({body: 'Please select a node region to add to the cluster.'});
+            return;
+        }
+        if (!$scope.node.flavor) {
+            growl.warning({body: 'Please select a node type to add to the cluster.'});
+            return;
+        }
         $scope.isLoading = true;
         var node = $scope.node;
 

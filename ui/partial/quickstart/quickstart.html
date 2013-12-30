@@ -22,7 +22,7 @@
 				While the cluster is launching you can check the status from the dashboard, an email with connection information will be sent as soon as your cluster is available. </p>
 		</div>
 		<div class="modal-footer">
-			<button class="btn btn-success" btn-loading="isLoading" data-loading-text="Launching..." ng-click="launch()">LAUNCH</button>
+			<button ng-disabled="!region1 || !region2" class="btn btn-success" btn-loading="isLoading" data-loading-text="Launching..." ng-click="launch()">LAUNCH</button>
 			<button class="btn btn-primary pull-right" ng-click="cancel()">CANCEL</button>
 		</div>
 	</div>

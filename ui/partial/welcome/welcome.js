@@ -30,8 +30,9 @@ angular.module('geniedb').controller('WelcomeCtrl', function ($scope, $location,
         }, function (err) {
             $scope.isLoading = false;
             if (err && err.data && err.data.non_field_errors && err.data.non_field_errors[0]) {
-                growl.error({body: err.data.non_field_errors[0]});
+                $scope.form.errors = err.data.non_field_errors;
             } else {
+                //Check what these errors look like and come up with a way to handle them
                 growl.error({body: 'Login Failed'});
             }
         });
