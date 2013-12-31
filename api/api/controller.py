@@ -119,8 +119,8 @@ def add_nodes(nodes):
          | tasks.cluster_refresh_salt.si(cluster) \
          | group_or_null([tasks.node_refresh_complete.si(node) for node in cluster.nodes.filter(status=Node.RUNNING)]) \
          | tasks.null_task.si() \
-         | tasks.node_add_copy.si() \
-         | tasks.node_add_copy_complete.si() \
+         | tasks.node_add_copy.si(node) \
+         | tasks.node_add_copy_complete.si(node) \
          | tasks.cluster_refresh_salt.si(cluster, nodes) \
          | group_or_null([tasks.node_refresh_complete.si(node) for node in nodes]) \
          | tasks.null_task.si() \
