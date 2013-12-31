@@ -24,7 +24,7 @@
                 The storage requirements are fixed when you are not using variable storage (see advanced options).
             </div>
             <p ng-if="!user.isPaid" class="lead">Free accounts cannot choose type or storage. Upgrade to a paid account to enable the full power of GenieDB.</p>
-			<div class="advanced-panel" ng-if="node.region.provider.code === 'az' || user.isPaid && node.flavor.variable_storage_available && (node.flavor.fixed_storage != null)">
+			<div class="advanced-panel" ng-if="node.flavor && node.region && (node.region.provider.code === 'az' || user.isPaid && node.flavor.variable_storage_available && (node.flavor.fixed_storage != null))">
 				<a class="btn-link" style="text-decoration: none;"  ng-click="toggle()">Advanced</a>
 			</div>
 			<div collapse="isCollapsed">
@@ -48,7 +48,7 @@
 			</div>
 		</div>
 		<div class="modal-footer">
-			<button ng-disabled="!node.region || node.flavor.length === 0" class="btn btn-success" btn-loading="isLoading" data-loading-text="Adding..." ng-click="save()">SAVE</button>
+			<button ng-disabled="!node.region || !node.flavor" class="btn btn-success" btn-loading="isLoading" data-loading-text="Adding..." ng-click="save()">SAVE</button>
 			<button type="button" class="btn btn-primary pull-right" ng-click="cancel()">CANCEL</button>
 		</div>
 	</div>

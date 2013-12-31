@@ -6,14 +6,15 @@ angular.module('geniedb').controller('NodeCtrl', function ($scope, $routeParams,
     $scope.user = User.user;
     $scope.isCollapsed = true;
     $scope.updateFlavor = function () {
-        $scope.node.flavor = $scope.node.region.provider.quickStartFlavor;
+//        $scope.node.flavor = $scope.node.region.provider.quickStartFlavor;
         if ($scope.user.isPaid) {
             $scope.flavors = $scope.node.region.provider.flavors;
         } else {
             $scope.flavors = _.filter($scope.node.region.provider.flavors, 'free_allowed');
         }
-
-        $scope.updateUseVariableStorage();
+        if($scope.node.flavor) {
+            $scope.updateUseVariableStorage();
+        }
     };
 
     $scope.updateUseVariableStorage = function () {
