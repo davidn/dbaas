@@ -116,8 +116,10 @@ def add_nodes(nodes):
          | group_or_null([tasks.node_launch_zabbix.si(node) for node in nodes]
                 +[tasks.region_launch.si(lbr_region) for lbr_region in set(node.lbr_region for node in nodes)]) \
          | tasks.null_task.si() \
-         | tasks.cluster_refresh_salt.si(cluster) \
-         | group_or_null([tasks.node_refresh_complete.si(node) for node in cluster.nodes.filter(status=Node.RUNNING)]) \
+         | tasks.cluster_refresh_salt.si(cluster, cluster.nodes.filter(
+             status__in=[Node.RUNNING, Node.PAUSING, Node.PAUSED, Node.RESUMING])) \
+         | group_or_null([tasks.node_refresh_complete.si(node) for node in cluster.nodes.filter(
+             status__in=[Node.RUNNING, Node.PAUSING, Node.PAUSED, Node.RESUMING])]) \
          | tasks.null_task.si() \
          | group_or_null([tasks.node_add_copy.si(node) for node in nodes]) \
          | tasks.null_task.si() \
