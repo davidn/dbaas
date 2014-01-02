@@ -91,6 +91,7 @@ def shutdown_node(node):
     task = tasks.node_shutdown_zabbix.si(node) \
          | tasks.node_shutdown_dns.si(node) \
          | tasks.node_shutdown_instance.si(node) \
+         | tasks.cluster_refresh_salt.si(node.cluster) \
          | tasks.node_shutdown_complete.si(node)
     return task.delay()
 
