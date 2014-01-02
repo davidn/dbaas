@@ -570,7 +570,7 @@ class Node(models.Model):
         self.status = self.COPYING_DATA
         self.save()
         self.last_salt_jid = send_salt_cmd(
-            [self.dns_name], 'cmd.retcode', arg=('rsync -r 192.168.33.%d::snap/mnt/ /var/lib/mysql/' %
+            [self.dns_name], 'cmd.retcode', arg=('rsync -az 192.168.33.%d::snap/mnt/ /var/lib/mysql/' %
                                                 self.cluster.copy_source(self).nid,))
         self.save()
 
