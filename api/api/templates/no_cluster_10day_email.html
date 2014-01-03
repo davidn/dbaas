@@ -80,26 +80,58 @@
 				<img src="http://m.geniedb.com/geniedb-logo.white.bkg.png" width="217" height="39" alt="GenieDB Logo" title="GenieDB" style="display:block" border="0"/>
 				<br/>
 
-				<p>Hi {{ username }}, </p><br/>
+				<p>Hi{% if user.first_name %} {{user.first_name}}{% endif %},</p><br/>
 
-				<p>We hear rave reviews from our customers about GenieDB's Multi-Cloud, Multi-Region, Multi-Master MySQL DBaaS all the time.</p>
-				<p>"Your product is incredible. Your solution is extraordinary, I was most impressed." - Patrick, VoodooDesignz</p>
-				<p>"The GenieDB product hits a BIG, BIG problem area. You guys seem to be the only one in this space.  And it's a BIG need." - Paul, ScreenPopper</p>
-				<p>"You have a great product! I've been looking for this for a while!" - Lyle, BetterVoicemail</p>
-				<p>You could also experience this Nirvana by spinning up a cluster with a few clicks!</p>
+				<p>Tired of database latency and slow performance?   Well, why not spin up your database cluster with GenieDB?  We’re here to help you get started anytime with five easy steps.</p>
+				<table cellpadding="2" cellspacing="2" border="0">
+                                        <tr>
+                                                <td valign="top">1.</td>
+                                                <td>Sign Up for GenieDB</td>
+                                        </tr>
+                                        <tr>
+                                                <td valign="top">2.</td>
+                                                <td>Click the verification link</td>
+                                        </tr>
+                                        <tr>
+                                                <td valign="top">3.</td>
+                                                <td>Received confirmation email</td>
+                                        </tr>
+                                        <tr>
+                                                <td valign="top">4.</td>
+                                                <td>Spin Up a Database Node</td>
+                                        </tr>
+                                        <tr>
+                                                <td valign="top">5.</td>
+                                                <td>Build great apps</td>
+                                        </tr>
+                                </table>
+
+				<p>To access your account, go to <a href="https://dbaas.geniedb.com/" target="_blank" title="GenieDB DBaaS">GenieDB DBaaS</a>.</p>
+
+				<p>GenieDB is a MySQL Database-as-a-Service that helps you accelerate your app development by easily spinning up and managing your MySQL databases. Benefits include:</p>
+
+				<ul>
+                                        <li><strong>Geo-Distribution</strong> - Multi-Region, Multi-Cloud, Multi-Master MySQL Databases as a Service.</li>
+                                        <li><strong>High Availability</strong> - Distribute apps without fear of failure</li>
+                                        <li><strong>Scalability</strong> - Add, resize, change location of Nodes easily and quickly</li>
+                                        <li><strong>Fast Application Response Time</strong> - Locate database nodes close to your app servers for better, faster performance  - all anywhere in the world.</li>
+				</ul>
 				<br/><br/>
 
-				<p>Visit us at: <br/>
-					<a href="http://www.geniedb.com" target="_blank" title="GenieDB Homepage" style="color: #7789c1; text-decoration: none; font-weight: bold">www.geniedb.com</a>
-				</p><br/>
-
 				<p>Don't hesitate to
-					<a href="mailto:support@geniedb.com" target="_blank" title="GenieDB Support" style="color: #7789c1; text-decoration: none; font-weight: bold">contact us</a> with any questions or comments.
+					<a href="mailto:support@geniedb.com" target="_blank" title="GenieDB Support" style="color: #7789c1; text-decoration: none; font-weight: bold">contact us</a> anytime if you have any questions or need help getting started.
 				</p><br/> <br/>
+                                <p style="width:60px; border-top: dashed 1px"></p> <br/>
+
+                                <p>
+                                        <a href="http://www.geniedb.com" target="_blank" title="GenieDB Homepage" style="color: #7789c1; text-decoration: none; font-weight: bold">www.geniedb.com</a>
+                                </p><br/>
+                                <p style="width:60px; border-top: dashed 1px"></p>    <br/>
 			</td>
 			<td width="40"></td>
 		</tr>
 	</table>
+
 	<br/>
 	<table cellpadding="0" cellspacing="0" border="0" width="660" align="center">
 		<tr>

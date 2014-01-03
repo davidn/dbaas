@@ -1,6 +1,12 @@
 #!/bin/sh
-/usr/bin/mysqldump --all-databases > /var/backup/mysqlbackup.sql
-/usr/sbin/logrotate -fs /etc/mysqlbackup.state /etc/mysqlbackup.logrotate
+UP=$(/usr/bin/mysql -e 'status'  | wc -l);
+if [ "$UP" -ge 1 ];
+then
+        /usr/bin/mysqldump --all-databases > /var/backup/mysqlbackup.sql
+        /usr/sbin/logrotate -fs /etc/mysqlbackup.state /etc/mysqlbackup.logrotate
+else
+        exit
+fi
 /usr/bin/s3cmd sync --delete-removed /var/backup/ s3://{{pillar['dbaas_api']['settings']['BUCKET_NAME']}}/{{pillar['dbaas_api']['cluster']['uuid']}}/{{pillar['dbaas_api']['node']['nid']}}/
 
 

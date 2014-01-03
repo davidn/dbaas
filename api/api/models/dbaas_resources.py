@@ -224,7 +224,7 @@ class Cluster(models.Model):
             return same_lbr_region[0]
         # Otherwise just pick anyone
         others = self.nodes.exclude(pk=origin_node.pk).filter(
-            statusstatus__in=[Node.RUNNING, Node.PAUSED, Node.PAUSING, Node.RESUMING])
+            status__in=[Node.RUNNING, Node.PAUSED, Node.PAUSING, Node.RESUMING])
         if len(others) != 0:
             return others[0]
         raise NoSourceError("No source available for node %s to copy from" % origin_node)
@@ -570,8 +570,8 @@ class Node(models.Model):
         self.status = self.COPYING_DATA
         self.save()
         self.last_salt_jid = send_salt_cmd(
-            [self.dns_name], 'cmd.retcode', arg=('rsync', '-r', '192.168.33.%d::snap/mnt/' %
-                                                                self.cluster.copy_source(self).nid, '/var/lib/mysql/'))
+            [self.dns_name], 'cmd.retcode', arg=('rsync -az 192.168.33.%d::snap/mnt/ /var/lib/mysql/' %
+                                                self.cluster.copy_source(self).nid,))
         self.save()
 
     def add_async_copy_complete(self):

@@ -1,10 +1,9 @@
-Welcome to GenieDB DBaaS platform.  We're excited that you've signed up.
+Hi,
 
-Whether you did for 100% availability, Multi-Datacenter, Master-Master Replication or our native MySQL support we're glad you are here.
+Thanks for signing up for GenieDB!  GenieDB is a MySQL Database-as-a-Service that helps you accelerate your app development by easily spinning up and managing your MySQL databases.
 
-Please click here to validate your account
-
- {{url}}/#activate/{{activation_key}}
+Please click here to validate your account:
+   {{url}}/#activate/{{activation_key}}
 
 
 Don't hesitate to contact us with any questions or comments.
@@ -13,10 +12,12 @@ Don't hesitate to contact us with any questions or comments.
 
 ---------
 
-Visit us at:
-
-www.geniedb.com
+Visit us at: www.geniedb.com
 
 ---------
+
+Cheers,
+
+The GenieDB Team
 
 This is a one-time email. To get the latest on GenieDB news you should follow us on Twitter at: http://twitter.com/geniedb

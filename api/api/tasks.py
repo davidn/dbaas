@@ -185,6 +185,7 @@ def launch_email(cluster, email_message='confirmation_email'):
     ctx_dict = {
         'nodes': nodes,
         'username': str(cluster.user),
+        'user': cluster.user,
         'is_paid': cluster.user.is_paid,
         'cluster_dns': cluster.dns_name,
         'trial_end': datetime.date.today() + settings.TRIAL_LENGTH,

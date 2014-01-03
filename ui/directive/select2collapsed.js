@@ -113,7 +113,6 @@ angular.module('ui.select2collapsed', []).value('uiSelect2CollapsedConfig', {}).
 //                        }
 //                    }, true);
 
-
                     // Watch the options dataset for changes
                     if (watch) {
                         scope.$watch(watch, function (newVal, oldVal, scope) {
@@ -223,7 +222,7 @@ angular.module('ui.select2collapsed', []).value('uiSelect2CollapsedConfig', {}).
                     // Set initial value - I'm not sure about this but it seems to need to be there
                     elm.val(controller.$viewValue);
                     // important!
-//                    controller.$render();
+                    controller.$render();
 
                     // Not sure if I should just check for !isSelect OR if I should check for 'tags' key
                     if (!opts.initSelection && !isSelect) {

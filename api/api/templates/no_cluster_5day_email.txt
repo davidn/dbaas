@@ -1,18 +1,39 @@
-Hi {{username}},
+Hi{% if user.first_name %} {{user.first_name}}{% endif %},
 
-GenieDB is a hosted database-as-a-service (DBaaS) solution that runs on multiple cloud infrastructures and enables cross regional distribution of standard MySQL. GenieDB provides master-master replication (active-active) and synchronization across regions for availability during regional outages and faster app response time to distributed users.  
+We see that you’re 5 days into your trial and haven’t had the chance to start
+your database cluster yet.  Can we assist in any way?   We’re ready to help you
+get started anytime and getting started is real simple with GenieDB.
 
-GenieDB is delivered as a service (DBaaS), so all database management and administration is handled by the expert team at GenieDB so you can focus your efforts on what matters: application development. You simply point your application to the database according to the provided instructions. Once your database cluster has been activated, nodes can be monitored and managed via the GenieDB Cluster Management Tool.
+1. Sign Up for GenieDB
+2. Click the verifcation link
+3. Received confirmation email
+4. Spin Up a Database Node
+5. Build great apps
 
-If you have questions, feel free to reach us at:
+To access you accout go to https://dbaas.geniedb.com/ .
+
+With GenieDB’s MySQL Database-as-a-Service, you’ll accelerate app development
+by easily spinning up and managing MySQL databases, giving you:
+
+* Geo-Distribution - Multi-Region, Multi-Cloud, Multi-Master MySQL Databases as
+  a Service. 
+* High Availability - Distribute apps without fear of failure
+* Scalability - Add, resize, change location of Nodes easily and quickly
+* Fast Application Response Time - Locate database nodes close to your app
+  servers for better, faster performance  - all anywhere in the world.
+
+Don't hesitate to contact us anytime if you have any questions or need help
+getting started.
 
     support@geniedb.com
+
 
 ---------
 
 www.geniedb.com
 
 ---------
+
 
 This is a one-time email. To get the latest on GenieDB news you should follow us on Twitter at: http://twitter.com/geniedb
 

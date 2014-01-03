@@ -34,11 +34,13 @@ user_to_db_{{database}}:
     - connection_pass: ''
     - connection_port: {{ pillar['dbaas_api']['cluster']['port'] }}
     - connection_db: ''
-    - grant: create, drop, lock tables, references, event, delete, index, insert, select, update, create temporary tables, trigger, create view, show view, alter routine, create routine, execute
+    - grant: SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, REFERENCES, INDEX, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, CREATE VIEW, SHOW VIEW, CREATE ROUTINE, ALTER ROUTINE, EVENT, TRIGGER
     - database: {{ database }}.*
     - user: {{ pillar['dbaas_api']['cluster']['dbusername'] }}
     - host: '%'
     - require:
       - service: mysqld
+      - mysql_database: database_{{database}}
+      - mysql_user: db_user
 {% endfor %}
 {% endif %}

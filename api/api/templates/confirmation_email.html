@@ -80,19 +80,11 @@
 				<img src="http://m.geniedb.com/geniedb-logo.white.bkg.png" width="217" height="39" alt="GenieDB Logo" title="GenieDB" style="display:block" border="0"/>
 				<br/>
 
-				<p>Hi {{ username }}, </p><br/>
+				<p>Hi{% if user.first_name %} {{user.first_name}}{% endif %},
+</p><br/>
 
-				<p>Thanks for visiting our website and signing up to test our exciting GenieDB DBaaS offering.
-					{% if is_paid %}
-				   We've created your GenieDB cluster environment for your use, deployed on instances distributed across {{ regions }} datacenters.
-					{% else %}
-				   You're now set to begin your free trial.
-				   We've created a two node replicating cluster environment for your use, deployed on two small instances distributed across {{ regions }} datacenters.
-				   While this basic test environment will allow you to see all the GenieDB functionality, it's not intended for demonstrating performance under load.
-				   Once you're satisfied GenieDB's feature set will meet your requirements, we are happy to setup a high performance cluster for additional testing.
-					{% endif %}
-				   The connectivity details can be found below. Here are a couple tips to help you get started:</p>
-
+<p>{% if is_paid %}Here’s important information about your new GenieDB cluster environment.  You’re now deployed on instances distributed across {{ regions }} datacenters.{% else %}You're now set to begin your free 7-day trial of GenieDB. We've created a two node replicating cluster environment, deployed on two small instances distributed across {{ regions }} datacenters.<br/></p>
+<p>Just a reminder that this is basic test environment gives you access to all the cool features of GenieDB but won’t perform under load. Once you're happy with our features and want access to the higher performance environment, we can assist you in setting up a high performance cluster for additional testing.{% endif %}<br/></p>
 
 				<table cellpadding="2" cellspacing="2" border="0">
 					<tr>
@@ -127,9 +119,9 @@
 				<br/>
 
 				{% if is_paid %}
-					<p> Please do not hesitate to contact us with any questions or concerns. We are happy to help guide your testing or answer any questions you may have regarding distributed system architecture.</p>
+					<p>Don’t hesitate to contact us if you have any questions at all about your distributed environment.</p>
 				{% else %}
-					<p>This cluster will be available for your use until {{ trial_end|date:"F jS" }}, at which point we can discuss the results of your trial and how best to proceed. Please do not hesitate to contact us with any questions or concerns. We are happy to help guide your testing or answer any questions you may have regarding distributed system architecture.</p>
+					<p>This cluster will be available until {{ trial_end|date:"F jS" }}.  Don’t hesitate to contact us if you have any questions at all about your distributed environment.</p>
 				{% endif %}
 
 				<br/>
@@ -201,17 +193,6 @@
 				<p>Don't hesitate to
 					<a href="mailto:support@geniedb.com" target="_blank" title="GenieDB Support" style="color: #7789c1; text-decoration: none; font-weight: bold">contact us</a> with any questions or comments.
 				</p><br/> <br/>
-			</td>
-			<td width="40"></td>
-		</tr>
-	</table>
-	<br/>
-	<table cellpadding="0" cellspacing="0" border="0" width="660" align="center">
-		<tr>
-			<td width="40"></td>
-			<td width="580" style="font-size:11px">
-				This is a one-time email. To get the latest on GenieDB news you should follow us on Twitter
-				<a href="http://twitter.com/geniedb" target="_blank" title="GenieDB at Twitter" style="color: #7789c1; text-decoration: none; font-weight: bold">@GenieDB</a>
 			</td>
 			<td width="40"></td>
 		</tr>

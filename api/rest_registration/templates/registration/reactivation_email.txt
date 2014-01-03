@@ -4,8 +4,7 @@ Please click here to reset your password
 
  {{url}}/#reset/{{activation_key}}
 
-If this was not you, feel free to ignore this message.
-
+Please disregard this email if this is not the intended recipient.
 
 
 
@@ -20,5 +19,3 @@ Visit us at:
 www.geniedb.com
 
 ---------
-
-This is a one-time email. To get the latest on GenieDB news you should follow us on Twitter at: http://twitter.com/geniedb

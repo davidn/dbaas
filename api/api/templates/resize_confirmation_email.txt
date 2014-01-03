@@ -26,16 +26,8 @@ IP: {{node.ip}}
 {% endfor %}
 
 
-
-If you have questions, feel free to reach us at:
-
-    support@geniedb.com
-
----------
-
+Visit us at:
 www.geniedb.com
 
----------
 
-This is a one-time email. To get the latest on GenieDB news you should follow us on Twitter at: http://twitter.com/geniedb
-
+Don't hestitate to contact us anytime if you have any questions at support@geniedb.com.
