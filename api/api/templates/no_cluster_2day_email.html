@@ -68,6 +68,7 @@
 
 			body[yahoo] p{ font-size: 10px }
 		}
+		li { margin: 0.5em 0 0.5em 0 }
 	</style>
 </head>
 <body style="background:#ececec; min-height:1000px; color:#565656;font-family:Arial, Helvetica, sans-serif; font-size:12px" alink="#7789c1" link="#7789c1" bgcolor="#ececec" text="#565656" yahoo="fix">
@@ -83,30 +84,15 @@
 				<p>Hi{% if user.first_name %} {{user.first_name}}{% endif %},</p><br/>
 
 				<p>We’ve noticed that you haven’t started your database cluster.  Are you having any problems getting started?   Please let us know how we can help.  Getting started with GenieDB is easy.</p>
-				<table cellpadding="2" cellspacing="2" border="0">
-                                        <tr>
-                                                <td valign="top">1.</td>
-                                                <td>Sign Up for GenieDB</td>
-                                        </tr>
-                                        <tr>
-                                                <td valign="top">2.</td>
-                                                <td>Click the verification link</td>
-                                        </tr>
-                                        <tr>
-                                                <td valign="top">3.</td>
-                                                <td>Received confirmation email</td>
-                                        </tr>
-                                        <tr>
-                                                <td valign="top">4.</td>
-                                                <td>Spin Up a Database Node</td>
-                                        </tr>
-                                        <tr>
-                                                <td valign="top">5.</td>
-                                                <td>Build great apps</td>
-                                        </tr>
-                                </table>
+				<ol>
+					<li>Sign Up for GenieDB</li>
+					<li>Click the verification link</li>
+					<li>Received confirmation email</li>
+					<li>Spin Up a Database Node</li>
+					<li>Build great apps</li>
+                                </ol>
 
-				<p>To access your account, go to <a href="https://dbaas.geniedb.com/" target="_blank" title="GenieDB DBaaS">GenieDB DBaaS</a>.</p>
+				<p>To access your account, go to <a href="https://dbaas.geniedb.com/" target="_blank" title="GenieDB DBaaS">GenieDB DBaaS</a>.</p><br/>
 
 				<p>With GenieDB’s MySQL Database-as-a-Service, you’ll accelerate app development by easily spinning up and managing MySQL databases, giving you:</p>
 
@@ -116,7 +102,6 @@
                                         <li><strong>Scalability</strong> - Add, resize, change location of Nodes easily and quickly</li>
                                         <li><strong>Fast Application Response Time</strong> - Locate database nodes close to your app servers for better, faster performance  - all anywhere in the world.</li>
 				</ul>
-				<br/><br/>
 
 				<p>Don't hesitate to
 					<a href="mailto:support@geniedb.com" target="_blank" title="GenieDB Support" style="color: #7789c1; text-decoration: none; font-weight: bold">contact us</a> anytime if you have any questions or need help getting started.

@@ -1,7 +1,7 @@
 Hi,
 
-Thanks upgrading to a paid account with GenieDB!  We appreciate you choosing
-GenieDB as your MySQL Database-as-a-Service provider.  
+Thanks for upgrading to a paid account with GenieDB!  We appreciate you
+choosing GenieDB as your MySQL Database-as-a-Service provider.  
 
 With GenieDB, you get great benefits that help you accelerate your app
 development. 

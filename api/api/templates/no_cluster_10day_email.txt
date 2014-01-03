@@ -4,11 +4,11 @@ Tired of database latency and slow performance?   Well, why not spin up your
 database cluster with GenieDB?  We’re here to help you get started anytime with
 five easy steps.
 
-1. Sign Up for GenieDB
-2. Click the verifcation link
-3. Received confirmation email
-4. Spin Up a Database Node
-5. Build great apps
+    1. Sign Up for GenieDB
+    2. Click the verifcation link
+    3. Received confirmation email
+    4. Spin Up a Database Node
+    5. Build great apps
 
 To access you accout go to https://dbaas.geniedb.com/ .
 
@@ -16,12 +16,12 @@ GenieDB is a MySQL Database-as-a-Service that helps you accelerate your app
 development by easily spinning up and managing your MySQL databases. Benefits
 include:
 
-* Geo-Distribution - Multi-Region, Multi-Cloud, Multi-Master MySQL Databases as
-  a Service. 
-* High Availability - Distribute apps without fear of failure
-* Scalability - Add, resize, change location of Nodes easily and quickly
-* Fast Application Response Time - Locate database nodes close to your app
-  servers for better, faster performance  - all anywhere in the world.
+    * Geo-Distribution - Multi-Region, Multi-Cloud, Multi-Master MySQL
+      Databases as a Service. 
+    * High Availability - Distribute apps without fear of failure
+    * Scalability - Add, resize, change location of Nodes easily and quickly
+    * Fast Application Response Time - Locate database nodes close to your app
+      servers for better, faster performance  - all anywhere in the world.
 
 Don't hesitate to contact us anytime if you have any questions or need help
 getting started.
