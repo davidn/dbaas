@@ -19,7 +19,7 @@ angular.module('geniedb').constant('dbaasConfig', (function () {
     var registrationPath = "/register/";
 
     var quickStartCluster = {
-        label: "Quick Start Cluster",
+        label: "Cluster",
         dbname: "quickstart",
         dbusername: "appuser",
         backup_schedule: "0 3,15 * * *",

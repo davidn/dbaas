@@ -183,8 +183,7 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
         getClusters: function (forceRefresh) {
             if (forceRefresh) {
                 clusters = Cluster.query({}, hydrateClusterData);
-            }
-            else {
+            } else {
                 clusters = clusters || Cluster.query({}, hydrateClusterData);
             }
             return clusters;

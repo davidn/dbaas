@@ -9,7 +9,6 @@ angular.module('geniedb').controller('TryCtrl', function ($scope, $location, $ti
             $location.path("/thankyou");
         }, function (err) {
             $scope.isLoading = false;
-            console.log('error: ', err);
             if (err && err.data) {
                 $scope.form.error = err.data.replace(/"/g, '');
             } else {

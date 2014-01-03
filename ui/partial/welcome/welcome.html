@@ -1,7 +1,7 @@
 <div class="modal-dialog small-modal" ng-controller="WelcomeCtrl">
 	<div class="modal-content">
 		<form name="loginForm" novalidate ng-submit="onLogin()">
-			<div class="modal-header" style="color: white;">Account Login</div>
+			<div class="modal-header">Account Login</div>
 			<div class="modal-body">
 				<p>
 					<input class="form-control" type="email" name="email" required ng-model="form.email" placeholder="Email" ng-class="{'form-invalid': showValidationMessages && loginForm.email.$invalid}" ng-focus>
@@ -16,8 +16,8 @@
 					<button type="button" class="btn btn-link" ng-click="onForgot()">Forgot Password?</button>
 				</div>
                 <div>
-                    <div class="alert alert-danger alert-small" ng-show="loginForm.email.$error.required && !loginForm.email.$focused">Email cannot be empty!<span style="margin-top: -7px;" class="glyphicon glyphicon-exclamation-sign pull-right"></span></div>
-                    <div class="alert alert-danger alert-small" ng-show="loginForm.password.$error.required && !loginForm.password.$focused">Password cannot be empty!<span style="margin-top: -7px;" class="glyphicon glyphicon-exclamation-sign pull-right"></span></div>
+                    <div class="alert alert-danger alert-small" ng-show="loginForm.email.$error.required && !loginForm.email.$focused">Email cannot be empty.<span style="margin-top: -7px;" class="glyphicon glyphicon-exclamation-sign pull-right"></span></div>
+                    <div class="alert alert-danger alert-small" ng-show="loginForm.password.$error.required && !loginForm.password.$focused">Password cannot be empty.<span style="margin-top: -7px;" class="glyphicon glyphicon-exclamation-sign pull-right"></span></div>
                     <div class="alert alert-danger alert-small" ng-show="loginForm.email.$dirty && loginForm.email.$invalid && !loginForm.email.$focused && !loginForm.email.$error.required">This is not a valid email.<span style="margin-top: -7px;" class="glyphicon glyphicon-exclamation-sign pull-right"></span></div>
                     <div ng-repeat="error in form.errors" class="alert alert-danger alert-small">{{error}}<span style="margin-top: -7px;" class="glyphicon glyphicon-exclamation-sign pull-right"></span></div>
                 </div>

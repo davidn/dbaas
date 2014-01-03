@@ -1,5 +1,5 @@
 <div class="modal-dialog " ui-keydown="{esc: 'cancel()'}" ng-controller="ClusterCtrl">
-	<form name="clusterForm" ng novalidate >
+	<form name="clusterForm" ng-submit="save()" novalidate>
 		<div class="modal-content">
 			<div class="modal-header">
 				Create Cluster
@@ -10,23 +10,22 @@
 					<div class="col-md-6 two-column-form-left">
 						<div class="form-group">
 							<label for="identifier"> Label </label>
-							<input class="form-control" id="identifier" ng-model="cluster.label" size="30" type="text" required ng-class="{'form-invalid': showValidationMessages && cluster.label.$invalid}" focus-me/>
+							<input name="label" class="form-control" id="identifier" ng-model="cluster.label" size="30" type="text" required focus-me ng-focus/>
 
-							<p class="help-block">e.g. Production Cluster or myApp Cluster. Name must be unique within you organization.</p>
+							<p class="help-block">e.g. Production Cluster or myApp Cluster. Name must be unique within your organization.</p>
 						</div>
 
 						<div class="form-group">
 							<label class="control-label" for="db_name"> Database Name </label>
+							<input class="form-control" name="dbName" id="db_name" ng-model="cluster.dbname" size="30" type="text" required ng-focus/>
 
-							<input class="form-control" id="db_name" ng-model="cluster.dbname" size="30" required type="text"/>
-
-							<p class="help-block">If left blank then no initial MySQL database will be created on the cluster</p>
+							<p class="help-block">e.g. quickstartdb, appdb</p>
 						</div>
 
 						<div class="form-group">
 							<label class="control-label" for="db_port">Database Port</label>
 
-							<input class="form-control" id="db_port" ng-model="cluster.port" size="30" required type="text" value="3306"/>
+							<input name="dbPort" type="number" class="form-control" id="db_port" ng-model="cluster.port" size="30" required type="text" value="3306" ng-focus/>
 
 							<p class="help-block">Using a non-standard port (3306) is recommended</p>
 						</div>
@@ -35,7 +34,7 @@
 						<div class="form-group">
 							<label class="control-label" for="master_username"> Master Username </label>
 
-							<input class="form-control" id="master_username" ng-model="cluster.dbusername" required size="30" type="text"/>
+							<input class="form-control" name="masterUsername" id="master_username" ng-model="cluster.dbusername" required size="30" type="text" ng-focus/>
 
 							<p class="help-block">e.g. awsuser, appuser</p>
 
@@ -44,22 +43,46 @@
 						<div class="form-group">
 							<label class="control-label" for="master_password"> Master Password </label>
 
-							<input class="form-control" id="master_password" ng-model="cluster.dbpassword" required size="30" type="password"/>
+							<input class="form-control" name="masterPassword" id="master_password" ng-model="cluster.dbpassword" required size="30" type="password" ng-focus/>
 						</div>
 
 
 						<div class="form-group">
 							<label class="control-label" for="master_password"> Master Password Confirmation </label>
 
-							<input class="form-control" id="master_password_confirm" ng-model="cluster.dbpassword_confirm" type="password" pw-check="master_password" required size="30" />
+							<input class="form-control" name="masterPasswordConfirm" id="master_password_confirm" ng-model="cluster.dbpassword_confirm" type="password" pw-check="master_password" required size="30" ng-focus/>
 						</div>
 
+                        <div class="alert alert-danger"
+                             ng-show="(!clusterForm.label.$focused && clusterForm.label.$dirty && (clusterForm.label.$invalid || clusterForm.label.$error.required)) ||
+                                      (!clusterForm.dbName.$focused && clusterForm.dbName.$dirty && (clusterForm.dbName.$invalid || clusterForm.dbName.$error.required)) ||
+                                      (!clusterForm.dbPort.$focused && clusterForm.dbPort.$dirty && (clusterForm.dbPort.$invalid || clusterForm.dbPort.$error.required)) ||
+                                      (!clusterForm.masterUsername.$focused && clusterForm.masterUsername.$dirty && (clusterForm.masterUsername.$invalid || clusterForm.masterUsername.$error.required)) ||
+                                      (!clusterForm.masterPassword.$focused && clusterForm.masterPassword.$dirty && (clusterForm.masterPassword.$invalid || clusterForm.masterPassword.$error.required)) ||
+                                      (!clusterForm.masterPasswordConfirm.$focused && clusterForm.masterPasswordConfirm.$dirty && (clusterForm.masterPasswordConfirm.$invalid || clusterForm.masterPasswordConfirm.$error.required)) ||
+                                      (errorMessage)">
+                            {{(!clusterForm.label.$focused && (clusterForm.label.$invalid && clusterForm.label.$error.required)) && 'Label cannot be empty.' ||
+                            (!clusterForm.dbName.$focused && (clusterForm.dbName.$invalid || clusterForm.dbName.$error.required)) && 'Database Name cannot be empty.' ||
+                            (!clusterForm.dbPort.$focused && (clusterForm.dbPort.$invalid || clusterForm.dbPort.$error.required)) && 'Database Port must be a number and cannot be empty.' ||
+                            (!clusterForm.masterUsername.$focused && (clusterForm.masterUsername.$invalid || clusterForm.masterUsername.$error.required)) && 'Master Username cannot be empty.' ||
+                            (!clusterForm.masterPassword.$focused && (clusterForm.masterPassword.$invalid || clusterForm.masterPassword.$error.required)) && 'Master Password cannot be empty.'||
+                            (!clusterForm.masterPasswordConfirm.$focused && (clusterForm.masterPasswordConfirm.$invalid || clusterForm.masterPasswordConfirm.$error.required)) && 'The passwords do not match' ||
+                            (errorMessage) && errorMessage || ''}}
+                            <span style="margin-left:5px;" class="glyphicon glyphicon-exclamation-sign"></span></div>
 					</div>
 				</div>
 			</div>
 			<div class="modal-footer">
-				<button class="btn btn-success" btn-loading="isLoading" data-loading-text="Creating..." ng-click="save()">CREATE</button>
-				<button class="btn btn-primary pull-right" ng-click="cancel()">CANCEL</button>
+				<button class="btn btn-success" btn-loading="isLoading" data-loading-text="Creating..."
+                    ng-disabled="clusterForm.label.$invalid || clusterForm.label.$error.required ||
+                                 clusterForm.dbName.$invalid ||
+                                 clusterForm.dbPort.$invalid || clusterForm.dbPort.$error.required ||
+                                 clusterForm.masterUsername.$invalid || clusterForm.masterUsername.$error.required ||
+                                 clusterForm.masterPassword.$invalid || clusterForm.masterPassword.$error.required ||
+                                 clusterForm.masterPasswordConfirm.$invalid || clusterForm.masterPassword.$error.required">
+                    CREATE
+                </button>
+				<button type="button" class="btn btn-primary pull-right" ng-click="cancel()">CANCEL</button>
 			</div>
 		</div>
 	</form>

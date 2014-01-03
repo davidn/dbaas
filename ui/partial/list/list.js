@@ -81,14 +81,16 @@ angular.module('geniedb').controller('ListCtrl', function ($scope, $location, $t
         messageBox.open(title, msg, btns).result.then(function (result) {
             if (result === "ok") {
                 $http['delete'](cluster.url).success(function () {
-                    $scope.refresh();
+                    //TODO clean this up, this is just a temp solution
+                    $timeout(function(){
+                        $scope.refresh();
+                    }, 50);
                     growl.success({body: "Cluster " + cluster.label + " shutting down"});
                 }).error(function (err) {
                         cluster.isDeleting = false;
                         handleError(err);
                     });
-            }
-            else {
+            } else {
                 cluster.isDeleting = false;
             }
         });
@@ -109,7 +111,6 @@ angular.module('geniedb').controller('ListCtrl', function ($scope, $location, $t
     };
 
     $scope.nodeUpgrade = function (node) {
-
         $location.path("/resize/" + node.id);
     };
 

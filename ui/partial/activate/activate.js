@@ -8,7 +8,6 @@ angular.module('geniedb').controller('ActivateCtrl', function ($scope, $location
         $scope.email = response.data.email;
     }, function (err) {
         $scope.statusText = "Activation code is not valid";
-        console.log(err);
         growl.error({body: "Activation code is not valid"});
     });
 
@@ -23,7 +22,6 @@ angular.module('geniedb').controller('ActivateCtrl', function ($scope, $location
                 }
             });
         }, function (err) {
-            console.log(err);
             growl.error({body: "Unable to activate account"});
         });
     };
