@@ -1,5 +1,6 @@
 #!/usr/bin/python
 from __future__ import unicode_literals
+import re
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -8,7 +9,7 @@ from django.core.urlresolvers import NoReverseMatch
 from rest_framework.reverse import reverse
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
-from .utils import cron_validator
+from .utils import cron_validator, comma_separated_mysql_database_validator
 import dateutil.parser
 
 
@@ -142,12 +143,20 @@ class CronField(serializers.CharField):
             return "0 */%d * * *" % h
 
 
+class DatabaseNameField(serializers.CharField):
+    def from_native(self, value):
+        value = ",".join(set(re.findall(r'[^, ]+', value)))
+        comma_separated_mysql_database_validator(value)
+        return super(DatabaseNameField, self).from_native(value)
+
+
 class ClusterSerializer(serializers.HyperlinkedModelSerializer):
     status = StatusField(choices=Cluster.STATUSES, read_only=True)
     status_code = serializers.ChoiceField(choices=Cluster.STATUSES, source='status', read_only=True)
     id = serializers.CharField(source='pk', read_only=True)
     nodes = NodeSerializer(many=True, read_only=True)
     dns_name = serializers.CharField(read_only=True)
+    dbname = DatabaseNameField()
     backup_schedule = CronField()
 
     class Meta:

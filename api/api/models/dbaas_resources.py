@@ -13,7 +13,7 @@ from pyzabbix import ZabbixAPI, ZabbixAPIException
 from simple_history.models import HistoricalRecords
 from salt_jobs.models import send_salt_cmd, get_highstate_result, get_salt_result
 from ..crypto import KeyPair, SslPair, CertificateAuthority
-from ..utils import retry, cron_validator
+from ..utils import retry, cron_validator, comma_separated_mysql_database_validator
 from ..route53 import RecordWithHealthCheck, RecordWithTargetHealthCheck, HealthCheck, record, exception, \
     catch_dns_exists, catch_dns_not_found, connect_route53
 from ..exceptions import BackendNotReady, DataCopyError, NoSourceError
@@ -53,9 +53,9 @@ class Cluster(models.Model):
     uuid = UUIDField(primary_key=True)
     label = models.CharField(max_length=255, blank=True, default="")
     port = models.PositiveIntegerField("MySQL Port", default=settings.DEFAULT_PORT)
-    dbname = models.CharField("Database Name", max_length=255)
+    dbname = models.CharField("Database Name", max_length=255, validators=[comma_separated_mysql_database_validator])
     dbusername = models.CharField("Database Username", max_length=255, validators=[MaxLengthValidator(16)])
-    dbpassword = models.CharField("Database Password", max_length=255)
+    dbpassword = models.CharField("Database Password", max_length=255, validators=[MaxLengthValidator(255)])
     backup_count = models.PositiveIntegerField("Number of backups to keep", default=24)
     backup_schedule = models.CharField("Cron-style backup schedule", max_length=255, validators=[cron_validator],
                                        default="3 */2 * * *")

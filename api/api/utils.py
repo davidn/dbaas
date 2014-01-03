@@ -70,11 +70,11 @@ def cron_validator(value):
 
 def mysql_database_validator(value):
     if len(value) > 64:
-        raise ValidationError("Database name too long: %s" % value)
+        raise ValidationError("Database name too long: %s." % value)
     if len(value) == 0:
         raise ValidationError("Cannot create database with blank name.")
     if not re.match(r'^[\w$]*[A-Za-z][\w$]*$', value):
-        raise ValidationError("Database name must consist of at least one letter and numbers only: %s" % value)
+        raise ValidationError("Database name must consist of at least one letter and numbers only: %s." % value)
     if value.upper() in ('MYSQL', 'PERFORMANCE_SCHEMA', 'INFORMATION_SCHEMA'):
         raise ValidationError("Database name prohibited: %s" % value)
     if value.upper() in ('ACCESSIBLE', 'ADD', 'ALL', 'ALTER', 'ANALYZE', 'AND', 'AS', 'ASC', 'ASENSITIVE', 'BEFORE',
@@ -107,7 +107,18 @@ def mysql_database_validator(value):
                          'WHEN', 'WHERE', 'WHILE', 'WITH', 'WRITE', 'XOR', 'YEAR_MONTH', 'ZEROFILL', 'GET',
                          'IO_AFTER_GTIDS', 'IO_BEFORE_GTIDS', 'MASTER_BIND', 'ONE_SHOT', 'PARTITION', 'SQL_AFTER_GTIDS',
                          'SQL_BEFORE_GTIDS'):
-        raise ValidationError("Database name is a reserved word: %s" % value)
+        raise ValidationError("Database name is a reserved word: %s." % value)
+
+
+def comma_separated_mysql_database_validator(value):
+    errors = []
+    for db in value.split(','):
+        try:
+            mysql_database_validator(db)
+        except ValidationError as e:
+            errors.append(e)
+    if len(errors) > 0:
+        raise ValidationError(" ".join(str(e) for e in errors))
 
 
 def split_every(n, iterable):
