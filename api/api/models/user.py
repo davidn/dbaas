@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext as _
 
 logger = getLogger(__name__)
+email_logger = getLogger('api.email')
 
 
 class UserManager(BaseUserManager):
@@ -89,7 +90,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         if message_html:
             msg.attach_alternative(message_html, "text/html")
 
-        msg.send()
+        try:
+            msg.send()
+            email_logger.info("Sent email to '%s' from '%s', subject '%s'.", recipient, from_email, subject)
+        except:
+            email_logger.info("Failed to send email to '%s' from '%s', subject '%s'.", recipient, from_email, subject,
+                              exc_info=True)
+            raise
+
 
     def email_user_template(self, template_base_name, dictionary, *args, **kwargs):
         """
