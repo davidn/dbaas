@@ -302,4 +302,64 @@ angular.module('geniedb').controller('BillinginfoCtrl', function ($scope, $locat
         return 'UNKNOWN';
     }
 
+
+    //Form Validation
+    var billingFormWatch = '(!billingForm.firstName.$focused && billingForm.firstName.$dirty && (billingForm.firstName.$invalid || billingForm.firstName.$error.required)) ||' +
+        ' (!billingForm.lastName.$focused && billingForm.lastName.$dirty && (billingForm.lastName.$invalid || billingForm.lastName.$error.required)) ||' +
+        ' (!billingForm.billingAddressLine.$focused && billingForm.billingAddressLine.$dirty && (billingForm.billingAddressLine.$invalid || billingForm.billingAddressLine.$error.required)) ||' +
+        ' (!billingForm.billingAddressCity.$focused && billingForm.billingAddressCity.$dirty && (billingForm.billingAddressCity.$invalid || billingForm.billingAddressCity.$error.required)) ||' +
+        ' (!billingForm.billingAddressState.$focused && billingForm.billingAddressState.$dirty && (billingForm.billingAddressState.$invalid || billingForm.billingAddressState.$error.required)) ||' +
+        ' (!billingForm.billingAddressPostalCode.$focused && billingForm.billingAddressPostalCode.$dirty && (billingForm.billingAddressPostalCode.$invalid || billingForm.billingAddressPostalCode.$error.required)) ||' +
+        ' (billingAddressCountryCode.$dirty && !cc.billing_address.country_code)';
+    var paymentFormWatch = '(!paymentForm.ccNumber.$focused && paymentForm.ccNumber.$dirty && (paymentForm.ccNumber.$invalid || paymentForm.ccNumber.$error.required)) ||' +
+        '(!paymentForm.ccExpMonth.$focused && paymentForm.ccExpMonth.$dirty && (paymentForm.ccExpMonth.$invalid || paymentForm.ccExpMonth.$error.required)) ||' +
+        '(!paymentForm.ccExpYear.$focused && paymentForm.ccExpYear.$dirty && (paymentForm.ccExpYear.$invalid || paymentForm.ccExpYear.$error.required)) ||' +
+        '(!paymentForm.ccv2.$focused && paymentForm.ccv2.$dirty && (paymentForm.ccv2.$invalid || paymentForm.ccv2.$error.required))';
+    $scope.showBillingValidationErrors = false;
+    $scope.showPaymentValidationErrors = false;
+    $scope.billingValidationError = '';
+    $scope.paymentValidationError = '';
+    $scope.$watch(billingFormWatch, function(newVal, oldVal){
+        if(newVal !== oldVal) {
+            $scope.showBillingValidationErrors = newVal;
+            if(newVal) {
+                if($scope.billingForm.firstName.$invalid || $scope.billingForm.firstName.$error.required) {
+                    $scope.billingValidationError = 'First Name cannot be empty';
+                } else if($scope.billingForm.lastName.$invalid || $scope.billingForm.lastName.$error.required) {
+                    $scope.billingValidationError = 'Last Name cannot be empty';
+                } else if($scope.billingForm.billingAddressLine.$invalid || $scope.billingForm.billingAddressLine.$error.required) {
+                    $scope.billingValidationError = 'Street Address cannot be empty';
+                } else if($scope.billingForm.billingAddressCity.$invalid || $scope.billingForm.billingAddressCity.$error.required) {
+                    $scope.billingValidationError = 'City cannot be empty';
+                } else if($scope.billingForm.billingAddressState.$invalid || $scope.billingForm.billingAddressState.$error.required) {
+                    $scope.billingValidationError = 'State cannot be empty';
+                } else if($scope.billingForm.billingAddressPostalCode.$invalid || $scope.billingForm.billingAddressPostalCode.$error.required) {
+                    $scope.billingValidationError = 'Postal Code cannot be empty';
+                } else if(!$scope.billingAddressCountryCode) {
+                    $scope.billingValidationError = 'Country cannot be empty';
+                } else {
+                    $scope.billingValidationError = '';
+                }
+            }
+        }
+    }, true);
+
+    $scope.$watch(paymentFormWatch, function(newVal, oldVal){
+        if(newVal !== oldVal) {
+            $scope.showPaymentValidationErrors = newVal;
+            if(newVal) {
+                if($scope.paymentForm.ccNumber.$invalid || $scope.paymentForm.ccNumber.$error.required) {
+                    $scope.paymentValidationError = 'Card Number cannot be empty';
+                } else if($scope.paymentForm.ccExpMonth.$invalid || $scope.paymentForm.ccExpMonth.$error.required) {
+                    $scope.paymentValidationError = 'Invalid Month';
+                } else if($scope.paymentForm.ccExpYear.$invalid || $scope.paymentForm.ccExpYear.$error.required) {
+                    $scope.paymentValidationError = 'Invalid Year';
+                } else if($scope.paymentForm.ccv2.$invalid || $scope.paymentForm.ccv2.$error.required) {
+                    $scope.paymentValidationError = 'CCV2 cannot be empty';
+                } else {
+                    $scope.paymentValidationError = '';
+                }
+            }
+        }
+    }, true);
 });

@@ -17,8 +17,9 @@ angular.module('geniedb').controller('QuickstartCtrl', function ($scope, $locati
         }
 
         dbaasConfig.quickStart.dbpassword = generateKey(10);
-
-        apiModel.Cluster.save(dbaasConfig.quickStart, function (cluster) {
+        var quickCluster = angular.copy(dbaasConfig.quickStart);
+        quickCluster.label = apiModel.getNextGenericLabel();
+        apiModel.Cluster.save(quickCluster, function (cluster) {
             growl.success({body: 'Cluster ' + cluster.label + ' created'});
 
             var nodes = [

@@ -1,6 +1,7 @@
 angular.module('geniedb').controller('ClusterCtrl', function ($scope, $location, apiModel, growl, dbaasConfig) {
     $scope.providers = apiModel.getProviders();
     $scope.cluster = angular.copy(dbaasConfig.quickStart);
+    $scope.cluster.dbpassword = null;
 
     $scope.showValidationMessages = false;
     $scope.errorMessage = false;
@@ -23,15 +24,7 @@ angular.module('geniedb').controller('ClusterCtrl', function ($scope, $location,
 
     $scope.clusters = apiModel.getClusters(true).$then(function(data){
         $scope.clusters = data.resource;
-        var unique = false;
-        var quickIndex = 1;
-        var newLabel = '';
-        while(!unique) {
-            newLabel = $scope.cluster.label + quickIndex;
-            quickIndex++;
-            unique = apiModel.isUniqueClusterLabel(newLabel);
-        }
-        $scope.cluster.label = newLabel;
+        $scope.cluster.label = apiModel.getNextGenericLabel();
     });
 
     function handleError(err) {

@@ -1,9 +1,14 @@
 angular.module('geniedb').controller('ResizeCtrl', function ($scope, $routeParams, $location, apiModel, $http, growl, dbaasConfig, User) {
-
+    $scope.user = User.user;
     var node = apiModel.findNodeById($routeParams.clusterId, $routeParams.nodeId);
     if (node){
         $scope.flavor = node.$flavor;
-        $scope.flavors = _.without(node.provider.flavors, node.$flavor);
+        if ($scope.user.isPaid) {
+            $scope.flavors = node.provider.flavors;
+        } else {
+            $scope.flavors = _.filter(node.provider.flavors, 'free_allowed');
+        }
+        $scope.flavors = _.without($scope.flavors, node.$flavor);
         $scope.node = {flavor: node.$flavor};
     }
 

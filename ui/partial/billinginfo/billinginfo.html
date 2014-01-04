@@ -1,58 +1,69 @@
 <div class="modal-dialog small-modal" ui-keydown="{esc: 'cancel()'}" ng-controller="BillinginfoCtrl">
-	<div class="modal-content">
-		<div class="modal-header">
-			<span ng-if="mode=='address'">Billing - Step 1</span>
-			<span ng-if="mode=='payment'">Billing - Step 2</span>
-			<button type="button" class="modal-close-button close" ng-click="cancel()"><i class="fa fa-times"></i></button>
-		</div>
-		<div class="modal-body">
-			<div class="row" ng-if="mode=='address'">
-				<div class="col-md-1">
-					<i class="fa fa-user fa-2x form-label"></i>
-				</div>
-				<div class="col-md-10">
-					<input class="form-control-cc" placeholder="First Name" type="text" ng-model="cc.first_name" required/>
-					<input class="form-control-cc" placeholder="Last Name" type="text" ng-model="cc.last_name" required/>
-				</div>
-				<div class="col-md-1 form-group-spacer">
-					<i class="fa fa-map-marker fa-2x form-label"></i>
-				</div>
-				<div class="col-md-10 form-group-spacer">
-					<input class="form-control-cc" placeholder="Street Address" type="text" ng-model="cc.billing_address.line1" required/>
-					<input class="form-control-cc" placeholder="City" type="text" ng-model="cc.billing_address.city" required/>
-					<input class="form-control-cc-state" placeholder="State" type="text" ng-model="cc.billing_address.state" required/>
-					<input class="form-control-cc-zip" placeholder="Postal" type="text" ng-model="cc.billing_address.postal_code" required/>
-					<select ui-select2 class="form-control-cc" ng-model="cc.billing_address.country_code" data-placeholder="Country" ng-options="country.code as country.name for country in countries"></select>
-
-				</div>
-			</div>
-			<div class="row" ng-if="mode=='payment'">
-				<div class="col-md-1">
-					<i class="fa fa-credit-card fa-lg form-label"></i>
-				</div>
-				<div class="col-md-10">
-					<input class="form-control-cc" type="text" placeholder="Card Number" size="20" ng-model="cc.number"  required/>
-				</div>
-				<div class="col-md-1">
-					<i class="fa fa-calendar fa-lg form-label"></i>
-				</div>
-				<div class="col-md-10">
-					<input class="form-control-cc-zip" type="text" size="2" maxlength="2" ng-model="cc.expire_month" placeholder="Month"/>
-					<span> / </span>
-					<input class="form-control-cc-zip" type="text" size="2" maxlength="2" ng-model="cc.expire_year" placeholder="Year"/>
-				</div>
-				<div class="col-md-1">
-					<i class="fa fa-lock fa-lg form-label"></i>
-				</div>
-				<div class="col-md-10">
-					<input placeholder="CVV2" class="form-control-cc-zip"  type="text" maxlength="4" size="4" ng-model="cc.cvv2" required/>
-				</div>
-			</div>
-		</div>
-		<div class="modal-footer">
-			<button ng-if="mode=='payment'" class="btn btn-primary" ng-click="showAddress()">BACK</button>
-			<button ng-if="mode=='address'" class="btn btn-success pull-right" ng-click="showPayment()">NEXT</button>
-			<button ng-if="mode=='payment'" class="btn btn-success pull-right" btn-loading="isLoading" data-loading-text="Saving..." ng-click="save()">SAVE</button>
-		</div>
-	</div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <span ng-if="mode=='address'">Billing - Step 1</span>
+                <span ng-if="mode=='payment'">Billing - Step 2</span>
+                <button type="button" class="modal-close-button close" ng-click="cancel()"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form name="billingForm" novalidate>
+                    <div class="row" ng-if="mode=='address'">
+                        <div class="col-md-1">
+                            <i class="fa fa-user fa-2x form-label"></i>
+                        </div>
+                        <div class="col-md-10">
+                            <input name="firstName" class="form-control-cc" placeholder="First Name" type="text" ng-model="cc.first_name" required ng-focus/>
+                            <input name="lastName" class="form-control-cc" placeholder="Last Name" type="text" ng-model="cc.last_name" required ng-focus/>
+                        </div>
+                        <div class="col-md-1 form-group-spacer">
+                            <i class="fa fa-map-marker fa-2x form-label"></i>
+                        </div>
+                        <div class="col-md-10 form-group-spacer">
+                            <input name="billingAddressLine" class="form-control-cc" placeholder="Street Address" type="text" ng-model="cc.billing_address.line1" required ng-focus/>
+                            <input name="billingAddressCity" class="form-control-cc" placeholder="City" type="text" ng-model="cc.billing_address.city" required ng-focus/>
+                            <input name="billingAddressState" class="form-control-cc-state" placeholder="State" type="text" ng-model="cc.billing_address.state" required ng-focus/>
+                            <input name="billingAddressPostalCode" class="form-control-cc-zip" placeholder="Postal Code" type="text" ng-model="cc.billing_address.postal_code" required ng-focus/>
+                            <select name="billingAddressCountryCode" style="margin-left:0px; padding-left:0px; height:26px;" ui-select2-collapsed class="form-control-cc" ng-model="cc.billing_address.country_code" data-placeholder="Country" ng-options="country.code as country.name for country in countries" required><option value=""></option></select>
+                            <div class="alert alert-danger" ng-show="showBillingValidationErrors">
+                                {{billingValidationError}}
+                                <span style="margin-left:5px;" class="glyphicon glyphicon-exclamation-sign"></span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <form name="paymentForm" novalidate>
+                    <div class="row" ng-if="mode=='payment'">
+                        <div class="col-md-1">
+                            <i class="fa fa-credit-card fa-lg form-label"></i>
+                        </div>
+                        <div class="col-md-10">
+                            <input name="ccNumber" class="form-control-cc" type="text" placeholder="Card Number" size="20" ng-model="cc.number" required ng-focus/>
+                        </div>
+                        <div class="col-md-1">
+                            <i class="fa fa-calendar fa-lg form-label"></i>
+                        </div>
+                        <div class="col-md-10">
+                            <input name="ccExpMonth" class="form-control-cc-zip" type="number" min="1" max="12" size="2" maxlength="2" ng-model="cc.expire_month" placeholder="Month" required ng-focus/>
+                            <span> / </span>
+                            <input name="ccExpYear" class="form-control-cc-zip" type="number" min="14" max="22" size="2" maxlength="2" ng-model="cc.expire_year" placeholder="Year" required ng-focus/>
+                        </div>
+                        <div class="col-md-1">
+                            <i class="fa fa-lock fa-lg form-label"></i>
+                        </div>
+                        <div class="col-md-10">
+                            <input name="ccv2" placeholder="CVV2" class="form-control-cc-zip"  type="number" maxlength="4" size="4" ng-model="cc.cvv2" required/>
+                            <div class="alert alert-danger" ng-show="showPaymentValidationErrors">
+                                {{paymentValidationError}}
+                                <span style="margin-left:5px;" class="glyphicon glyphicon-exclamation-sign"></span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" ng-if="mode=='payment'" class="btn btn-primary" ng-click="showAddress()">BACK</button>
+                <button type="button" ng-if="mode=='address'" class="btn btn-success pull-right" ng-disabled="billingForm.$invalid" ng-click="showPayment()">NEXT</button>
+                <button ng-if="mode=='payment'" class="btn btn-success pull-right" btn-loading="isLoading" data-loading-text="Saving..." ng-disabled="billingForm.$invalid || paymentForm.$invalid" ng-click="save()" >SAVE</button>
+            </div>
+        </div>
 </div>

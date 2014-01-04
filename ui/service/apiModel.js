@@ -48,6 +48,18 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
         return _.findWhere(clusters, {label: clusterLabel}) === undefined;
     }
 
+    function getNextGenericLabel() {
+        var unique = false;
+        var quickIndex = 1;
+        var newLabel = '';
+        while(!unique) {
+            newLabel = dbaasConfig.quickStart.label + quickIndex;
+            quickIndex++;
+            unique = isUniqueClusterLabel(newLabel);
+        }
+        return newLabel;
+    }
+
     function getStatusByLabel(statusLabel) {
         return _.findWhere(statuses, {label: statusLabel});
     }
@@ -195,6 +207,7 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
         },
         getLaunchMessage: getLaunchMessage,
         isUniqueClusterLabel: isUniqueClusterLabel,
+        getNextGenericLabel: getNextGenericLabel,
         Cluster: Cluster,
         flavors: flavors,
         regions: regions
