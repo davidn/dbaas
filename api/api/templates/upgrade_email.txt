@@ -1,10 +1,8 @@
 Hi,
 
 Thanks for upgrading to a paid account with GenieDB!  We appreciate you
-choosing GenieDB as your MySQL Database-as-a-Service provider.  
-
-With GenieDB, you get great benefits that help you accelerate your app
-development. 
+choosing GenieDB as your MySQL Database-as-a-Service provider. With GenieDB,
+you get great benefits that help you accelerate your app development. 
 
 * Provisioning - Within minutes, easily deploy across regions, cloud providers
   and datacenters.

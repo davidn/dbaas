@@ -1,8 +1,8 @@
 Hi{% if user.first_name %} {{user.first_name}}{% endif %},
 
-We see that you’re 5 days into your trial and haven’t had the chance to start
-your database cluster yet.  Can we assist in any way?   We’re ready to help you
-get started anytime and getting started is real simple with GenieDB.
+Thanks again for considering the GenieDB DBaaS offering. We see that you’re 5
+days into your trial and haven’t had the chance to start your database cluster
+yet.  Can we assist in any way? Getting started is really easy.
 
     1. Sign Up for GenieDB
     2. Click the verifcation link

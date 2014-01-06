@@ -1,7 +1,7 @@
 Hi{% if user.first_name %} {{user.first_name}}{% endif %},
 
 We’ve noticed that you haven’t started your database cluster.  Are you having
-any problems getting started?   Please let us know how we can help.  Getting
+any problems with the process?   Please let us know how we can help.  Getting
 started with GenieDB is easy.
 
     1. Sign Up for GenieDB

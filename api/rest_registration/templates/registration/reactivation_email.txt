@@ -4,9 +4,6 @@ Please click here to reset your password
 
  {{url}}/#reset/{{activation_key}}
 
-Please disregard this email if this is not the intended recipient.
-
-
 
 Don't hesitate to contact us with any questions or comments.
 

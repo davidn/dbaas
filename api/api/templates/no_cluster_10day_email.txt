@@ -1,8 +1,8 @@
 Hi{% if user.first_name %} {{user.first_name}}{% endif %},
 
 Tired of database latency and slow performance?   Well, why not spin up your
-database cluster with GenieDB?  We’re here to help you get started anytime with
-five easy steps.
+database cluster with GenieDB?  We’re here to help you get started with five
+easy steps.
 
     1. Sign Up for GenieDB
     2. Click the verifcation link
