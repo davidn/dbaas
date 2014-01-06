@@ -2,7 +2,7 @@
 UP=$(/usr/bin/mysql -e 'status'  | wc -l);
 if [ "$UP" -ge 1 ];
 then
-        /usr/bin/mysqldump --all-databases > /var/backup/mysqlbackup.sql
+        /usr/bin/mysqldump --single-transaction --all-databases > /var/backup/mysqlbackup.sql
         /usr/sbin/logrotate -fs /etc/mysqlbackup.state /etc/mysqlbackup.logrotate
 else
         exit
