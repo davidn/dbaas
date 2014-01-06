@@ -13,7 +13,7 @@ def get_salt_result(**kwargs):
     return SaltReturn.objects.filter(**kwargs)
 
 def get_highstate_result(**kwargs):
-    return check_highstate_error(yaml.load(SaltReturn.objects.get(**kwargs).s_return))
+    return check_highstate_error(yaml.load(SaltReturn.objects.get(**kwargs).full_ret)['return'])
 
 class MediumText(models.TextField):
     def db_type(self, connection):
