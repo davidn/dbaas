@@ -146,8 +146,8 @@ def ext_pillar(minion_id,
                     'zabbix_server':settings.ZABBIX_SERVER,
             }}}
     except ImportError, e:
-        log.error('Failed to import library: {}'.format(e.message))
+        log.error('Failed to import library: {}'.format(e.message), exc_info=True)
         return {}
     except Exception, e:
-        log.error('Failed on Error: {}'.format(e.message))
+        log.error('Failed on Error: {}'.format(e.message), exc_info=True)
         return {}
