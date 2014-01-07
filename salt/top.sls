@@ -1,6 +1,6 @@
 base:
   '*':
-    - geniedb.config
+    - geniedb
     - backup
     - tinc
     - s3cmd
