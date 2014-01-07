@@ -83,6 +83,11 @@ class Cluster(models.Model):
     def __unicode__(self):
         return self.dns_name
 
+    @property
+    def feature_flags(self):
+        return {
+        }
+
     def generate_keys(self):
         # idempotency
         if len(self.ca_cert) != 0:
@@ -345,6 +350,7 @@ class Node(models.Model):
     status = models.IntegerField("Status", choices=STATUSES, default=INITIAL)
     tinc_private_key = models.TextField("Tinc Private Key", blank=True)
     last_salt_jid = models.CharField(max_length=255, blank=True, default="")
+    version = models.CharField(max_length=255, default="2.6")
 
     history = HistoricalRecords()
 
@@ -379,6 +385,13 @@ class Node(models.Model):
             raise ValidationError("Instance type '%s' does not support variable storage." % self.flavor.code)
         if not self.storage and not self.flavor.fixed_storage:
             raise ValidationError("Instance type '%s' does not support fixed storage." % self.flavor.code)
+
+    @property
+    def feature_flags(self):
+        return {
+            '2.5': {},
+            '2.6': {},
+        }[self.version]
 
     def pending(self):
         """Return True if the instance is still being provisioned by the underlying cloud provider."""

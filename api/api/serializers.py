@@ -112,6 +112,7 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
     dns_name = serializers.CharField(read_only=True)
     region = serializers.SlugRelatedField(slug_field='code')
     flavor = serializers.SlugRelatedField(slug_field='code')
+    feature_flags = serializers.SerializerMethodField('get_feature_flags')
 
     def __init__(self, *args, **kwargs):
         serializers.HyperlinkedModelSerializer.__init__(self, *args, **kwargs)
@@ -124,6 +125,10 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('url', 'label', 'nid', 'dns_name', 'ip', 'flavor', 'storage', 'region', 'status', 'status_code',
                   'cluster', 'iops')
         read_only_fields = ('ip', 'nid')
+
+    @staticmethod
+    def get_feature_flags(obj):
+        return obj.feature_flags
 
 
 class CronField(serializers.CharField):
@@ -158,6 +163,7 @@ class ClusterSerializer(serializers.HyperlinkedModelSerializer):
     dns_name = serializers.CharField(read_only=True)
     dbname = DatabaseNameField()
     backup_schedule = CronField()
+    feature_flags = serializers.SerializerMethodField('get_feature_flags')
 
     class Meta:
         model = Cluster
@@ -165,6 +171,10 @@ class ClusterSerializer(serializers.HyperlinkedModelSerializer):
                   'dns_name', 'port', 'nodes', 'backup_count', 'backup_schedule', 'ca_cert', 'client_cert',
                   'client_key')
         read_only_fields = ('ca_cert', 'client_cert', 'client_key')
+
+    @staticmethod
+    def get_feature_flags(obj):
+        return obj.feature_flags
 
 
 class DateUtilField(serializers.DateTimeField):
