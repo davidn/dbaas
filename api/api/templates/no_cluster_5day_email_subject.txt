@@ -1,1 +1,1 @@
-Spin up a Geo-Distributed MySQL cluster within minutes!
+GenieDB DBaaS Trial Follow-up... Can we help?
