@@ -341,7 +341,7 @@ class Node(models.Model):
         (SHUTTING_DOWN, 'shutting down'),
         (OVER, 'over'),
         (ERROR, 'An error occurred'),
-        (CRITICAL_ERROR, 'An critical error occurred. The node has been shut down.'),
+        (CRITICAL_ERROR, 'A critical error occurred. The node has been shut down.'),
     )
     label = models.CharField(max_length=255, blank=True, default="")
     cluster = models.ForeignKey(Cluster, related_name='nodes')
