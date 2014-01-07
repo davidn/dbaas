@@ -136,4 +136,5 @@ def add_nodes(nodes):
 
 def fail_node(node):
     node.status = Node.CRITICAL_ERROR
+    node.save()
     return tasks.cluster_refresh_salt.delay(node.cluster, [node])

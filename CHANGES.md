@@ -1,6 +1,17 @@
 Changelog
 =========
 
+2.6 - 2014-01-07
+----------------
+
+* Collapsible select widget. BPB-194
+* Copy mysql data directory on new node. BPB-188
+* Alow free uses access to more features.
+* Update email templates.
+* Log sent emails.
+* Track versions of dbaas used to create instance. BPB-209
+* "Critical errors" can now occur that shut down a node. BPB-201
+
 2.5 - 2013-12-20
 ----------------
 
