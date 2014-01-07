@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/usr/bin/curl {{pillar['dbaas_api']['node']['fail_url']}} -X POST -H "Content-type: application/json"

@@ -46,3 +46,11 @@ update_subscriptions:
     - template: jinja
     - require_in:
       - service: mysqld
+
+/usr/local/bin/cf-notify-error:
+  file.managed:
+    - show_diff: False
+    - makedirs: True
+    - source: salt://geniedb/cf-notify-error
+    - mode: 755
+    - template: jinja
