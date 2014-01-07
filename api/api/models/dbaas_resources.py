@@ -325,6 +325,7 @@ class Node(models.Model):
     CONFIGURING_NODE = 15
     COPYING_DATA = 16
     ERROR = 1000
+    CRITICAL_ERROR = 1001
     STATUSES = (
         (INITIAL, 'not yet started'),
         (STARTING, 'Starting launch'),
@@ -339,7 +340,8 @@ class Node(models.Model):
         (RESUMING, 'resuming'),
         (SHUTTING_DOWN, 'shutting down'),
         (OVER, 'over'),
-        (ERROR, 'An error occurred')
+        (ERROR, 'An error occurred'),
+        (CRITICAL_ERROR, 'An critical error occurred. The node has been shut down.'),
     )
     label = models.CharField(max_length=255, blank=True, default="")
     cluster = models.ForeignKey(Cluster, related_name='nodes')
@@ -438,6 +440,10 @@ class Node(models.Model):
     @property
     def set_backup_url(self):
         return 'https://' + Site.objects.get_current().domain + reverse('backup-list', args=[self.cluster.pk, self.pk])
+
+    @property
+    def fail_url(self):
+        return 'https://' + Site.objects.get_current().domain + reverse('node-fail', args=[self.cluster.pk, self.pk])
 
     def visible_name(self):
         return "{email}-{label}-{node}".format(email=self.cluster.user.email, label=self.cluster.label, node=self.nid)

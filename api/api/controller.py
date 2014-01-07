@@ -132,3 +132,8 @@ def add_nodes(nodes):
          | group_or_null([tasks.node_launch_complete.si(node) for node in nodes]) \
          | tasks.launch_email.si(cluster, 'add_node_confirmation_email')
     return task.delay()
+
+
+def fail_node(node):
+    node.status = Node.CRITICAL_ERROR
+    return tasks.cluster_refresh_salt.delay(node.cluster, [node])

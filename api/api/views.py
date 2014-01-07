@@ -32,7 +32,7 @@ from .models import Cluster, Node, Region, Provider, Flavor, Backup
 from .serializers import UserSerializer, ClusterSerializer, NodeSerializer, RegionSerializer, ProviderSerializer, \
     FlavorSerializer, BackupWriteSerializer, BackupReadSerializer, CreditCardSerializer
 from .controller import launch_cluster, reinstantiate_node, pause_node, resume_node, add_database, add_nodes, \
-    shutdown_cluster, shutdown_node
+    shutdown_cluster, shutdown_node, fail_node
 from api.utils import mysql_database_validator
 from logging import getLogger
 
@@ -354,6 +354,14 @@ class NodeViewSet(mixins.ListModelMixin,
     def resume(self, request, *args, **kwargs):
         self.object = self.get_object()
         resume_node(self.object)
+        serializer = self.get_serializer(self.object)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
+
+    @action(permission_classes=[permissions.AllowAny])
+    def fail(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        fail_node(self.object)
         serializer = self.get_serializer(self.object)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED, headers=headers)
