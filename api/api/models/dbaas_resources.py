@@ -86,6 +86,8 @@ class Cluster(models.Model):
     @property
     def feature_flags(self):
         return {
+            'copy_add_node': any(n.feature_flags['copy_add_node'] for n in
+                                 self.nodes.filter(status__in=[Node.RUNNING, Node.PAUSED, Node.RESUMING, Node.PAUSING]))
         }
 
     def generate_keys(self):
@@ -389,8 +391,8 @@ class Node(models.Model):
     @property
     def feature_flags(self):
         return {
-            '2.5': {},
-            '2.6': {},
+            '2.5': {'copy_add_node': False},
+            '2.6': {'copy_add_node': True},
         }[self.version]
 
     def pending(self):
