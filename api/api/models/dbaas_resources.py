@@ -220,18 +220,22 @@ class Cluster(models.Model):
 
     def copy_source(self, origin_node):
         # Prefer same region
-        same_region = self.nodes.exclude(pk=origin_node.pk).filter(region=origin_node.region).filter(
+        same_region = [n for n in self.nodes.exclude(pk=origin_node.pk).filter(region=origin_node.region).filter(
             status__in=[Node.RUNNING, Node.PAUSED, Node.PAUSING, Node.RESUMING])
+            if n.feature_flags['copy_add_node']]
         if len(same_region) != 0:
             return same_region[0]
         # Next stuff generally nearby
-        same_lbr_region = self.nodes.exclude(pk=origin_node.pk).filter(lbr_region=origin_node.lbr_region).filter(
-            status__in=[Node.RUNNING, Node.PAUSED, Node.PAUSING, Node.RESUMING])
+        same_lbr_region = [n for n in self.nodes.exclude(pk=origin_node.pk).filter(
+            lbr_region=origin_node.lbr_region).filter(
+                status__in=[Node.RUNNING, Node.PAUSED, Node.PAUSING, Node.RESUMING])
+            if n.feature_flags['copy_add_node']]
         if len(same_lbr_region) != 0:
             return same_lbr_region[0]
         # Otherwise just pick anyone
-        others = self.nodes.exclude(pk=origin_node.pk).filter(
+        others = [n for n in self.nodes.exclude(pk=origin_node.pk).filter(
             status__in=[Node.RUNNING, Node.PAUSED, Node.PAUSING, Node.RESUMING])
+            if n.feature_flags['copy_add_node']]
         if len(others) != 0:
             return others[0]
         raise NoSourceError("No source available for node %s to copy from" % origin_node)
