@@ -122,7 +122,7 @@ class NodeSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Node
-        fields = ('url', 'label', 'nid', 'dns_name', 'ip', 'flavor', 'storage', 'region', 'status', 'status_code',
+        fields = ('url', 'id', 'label', 'nid', 'dns_name', 'ip', 'flavor', 'storage', 'region', 'status', 'status_code',
                   'cluster', 'iops')
         read_only_fields = ('ip', 'nid')
 
