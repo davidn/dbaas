@@ -18,7 +18,7 @@ angular.module('geniedb', ['ui.keypress', 'ui.bootstrap.tooltipX', 'ngRoute', 'n
             when('/try', {templateUrl: 'partial/try/try.html'}).
             when('/share/:promo', {templateUrl: 'partial/share/share.html'}).
             when('/share', {templateUrl: 'partial/share/share.html'}).
-            when('/resize/:clusterId/:nodeId', {templateUrl: 'partial/resize/resize.html'}).
+            when('/resize/:nodeId', {templateUrl: 'partial/resize/resize.html'}).
             when('/profile', {templateUrl: 'partial/profile/profile.html'}).
             when('/pricing', {templateUrl: 'partial/pricing/pricing.html'}).
             when('/billinginfo', {templateUrl: 'partial/billinginfo/billinginfo.html'}).

@@ -78,10 +78,6 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
             node.statusClass = 'node-status-' + status.code;
             data.maxStatus = Math.max(status.index, data.maxStatus);
 
-            var fragments = node.url.split('/');
-            node.id = fragments.slice(-2).join('/');
-            node.uid = fragments[fragments.length-1];
-
             node.isRunning = status.index === 3;
             node.isPaused = status.index === 4;
             node.isAction = status.isAction;
@@ -202,9 +198,11 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
             }
             return clusters;
         },
-        findNodeById: function (clusterId, nodeId){
-            var cluster = _.findWhere(clusters, {id: clusterId});
-            return cluster && _.findWhere(cluster.nodes, {uid: nodeId});
+        findNodeById: function (nodeId){
+            for (cluster in clusters) {
+                node = _.findWhere(cluster.nodes, {id: nodeId});
+                if (node) return node;
+            }
         },
         getLaunchMessage: getLaunchMessage,
         isUniqueClusterLabel: isUniqueClusterLabel,

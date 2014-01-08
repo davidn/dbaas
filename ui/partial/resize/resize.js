@@ -1,6 +1,6 @@
 angular.module('geniedb').controller('ResizeCtrl', function ($scope, $routeParams, $location, apiModel, $http, growl, dbaasConfig, User) {
     $scope.user = User.user;
-    var node = apiModel.findNodeById($routeParams.clusterId, $routeParams.nodeId);
+    var node = apiModel.findNodeById($routeParams.nodeId);
     if (node){
         $scope.flavor = node.$flavor;
         if ($scope.user.isPaid) {
