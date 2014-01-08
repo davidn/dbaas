@@ -32,9 +32,9 @@ angular.module('geniedb').controller('QuickstartCtrl', function ($scope, $locati
                     flavor: $scope.region2.provider.quickStartFlavor.code,
                     storage: $scope.region2.provider.quickStartFlavor.variable_storage_default ? 10: null}
             ];
-            $http.post(cluster.url, nodes).success(function () {
+            $http.post(cluster.url + "/nodes", nodes).success(function () {
                 growl.success({body: 'Quick start nodes created'});
-                $http.post(cluster.url + '/launch_all/').success(function () {
+                $http.post(cluster.url + '/launch_all').success(function () {
                     var title = 'Launching Cluster';
                     var msg = apiModel.getLaunchMessage([$scope.region1.provider, $scope.region2.provider]);
                     var btns = [

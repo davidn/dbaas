@@ -44,13 +44,13 @@ angular.module('geniedb').controller('ListCtrl', function ($scope, $location, $t
         ];
         messageBox.open(title, msg, btns);
 
-        $http.post(cluster.url + '/launch_all/').success(function () {
+        $http.post(cluster.url + '/launch_all').success(function () {
             $scope.refresh();
         }).error(handleError);
     };
 
     $scope.addNode = function (cluster) {
-        $location.path("/cluster/" + cluster.url.slice(-36) + "/node");
+        $location.path("/cluster/" + cluster.url.slice(-37,-1) + "/node");
     };
 
     $scope.db = {name: ''};

@@ -86,14 +86,14 @@ angular.module('geniedb').factory('apiModel', function (dbaasConfig, $http, $res
             data.hasRunning = data.hasRunning || node.isRunning;
             data.canAddNode = data.canAddNode && (allowedNodeStatesForAddNode.indexOf(status.index) >= 0);
             if (node.isRunning) {
-                $http.get(node.url + '/stats/').success(function (data) {
+                $http.get(node.url + '/stats').success(function (data) {
                     node.cpu = data.cpu ? data.cpu : [0];
                     node.iops = {read: data.riops, write: data.wiops};
                 });
 
                 if (!node.backups) {
                     node.backups = [];
-                    $http.get(node.url + '/backups/').success(function (data) {
+                    $http.get(node.url + '/backups').success(function (data) {
                         node.backups = data.reverse();
                         node.backups.forEach(function (backup) {
                             backup.size = numeral(backup.size).format('0.0b');

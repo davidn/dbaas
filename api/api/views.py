@@ -21,6 +21,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.mail import mail_admins
 from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, mixins, status, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action, link, api_view, permission_classes
@@ -171,45 +172,6 @@ class ClusterViewSet(mixins.CreateModelMixin,
         shutdown_cluster(obj)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def add(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if isinstance(request.DATA, list):
-            data = []
-            n = len(request.DATA)
-            for d in request.DATA:
-                new_d = d.copy()
-                new_d["cluster"] = self.object.get_absolute_url()
-                data.append(new_d)
-        else:
-            data = request.DATA.copy()
-            data["cluster"] = self.object.get_absolute_url()
-            n = 1
-
-        if not request.user.is_paid and self.object.nodes.count() + n > 3:
-            return Response({'non_field_errors': ['Free users cannot create more than three nodes']},
-                            status=status.HTTP_403_FORBIDDEN)
-
-        serializer = NodeSerializer(data=data, files=request.FILES, context={
-            'request': self.request,
-            'format': self.format_kwarg,
-            'view': self
-        })
-
-        if not request.user.is_paid and (
-                isinstance(serializer.object, list) and any(not serializer.object.flavor.free_allowed for n in serializer.object)) or (
-                isinstance(serializer.object, Node) and not serializer.object.flavor.free_allowed):
-            return Response({'non_field_errors': ['Free users cannot create this flavor node']},
-                            status=status.HTTP_403_FORBIDDEN)
-
-        if serializer.is_valid():
-            serializer.save(force_insert=True)
-            if self.object.status == Cluster.RUNNING:
-                add_nodes(serializer.object if isinstance(serializer.object, list) else [serializer.object])
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED,
-                            headers=headers)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     @action()
     def add_database(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -255,7 +217,7 @@ class NodeViewSet(mixins.ListModelMixin,
             return {}
 
     def get_queryset(self):
-        return Node.objects.filter(cluster=self.kwargs["cluster"])
+        return Node.objects.filter(cluster=self.kwargs["cluster_pk"])
 
     def zabbix_history(self, node, key, count=120):
         if node.region.provider.code == 'test':
@@ -276,6 +238,41 @@ class NodeViewSet(mixins.ListModelMixin,
             ]
             history.reverse()
         return Response(data=history, status=status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        cluster = get_object_or_404(Cluster, pk=self.kwargs["cluster_pk"])
+        if isinstance(request.DATA, list):
+            data = []
+            n = len(request.DATA)
+            for d in request.DATA:
+                new_d = d.copy()
+                new_d["cluster"] = self.object.get_absolute_url()
+                data.append(new_d)
+        else:
+            data = request.DATA.copy()
+            data["cluster"] = self.object.get_absolute_url()
+            n = 1
+
+        if not request.user.is_paid and cluster.nodes.count() + n > 3:
+            return Response({'non_field_errors': ['Free users cannot create more than three nodes']},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        serializer = self.get_serializer(data=request.DATA, files=request.FILES)
+
+        if not request.user.is_paid and (
+                isinstance(serializer.object, list) and any(not serializer.object.flavor.free_allowed for n in serializer.object)) or (
+                isinstance(serializer.object, Node) and not serializer.object.flavor.free_allowed):
+            return Response({'non_field_errors': ['Free users cannot create this flavor node']},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        if serializer.is_valid():
+            serializer.save(force_insert=True)
+            if cluster.status == Cluster.RUNNING:
+                add_nodes(serializer.object if isinstance(serializer.object, list) else [serializer.object])
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED,
+                            headers=headers)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -379,7 +376,7 @@ class BackupViewSet(mixins.ListModelMixin,
     permission_classes = (OwnerOrCreate,)
 
     def get_queryset(self):
-        return Backup.objects.filter(node=self.kwargs["node"])
+        return Backup.objects.filter(node=self.kwargs["node_pk"])
 
     def get_success_headers(self, data):
         try:
@@ -392,11 +389,11 @@ class BackupViewSet(mixins.ListModelMixin,
             data = []
             for d in request.DATA:
                 new_d = d.copy()
-                new_d['node'] = self.kwargs["node"]
+                new_d['node'] = self.kwargs["node_pk"]
                 data.append(new_d)
         else:
             data = request.DATA.copy()
-            data['node'] = self.kwargs["node"]
+            data['node'] = self.kwargs["node_pk"]
         serializer = BackupWriteSerializer(data=data, files=request.FILES)
 
         if serializer.is_valid():

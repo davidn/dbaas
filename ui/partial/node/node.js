@@ -55,7 +55,7 @@ angular.module('geniedb').controller('NodeCtrl', function ($scope, $routeParams,
                 storage: node.useVariableStorage ? node.size : null}
         ];
         // TODO Move to service call
-        $http.post(dbaasConfig.apiUrl + "clusters/" + $routeParams.clusterid, nodes).success(function (data) {
+        $http.post(dbaasConfig.apiUrl + "clusters/" + $routeParams.clusterid + "/nodes", nodes).success(function (data) {
             growl.success({body: "Node added in region " + node.region.name});
             $location.path('/list');
         }).error(handleError);
