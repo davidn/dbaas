@@ -112,7 +112,7 @@ def identity(request):
     """Tell the logged in user about herself."""
     if not request.user:
         return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
-    serializer = UserSerializer(request.user)
+    serializer = UserSerializer(request.user, context={'request':request})
     return Response(serializer.data)
 
 
